@@ -1,5 +1,6 @@
 ﻿using GL_EditorFramework;
 using GL_EditorFramework.EditorDrawables;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using OpenTK;
 using SpotLight.EditorDrawables;
 using System;
@@ -30,12 +31,31 @@ namespace SpotLight
             sceneListView1.SelectionChanged += SceneListView1_SelectionChanged;
             sceneListView1.ItemsMoved += SceneListView1_ItemsMoved;
 
-            
+            CommonOpenFileDialog ofd = new CommonOpenFileDialog()
+            {
+                Title = "Select the Game Directory of Super Mario 3D World",
+                IsFolderPicker = true
+            };
+
+            while (!Program.GamePathIsValid())
+            {
+                if (Program.GamePath != "")
+                    MessageBox.Show("The Directory doesn't contain ObjectData and StageData.", "The GamePath is invalid");
+
+                if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    Program.GamePath = ofd.FileName;
+                }
+                else
+                {
+                    Environment.Exit(0);
+                }
+            }
         }
 
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs" };
+            OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
             if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
             {
                 if(SM3DWorldLevel.TryOpen(ofd.FileName, gL_ControlModern1, sceneListView1, out SM3DWorldLevel level))

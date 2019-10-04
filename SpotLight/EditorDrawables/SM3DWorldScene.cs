@@ -19,12 +19,6 @@ namespace SpotLight.EditorDrawables
 {
     class SM3DWorldScene : CategorizedScene
     {
-        /// <summary>
-        /// Filepath to the ObjectData Folder. <para/>Example: ObjectData + "BlockPow.szs"
-        /// </summary>
-        readonly string ObjectData = "D:/Dismanteled/WiiU/SM3DW Base/content/ObjectData/"; //This should be gained from the filepath of the Level
-        //C:/Users/Jupahe/Documents/3dworldstuff/ObjectData/
-        //Left ^ here just in case
         BfresModelCache.CachedModel testModel;
         BfresModelCache.CachedModel testModel2;
 
@@ -37,11 +31,11 @@ namespace SpotLight.EditorDrawables
         {
             BfresModelCache.Initialize(control);
 
-            SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(ObjectData + "BlockQuestion.szs"));
+            SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + "BlockQuestion.szs"));
 
             testModel = new BfresModelCache.CachedModel(new MemoryStream(objArc.Files["BlockQuestion.bfres"]), control);
 
-            objArc = SARC.UnpackRamN(YAZ0.Decompress(ObjectData + "BlockBrick.szs"));
+            objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + "BlockBrick.szs"));
 
             testModel2 = new BfresModelCache.CachedModel(new MemoryStream(objArc.Files["BlockBrick.bfres"]), control);
 
