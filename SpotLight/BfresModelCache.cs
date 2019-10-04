@@ -87,6 +87,8 @@ namespace SpotLight
                 return false;
         }
 
+        public static bool Contains(string modelName) => cache.ContainsKey(modelName);
+
         public struct CachedModel
         {
             VertexArrayObject[] vaos;

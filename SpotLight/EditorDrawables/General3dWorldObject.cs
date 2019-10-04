@@ -270,10 +270,20 @@ namespace SpotLight.EditorDrawables
 
             bool hovered = editorScene.Hovered == this;
 
-            control.UpdateModelMatrix(
+            if(BfresModelCache.Contains(modelName ?? objectName))
+            {
+                control.UpdateModelMatrix(
+                Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale)) *
+                Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
+                Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+            }
+            else
+            {
+                control.UpdateModelMatrix(
                 Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale) * 0.5f) *
                 Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+            }
 
             if (BfresModelCache.TryDraw(modelName ?? objectName, control))
                 return;
