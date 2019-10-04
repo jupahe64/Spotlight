@@ -251,7 +251,11 @@ namespace SpotLight.EditorDrawables
             if(File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
             {
                 SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
-                BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control);
+
+                if(objArc.Files.ContainsKey(mdlName + ".bfres"))
+                {
+                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control);
+                }
             }
             base.Prepare(control);
         }
