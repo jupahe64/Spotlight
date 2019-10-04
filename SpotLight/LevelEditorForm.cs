@@ -35,8 +35,8 @@ namespace SpotLight
 
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            if (ofd.ShowDialog() == DialogResult.OK)
+            OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs" };
+            if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
             {
                 if(SM3DWorldLevel.TryOpen(ofd.FileName, gL_ControlModern1, sceneListView1, out SM3DWorldLevel level))
                 {

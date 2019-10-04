@@ -35,10 +35,10 @@
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.lblCurrentObject = new System.Windows.Forms.Label();
             this.sceneListView1 = new GL_EditorFramework.SceneListView();
-            this.gL_ControlModern1 = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.objectUIControl1 = new GL_EditorFramework.ObjectUIControl();
+            this.lblCurrentObject = new System.Windows.Forms.Label();
+            this.gL_ControlModern1 = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -56,7 +56,7 @@
             this.fileMenu});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(742, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(784, 25);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -76,14 +76,14 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
             // 
@@ -100,8 +100,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.gL_ControlModern1);
-            this.splitContainer1.Size = new System.Drawing.Size(742, 530);
-            this.splitContainer1.SplitterDistance = 247;
+            this.splitContainer1.Size = new System.Drawing.Size(784, 536);
+            this.splitContainer1.SplitterDistance = 260;
             this.splitContainer1.TabIndex = 2;
             // 
             // splitContainer2
@@ -120,9 +120,27 @@
             this.splitContainer2.Panel2.Controls.Add(this.objectUIControl1);
             this.splitContainer2.Panel2.Controls.Add(this.lblCurrentObject);
             this.splitContainer2.Panel2.Click += new System.EventHandler(this.SplitContainer2_Panel2_Click);
-            this.splitContainer2.Size = new System.Drawing.Size(247, 530);
-            this.splitContainer2.SplitterDistance = 253;
+            this.splitContainer2.Size = new System.Drawing.Size(260, 536);
+            this.splitContainer2.SplitterDistance = 255;
             this.splitContainer2.TabIndex = 1;
+            // 
+            // sceneListView1
+            // 
+            this.sceneListView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.sceneListView1.Enabled = false;
+            this.sceneListView1.Location = new System.Drawing.Point(0, 0);
+            this.sceneListView1.Name = "sceneListView1";
+            this.sceneListView1.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("sceneListView1.RootLists")));
+            this.sceneListView1.Size = new System.Drawing.Size(260, 255);
+            this.sceneListView1.TabIndex = 0;
+            // 
+            // objectUIControl1
+            // 
+            this.objectUIControl1.CurrentObjectUIProvider = null;
+            this.objectUIControl1.Location = new System.Drawing.Point(3, 16);
+            this.objectUIControl1.Name = "objectUIControl1";
+            this.objectUIControl1.Size = new System.Drawing.Size(241, 425);
+            this.objectUIControl1.TabIndex = 1;
             // 
             // lblCurrentObject
             // 
@@ -132,15 +150,6 @@
             this.lblCurrentObject.Size = new System.Drawing.Size(87, 13);
             this.lblCurrentObject.TabIndex = 0;
             this.lblCurrentObject.Text = "Nothing selected";
-            // 
-            // sceneListView1
-            // 
-            this.sceneListView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.sceneListView1.Enabled = false;
-            this.sceneListView1.Location = new System.Drawing.Point(0, 0);
-            this.sceneListView1.Name = "sceneListView1";
-            this.sceneListView1.Size = new System.Drawing.Size(247, 253);
-            this.sceneListView1.TabIndex = 0;
             // 
             // gL_ControlModern1
             // 
@@ -154,29 +163,22 @@
             this.gL_ControlModern1.Name = "gL_ControlModern1";
             this.gL_ControlModern1.NormPickingDepth = 0F;
             this.gL_ControlModern1.ShowOrientationCube = true;
-            this.gL_ControlModern1.Size = new System.Drawing.Size(491, 530);
+            this.gL_ControlModern1.Size = new System.Drawing.Size(520, 536);
             this.gL_ControlModern1.Stereoscopy = false;
             this.gL_ControlModern1.TabIndex = 0;
             this.gL_ControlModern1.VSync = false;
             this.gL_ControlModern1.ZFar = 32000F;
             this.gL_ControlModern1.ZNear = 0.32F;
             // 
-            // objectPropertyControl1
-            // 
-            this.objectUIControl1.CurrentObjectUIProvider = null;
-            this.objectUIControl1.Location = new System.Drawing.Point(3, 16);
-            this.objectUIControl1.Name = "objectPropertyControl1";
-            this.objectUIControl1.Size = new System.Drawing.Size(241, 425);
-            this.objectUIControl1.TabIndex = 1;
-            // 
             // LevelEditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(742, 555);
+            this.ClientSize = new System.Drawing.Size(784, 561);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.toolStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(400, 300);
             this.Name = "LevelEditorForm";
             this.Text = "SpotLight";
             this.toolStrip1.ResumeLayout(false);
