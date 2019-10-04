@@ -166,7 +166,7 @@ namespace SpotLight
                     int _i = 0;
                     for (int i = 0; i < positions.Length; i++)
                     {
-                        bufferData[_i] = positions[i].X * 0.01f;
+                        bufferData[_i]     = positions[i].X * 0.01f;
                         bufferData[_i + 1] = positions[i].Y * 0.01f;
                         bufferData[_i + 2] = positions[i].Z * 0.01f;
                         bufferData[_i + 3] = uvs[i].X;
@@ -183,7 +183,7 @@ namespace SpotLight
                     GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
                     GL.BindBuffer(BufferTarget.ArrayBuffer, vaoBuffer);
-                    GL.BufferData(BufferTarget.ArrayBuffer, 12 * positions.Length, bufferData, BufferUsageHint.StaticDraw);
+                    GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * 5 * positions.Length, bufferData, BufferUsageHint.StaticDraw);
 
                     vaos[shapeIndex] = new VertexArrayObject(vaoBuffer, indexBuffer);
                     vaos[shapeIndex].AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 5, 0);
