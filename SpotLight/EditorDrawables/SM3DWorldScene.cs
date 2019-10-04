@@ -19,9 +19,6 @@ namespace SpotLight.EditorDrawables
 {
     class SM3DWorldScene : CategorizedScene
     {
-        BfresModelCache.CachedModel testModel;
-        BfresModelCache.CachedModel testModel2;
-
         public SM3DWorldScene()
         {
             
@@ -30,31 +27,8 @@ namespace SpotLight.EditorDrawables
         public override void Prepare(GL_ControlModern control)
         {
             BfresModelCache.Initialize(control);
-
-            SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + "BlockQuestion.szs"));
-
-            testModel = new BfresModelCache.CachedModel(new MemoryStream(objArc.Files["BlockQuestion.bfres"]), control);
-
-            objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + "BlockBrick.szs"));
-
-            testModel2 = new BfresModelCache.CachedModel(new MemoryStream(objArc.Files["BlockBrick.bfres"]), control);
-
+            
             base.Prepare(control);
-        }
-
-        public override void Draw(GL_ControlModern control, Pass pass)
-        {
-            control.ResetModelMatrix();
-
-            for(int i = 0; i<100; i++)
-            {
-                testModel.Draw(control);
-                control.ApplyModelTransform(OpenTK.Matrix4.CreateTranslation(1, 0, 0));
-                testModel2.Draw(control);
-                control.ApplyModelTransform(OpenTK.Matrix4.CreateTranslation(1, 0, 0));
-            }
-
-            base.Draw(control, pass);
         }
 
         public List<I3dWorldObject> linkedObjects = new List<I3dWorldObject>();

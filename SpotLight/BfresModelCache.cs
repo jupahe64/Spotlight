@@ -15,13 +15,13 @@ using Syroot.NintenTools.Bfres.Helpers;
 
 namespace SpotLight
 {
-    public class BfresModelCache
+    public static class BfresModelCache
     {
         private static bool initialized = false;
 
         public static ShaderProgram BfresShaderProgram;
 
-        Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
+        static Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
 
         public static int DefaultTetxure;
 
@@ -70,13 +70,13 @@ namespace SpotLight
             initialized = true;
         }
         
-        public void Submit(string modelName, Stream stream, GL_ControlModern control)
+        public static void Submit(string modelName, Stream stream, GL_ControlModern control)
         {
             if (!cache.ContainsKey(modelName))
                 cache[modelName] = new CachedModel(stream, control);
         }
 
-        public bool TryDraw(string modelName, GL_ControlModern control)
+        public static bool TryDraw(string modelName, GL_ControlModern control)
         {
             if (cache.ContainsKey(modelName))
             {

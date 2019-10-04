@@ -8,9 +8,11 @@ using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SZS;
 using static BYAML.ByamlNodeWriter;
 
 namespace SpotLight.EditorDrawables
@@ -243,6 +245,17 @@ namespace SpotLight.EditorDrawables
             }
         }
 
+        public override void Prepare(GL_ControlModern control)
+        {
+            string mdlName = modelName ?? objectName;
+            if(File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
+            {
+                SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
+                BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control);
+            }
+            base.Prepare(control);
+        }
+
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
             if (pass == Pass.TRANSPARENT)
@@ -257,6 +270,9 @@ namespace SpotLight.EditorDrawables
                 Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale) * 0.5f) *
                 Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+
+            if (BfresModelCache.TryDraw(modelName ?? objectName, control))
+                return;
 
             Vector4 blockColor;
             Vector4 lineColor;
