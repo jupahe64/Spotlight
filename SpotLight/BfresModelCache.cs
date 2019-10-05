@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FileFormats3DW;
+using GL_EditorFramework;
 using GL_EditorFramework.GL_Core;
+using GL_EditorFramework.Interfaces;
 using OpenTK.Graphics.OpenGL;
 using Syroot.BinaryData;
 using Syroot.Maths;
@@ -86,11 +88,11 @@ namespace SpotLight
                 cache[modelName] = new CachedModel(stream, textureArc, control);
         }
 
-        public static bool TryDraw(string modelName, GL_ControlModern control)
+        public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass)
         {
             if (cache.ContainsKey(modelName))
             {
-                cache[modelName].Draw(control);
+                cache[modelName].Draw(control, pass);
                 return true;
             }
             else
@@ -210,20 +212,31 @@ namespace SpotLight
                 }
             }
 
-            public void Draw(GL_ControlModern control)
+            public void Draw(GL_ControlModern control, Pass pass)
             {
-                control.CurrentShader = BfresShaderProgram;
+                if (pass == Pass.PICKING)
+                {
+                    control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+                    control.CurrentShader.SetVector4("color", control.NextPickingColor());
+                }
+                else
+                {
+                    control.CurrentShader = BfresShaderProgram;
 
-                GL.ActiveTexture(TextureUnit.Texture0);
+                    GL.ActiveTexture(TextureUnit.Texture0);
+                }
 
                 for(int i = 0; i<vaos.Length; i++)
                 {
-                    if(textures[i]==-1)
-                        GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
-                    else if (textures[i] == -2)
-                        GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
-                    else
-                        GL.BindTexture(TextureTarget.Texture2D, textures[i]);
+                    if (pass != Pass.PICKING)
+                    {
+                        if (textures[i] == -1)
+                            GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
+                        else if (textures[i] == -2)
+                            GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
+                        else
+                            GL.BindTexture(TextureTarget.Texture2D, textures[i]);
+                    }
 
                     vaos[i].Use(control);
 

@@ -287,7 +287,7 @@ namespace SpotLight.EditorDrawables
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }
 
-            if (BfresModelCache.TryDraw(modelName ?? objectName, control))
+            if (BfresModelCache.TryDraw(modelName ?? objectName, control, pass))
                 return;
 
             Vector4 blockColor;
