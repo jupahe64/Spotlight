@@ -135,9 +135,18 @@ namespace SpotLight
 
                 foreach(Shape shape in mdl.Shapes.Values)
                 {
-                    Vector4F[] positions = new VertexBufferHelper(mdl.VertexBuffers[shapeIndex], ByteConverter.Big)["_p0"].Data;
+                    VertexBufferHelper vbh = new VertexBufferHelper(mdl.VertexBuffers[shapeIndex], ByteConverter.Big);
 
-                    Vector4F[] uvs = new VertexBufferHelper(mdl.VertexBuffers[shapeIndex], ByteConverter.Big)["_u0"].Data;
+                    Vector4F[] positions = vbh["_p0"].Data;
+
+                    Vector4F[] uvs;
+
+                    bool hasUVs = vbh.Attributes.Where((x)=>x.Name=="_u0").Count()>0;
+
+                    if (hasUVs)
+                        uvs = vbh["_u0"].Data;
+                    else
+                        uvs = null;
 
                     uint[] indices = shape.Meshes[0].GetIndices().ToArray();
 
@@ -172,8 +181,11 @@ namespace SpotLight
                         bufferData[_i]     = positions[i].X * 0.01f;
                         bufferData[_i + 1] = positions[i].Y * 0.01f;
                         bufferData[_i + 2] = positions[i].Z * 0.01f;
-                        bufferData[_i + 3] = uvs[i].X;
-                        bufferData[_i + 4] = uvs[i].Y;
+                        if (hasUVs)
+                        {
+                            bufferData[_i + 3] = uvs[i].X;
+                            bufferData[_i + 4] = uvs[i].Y;
+                        }
                         _i += 5;
                     }
                     int[] buffers = new int[2];
