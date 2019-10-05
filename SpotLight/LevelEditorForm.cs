@@ -31,6 +31,21 @@ namespace SpotLight
             sceneListView1.SelectionChanged += SceneListView1_SelectionChanged;
             sceneListView1.ItemsMoved += SceneListView1_ItemsMoved;
 
+            //Properties.Settings.Default.Reset();
+
+            if (Program.GamePath == "")
+            {
+                MessageBox.Show(
+@"Welcome to Spotlight!
+
+In order to use this program, you will need the folders ""StageData"" and ""ObjectData"" from Super Mario 3D World
+
+Please select the folder than contains these folders", "Introduction", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //SpotlightToolStripStatusLabel.Text = "Welcome to Spotlight!";
+            }
+            //else
+                //SpotlightToolStripStatusLabel.Text = "Welcome back!";
+
             CommonOpenFileDialog ofd = new CommonOpenFileDialog()
             {
                 Title = "Select the Game Directory of Super Mario 3D World",

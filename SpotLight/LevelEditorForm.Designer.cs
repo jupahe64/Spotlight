@@ -117,8 +117,8 @@
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.objectUIControl1);
             this.splitContainer2.Panel2.Controls.Add(this.lblCurrentObject);
+            this.splitContainer2.Panel2.Controls.Add(this.objectUIControl1);
             this.splitContainer2.Panel2.Click += new System.EventHandler(this.SplitContainer2_Panel2_Click);
             this.splitContainer2.Size = new System.Drawing.Size(260, 536);
             this.splitContainer2.SplitterDistance = 255;
@@ -139,7 +139,7 @@
             this.objectUIControl1.CurrentObjectUIProvider = null;
             this.objectUIControl1.Location = new System.Drawing.Point(3, 16);
             this.objectUIControl1.Name = "objectUIControl1";
-            this.objectUIControl1.Size = new System.Drawing.Size(241, 425);
+            this.objectUIControl1.Size = new System.Drawing.Size(257, 261);
             this.objectUIControl1.TabIndex = 1;
             // 
             // lblCurrentObject
