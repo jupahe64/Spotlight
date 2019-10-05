@@ -12,6 +12,7 @@ using Syroot.Maths;
 using Syroot.NintenTools.Bfres;
 using Syroot.NintenTools.Bfres.GX2;
 using Syroot.NintenTools.Bfres.Helpers;
+using SZS;
 
 namespace SpotLight
 {
@@ -23,7 +24,11 @@ namespace SpotLight
 
         static Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
 
+        static Dictionary<string, Dictionary<string, int>> texArcCache = new Dictionary<string, Dictionary<string, int>>();
+
         public static int DefaultTetxure;
+
+        public static int NoTetxure;
 
         public static void Initialize(GL_ControlModern control)
         {
@@ -65,15 +70,20 @@ namespace SpotLight
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+            NoTetxure = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
+
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb8, 1, 1, 0, PixelFormat.Bgr, PixelType.UnsignedByte, new uint[] { 0xFFFFFFFF });
             bmp.UnlockBits(bmpData);
 
             initialized = true;
         }
         
-        public static void Submit(string modelName, Stream stream, GL_ControlModern control)
+        public static void Submit(string modelName, Stream stream, GL_ControlModern control, string textureArc = null)
         {
             if (!cache.ContainsKey(modelName))
-                cache[modelName] = new CachedModel(stream, control);
+                cache[modelName] = new CachedModel(stream, textureArc, control);
         }
 
         public static bool TryDraw(string modelName, GL_ControlModern control)
@@ -95,8 +105,24 @@ namespace SpotLight
             readonly int[] indexBufferLengths;
             readonly int[] textures;
 
-            public CachedModel(Stream stream, GL_ControlModern control)
+            public CachedModel(Stream stream, string textureArc, GL_ControlModern control)
             {
+                if (textureArc != null && File.Exists(Program.ObjectDataPath + textureArc + ".szs"))
+                {
+                    SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + textureArc + ".szs"));
+
+                    if (!texArcCache.ContainsKey(textureArc))
+                    {
+                        Dictionary<string, int> arc = new Dictionary<string, int>();
+                        texArcCache.Add(textureArc, arc);
+                        foreach(KeyValuePair<string,Texture> keyValuePair in new ResFile(new MemoryStream(objArc.Files[textureArc + ".bfres"])).Textures)
+                        {
+                            arc.Add(keyValuePair.Key, UploadTexture(keyValuePair.Value));
+                        }
+                    }
+                }
+
+
                 ResFile bfres = new ResFile(stream);
 
                 Model mdl = bfres.Models[0];
@@ -114,52 +140,27 @@ namespace SpotLight
                     Vector4F[] uvs = new VertexBufferHelper(mdl.VertexBuffers[shapeIndex], ByteConverter.Big)["_u0"].Data;
 
                     uint[] indices = shape.Meshes[0].GetIndices().ToArray();
-                    
-                    Texture texture = mdl.Materials[shape.MaterialIndex].TextureRefs[0].Texture;
-                    #region deswizzle
-                    uint bpp = GX2.surfaceGetBitsPerPixel((uint)texture.Format) >> 3;
 
-                    GX2.GX2Surface surf = new GX2.GX2Surface
+                    if (mdl.Materials[shape.MaterialIndex].TextureRefs.Count != 0)
                     {
-                        bpp = bpp,
-                        height = texture.Height,
-                        width = texture.Width,
-                        aa = (uint)texture.AAMode,
-                        alignment = texture.Alignment,
-                        depth = texture.Depth,
-                        dim = (uint)texture.Dim,
-                        format = (uint)texture.Format,
-                        use = (uint)texture.Use,
-                        pitch = texture.Pitch,
-                        data = texture.Data,
-                        numMips = texture.MipCount,
-                        mipOffset = texture.MipOffsets,
-                        mipData = texture.MipData,
-                        tileMode = (uint)texture.TileMode,
-                        swizzle = texture.Swizzle,
-                        numArray = texture.ArrayLength
-                    };
-
-                    if (surf.mipData == null)
-                        surf.numMips = 1;
-
-                    byte[] deswizzled = GX2.Decode(surf, 0, 0);
-                    #endregion
-                    textures[shapeIndex] = GL.GenTexture();
-                    GL.BindTexture(TextureTarget.Texture2D, textures[shapeIndex]);
-
-                    GetPixelFormats(texture.Format, out PixelInternalFormat internalFormat, out PixelFormat format);
-
-                    if (internalFormat == PixelInternalFormat.Rgba)
-                        GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat,
-                        (int)texture.Width, (int)texture.Height, 0, format, PixelType.UnsignedByte, deswizzled);
+                        TextureRef texRef = mdl.Materials[shape.MaterialIndex].TextureRefs[0];
+                        if (texRef.Texture != null)
+                        {
+                            textures[shapeIndex] = UploadTexture(texRef.Texture);
+                            
+                        }
+                        else
+                        {
+                            if (texArcCache.ContainsKey(textureArc) && texArcCache[textureArc].ContainsKey(texRef.Name))
+                                textures[shapeIndex] = texArcCache[textureArc][texRef.Name];
+                            else
+                                textures[shapeIndex] = -2;
+                        }
+                    }
                     else
-                        GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat,
-                        (int)texture.Width, (int)texture.Height, 0, deswizzled.Length, deswizzled);
-
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-                    GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                    {
+                        textures[shapeIndex] = -1;
+                    }
 
                     indexBufferLengths[shapeIndex] = indices.Length;
 
@@ -205,7 +206,12 @@ namespace SpotLight
 
                 for(int i = 0; i<vaos.Length; i++)
                 {
-                    GL.BindTexture(TextureTarget.Texture2D, textures[i]);
+                    if(textures[i]==-1)
+                        GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
+                    else if (textures[i] == -2)
+                        GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
+                    else
+                        GL.BindTexture(TextureTarget.Texture2D, textures[i]);
 
                     vaos[i].Use(control);
 
@@ -258,6 +264,55 @@ namespace SpotLight
                     break;
             }
         }
-    
+        
+        private static int UploadTexture(Texture texture)
+        {
+            #region deswizzle
+            uint bpp = GX2.surfaceGetBitsPerPixel((uint)texture.Format) >> 3;
+
+            GX2.GX2Surface surf = new GX2.GX2Surface
+            {
+                bpp = bpp,
+                height = texture.Height,
+                width = texture.Width,
+                aa = (uint)texture.AAMode,
+                alignment = texture.Alignment,
+                depth = texture.Depth,
+                dim = (uint)texture.Dim,
+                format = (uint)texture.Format,
+                use = (uint)texture.Use,
+                pitch = texture.Pitch,
+                data = texture.Data,
+                numMips = texture.MipCount,
+                mipOffset = texture.MipOffsets,
+                mipData = texture.MipData,
+                tileMode = (uint)texture.TileMode,
+                swizzle = texture.Swizzle,
+                numArray = texture.ArrayLength
+            };
+
+            if (surf.mipData == null)
+                surf.numMips = 1;
+
+            byte[] deswizzled = GX2.Decode(surf, 0, 0);
+            #endregion
+            int tex = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, tex);
+
+            GetPixelFormats(texture.Format, out PixelInternalFormat internalFormat, out PixelFormat format);
+
+            if (internalFormat == PixelInternalFormat.Rgba)
+                GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat,
+                (int)texture.Width/4, (int)texture.Height/4, 0, format, PixelType.UnsignedByte, deswizzled);
+            else
+                GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat,
+                (int)texture.Width, (int)texture.Height, 0, deswizzled.Length, deswizzled);
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+            return tex;
+        }
     }
 }

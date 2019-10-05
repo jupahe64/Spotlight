@@ -53,16 +53,23 @@ namespace BYAML
             uint nameArrayOffset = _binaryStream.ReadUInt32();
             uint stringArrayOffset = _binaryStream.ReadUInt32();
 
-            using (_binaryStream.TemporarySeek())
+            if (_binaryStream.Length == 16)
             {
-                // Paths are supported if the third offset is a path array (or unknown) and the fourth a root.
-                ByamlNodeType thirdNodeType = PeekNodeType(_binaryStream);
-                _binaryStream.Seek(sizeof(uint));
-                ByamlNodeType fourthNodeType = PeekNodeType(_binaryStream);
+                _supportPaths = false;
+            }
+            else
+            {
+                using (_binaryStream.TemporarySeek())
+                {
+                    // Paths are supported if the third offset is a path array (or unknown) and the fourth a root.
+                    ByamlNodeType thirdNodeType = PeekNodeType(_binaryStream);
+                    _binaryStream.Seek(sizeof(uint));
+                    ByamlNodeType fourthNodeType = PeekNodeType(_binaryStream);
 
-                _supportPaths = (thirdNodeType == ByamlNodeType.Unknown || thirdNodeType == ByamlNodeType.PathArray)
-                     && (fourthNodeType == ByamlNodeType.Array || fourthNodeType == ByamlNodeType.Dictionary);
+                    _supportPaths = (thirdNodeType == ByamlNodeType.Unknown || thirdNodeType == ByamlNodeType.PathArray)
+                         && (fourthNodeType == ByamlNodeType.Array || fourthNodeType == ByamlNodeType.Dictionary);
 
+                }
             }
 
 
@@ -155,7 +162,7 @@ namespace BYAML
                     }
                 }
                 else
-                    return new List<dynamic>();
+                    return new Dictionary<string, dynamic>();
             }
         }
 

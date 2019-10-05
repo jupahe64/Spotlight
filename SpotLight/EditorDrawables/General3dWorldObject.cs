@@ -254,7 +254,9 @@ namespace SpotLight.EditorDrawables
 
                 if(objArc.Files.ContainsKey(mdlName + ".bfres"))
                 {
-                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control);
+                    Dictionary<string, dynamic> initModel = ByamlFile.FastLoadN(new MemoryStream(objArc.Files["InitModel.byml"]), false, Syroot.BinaryData.Endian.Big).RootNode;
+                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control, 
+                        initModel.TryGetValue("TextureArc", out dynamic texArc)?texArc:null);
                 }
             }
             base.Prepare(control);
