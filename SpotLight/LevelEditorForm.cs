@@ -41,10 +41,10 @@ namespace SpotLight
 In order to use this program, you will need the folders ""StageData"" and ""ObjectData"" from Super Mario 3D World
 
 Please select the folder than contains these folders", "Introduction", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                //SpotlightToolStripStatusLabel.Text = "Welcome to Spotlight!";
+                SpotlightToolStripStatusLabel.Text = "Welcome to Spotlight!";
             }
-            //else
-                //SpotlightToolStripStatusLabel.Text = "Welcome back!";
+            else
+                SpotlightToolStripStatusLabel.Text = "Welcome back!";
 
             CommonOpenFileDialog ofd = new CommonOpenFileDialog()
             {
@@ -133,6 +133,11 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         {
             if (e.KeyCode == Keys.Delete && currenLevel!=null)
             {
+                string DeletedObjects = "";
+                for (int i = 0; i < currenLevel.scene.SelectedObjects.Count; i++)
+                    DeletedObjects += currenLevel.scene.SelectedObjects.ElementAt(i).ToString()+(i+1 == currenLevel.scene.SelectedObjects.Count ? ".":", ");
+                SpotlightToolStripStatusLabel.Text = $"Deleted {DeletedObjects}";
+
                 currenLevel.scene.DeleteSelected();
                 gL_ControlModern1.Refresh();
                 sceneListView1.UpdateAutoScrollHeight();
@@ -143,11 +148,20 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
             if (currenLevel.scene.SelectedObjects.Count > 1)
+            { 
                 lblCurrentObject.Text = "Multiple objects selected";
+                string SelectedObjects = "";
+                for (int i = 0; i < currenLevel.scene.SelectedObjects.Count; i++)
+                    SelectedObjects += currenLevel.scene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currenLevel.scene.SelectedObjects.Count ? "." : ", ");
+                SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
+            }
             else if (currenLevel.scene.SelectedObjects.Count == 0)
-                lblCurrentObject.Text = "Nothing selected";
+                lblCurrentObject.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected";
             else
+            {
                 lblCurrentObject.Text = currenLevel.scene.SelectedObjects.First().ToString() + " selected";
+                SpotlightToolStripStatusLabel.Text = $"Selected {currenLevel.scene.SelectedObjects.First().ToString()}";
+            }
             sceneListView1.Refresh();
 
             objectUIControl1.CurrentObjectUIProvider = currenLevel.scene.GetObjectUIProvider();
