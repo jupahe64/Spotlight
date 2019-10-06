@@ -5,5 +5,11 @@
     <Setting Name="GamePath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="UserName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Spotlight</Value>
+    </Setting>
+    <Setting Name="PlayerChoice" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Mario</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

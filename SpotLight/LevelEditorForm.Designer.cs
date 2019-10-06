@@ -42,6 +42,7 @@
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.OptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -152,7 +153,8 @@
             // 
             this.FileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.OpenToolStripMenuItem,
-            this.SaveToolStripMenuItem});
+            this.SaveToolStripMenuItem,
+            this.OptionsToolStripMenuItem});
             this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
             this.FileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.FileToolStripMenuItem.Text = "File";
@@ -191,6 +193,12 @@
             this.SpotlightToolStripStatusLabel.Name = "SpotlightToolStripStatusLabel";
             this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
             this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.0.0";
+            // 
+            // OptionsToolStripMenuItem
+            // 
+            this.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem";
+            this.OptionsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.OptionsToolStripMenuItem.Text = "Options";
             // 
             // LevelEditorForm
             // 
@@ -238,6 +246,7 @@
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.StatusStrip SpotlightStatusStrip;
         private System.Windows.Forms.ToolStripStatusLabel SpotlightToolStripStatusLabel;
+        private System.Windows.Forms.ToolStripMenuItem OptionsToolStripMenuItem;
     }
 }
 
