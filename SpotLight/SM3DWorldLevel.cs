@@ -142,5 +142,10 @@ namespace SpotLight
             else
                 return false;
         }
+
+        public override string ToString()
+        {
+            return $"{levelName}";
+        }
     }
 }

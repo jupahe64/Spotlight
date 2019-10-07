@@ -75,17 +75,19 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             {
                 if(SM3DWorldLevel.TryOpen(ofd.FileName, gL_ControlModern1, sceneListView1, out SM3DWorldLevel level))
                 {
+                    SpotlightToolStripProgressBar.Maximum = 100;
+                    SpotlightToolStripProgressBar.Value = 0;
                     currenLevel = level;
-
+                    SpotlightToolStripProgressBar.Value = 50;
                     level.scene.SelectionChanged += Scene_SelectionChanged;
                     level.scene.ListChanged += Scene_ListChanged;
 
                     sceneListView1.Enabled = true;
                     sceneListView1.SetRootList("ObjectList");
                     sceneListView1.ListExited += SceneListView1_ListExited;
+                    SpotlightToolStripProgressBar.Value = 100;
+                    SpotlightToolStripStatusLabel.Text = $"Level \"{level.ToString()}\" Loaded.";
                 }
-
-
             }
         }
 
@@ -173,6 +175,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 return;
 
             currenLevel.SaveAs();
+            SpotlightToolStripStatusLabel.Text = "Level saved!";
         }
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
