@@ -31,10 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelEditorForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.sceneListView1 = new GL_EditorFramework.SceneListView();
             this.lblCurrentObject = new System.Windows.Forms.Label();
-            this.objectUIControl1 = new GL_EditorFramework.ObjectUIControl();
-            this.gL_ControlModern1 = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,8 +39,12 @@
             this.OptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
-            this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
+            this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.sceneListView1 = new GL_EditorFramework.SceneListView();
+            this.objectUIControl1 = new GL_EditorFramework.ObjectUIControl();
+            this.gL_ControlModern1 = new GL_EditorFramework.GL_Core.GL_ControlModern();
+            this.SaveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -93,6 +94,90 @@
             this.splitContainer2.SplitterDistance = 245;
             this.splitContainer2.TabIndex = 1;
             // 
+            // lblCurrentObject
+            // 
+            this.lblCurrentObject.AutoSize = true;
+            this.lblCurrentObject.Location = new System.Drawing.Point(12, 0);
+            this.lblCurrentObject.Name = "lblCurrentObject";
+            this.lblCurrentObject.Size = new System.Drawing.Size(87, 13);
+            this.lblCurrentObject.TabIndex = 0;
+            this.lblCurrentObject.Text = "Nothing selected";
+            // 
+            // SpotlightMenuStrip
+            // 
+            this.SpotlightMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.FileToolStripMenuItem,
+            this.editToolStripMenuItem});
+            this.SpotlightMenuStrip.Location = new System.Drawing.Point(0, 0);
+            this.SpotlightMenuStrip.Name = "SpotlightMenuStrip";
+            this.SpotlightMenuStrip.Size = new System.Drawing.Size(784, 24);
+            this.SpotlightMenuStrip.TabIndex = 3;
+            this.SpotlightMenuStrip.Text = "menuStrip1";
+            // 
+            // FileToolStripMenuItem
+            // 
+            this.FileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.OpenToolStripMenuItem,
+            this.SaveToolStripMenuItem,
+            this.SaveAsToolStripMenuItem,
+            this.OptionsToolStripMenuItem});
+            this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
+            this.FileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.FileToolStripMenuItem.Text = "File";
+            // 
+            // OpenToolStripMenuItem
+            // 
+            this.OpenToolStripMenuItem.Name = "OpenToolStripMenuItem";
+            this.OpenToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.OpenToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.OpenToolStripMenuItem.Text = "Open";
+            this.OpenToolStripMenuItem.ToolTipText = "Open a Level file";
+            this.OpenToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
+            // 
+            // SaveToolStripMenuItem
+            // 
+            this.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
+            this.SaveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.SaveToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.SaveToolStripMenuItem.Text = "Save";
+            this.SaveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
+            // 
+            // OptionsToolStripMenuItem
+            // 
+            this.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem";
+            this.OptionsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.O)));
+            this.OptionsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.OptionsToolStripMenuItem.Text = "Options";
+            this.OptionsToolStripMenuItem.Click += new System.EventHandler(this.OptionsToolStripMenuItem_Click);
+            // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.editToolStripMenuItem.Text = "Edit";
+            // 
+            // SpotlightStatusStrip
+            // 
+            this.SpotlightStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SpotlightToolStripProgressBar,
+            this.SpotlightToolStripStatusLabel});
+            this.SpotlightStatusStrip.Location = new System.Drawing.Point(0, 539);
+            this.SpotlightStatusStrip.Name = "SpotlightStatusStrip";
+            this.SpotlightStatusStrip.Size = new System.Drawing.Size(784, 22);
+            this.SpotlightStatusStrip.TabIndex = 4;
+            // 
+            // SpotlightToolStripProgressBar
+            // 
+            this.SpotlightToolStripProgressBar.Name = "SpotlightToolStripProgressBar";
+            this.SpotlightToolStripProgressBar.Size = new System.Drawing.Size(100, 16);
+            // 
+            // SpotlightToolStripStatusLabel
+            // 
+            this.SpotlightToolStripStatusLabel.Name = "SpotlightToolStripStatusLabel";
+            this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
+            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.0.0";
+            // 
             // sceneListView1
             // 
             this.sceneListView1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -102,15 +187,6 @@
             this.sceneListView1.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("sceneListView1.RootLists")));
             this.sceneListView1.Size = new System.Drawing.Size(260, 245);
             this.sceneListView1.TabIndex = 0;
-            // 
-            // lblCurrentObject
-            // 
-            this.lblCurrentObject.AutoSize = true;
-            this.lblCurrentObject.Location = new System.Drawing.Point(12, 0);
-            this.lblCurrentObject.Name = "lblCurrentObject";
-            this.lblCurrentObject.Size = new System.Drawing.Size(87, 13);
-            this.lblCurrentObject.TabIndex = 0;
-            this.lblCurrentObject.Text = "Nothing selected";
             // 
             // objectUIControl1
             // 
@@ -139,73 +215,14 @@
             this.gL_ControlModern1.ZFar = 32000F;
             this.gL_ControlModern1.ZNear = 0.32F;
             // 
-            // SpotlightMenuStrip
+            // SaveAsToolStripMenuItem
             // 
-            this.SpotlightMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.FileToolStripMenuItem,
-            this.editToolStripMenuItem});
-            this.SpotlightMenuStrip.Location = new System.Drawing.Point(0, 0);
-            this.SpotlightMenuStrip.Name = "SpotlightMenuStrip";
-            this.SpotlightMenuStrip.Size = new System.Drawing.Size(784, 24);
-            this.SpotlightMenuStrip.TabIndex = 3;
-            this.SpotlightMenuStrip.Text = "menuStrip1";
-            // 
-            // FileToolStripMenuItem
-            // 
-            this.FileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.OpenToolStripMenuItem,
-            this.SaveToolStripMenuItem,
-            this.OptionsToolStripMenuItem});
-            this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
-            this.FileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            this.FileToolStripMenuItem.Text = "File";
-            // 
-            // OpenToolStripMenuItem
-            // 
-            this.OpenToolStripMenuItem.Name = "OpenToolStripMenuItem";
-            this.OpenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.OpenToolStripMenuItem.Text = "Open";
-            this.OpenToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
-            // 
-            // SaveToolStripMenuItem
-            // 
-            this.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
-            this.SaveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.SaveToolStripMenuItem.Text = "Save";
-            this.SaveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
-            // 
-            // OptionsToolStripMenuItem
-            // 
-            this.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem";
-            this.OptionsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.OptionsToolStripMenuItem.Text = "Options";
-            // 
-            // editToolStripMenuItem
-            // 
-            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
-            this.editToolStripMenuItem.Text = "Edit";
-            // 
-            // SpotlightStatusStrip
-            // 
-            this.SpotlightStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.SpotlightToolStripProgressBar,
-            this.SpotlightToolStripStatusLabel});
-            this.SpotlightStatusStrip.Location = new System.Drawing.Point(0, 539);
-            this.SpotlightStatusStrip.Name = "SpotlightStatusStrip";
-            this.SpotlightStatusStrip.Size = new System.Drawing.Size(784, 22);
-            this.SpotlightStatusStrip.TabIndex = 4;
-            // 
-            // SpotlightToolStripStatusLabel
-            // 
-            this.SpotlightToolStripStatusLabel.Name = "SpotlightToolStripStatusLabel";
-            this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
-            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.0.0";
-            // 
-            // SpotlightToolStripProgressBar
-            // 
-            this.SpotlightToolStripProgressBar.Name = "SpotlightToolStripProgressBar";
-            this.SpotlightToolStripProgressBar.Size = new System.Drawing.Size(100, 16);
+            this.SaveAsToolStripMenuItem.Name = "SaveAsToolStripMenuItem";
+            this.SaveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
+            this.SaveAsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.SaveAsToolStripMenuItem.Text = "Save As";
+            this.SaveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAsToolStripMenuItem_Click);
             // 
             // LevelEditorForm
             // 
@@ -255,6 +272,7 @@
         private System.Windows.Forms.ToolStripStatusLabel SpotlightToolStripStatusLabel;
         private System.Windows.Forms.ToolStripMenuItem OptionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripProgressBar SpotlightToolStripProgressBar;
+        private System.Windows.Forms.ToolStripMenuItem SaveAsToolStripMenuItem;
     }
 }
 

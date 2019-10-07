@@ -86,7 +86,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                     sceneListView1.SetRootList("ObjectList");
                     sceneListView1.ListExited += SceneListView1_ListExited;
                     SpotlightToolStripProgressBar.Value = 100;
-                    SpotlightToolStripStatusLabel.Text = $"Level \"{level.ToString()}\" Loaded.";
+                    SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
                 }
             }
         }
@@ -174,13 +174,30 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             if (currenLevel == null)
                 return;
 
-            currenLevel.SaveAs();
+            currenLevel.Save();
             SpotlightToolStripStatusLabel.Text = "Level saved!";
+        }
+
+        private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currenLevel == null)
+                return;
+
+            if (currenLevel.SaveAs())
+                SpotlightToolStripStatusLabel.Text = "Level saved!";
+            else
+                SpotlightToolStripStatusLabel.Text = "Save Cancelled or Failed.";
         }
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
             Debugger.Break();
+        }
+
+        private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SettingsForm SF = new SettingsForm();
+            SF.ShowDialog();
         }
     }
 }

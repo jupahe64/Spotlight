@@ -105,9 +105,41 @@ namespace SpotLight
             return true;
         }
 
+        public bool Save()
+        {
+                SarcData sarcData = new SarcData()
+                {
+                    HashOnly = false,
+                    endianness = Endian.Big,
+                    Files = new Dictionary<string, byte[]>()
+                };
+
+                foreach (KeyValuePair<string, BymlFileData> keyValuePair in extraFiles)
+                {
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        ByamlFile.FastSaveN(stream, keyValuePair.Value);
+                        sarcData.Files.Add(keyValuePair.Key, stream.ToArray());
+                    }
+                }
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    ByamlNodeWriter writer = new ByamlNodeWriter(stream, false, Endian.Big, 1);
+
+                    scene.Save(writer, levelName, categoryName);
+
+                    sarcData.Files.Add(levelName + categoryName + ".byml", stream.ToArray());
+                }
+
+                File.WriteAllBytes(fileName, YAZ0.Compress(SARC.PackN(sarcData).Item2));
+
+                return true;
+        }
+
         public bool SaveAs()
         {
-            SaveFileDialog sfd = new SaveFileDialog();
+            SaveFileDialog sfd = new SaveFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 SarcData sarcData = new SarcData()
@@ -143,9 +175,6 @@ namespace SpotLight
                 return false;
         }
 
-        public override string ToString()
-        {
-            return $"{levelName}";
-        }
+        public override string ToString() => $"{levelName}";
     }
 }

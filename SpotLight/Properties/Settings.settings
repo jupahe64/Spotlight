@@ -6,7 +6,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="UserName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Spotlight</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="PlayerChoice" Type="System.String" Scope="User">
       <Value Profile="(Default)">Mario</Value>
