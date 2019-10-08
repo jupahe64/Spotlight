@@ -95,7 +95,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         {
             currenLevel.scene.CurrentList = e.List;
             //fetch availible properties for list
-            objectUIControl1.CurrentObjectUIProvider = currenLevel.scene.GetObjectUIProvider();
+            ObjectUIControl.CurrentObjectUIProvider = currenLevel.scene.GetObjectUIProvider();
         }
 
         private void SceneListView1_ItemsMoved(object sender, ItemsMovedEventArgs e)
@@ -166,7 +166,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             }
             sceneListView1.Refresh();
 
-            objectUIControl1.CurrentObjectUIProvider = currenLevel.scene.GetObjectUIProvider();
+            ObjectUIControl.CurrentObjectUIProvider = currenLevel.scene.GetObjectUIProvider();
         }
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -198,6 +198,22 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         {
             SettingsForm SF = new SettingsForm();
             SF.ShowDialog();
+        }
+
+        private void UndoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currenLevel == null)
+                return;
+            currenLevel.scene.Undo();
+            gL_ControlModern1.Refresh();
+        }
+
+        private void RedoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currenLevel == null)
+                return;
+            currenLevel.scene.Redo();
+            gL_ControlModern1.Refresh();
         }
     }
 }

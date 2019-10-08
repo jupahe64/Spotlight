@@ -42,9 +42,11 @@
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.sceneListView1 = new GL_EditorFramework.SceneListView();
-            this.objectUIControl1 = new GL_EditorFramework.ObjectUIControl();
+            this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
             this.gL_ControlModern1 = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SaveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.UndoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -88,7 +90,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.lblCurrentObject);
-            this.splitContainer2.Panel2.Controls.Add(this.objectUIControl1);
+            this.splitContainer2.Panel2.Controls.Add(this.ObjectUIControl);
             this.splitContainer2.Panel2.Click += new System.EventHandler(this.SplitContainer2_Panel2_Click);
             this.splitContainer2.Size = new System.Drawing.Size(260, 515);
             this.splitContainer2.SplitterDistance = 245;
@@ -153,6 +155,9 @@
             // 
             // editToolStripMenuItem
             // 
+            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.UndoToolStripMenuItem,
+            this.RedoToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
@@ -188,13 +193,13 @@
             this.sceneListView1.Size = new System.Drawing.Size(260, 245);
             this.sceneListView1.TabIndex = 0;
             // 
-            // objectUIControl1
+            // ObjectUIControl
             // 
-            this.objectUIControl1.CurrentObjectUIProvider = null;
-            this.objectUIControl1.Location = new System.Drawing.Point(3, 16);
-            this.objectUIControl1.Name = "objectUIControl1";
-            this.objectUIControl1.Size = new System.Drawing.Size(257, 261);
-            this.objectUIControl1.TabIndex = 1;
+            this.ObjectUIControl.CurrentObjectUIProvider = null;
+            this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
+            this.ObjectUIControl.Name = "ObjectUIControl";
+            this.ObjectUIControl.Size = new System.Drawing.Size(257, 261);
+            this.ObjectUIControl.TabIndex = 1;
             // 
             // gL_ControlModern1
             // 
@@ -223,6 +228,20 @@
             this.SaveAsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.SaveAsToolStripMenuItem.Text = "Save As";
             this.SaveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAsToolStripMenuItem_Click);
+            // 
+            // UndoToolStripMenuItem
+            // 
+            this.UndoToolStripMenuItem.Name = "UndoToolStripMenuItem";
+            this.UndoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.UndoToolStripMenuItem.Text = "Undo              Ctrl+Z";
+            this.UndoToolStripMenuItem.Click += new System.EventHandler(this.UndoToolStripMenuItem_Click);
+            // 
+            // RedoToolStripMenuItem
+            // 
+            this.RedoToolStripMenuItem.Name = "RedoToolStripMenuItem";
+            this.RedoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.RedoToolStripMenuItem.Text = "Redo               Ctrl+Y";
+            this.RedoToolStripMenuItem.Click += new System.EventHandler(this.RedoToolStripMenuItem_Click);
             // 
             // LevelEditorForm
             // 
@@ -262,7 +281,7 @@
         private GL_EditorFramework.SceneListView sceneListView1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Label lblCurrentObject;
-        private GL_EditorFramework.ObjectUIControl objectUIControl1;
+        private GL_EditorFramework.ObjectUIControl ObjectUIControl;
         private System.Windows.Forms.MenuStrip SpotlightMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem FileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OpenToolStripMenuItem;
@@ -273,6 +292,8 @@
         private System.Windows.Forms.ToolStripMenuItem OptionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripProgressBar SpotlightToolStripProgressBar;
         private System.Windows.Forms.ToolStripMenuItem SaveAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem UndoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem RedoToolStripMenuItem;
     }
 }
 
