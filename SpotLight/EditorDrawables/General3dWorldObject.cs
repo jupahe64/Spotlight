@@ -17,15 +17,28 @@ using static BYAML.ByamlNodeWriter;
 
 namespace SpotLight.EditorDrawables
 {
+    /// <summary>
+    /// General object for SM3DW
+    /// </summary>
     class General3dWorldObject : TransformableObject, I3dWorldObject
     {
+        /// <summary>
+        /// Converts a <see cref="Vector3"/> to a <see cref="Dictionary"/>
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns></returns>
         public static Dictionary<string, dynamic> Vector3ToDict(Vector3 vector) => new Dictionary<string, dynamic>
         {
             ["X"] = vector.X,
             ["Y"] = vector.Y,
             ["Z"] = vector.Z
         };
-
+        /// <summary>
+        /// Converts a Vector3 to a Dictionary
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="scaleFactor"></param>
+        /// <returns></returns>
         public static Dictionary<string, dynamic> Vector3ToDict(Vector3 vector, float scaleFactor)
         {
             Dictionary<string, dynamic> data = new Dictionary<string, dynamic>();
@@ -46,15 +59,26 @@ namespace SpotLight.EditorDrawables
             ["DisplayScale"]        = Vector3ToDict(obj.displayScale),
             ["DisplayTranslate"]    = Vector3ToDict(obj.displayTranslation, 100f),
             ["GenerateCategory"]    = "",
-            ["ParameterConfigName"] = obj.className,
+            ["ParameterConfigName"] = obj.ClassName,
             ["PlacementTargetFile"] = "Map"
         };
 
-        readonly string id;
-
-        public string objectName;
-        public string modelName;
-        public string className;
+        /// <summary>
+        /// Id of this object
+        /// </summary>
+        readonly string ID;
+        /// <summary>
+        /// Base Object name. Can be used as the Model Name, if the ModelName is not overriding this.
+        /// </summary>
+        public string ObjectName;
+        /// <summary>
+        /// Overridden model to be used by this object
+        /// </summary>
+        public string ModelName;
+        /// <summary>
+        /// Internal name of this object
+        /// </summary>
+        public string ClassName;
 
         Vector3 displayTranslation;
         Vector3 displayRotation;
@@ -65,15 +89,12 @@ namespace SpotLight.EditorDrawables
 
         private static readonly Dictionary<string, List<I3dWorldObject>> EMPTY_LINKS = new Dictionary<string, List<I3dWorldObject>>();
 
-        public override string ToString()
-        {
-            return objectName;
-        }
+        public override string ToString() => ObjectName;
 
         public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest = false)
         {
             objNode.AddDynamicValue("Comment", null);
-            objNode.AddDynamicValue("Id", id);
+            objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
             objNode.AddDynamicValue("LayerConfigName", "Common");
             
@@ -108,14 +129,14 @@ namespace SpotLight.EditorDrawables
                 objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
             }
 
-            objNode.AddDynamicValue("ModelName", modelName);
+            objNode.AddDynamicValue("ModelName", ModelName);
             objNode.AddDynamicValue("Rotate", Vector3ToDict(rotation.ToEulerAnglesDeg()), true);
             objNode.AddDynamicValue("Scale", Vector3ToDict(scale), true);
             objNode.AddDynamicValue("Translate", Vector3ToDict(Position, 100f), true);
 
             objNode.AddDynamicValue("UnitConfig", CreateUnitConfig(this), true);
 
-            objNode.AddDynamicValue("UnitConfigName", objectName);
+            objNode.AddDynamicValue("UnitConfigName", ObjectName);
 
             if (properties != null)
             {
@@ -124,16 +145,10 @@ namespace SpotLight.EditorDrawables
             }
         }
 
-        public General3dWorldObject(ByamlIterator.ArrayEntry objectEntry, List<I3dWorldObject> linkedObjs, Dictionary<long, I3dWorldObject> objectsByReference)
-          : base(
-                Vector3.Zero,
-                Quaternion.Identity,
-                Vector3.One)
+        public General3dWorldObject(ByamlIterator.ArrayEntry objectEntry, List<I3dWorldObject> linkedObjs, Dictionary<long, I3dWorldObject> objectsByReference) : base(Vector3.Zero, Quaternion.Identity, Vector3.One)
         {
             properties = new Dictionary<string, dynamic>();
-
-
-
+            
             foreach (ByamlIterator.DictionaryEntry entry in objectEntry.IterDictionary())
             {
                 if (!objectsByReference.ContainsKey(objectEntry.Position))
@@ -146,7 +161,7 @@ namespace SpotLight.EditorDrawables
                     case "LayerConfigName":
                         break; //ignore these
                     case "Id":
-                        id = entry.Parse();
+                        ID = entry.Parse();
                         break;
                     case "Links":
                         links = new Dictionary<string, List<I3dWorldObject>>();
@@ -167,7 +182,7 @@ namespace SpotLight.EditorDrawables
                         }
                         break;
                     case "ModelName":
-                        modelName = entry.Parse();
+                        ModelName = entry.Parse();
                         break;
                     case "Rotate":
                         dynamic _data = entry.Parse();
@@ -196,7 +211,7 @@ namespace SpotLight.EditorDrawables
                         );
                         break;
                     case "UnitConfigName":
-                        objectName = entry.Parse();
+                        ObjectName = entry.Parse();
                         break;
                     case "UnitConfig":
                         _data = entry.Parse();
@@ -216,7 +231,7 @@ namespace SpotLight.EditorDrawables
                             _data["DisplayScale"]["Y"],
                             _data["DisplayScale"]["Z"]
                             );
-                        className = _data["ParameterConfigName"];
+                        ClassName = _data["ParameterConfigName"];
                         break;
                     default:
                         properties.Add(entry.Key, entry.Parse());
@@ -235,22 +250,26 @@ namespace SpotLight.EditorDrawables
         {
             base.DeleteSelected(manager, list, currentList);
 
-            if (links != null)
-            {
-                foreach (List<I3dWorldObject> link in links.Values)
-                {
-                    foreach (I3dWorldObject obj in link)
-                        obj.DeleteSelected(manager, link, currentList);
-                }
-            }
+            //if (links != null)
+            //{
+            //    foreach (List<I3dWorldObject> link in links.Values)
+            //    {
+            //        foreach (I3dWorldObject obj in link)
+            //            obj.DeleteSelected(manager, link, currentList);
+            //    }
+            //}
         }
 
         public override void Prepare(GL_ControlModern control)
         {
-            string mdlName = modelName ?? objectName;
+            string mdlName = ModelName ?? ObjectName;
             if(File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
             {
                 SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
+                if (mdlName == "Kuribo")
+                {
+
+                }
 
                 if(objArc.Files.ContainsKey(mdlName + ".bfres"))
                 {
@@ -272,7 +291,7 @@ namespace SpotLight.EditorDrawables
 
             bool hovered = editorScene.Hovered == this;
 
-            if(BfresModelCache.Contains(modelName ?? objectName))
+            if(BfresModelCache.Contains(ModelName ?? ObjectName))
             {
                 control.UpdateModelMatrix(
                 Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale)) *
@@ -287,7 +306,7 @@ namespace SpotLight.EditorDrawables
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }
 
-            if (BfresModelCache.TryDraw(modelName ?? objectName, control, pass))
+            if (BfresModelCache.TryDraw(ModelName ?? ObjectName, control, pass))
                 return;
 
             Vector4 blockColor;

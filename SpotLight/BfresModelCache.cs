@@ -37,16 +37,17 @@ namespace SpotLight
             if (initialized)
                 return;
 
+            #region Shader Generation
             BfresShaderProgram = new ShaderProgram(
-                new FragmentShader(
-                    @"#version 330
+                    new FragmentShader(
+                        @"#version 330
                     uniform sampler2D tex;
                     in vec2 fragUV;
                     void main(){
                         gl_FragColor = texture(tex,fragUV);
                     }"),
-                new VertexShader(
-                    @"#version 330
+                    new VertexShader(
+                        @"#version 330
                     layout(location = 0) in vec4 position;
                     layout(location = 1) in vec2 uv;
                     uniform mat4 mtxMdl;
@@ -56,8 +57,8 @@ namespace SpotLight
                     void main(){
                         fragUV = uv;
                         gl_Position = mtxCam*mtxMdl*position;
-                    }"
-                ),control);
+                    }"), control);
+            #endregion
 
             DefaultTetxure = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
@@ -158,7 +159,6 @@ namespace SpotLight
                         if (texRef.Texture != null)
                         {
                             textures[shapeIndex] = UploadTexture(texRef.Texture);
-                            
                         }
                         else
                         {
