@@ -10,6 +10,9 @@ using static BYAML.ByamlNodeWriter;
 
 namespace SpotLight.EditorDrawables
 {
+    /// <summary>
+    /// Interface object for SM3DW Objects
+    /// </summary>
     interface I3dWorldObject : IEditableObject
     {
          void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);

@@ -31,7 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelEditorForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.sceneListView1 = new GL_EditorFramework.SceneListView();
+            this.MainSceneListView = new GL_EditorFramework.SceneListView();
             this.lblCurrentObject = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
             this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
@@ -85,7 +85,7 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.sceneListView1);
+            this.splitContainer2.Panel1.Controls.Add(this.MainSceneListView);
             // 
             // splitContainer2.Panel2
             // 
@@ -96,15 +96,15 @@
             this.splitContainer2.SplitterDistance = 245;
             this.splitContainer2.TabIndex = 1;
             // 
-            // sceneListView1
+            // MainSceneListView
             // 
-            this.sceneListView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.sceneListView1.Enabled = false;
-            this.sceneListView1.Location = new System.Drawing.Point(0, 0);
-            this.sceneListView1.Name = "sceneListView1";
-            this.sceneListView1.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("sceneListView1.RootLists")));
-            this.sceneListView1.Size = new System.Drawing.Size(260, 245);
-            this.sceneListView1.TabIndex = 0;
+            this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainSceneListView.Enabled = false;
+            this.MainSceneListView.Location = new System.Drawing.Point(0, 0);
+            this.MainSceneListView.Name = "MainSceneListView";
+            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
+            this.MainSceneListView.Size = new System.Drawing.Size(260, 245);
+            this.MainSceneListView.TabIndex = 0;
             // 
             // lblCurrentObject
             // 
@@ -241,7 +241,7 @@
             // 
             this.SpotlightToolStripStatusLabel.Name = "SpotlightToolStripStatusLabel";
             this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
-            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.0.0";
+            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.1.0";
             // 
             // LevelEditorForm
             // 
@@ -278,7 +278,7 @@
 
         private GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private GL_EditorFramework.SceneListView sceneListView1;
+        private GL_EditorFramework.SceneListView MainSceneListView;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Label lblCurrentObject;
         private GL_EditorFramework.ObjectUIControl ObjectUIControl;

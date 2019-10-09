@@ -19,11 +19,17 @@ namespace SpotLight.EditorDrawables
 {
     class SM3DWorldScene : CategorizedScene
     {
+        /// <summary>
+        /// Creates a blank SM3DW Scene
+        /// </summary>
         public SM3DWorldScene()
         {
             
         }
-
+        /// <summary>
+        /// Prepares to draw models
+        /// </summary>
+        /// <param name="control">The GL_Control that's currently in use</param>
         public override void Prepare(GL_ControlModern control)
         {
             BfresModelCache.Initialize(control);
@@ -32,7 +38,10 @@ namespace SpotLight.EditorDrawables
         }
 
         public List<I3dWorldObject> linkedObjects = new List<I3dWorldObject>();
-
+        /// <summary>
+        /// Gets all the editable objects
+        /// </summary>
+        /// <returns><see cref="IEnumerable{IEditableObject}"/></returns>
         protected override IEnumerable<IEditableObject> GetObjects()
         {
             foreach (List<IEditableObject> objects in categories.Values)
@@ -44,7 +53,9 @@ namespace SpotLight.EditorDrawables
             foreach (I3dWorldObject obj in linkedObjects)
                 yield return obj;
         }
-
+        /// <summary>
+        /// Deletes the selected object from the level
+        /// </summary>
         public override void DeleteSelected()
         {
             DeletionManager manager = new DeletionManager();
@@ -60,7 +71,12 @@ namespace SpotLight.EditorDrawables
 
             _ExecuteDeletion(manager);
         }
-
+        /// <summary>
+        /// Saves the scene to a BYAML for saving
+        /// </summary>
+        /// <param name="writer">The current BYAML Node Writer</param>
+        /// <param name="levelName">The name of the Level</param>
+        /// <param name="categoryName">Category to save in</param>
         public void Save(ByamlNodeWriter writer, string levelName, string categoryName)
         {
             ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(categories);

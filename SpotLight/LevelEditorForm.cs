@@ -28,8 +28,8 @@ namespace SpotLight
             LevelGLControlModern.CameraDistance = 20;
             LevelGLControlModern.KeyDown += LevelGL_ControlModern_KeyDown;
             
-            sceneListView1.SelectionChanged += SceneListView1_SelectionChanged;
-            sceneListView1.ItemsMoved += SceneListView1_ItemsMoved;
+            MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
+            MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
 
             //Properties.Settings.Default.Reset();
 
@@ -69,30 +69,30 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         }
 
 
-        private void SceneListView1_ListExited(object sender, ListEventArgs e)
+        private void MainSceneListView_ListExited(object sender, ListEventArgs e)
         {
             currentLevel.scene.CurrentList = e.List;
             //fetch availible properties for list
             ObjectUIControl.CurrentObjectUIProvider = currentLevel.scene.GetObjectUIProvider();
         }
 
-        private void SceneListView1_ItemsMoved(object sender, ItemsMovedEventArgs e)
+        private void MainSceneListView_ItemsMoved(object sender, ItemsMovedEventArgs e)
         {
-            currentLevel.scene.ReorderObjects(sceneListView1.CurrentList, e.OriginalIndex, e.Count, e.Offset);
+            currentLevel.scene.ReorderObjects(MainSceneListView.CurrentList, e.OriginalIndex, e.Count, e.Offset);
             e.Handled = true;
             LevelGLControlModern.Refresh();
         }
 
         private void Scene_ListChanged(object sender, GL_EditorFramework.EditorDrawables.ListChangedEventArgs e)
         {
-            if (e.Lists.Contains(sceneListView1.CurrentList))
+            if (e.Lists.Contains(MainSceneListView.CurrentList))
             {
-                sceneListView1.UpdateAutoScrollHeight();
-                sceneListView1.Refresh();
+                MainSceneListView.UpdateAutoScrollHeight();
+                MainSceneListView.Refresh();
             }
         }
 
-        private void SceneListView1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void MainSceneListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (currentLevel == null)
                 return;
@@ -120,7 +120,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
 
                 currentLevel.scene.DeleteSelected();
                 LevelGLControlModern.Refresh();
-                sceneListView1.UpdateAutoScrollHeight();
+                MainSceneListView.UpdateAutoScrollHeight();
                 Scene_SelectionChanged(this, null);
             }
         }
@@ -142,17 +142,24 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 lblCurrentObject.Text = currentLevel.scene.SelectedObjects.First().ToString() + " selected";
                 SpotlightToolStripStatusLabel.Text = $"Selected {currentLevel.scene.SelectedObjects.First().ToString()}";
             }
-            sceneListView1.Refresh();
+            MainSceneListView.Refresh();
 
             ObjectUIControl.CurrentObjectUIProvider = currentLevel.scene.GetObjectUIProvider();
         }
+
+        private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
+        {
+            Debugger.Break();
+        }
+
+        #region Toolstrip Items
 
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
             if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
             {
-                if (SM3DWorldLevel.TryOpen(ofd.FileName, LevelGLControlModern, sceneListView1, out SM3DWorldLevel level))
+                if (SM3DWorldLevel.TryOpen(ofd.FileName, LevelGLControlModern, MainSceneListView, out SM3DWorldLevel level))
                 {
                     SpotlightToolStripProgressBar.Maximum = 100;
                     SpotlightToolStripProgressBar.Value = 0;
@@ -161,18 +168,14 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                     level.scene.SelectionChanged += Scene_SelectionChanged;
                     level.scene.ListChanged += Scene_ListChanged;
 
-                    sceneListView1.Enabled = true;
-                    sceneListView1.SetRootList("ObjectList");
-                    sceneListView1.ListExited += SceneListView1_ListExited;
+                    MainSceneListView.Enabled = true;
+                    MainSceneListView.SetRootList("ObjectList");
+                    MainSceneListView.ListExited += MainSceneListView_ListExited;
+                    MainSceneListView.Refresh();
                     SpotlightToolStripProgressBar.Value = 100;
                     SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
                 }
             }
-        }
-
-        private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
-        {
-            Debugger.Break();
         }
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -199,7 +202,10 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         {
             SettingsForm SF = new SettingsForm();
             SF.ShowDialog();
+            SpotlightToolStripStatusLabel.Text = "Settings Saved.";
         }
+
+        //----------------------------------------------------------------------------
 
         private void UndoToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -216,5 +222,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             currentLevel.scene.Redo();
             LevelGLControlModern.Refresh();
         }
+
+        #endregion
     }
 }

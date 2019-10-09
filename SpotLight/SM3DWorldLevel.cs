@@ -21,14 +21,33 @@ namespace SpotLight
 {
     class SM3DWorldLevel
     {
+        /// <summary>
+        /// Name of the Level
+        /// </summary>
         readonly string levelName;
+        /// <summary>
+        /// Category that this level belongs to (Map, Design, Sound)
+        /// </summary>
         readonly string categoryName;
+        /// <summary>
+        /// Filename (includes the path)
+        /// </summary>
         readonly string fileName;
-
+        /// <summary>
+        /// Any extra files that may be inside the map
+        /// </summary>
         Dictionary<string, BymlFileData> extraFiles = new Dictionary<string, BymlFileData>();
 
         public SM3DWorldScene scene;
 
+        /// <summary>
+        /// Creates a new SM3DW level from a file.
+        /// </summary>
+        /// <param name="fileName">Filepath to the .szs</param>
+        /// <param name="levelName">Name of the Level</param>
+        /// <param name="categoryName">Category that this file belongs to</param>
+        /// <param name="scene">The current SM3DW Scene</param>
+        /// <param name="sceneListView">The SceneListView to put the objects on</param>
         private SM3DWorldLevel(string fileName, string levelName, string categoryName, SM3DWorldScene scene, SceneListView sceneListView)
         {
             this.levelName = levelName;
@@ -63,6 +82,14 @@ namespace SpotLight
             }
         }
 
+        /// <summary>
+        /// Attempts to open a SM3DW level (.szs)
+        /// </summary>
+        /// <param name="fileName">Filepath to the .szs</param>
+        /// <param name="control">The OpenGL Control currently in use</param>
+        /// <param name="sceneListView">The SceneListView to put the objects on</param>
+        /// <param name="level">A Complete SM3DW level</param>
+        /// <returns>true if the load succeeded, false if it failed</returns>
         public static bool TryOpen(string fileName, GL_ControlBase control, SceneListView sceneListView, out SM3DWorldLevel level)
         {
             SM3DWorldScene scene;
@@ -105,6 +132,10 @@ namespace SpotLight
             return true;
         }
 
+        /// <summary>
+        /// Saves the level over the original file
+        /// </summary>
+        /// <returns>true if the save succeeded, false if it failed</returns>
         public bool Save()
         {
                 SarcData sarcData = new SarcData()
@@ -137,6 +168,10 @@ namespace SpotLight
                 return true;
         }
 
+        /// <summary>
+        /// Saves the level to a new file (.szs)
+        /// </summary>
+        /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
         public bool SaveAs()
         {
             SaveFileDialog sfd = new SaveFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
@@ -175,6 +210,10 @@ namespace SpotLight
                 return false;
         }
 
+        /// <summary>
+        /// Returns the name of the level
+        /// </summary>
+        /// <returns></returns>
         public override string ToString() => $"{levelName}";
     }
 }

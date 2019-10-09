@@ -88,7 +88,10 @@ namespace SpotLight.EditorDrawables
         public Dictionary<string, dynamic> properties;
 
         private static readonly Dictionary<string, List<I3dWorldObject>> EMPTY_LINKS = new Dictionary<string, List<I3dWorldObject>>();
-
+        /// <summary>
+        /// Gets the Object Name
+        /// </summary>
+        /// <returns>The name of the Object</returns>
         public override string ToString() => ObjectName;
 
         public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest = false)
@@ -144,7 +147,12 @@ namespace SpotLight.EditorDrawables
                     objNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
             }
         }
-
+        /// <summary>
+        /// Create a General SM3DW Object
+        /// </summary>
+        /// <param name="objectEntry">Unknown</param>
+        /// <param name="linkedObjs">List of objects that are linked with this object</param>
+        /// <param name="objectsByReference">Unknown</param>
         public General3dWorldObject(ByamlIterator.ArrayEntry objectEntry, List<I3dWorldObject> linkedObjs, Dictionary<long, I3dWorldObject> objectsByReference) : base(Vector3.Zero, Quaternion.Identity, Vector3.One)
         {
             properties = new Dictionary<string, dynamic>();
@@ -245,7 +253,12 @@ namespace SpotLight.EditorDrawables
             if (links.Count == 0)
                 links = null;
         }
-
+        /// <summary>
+        /// Deletes this object from the Scene
+        /// </summary>
+        /// <param name="manager">Unknown</param>
+        /// <param name="list">Unknown</param>
+        /// <param name="currentList">Unknown</param>
         public override void DeleteSelected(EditorSceneBase.DeletionManager manager, IList list, IList currentList)
         {
             base.DeleteSelected(manager, list, currentList);
@@ -259,7 +272,10 @@ namespace SpotLight.EditorDrawables
             //    }
             //}
         }
-
+        /// <summary>
+        /// Prepares to draw this Object
+        /// </summary>
+        /// <param name="control">The GL_Control to draw to</param>
         public override void Prepare(GL_ControlModern control)
         {
             string mdlName = ModelName ?? ObjectName;
@@ -280,7 +296,12 @@ namespace SpotLight.EditorDrawables
             }
             base.Prepare(control);
         }
-
+        /// <summary>
+        /// Draws the model to the given GL_Control
+        /// </summary>
+        /// <param name="control">The GL_Control to draw to</param>
+        /// <param name="pass">The current pass of drawing</param>
+        /// <param name="editorScene">The current Editor Scene</param>
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
             if (pass == Pass.TRANSPARENT)

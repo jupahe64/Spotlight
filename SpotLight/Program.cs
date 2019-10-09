@@ -19,12 +19,14 @@ namespace SpotLight
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new LevelEditorForm());
         }
-
-        public static bool GamePathIsValid()
-        {
-            return Directory.Exists(Properties.Settings.Default.GamePath + "\\ObjectData") && Directory.Exists(Properties.Settings.Default.GamePath + "\\StageData");
-        }
-
+        /// <summary>
+        /// Checks the game path to see if it is a valid SM3DW path
+        /// </summary>
+        /// <returns>true if the path is valid, false if it's invalid</returns>
+        public static bool GamePathIsValid() => Directory.Exists(Properties.Settings.Default.GamePath + "\\ObjectData") && Directory.Exists(Properties.Settings.Default.GamePath + "\\StageData");
+        /// <summary>
+        /// The path that the game files are kept at.<para/>This is the path that should contain the StageData and ObjectData folders.
+        /// </summary>
         public static string GamePath
         {
             get => Properties.Settings.Default.GamePath;
@@ -34,15 +36,13 @@ namespace SpotLight
                 Properties.Settings.Default.Save();
             }
         }
-
-        public static string ObjectDataPath
-        {
-            get => Properties.Settings.Default.GamePath + "\\ObjectData\\";
-        }
-
-        public static string StageDataPath
-        {
-            get => Properties.Settings.Default.GamePath + "\\StageData\\";
-        }
+        /// <summary>
+        /// Returns the ObjectData path
+        /// </summary>
+        public static string ObjectDataPath => Properties.Settings.Default.GamePath + "\\ObjectData\\";
+        /// <summary>
+        /// Returns the StageData path
+        /// </summary>
+        public static string StageDataPath => Properties.Settings.Default.GamePath + "\\StageData\\";
     }
 }

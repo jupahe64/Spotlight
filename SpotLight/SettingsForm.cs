@@ -53,7 +53,7 @@ namespace SpotLight
             GamePathTextBox.Text = Program.GamePath;
         }
 
-        private void GamePathTextBox_TextChanged(object sender, EventArgs e) => GamePathTextBox.Text = Program.GamePath;
+        private void GamePathTextBox_TextChanged(object sender, EventArgs e) => Program.GamePath = GamePathTextBox.Text;
 
         private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
         {

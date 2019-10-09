@@ -289,10 +289,14 @@ namespace SpotLight
                     break;
             }
         }
-        
+        /// <summary>
+        /// Uploads a texture to the OpenGL texture units
+        /// </summary>
+        /// <param name="texture">Texture to upload data from</param>
+        /// <returns>Integer ID of the uploaded texture</returns>
         private static int UploadTexture(Texture texture)
         {
-            #region deswizzle
+            #region Deswizzle
             uint bpp = GX2.surfaceGetBitsPerPixel((uint)texture.Format) >> 3;
 
             GX2.GX2Surface surf = new GX2.GX2Surface
