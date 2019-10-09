@@ -20,13 +20,13 @@ namespace SpotLight
 {
     public partial class LevelEditorForm : Form
     {
-        SM3DWorldLevel currenLevel;
+        SM3DWorldLevel currentLevel;
         public LevelEditorForm()
         {
             InitializeComponent();
             
-            gL_ControlModern1.CameraDistance = 20;
-            gL_ControlModern1.KeyDown += GL_ControlModern1_KeyDown;
+            LevelGLControlModern.CameraDistance = 20;
+            LevelGLControlModern.KeyDown += LevelGL_ControlModern_KeyDown;
             
             sceneListView1.SelectionChanged += SceneListView1_SelectionChanged;
             sceneListView1.ItemsMoved += SceneListView1_ItemsMoved;
@@ -68,41 +68,19 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             }
         }
 
-        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
-            if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
-            {
-                if(SM3DWorldLevel.TryOpen(ofd.FileName, gL_ControlModern1, sceneListView1, out SM3DWorldLevel level))
-                {
-                    SpotlightToolStripProgressBar.Maximum = 100;
-                    SpotlightToolStripProgressBar.Value = 0;
-                    currenLevel = level;
-                    SpotlightToolStripProgressBar.Value = 50;
-                    level.scene.SelectionChanged += Scene_SelectionChanged;
-                    level.scene.ListChanged += Scene_ListChanged;
-
-                    sceneListView1.Enabled = true;
-                    sceneListView1.SetRootList("ObjectList");
-                    sceneListView1.ListExited += SceneListView1_ListExited;
-                    SpotlightToolStripProgressBar.Value = 100;
-                    SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
-                }
-            }
-        }
 
         private void SceneListView1_ListExited(object sender, ListEventArgs e)
         {
-            currenLevel.scene.CurrentList = e.List;
+            currentLevel.scene.CurrentList = e.List;
             //fetch availible properties for list
-            ObjectUIControl.CurrentObjectUIProvider = currenLevel.scene.GetObjectUIProvider();
+            ObjectUIControl.CurrentObjectUIProvider = currentLevel.scene.GetObjectUIProvider();
         }
 
         private void SceneListView1_ItemsMoved(object sender, ItemsMovedEventArgs e)
         {
-            currenLevel.scene.ReorderObjects(sceneListView1.CurrentList, e.OriginalIndex, e.Count, e.Offset);
+            currentLevel.scene.ReorderObjects(sceneListView1.CurrentList, e.OriginalIndex, e.Count, e.Offset);
             e.Handled = true;
-            gL_ControlModern1.Refresh();
+            LevelGLControlModern.Refresh();
         }
 
         private void Scene_ListChanged(object sender, GL_EditorFramework.EditorDrawables.ListChangedEventArgs e)
@@ -116,32 +94,32 @@ Please select the folder than contains these folders", "Introduction", MessageBo
 
         private void SceneListView1_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (currenLevel == null)
+            if (currentLevel == null)
                 return;
 
             foreach (object obj in e.ItemsToDeselect)
-                currenLevel.scene.ToogleSelected((EditableObject)obj, false);
+                currentLevel.scene.ToogleSelected((EditableObject)obj, false);
 
             foreach (object obj in e.ItemsToSelect)
-                currenLevel.scene.ToogleSelected((EditableObject)obj, true);
+                currentLevel.scene.ToogleSelected((EditableObject)obj, true);
 
             e.Handled = true;
-            gL_ControlModern1.Refresh();
+            LevelGLControlModern.Refresh();
 
             Scene_SelectionChanged(this, null);
         }
 
-        private void GL_ControlModern1_KeyDown(object sender, KeyEventArgs e)
+        private void LevelGL_ControlModern_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Delete && currenLevel!=null)
+            if (e.KeyCode == Keys.Delete && currentLevel!=null)
             {
                 string DeletedObjects = "";
-                for (int i = 0; i < currenLevel.scene.SelectedObjects.Count; i++)
-                    DeletedObjects += currenLevel.scene.SelectedObjects.ElementAt(i).ToString()+(i+1 == currenLevel.scene.SelectedObjects.Count ? ".":", ");
+                for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
+                    DeletedObjects += currentLevel.scene.SelectedObjects.ElementAt(i).ToString()+(i+1 == currentLevel.scene.SelectedObjects.Count ? ".":", ");
                 SpotlightToolStripStatusLabel.Text = $"Deleted {DeletedObjects}";
 
-                currenLevel.scene.DeleteSelected();
-                gL_ControlModern1.Refresh();
+                currentLevel.scene.DeleteSelected();
+                LevelGLControlModern.Refresh();
                 sceneListView1.UpdateAutoScrollHeight();
                 Scene_SelectionChanged(this, null);
             }
@@ -149,49 +127,72 @@ Please select the folder than contains these folders", "Introduction", MessageBo
 
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
-            if (currenLevel.scene.SelectedObjects.Count > 1)
+            if (currentLevel.scene.SelectedObjects.Count > 1)
             { 
                 lblCurrentObject.Text = "Multiple objects selected";
                 string SelectedObjects = "";
-                for (int i = 0; i < currenLevel.scene.SelectedObjects.Count; i++)
-                    SelectedObjects += currenLevel.scene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currenLevel.scene.SelectedObjects.Count ? "." : ", ");
+                for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
+                    SelectedObjects += currentLevel.scene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currentLevel.scene.SelectedObjects.Count ? "." : ", ");
                 SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
             }
-            else if (currenLevel.scene.SelectedObjects.Count == 0)
+            else if (currentLevel.scene.SelectedObjects.Count == 0)
                 lblCurrentObject.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected";
             else
             {
-                lblCurrentObject.Text = currenLevel.scene.SelectedObjects.First().ToString() + " selected";
-                SpotlightToolStripStatusLabel.Text = $"Selected {currenLevel.scene.SelectedObjects.First().ToString()}";
+                lblCurrentObject.Text = currentLevel.scene.SelectedObjects.First().ToString() + " selected";
+                SpotlightToolStripStatusLabel.Text = $"Selected {currentLevel.scene.SelectedObjects.First().ToString()}";
             }
             sceneListView1.Refresh();
 
-            ObjectUIControl.CurrentObjectUIProvider = currenLevel.scene.GetObjectUIProvider();
+            ObjectUIControl.CurrentObjectUIProvider = currentLevel.scene.GetObjectUIProvider();
         }
 
-        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currenLevel == null)
-                return;
+            OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
+            if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
+            {
+                if (SM3DWorldLevel.TryOpen(ofd.FileName, LevelGLControlModern, sceneListView1, out SM3DWorldLevel level))
+                {
+                    SpotlightToolStripProgressBar.Maximum = 100;
+                    SpotlightToolStripProgressBar.Value = 0;
+                    currentLevel = level;
+                    SpotlightToolStripProgressBar.Value = 50;
+                    level.scene.SelectionChanged += Scene_SelectionChanged;
+                    level.scene.ListChanged += Scene_ListChanged;
 
-            currenLevel.Save();
-            SpotlightToolStripStatusLabel.Text = "Level saved!";
-        }
-
-        private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currenLevel == null)
-                return;
-
-            if (currenLevel.SaveAs())
-                SpotlightToolStripStatusLabel.Text = "Level saved!";
-            else
-                SpotlightToolStripStatusLabel.Text = "Save Cancelled or Failed.";
+                    sceneListView1.Enabled = true;
+                    sceneListView1.SetRootList("ObjectList");
+                    sceneListView1.ListExited += SceneListView1_ListExited;
+                    SpotlightToolStripProgressBar.Value = 100;
+                    SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
+                }
+            }
         }
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
             Debugger.Break();
+        }
+
+        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel == null)
+                return;
+
+            currentLevel.Save();
+            SpotlightToolStripStatusLabel.Text = "Level saved!";
+        }
+
+        private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel == null)
+                return;
+
+            if (currentLevel.SaveAs())
+                SpotlightToolStripStatusLabel.Text = "Level saved!";
+            else
+                SpotlightToolStripStatusLabel.Text = "Save Cancelled or Failed.";
         }
 
         private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -202,18 +203,18 @@ Please select the folder than contains these folders", "Introduction", MessageBo
 
         private void UndoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currenLevel == null)
+            if (currentLevel == null)
                 return;
-            currenLevel.scene.Undo();
-            gL_ControlModern1.Refresh();
+            currentLevel.scene.Undo();
+            LevelGLControlModern.Refresh();
         }
 
         private void RedoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currenLevel == null)
+            if (currentLevel == null)
                 return;
-            currenLevel.scene.Redo();
-            gL_ControlModern1.Refresh();
+            currentLevel.scene.Redo();
+            LevelGLControlModern.Refresh();
         }
     }
 }
