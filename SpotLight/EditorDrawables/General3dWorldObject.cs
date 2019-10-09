@@ -22,6 +22,9 @@ namespace SpotLight.EditorDrawables
     /// </summary>
     class General3dWorldObject : TransformableObject, I3dWorldObject
     {
+        public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
+        public new static Vector4 hoverColor = new Vector4(EditableObject.hoverColor.Xyz, 0.125f);
+
         /// <summary>
         /// Converts a <see cref="Vector3"/> to a <see cref="Dictionary"/>
         /// </summary>
@@ -318,6 +321,19 @@ namespace SpotLight.EditorDrawables
                 Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale)) *
                 Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+
+                Vector4 highlightColor;
+
+                if (Selected)
+                    highlightColor = selectColor;
+                else if(hovered)
+                    highlightColor = hoverColor;
+                else 
+                    highlightColor = Vector4.Zero;
+
+                BfresModelCache.TryDraw(ModelName ?? ObjectName, control, pass, highlightColor);
+
+                return;
             }
             else
             {
@@ -326,9 +342,6 @@ namespace SpotLight.EditorDrawables
                 Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }
-
-            if (BfresModelCache.TryDraw(ModelName ?? ObjectName, control, pass))
-                return;
 
             Vector4 blockColor;
             Vector4 lineColor;

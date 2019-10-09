@@ -8,6 +8,7 @@ using FileFormats3DW;
 using GL_EditorFramework;
 using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using Syroot.BinaryData;
 using Syroot.Maths;
@@ -42,9 +43,12 @@ namespace SpotLight
                     new FragmentShader(
                         @"#version 330
                     uniform sampler2D tex;
+                    uniform vec4 highlight_color;
                     in vec2 fragUV;
                     void main(){
-                        gl_FragColor = texture(tex,fragUV);
+                        vec4 hc_rgb = vec4(highlight_color.xyz,1);
+                        float hc_a   = highlight_color.w;
+                        gl_FragColor = texture(tex,fragUV) * (1-hc_a) + hc_rgb * hc_a;
                     }"),
                     new VertexShader(
                         @"#version 330
@@ -89,11 +93,11 @@ namespace SpotLight
                 cache[modelName] = new CachedModel(stream, textureArc, control);
         }
 
-        public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass)
+        public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass, OpenTK.Vector4 highlightColor)
         {
             if (cache.ContainsKey(modelName))
             {
-                cache[modelName].Draw(control, pass);
+                cache[modelName].Draw(control, pass, highlightColor);
                 return true;
             }
             else
@@ -212,7 +216,7 @@ namespace SpotLight
                 }
             }
 
-            public void Draw(GL_ControlModern control, Pass pass)
+            public void Draw(GL_ControlModern control, Pass pass, OpenTK.Vector4 highlightColor)
             {
                 if (pass == Pass.PICKING)
                 {
@@ -222,6 +226,8 @@ namespace SpotLight
                 else
                 {
                     control.CurrentShader = BfresShaderProgram;
+
+                    control.CurrentShader.SetVector4("highlight_color", highlightColor);
 
                     GL.ActiveTexture(TextureUnit.Texture0);
                 }
