@@ -339,8 +339,8 @@ namespace SpotLight.EditorDrawables
                     highlightColor = Vector4.Zero;
 
                 BfresModelCache.TryDraw(ModelName ?? ObjectName, control, pass, highlightColor);
-
-                return;
+                
+                goto RENDER_LINKS;
             }
             else
             {
@@ -370,10 +370,15 @@ namespace SpotLight.EditorDrawables
 
             Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
 
+            RENDER_LINKS:
             control.ResetModelMatrix();
 
-            if (links != null)
+            if (links != null && pass == Pass.OPAQUE)
             {
+                control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+                control.CurrentShader.SetVector4("color", Vector4.One);
+
+                GL.LineWidth(1);
                 GL.Begin(PrimitiveType.Lines);
                 foreach (List<I3dWorldObject> link in links.Values)
                 {
@@ -384,6 +389,7 @@ namespace SpotLight.EditorDrawables
                     }
                 }
                 GL.End();
+                GL.LineWidth(2);
             }
         }
 
