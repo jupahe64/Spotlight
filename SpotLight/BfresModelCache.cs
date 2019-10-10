@@ -365,12 +365,14 @@ namespace SpotLight
                     Bone bone = bones[i];
                     ret[i] = Matrix4.CreateScale(new Vector3(bone.Scale.X, bone.Scale.Y, bone.Scale.Z));
                     
-                    while(bone.ParentIndex != 0xFFFF)
+                    while(true)
                     {
                         ret[i] = ret[i] * 
                               Matrix4.CreateFromQuaternion(Quaternion.FromEulerAngles(bone.Rotation.X, bone.Rotation.Y, bone.Rotation.Z)) *
                               Matrix4.CreateTranslation(new Vector3(bone.Position.X, bone.Position.Y, bone.Position.Z));
 
+                        if (bone.ParentIndex == 0xFFFF)
+                            break;
                         bone = bones[bone.ParentIndex];
                     }
                 }
