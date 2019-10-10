@@ -25,6 +25,8 @@ namespace SpotLight.EditorDrawables
         public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
         public new static Vector4 hoverColor = new Vector4(EditableObject.hoverColor.Xyz, 0.125f);
 
+        protected static Vector4 LinkColor = new Vector4(1f, 0.25f, 0f, 1f);
+
         /// <summary>
         /// Converts a <see cref="Vector3"/> to a <see cref="Dictionary"/>
         /// </summary>
@@ -82,6 +84,11 @@ namespace SpotLight.EditorDrawables
         /// Internal name of this object
         /// </summary>
         public string ClassName;
+
+        /// <summary>
+        /// All places where this object is linked to
+        /// </summary>
+        public List<(string, I3dWorldObject)> LinkDestinations { get; } = new List<(string, I3dWorldObject)>();
 
         Vector3 displayTranslation;
         Vector3 displayRotation;
@@ -181,11 +188,15 @@ namespace SpotLight.EditorDrawables
                             links.Add(link.Key, new List<I3dWorldObject>());
                             foreach (ByamlIterator.ArrayEntry linked in link.IterArray())
                             {
-                                if(objectsByReference.ContainsKey(linked.Position))
+                                if (objectsByReference.ContainsKey(linked.Position))
+                                {
                                     links[link.Key].Add(objectsByReference[linked.Position]);
+                                    objectsByReference[linked.Position].LinkDestinations.Add((link.Key, this));
+                                }
                                 else
                                 {
-                                    I3dWorldObject obj = new LinkedObj(linked, linkedObjs, objectsByReference);
+                                    I3dWorldObject obj = new General3dWorldObject(linked, linkedObjs, objectsByReference);
+                                    obj.LinkDestinations.Add((link.Key, this));
                                     links[link.Key].Add(obj);
                                     linkedObjs.Add(obj);
                                 }
@@ -285,10 +296,6 @@ namespace SpotLight.EditorDrawables
             if(File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
             {
                 SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
-                if (mdlName == "Kuribo")
-                {
-
-                }
 
                 if(objArc.Files.ContainsKey(mdlName + ".bfres"))
                 {
@@ -345,20 +352,21 @@ namespace SpotLight.EditorDrawables
 
             Vector4 blockColor;
             Vector4 lineColor;
+            Vector4 col = LinkDestinations.Count > 0 ? LinkColor : Color;
 
             if (hovered && Selected)
                 lineColor = hoverColor;
             else if (hovered || Selected)
                 lineColor = selectColor;
             else
-                lineColor = Color;
+                lineColor = col;
 
             if (hovered && Selected)
-                blockColor = Color * 0.5f + hoverColor * 0.5f;
+                blockColor = col * 0.5f + hoverColor * 0.5f;
             else if (hovered || Selected)
-                blockColor = Color * 0.5f + selectColor * 0.5f;
+                blockColor = col * 0.5f + selectColor * 0.5f;
             else
-                blockColor = Color;
+                blockColor = col;
 
             Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
 
@@ -382,68 +390,6 @@ namespace SpotLight.EditorDrawables
         public Vector3 GetLinkingPoint(I3dWorldObject other)
         {
             return Position;
-        }
-    }
-
-    class LinkedObj : General3dWorldObject
-    {
-        protected new static Vector4 Color = new Vector4(1f, 0.25f, 0f, 1f);
-
-        public LinkedObj(ByamlIterator.ArrayEntry objectEntry, List<I3dWorldObject> linkedObjs, Dictionary<long, I3dWorldObject> objectsByReference)
-            : base(objectEntry, linkedObjs, objectsByReference)
-        {
-
-        }
-
-        public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
-        {
-            if (pass == Pass.TRANSPARENT)
-                return;
-
-            if (!editorScene.ShouldBeDrawn(this))
-                return;
-
-            bool hovered = editorScene.Hovered == this;
-
-            control.UpdateModelMatrix(
-                Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale) * 0.5f) *
-                Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
-                Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
-
-            Vector4 blockColor;
-            Vector4 lineColor;
-
-            if (hovered && Selected)
-                lineColor = hoverColor;
-            else if (hovered || Selected)
-                lineColor = selectColor;
-            else
-                lineColor = Color;
-
-            if (hovered && Selected)
-                blockColor = Color * 0.5f + hoverColor * 0.5f;
-            else if (hovered || Selected)
-                blockColor = Color * 0.5f + selectColor * 0.5f;
-            else
-                blockColor = Color;
-
-            Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
-
-            control.ResetModelMatrix();
-
-            if (links != null)
-            {
-                GL.Begin(PrimitiveType.Lines);
-                foreach (List<I3dWorldObject> link in links.Values)
-                {
-                    foreach (I3dWorldObject obj in link)
-                    {
-                        GL.Vertex3(Position);
-                        GL.Vertex3(obj.GetLinkingPoint(this));
-                    }
-                }
-                GL.End();
-            }
         }
     }
 }
