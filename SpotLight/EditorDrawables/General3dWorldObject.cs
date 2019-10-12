@@ -337,9 +337,12 @@ namespace SpotLight.EditorDrawables
             if (BfresModelCache.Contains(ModelName ?? ObjectName))
             {
                 control.UpdateModelMatrix(
-                Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale)) *
-                new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
-                Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+                    Matrix4.CreateScale(displayScale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(displayRotation)) *
+                    Matrix4.CreateTranslation(displayTranslation) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale)) *
+                    new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
+                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
 
                 Vector4 highlightColor;
 
@@ -357,9 +360,12 @@ namespace SpotLight.EditorDrawables
             else
             {
                 control.UpdateModelMatrix(
-                Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale) * 0.5f) *
-                new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
-                Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+                    Matrix4.CreateScale(displayScale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(displayRotation)) *
+                    Matrix4.CreateTranslation(displayTranslation) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale) * 0.5f) *
+                    new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
+                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }
 
             Vector4 blockColor;
