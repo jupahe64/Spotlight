@@ -167,6 +167,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                     SpotlightToolStripProgressBar.Value = 50;
                     level.scene.SelectionChanged += Scene_SelectionChanged;
                     level.scene.ListChanged += Scene_ListChanged;
+                    level.scene.ObjectsMoved += Scene_ObjectsMoved;
 
                     MainSceneListView.Enabled = true;
                     MainSceneListView.SetRootList("ObjectList");
@@ -176,6 +177,11 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                     SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
                 }
             }
+        }
+
+        private void Scene_ObjectsMoved(object sender, EventArgs e)
+        {
+            ObjectUIControl.Refresh();
         }
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
