@@ -14,6 +14,8 @@ using System.Text;
 using System.Threading.Tasks;
 using SZS;
 using static BYAML.ByamlNodeWriter;
+using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
+using WinInput = System.Windows.Input;
 
 namespace SpotLight.EditorDrawables
 {
@@ -143,7 +145,7 @@ namespace SpotLight.EditorDrawables
             }
 
             objNode.AddDynamicValue("ModelName", ModelName);
-            objNode.AddDynamicValue("Rotate", Vector3ToDict(rotation.ToEulerAnglesDeg()), true);
+            objNode.AddDynamicValue("Rotate", Vector3ToDict(rotation), true);
             objNode.AddDynamicValue("Scale", Vector3ToDict(scale), true);
             objNode.AddDynamicValue("Translate", Vector3ToDict(Position, 100f), true);
 
@@ -163,7 +165,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="objectEntry">Unknown</param>
         /// <param name="linkedObjs">List of objects that are linked with this object</param>
         /// <param name="objectsByReference">Unknown</param>
-        public General3dWorldObject(ByamlIterator.ArrayEntry objectEntry, List<I3dWorldObject> linkedObjs, Dictionary<long, I3dWorldObject> objectsByReference) : base(Vector3.Zero, Quaternion.Identity, Vector3.One)
+        public General3dWorldObject(ByamlIterator.ArrayEntry objectEntry, List<I3dWorldObject> linkedObjs, Dictionary<long, I3dWorldObject> objectsByReference) : base(Vector3.Zero, Vector3.Zero, Vector3.One)
         {
             properties = new Dictionary<string, dynamic>();
             
@@ -208,12 +210,10 @@ namespace SpotLight.EditorDrawables
                         break;
                     case "Rotate":
                         dynamic _data = entry.Parse();
-                        rotation = Framework.QFromEulerAnglesDeg(
-                            new Vector3(
+                        rotation = new Vector3(
                             _data["X"],
                             _data["Y"],
                             _data["Z"]
-                            )
                         );
                         break;
                     case "Scale":
@@ -332,11 +332,13 @@ namespace SpotLight.EditorDrawables
 
             bool hovered = editorScene.Hovered == this;
 
-            if(BfresModelCache.Contains(ModelName ?? ObjectName))
+            Matrix3 rotMtx = Framework.Mat3FromEulerAnglesDeg(rotation);
+
+            if (BfresModelCache.Contains(ModelName ?? ObjectName))
             {
                 control.UpdateModelMatrix(
                 Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale)) *
-                Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
+                new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
 
                 Vector4 highlightColor;
@@ -356,7 +358,7 @@ namespace SpotLight.EditorDrawables
             {
                 control.UpdateModelMatrix(
                 Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale) * 0.5f) *
-                Matrix4.CreateFromQuaternion(Selected ? editorScene.CurrentAction.NewRot(rotation) : rotation) *
+                new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                 Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }
 
@@ -406,6 +408,70 @@ namespace SpotLight.EditorDrawables
         public Vector3 GetLinkingPoint(I3dWorldObject other)
         {
             return Position;
+        }
+
+        public override IObjectUIProvider GetPropertyProvider(EditorSceneBase scene) => new PropertyProvider(this, scene);
+
+        public new class PropertyProvider : IObjectUIProvider
+        {
+            Vector3 prevPos;
+            Vector3 prevRot;
+            Vector3 prevScale;
+
+            TransformableObject obj;
+            EditorSceneBase scene;
+            public PropertyProvider(TransformableObject obj, EditorSceneBase scene)
+            {
+                this.obj = obj;
+                this.scene = scene;
+            }
+
+            public void DoUI(IObjectUIControl control)
+            {
+                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+                    obj.Position = control.Vector3Input(obj.Position, "Position", 1, 16);
+                else
+                    obj.Position = control.Vector3Input(obj.Position, "Position", 0.125f, 2);
+
+                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+                    obj.rotation = control.Vector3Input(obj.rotation, "Rotation", 45, 18);
+                else
+                    obj.rotation = control.Vector3Input(obj.rotation, "Rotation", 5, 2);
+
+                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+                    obj.scale = control.Vector3Input(obj.scale, "Scale", 1, 16);
+                else
+                    obj.scale = control.Vector3Input(obj.scale, "Scale", 0.125f, 2);
+            }
+
+            public void OnValueChangeStart()
+            {
+                prevPos = obj.Position;
+                prevRot = obj.rotation;
+                prevScale = obj.scale;
+            }
+
+            public void OnValueChanged()
+            {
+                scene.Refresh();
+            }
+
+            public void OnValueSet()
+            {
+                if (prevPos != obj.Position)
+                    scene.AddToUndo(new RevertableFieldChange(SingleObject.FI_Position, obj, prevPos));
+                if (prevRot != obj.rotation)
+                    scene.AddToUndo(new RevertableFieldChange(TransformableObject.FI_Rotation, obj, prevRot));
+                if (prevScale != obj.scale)
+                    scene.AddToUndo(new RevertableFieldChange(TransformableObject.FI_Scale, obj, prevScale));
+
+                scene.Refresh();
+            }
+
+            public void UpdateProperties()
+            {
+
+            }
         }
     }
 }
