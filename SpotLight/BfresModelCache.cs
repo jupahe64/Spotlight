@@ -161,7 +161,7 @@ namespace SpotLight
                             wrapModes[shapeIndex] = ((int)GetWrapMode(mdl.Materials[shape.MaterialIndex].Samplers[0].TexSampler.ClampX),
                                 (int)GetWrapMode(mdl.Materials[shape.MaterialIndex].Samplers[0].TexSampler.ClampY));
                         }
-                        else
+                        else if (textureArc != null)
                         {
                             if (texArcCache.ContainsKey(textureArc) && texArcCache[textureArc].ContainsKey(texRef.Name))
                             {

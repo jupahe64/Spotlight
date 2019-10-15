@@ -47,6 +47,7 @@
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.LevelParametersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -203,7 +204,8 @@
             // 
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.UndoToolStripMenuItem,
-            this.RedoToolStripMenuItem});
+            this.RedoToolStripMenuItem,
+            this.LevelParametersToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
@@ -242,6 +244,13 @@
             this.SpotlightToolStripStatusLabel.Name = "SpotlightToolStripStatusLabel";
             this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
             this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.1.0";
+            // 
+            // LevelParametersToolStripMenuItem
+            // 
+            this.LevelParametersToolStripMenuItem.Name = "LevelParametersToolStripMenuItem";
+            this.LevelParametersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.LevelParametersToolStripMenuItem.Text = "Level Parameters";
+            this.LevelParametersToolStripMenuItem.Click += new System.EventHandler(this.LevelParametersToolStripMenuItem_Click);
             // 
             // LevelEditorForm
             // 
@@ -294,6 +303,7 @@
         private System.Windows.Forms.ToolStripMenuItem SaveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem UndoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem RedoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem LevelParametersToolStripMenuItem;
     }
 }
 

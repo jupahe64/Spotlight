@@ -20,6 +20,7 @@ namespace SpotLight
 {
     public partial class LevelEditorForm : Form
     {
+        LevelParameterForm LPF;
         SM3DWorldLevel currentLevel;
         public LevelEditorForm()
         {
@@ -128,19 +129,47 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
             if (currentLevel.scene.SelectedObjects.Count > 1)
-            { 
+            {
                 lblCurrentObject.Text = "Multiple objects selected";
                 string SelectedObjects = "";
+                string previousobject = "";
+                int multi = 1;
+
+                List<string> selectedobjectnames = new List<string>();
                 for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
-                    SelectedObjects += currentLevel.scene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currentLevel.scene.SelectedObjects.Count ? "." : ", ");
+                    selectedobjectnames.Add(currentLevel.scene.SelectedObjects.ElementAt(i).ToString());
+
+                selectedobjectnames.Sort();
+                for (int i = 0; i < selectedobjectnames.Count; i++)
+                {
+                    string currentobject = selectedobjectnames[i];
+                    if (previousobject == currentobject)
+                    {
+                        SelectedObjects = SelectedObjects.Remove(SelectedObjects.Length - (multi.ToString().Length + 1));
+                        multi++;
+                        SelectedObjects += $"x{multi}";
+                    }
+                    else if (multi > 1)
+                    {
+                        SelectedObjects += ", " + $"\"{currentobject}\"" + ", ";
+                        multi = 1;
+                    }
+                    else
+                    {
+                        SelectedObjects += $"\"{currentobject}\"" + ", ";
+                        multi = 1;
+                    }
+                    previousobject = currentobject;
+                }
+                SelectedObjects = multi > 1 ? SelectedObjects+"." : SelectedObjects.Remove(SelectedObjects.Length-2) + ".";
                 SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
             }
             else if (currentLevel.scene.SelectedObjects.Count == 0)
-                lblCurrentObject.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected";
+                lblCurrentObject.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected.";
             else
             {
                 lblCurrentObject.Text = currentLevel.scene.SelectedObjects.First().ToString() + " selected";
-                SpotlightToolStripStatusLabel.Text = $"Selected {currentLevel.scene.SelectedObjects.First().ToString()}";
+                SpotlightToolStripStatusLabel.Text = $"Selected \"{currentLevel.scene.SelectedObjects.First().ToString()}\".";
             }
             MainSceneListView.Refresh();
 
@@ -149,6 +178,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
+            General3dWorldObject obj = (General3dWorldObject)currentLevel.scene.SelectedObjects.First();
             Debugger.Break();
         }
 
@@ -230,5 +260,18 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         }
 
         #endregion
+
+        private void LevelParametersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Directory.Exists(Program.GamePath + "\\SystemData") && File.Exists(Program.GamePath + "\\SystemData\\StageList.szs"))
+            {
+                LPF = new LevelParameterForm();
+                LPF.Show();
+            }
+            else
+            {
+                MessageBox.Show("StageList.szs is missing from "+Program.GamePath+"\\SystemData", "Missing File",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
+        }
     }
 }
