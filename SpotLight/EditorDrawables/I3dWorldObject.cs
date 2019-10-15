@@ -17,6 +17,6 @@ namespace SpotLight.EditorDrawables
     {
          List<(string, I3dWorldObject)> LinkDestinations { get; }
          void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);
-         Vector3 GetLinkingPoint(I3dWorldObject other);
+         Vector3 GetLinkingPoint();
     }
 }

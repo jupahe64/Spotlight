@@ -389,10 +389,11 @@ namespace SpotLight.EditorDrawables
             Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
 
             RENDER_LINKS:
-            control.ResetModelMatrix();
 
             if (links != null && pass == Pass.OPAQUE)
             {
+                control.ResetModelMatrix();
+
                 control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
                 control.CurrentShader.SetVector4("color", Vector4.One);
 
@@ -402,8 +403,8 @@ namespace SpotLight.EditorDrawables
                 {
                     foreach (I3dWorldObject obj in link)
                     {
-                        GL.Vertex3(Position);
-                        GL.Vertex3(obj.GetLinkingPoint(this));
+                        GL.Vertex3(GetLinkingPoint());
+                        GL.Vertex3(obj.GetLinkingPoint());
                     }
                 }
                 GL.End();
@@ -411,9 +412,9 @@ namespace SpotLight.EditorDrawables
             }
         }
 
-        public Vector3 GetLinkingPoint(I3dWorldObject other)
+        public virtual Vector3 GetLinkingPoint()
         {
-            return Position;
+            return Position+Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(rotation), displayTranslation);
         }
 
         public override IObjectUIProvider GetPropertyProvider(EditorSceneBase scene) => new PropertyProvider(this, scene);
