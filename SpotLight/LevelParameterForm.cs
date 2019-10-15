@@ -19,18 +19,10 @@ namespace SpotLight
         {
             InitializeComponent();
             CenterToParent();
-            SarcData Data = SARC.UnpackRamN(YAZ0.Decompress(Program.GamePath + "\\SystemData\\StageList.szs"));
-            if (Data.Files.ContainsKey("StageList.byml"))
-            {
-                BymlFileData x = ByamlFile.LoadN(new MemoryStream(Data.Files["StageList.byml"]),false,Syroot.BinaryData.Endian.Big);
-                
-            }
-            else
-            {
-                MessageBox.Show("Failed to find \"StageList.byml\"", "SARC Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Close();
-            }
+            StageList = new StageList(Program.GamePath + "\\SystemData\\StageList.szs");
         }
-        
+
+        public StageList StageList;
+
     }
 }
