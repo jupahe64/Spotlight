@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using SZS;
@@ -62,9 +63,9 @@ namespace SpotLight.EditorDrawables
         public static Dictionary<string, dynamic> CreateUnitConfig(General3dWorldObject obj) => new Dictionary<string, dynamic>
         {
             ["DisplayName"]         = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
-            ["DisplayRotate"]       = Vector3ToDict(obj.displayRotation),
-            ["DisplayScale"]        = Vector3ToDict(obj.displayScale),
-            ["DisplayTranslate"]    = Vector3ToDict(obj.displayTranslation, 100f),
+            ["DisplayRotate"]       = Vector3ToDict(obj.DisplayRotation),
+            ["DisplayScale"]        = Vector3ToDict(obj.DisplayScale),
+            ["DisplayTranslate"]    = Vector3ToDict(obj.DisplayTranslation, 100f),
             ["GenerateCategory"]    = "",
             ["ParameterConfigName"] = obj.ClassName,
             ["PlacementTargetFile"] = "Map"
@@ -77,24 +78,30 @@ namespace SpotLight.EditorDrawables
         /// <summary>
         /// Base Object name. Can be used as the Model Name, if the ModelName is not overriding this.
         /// </summary>
-        public string ObjectName;
+        [PropertyCapture.Undoable]
+        public string ObjectName { get; set; }
         /// <summary>
         /// Overridden model to be used by this object
         /// </summary>
-        public string ModelName;
+        [PropertyCapture.Undoable]
+        public string ModelName { get; set; }
         /// <summary>
         /// Internal name of this object
         /// </summary>
-        public string ClassName;
+        [PropertyCapture.Undoable]
+        public string ClassName { get; set; }
 
         /// <summary>
         /// All places where this object is linked to
         /// </summary>
         public List<(string, I3dWorldObject)> LinkDestinations { get; } = new List<(string, I3dWorldObject)>();
 
-        Vector3 displayTranslation;
-        Vector3 displayRotation;
-        Vector3 displayScale;
+        [PropertyCapture.Undoable]
+        public Vector3 DisplayTranslation { get; set; }
+        [PropertyCapture.Undoable]
+        public Vector3 DisplayRotation { get; set; }
+        [PropertyCapture.Undoable]
+        public Vector3 DisplayScale { get; set; }
 
         public Dictionary<string, List<I3dWorldObject>> links = null;
         public Dictionary<string, dynamic> properties;
@@ -144,9 +151,9 @@ namespace SpotLight.EditorDrawables
                 objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
             }
 
-            objNode.AddDynamicValue("ModelName", ModelName);
-            objNode.AddDynamicValue("Rotate", Vector3ToDict(rotation), true);
-            objNode.AddDynamicValue("Scale", Vector3ToDict(scale), true);
+            objNode.AddDynamicValue("ModelName", ModelName==""?null:ModelName);
+            objNode.AddDynamicValue("Rotate", Vector3ToDict(Rotation), true);
+            objNode.AddDynamicValue("Scale", Vector3ToDict(Scale), true);
             objNode.AddDynamicValue("Translate", Vector3ToDict(Position, 100f), true);
 
             objNode.AddDynamicValue("UnitConfig", CreateUnitConfig(this), true);
@@ -206,11 +213,11 @@ namespace SpotLight.EditorDrawables
                         }
                         break;
                     case "ModelName":
-                        ModelName = entry.Parse();
+                        ModelName = entry.Parse()??"";
                         break;
                     case "Rotate":
                         dynamic _data = entry.Parse();
-                        rotation = new Vector3(
+                        Rotation = new Vector3(
                             _data["X"],
                             _data["Y"],
                             _data["Z"]
@@ -218,7 +225,7 @@ namespace SpotLight.EditorDrawables
                         break;
                     case "Scale":
                         _data = entry.Parse();
-                        scale = new Vector3(
+                        Scale = new Vector3(
                             _data["X"],
                             _data["Y"],
                             _data["Z"]
@@ -238,17 +245,17 @@ namespace SpotLight.EditorDrawables
                     case "UnitConfig":
                         _data = entry.Parse();
 
-                        displayTranslation = new Vector3(
+                        DisplayTranslation = new Vector3(
                             _data["DisplayTranslate"]["X"] / 100f,
                             _data["DisplayTranslate"]["Y"] / 100f,
                             _data["DisplayTranslate"]["Z"] / 100f
                             );
-                        displayRotation = new Vector3(
+                        DisplayRotation = new Vector3(
                             _data["DisplayRotate"]["X"],
                             _data["DisplayRotate"]["Y"],
                             _data["DisplayRotate"]["Z"]
                             );
-                        displayScale = new Vector3(
+                        DisplayScale = new Vector3(
                             _data["DisplayScale"]["X"],
                             _data["DisplayScale"]["Y"],
                             _data["DisplayScale"]["Z"]
@@ -292,7 +299,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="control">The GL_Control to draw to</param>
         public override void Prepare(GL_ControlModern control)
         {
-            string mdlName = ModelName ?? ObjectName;
+            string mdlName = ModelName == "" ? ObjectName : ModelName;
             if(File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
             {
                 SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
@@ -332,15 +339,15 @@ namespace SpotLight.EditorDrawables
 
             bool hovered = editorScene.Hovered == this;
 
-            Matrix3 rotMtx = Framework.Mat3FromEulerAnglesDeg(rotation);
+            Matrix3 rotMtx = Framework.Mat3FromEulerAnglesDeg(Rotation);
 
-            if (BfresModelCache.Contains(ModelName ?? ObjectName))
+            if (BfresModelCache.Contains(ModelName == "" ? ObjectName : ModelName))
             {
                 control.UpdateModelMatrix(
-                    Matrix4.CreateScale(displayScale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(displayRotation)) *
-                    Matrix4.CreateTranslation(displayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale)) *
+                    Matrix4.CreateScale(DisplayScale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
+                    Matrix4.CreateTranslation(DisplayTranslation) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale) : Scale)) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
 
@@ -353,17 +360,17 @@ namespace SpotLight.EditorDrawables
                 else 
                     highlightColor = Vector4.Zero;
 
-                BfresModelCache.TryDraw(ModelName ?? ObjectName, control, pass, highlightColor);
+                BfresModelCache.TryDraw(ModelName=="" ? ObjectName : ModelName, control, pass, highlightColor);
                 
                 goto RENDER_LINKS;
             }
             else
             {
                 control.UpdateModelMatrix(
-                    Matrix4.CreateScale(displayScale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(displayRotation)) *
-                    Matrix4.CreateTranslation(displayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(scale) : scale) * 0.5f) *
+                    Matrix4.CreateScale(DisplayScale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
+                    Matrix4.CreateTranslation(DisplayTranslation) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale) : Scale) * 0.5f) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }
@@ -414,20 +421,19 @@ namespace SpotLight.EditorDrawables
 
         public virtual Vector3 GetLinkingPoint()
         {
-            return Position+Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(rotation), displayTranslation);
+            return Position+Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation);
         }
 
         public override IObjectUIProvider GetPropertyProvider(EditorSceneBase scene) => new PropertyProvider(this, scene);
 
         public new class PropertyProvider : IObjectUIProvider
         {
-            Vector3 prevPos;
-            Vector3 prevRot;
-            Vector3 prevScale;
+            PropertyCapture? capture = null;
 
-            TransformableObject obj;
+            General3dWorldObject obj;
             EditorSceneBase scene;
-            public PropertyProvider(TransformableObject obj, EditorSceneBase scene)
+
+            public PropertyProvider(General3dWorldObject obj, EditorSceneBase scene)
             {
                 this.obj = obj;
                 this.scene = scene;
@@ -435,27 +441,48 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
+                obj.ObjectName = control.FullWidthTextInput(obj.ObjectName, "Object Name");
+                obj.ClassName = control.FullWidthTextInput(obj.ClassName, "Class Name");
+                obj.ModelName = control.FullWidthTextInput(obj.ModelName, "Model Name");
+
+                control.Spacing(20);
+
                 if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
                     obj.Position = control.Vector3Input(obj.Position, "Position", 1, 16);
                 else
                     obj.Position = control.Vector3Input(obj.Position, "Position", 0.125f, 2);
 
                 if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
-                    obj.rotation = control.Vector3Input(obj.rotation, "Rotation", 45, 18);
+                    obj.Rotation = control.Vector3Input(obj.Rotation, "Rotation", 45, 18);
                 else
-                    obj.rotation = control.Vector3Input(obj.rotation, "Rotation", 5, 2);
+                    obj.Rotation = control.Vector3Input(obj.Rotation, "Rotation", 5, 2);
 
                 if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
-                    obj.scale = control.Vector3Input(obj.scale, "Scale", 1, 16);
+                    obj.Scale = control.Vector3Input(obj.Scale, "Scale", 1, 16);
                 else
-                    obj.scale = control.Vector3Input(obj.scale, "Scale", 0.125f, 2);
+                    obj.Scale = control.Vector3Input(obj.Scale, "Scale", 0.125f, 2);
+
+                control.Spacing(20);
+
+                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+                    obj.DisplayTranslation = control.Vector3Input(obj.DisplayTranslation, "Display Position", 1, 16);
+                else
+                    obj.DisplayTranslation = control.Vector3Input(obj.DisplayTranslation, "Display Position", 0.125f, 2);
+
+                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+                    obj.DisplayRotation = control.Vector3Input(obj.DisplayRotation, "Display Rotation", 45, 18);
+                else
+                    obj.DisplayRotation = control.Vector3Input(obj.DisplayRotation, "Display Rotation", 5, 2);
+
+                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+                    obj.DisplayScale = control.Vector3Input(obj.DisplayScale, "Display Scale", 1, 16);
+                else
+                    obj.DisplayScale = control.Vector3Input(obj.DisplayScale, "Display Scale", 0.125f, 2);
             }
 
             public void OnValueChangeStart()
             {
-                prevPos = obj.Position;
-                prevRot = obj.rotation;
-                prevScale = obj.scale;
+                capture = new PropertyCapture(obj);
             }
 
             public void OnValueChanged()
@@ -465,13 +492,8 @@ namespace SpotLight.EditorDrawables
 
             public void OnValueSet()
             {
-                if (prevPos != obj.Position)
-                    scene.AddToUndo(new RevertableFieldChange(SingleObject.FI_Position, obj, prevPos));
-                if (prevRot != obj.rotation)
-                    scene.AddToUndo(new RevertableFieldChange(TransformableObject.FI_Rotation, obj, prevRot));
-                if (prevScale != obj.scale)
-                    scene.AddToUndo(new RevertableFieldChange(TransformableObject.FI_Scale, obj, prevScale));
-
+                capture?.HandleUndo(scene);
+                capture = null;
                 scene.Refresh();
             }
 
