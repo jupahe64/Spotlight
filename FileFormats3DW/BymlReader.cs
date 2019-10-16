@@ -36,7 +36,7 @@ namespace BYAML
                 _alreadyReadNodes = new Dictionary<uint, dynamic>();
             }
 
-            _binaryStream = new BinaryStream(stream, ByteConverter.GetConverter(_byteOrder), Encoding.UTF8, leaveOpen: true);
+            _binaryStream = new BinaryStream(stream, ByteConverter.GetConverter(_byteOrder), Encoding.GetEncoding(932), leaveOpen: true);
         }
 
         protected bool TryStartLoading()
@@ -330,7 +330,7 @@ namespace BYAML
             for (int i = 0; i < length; i++)
             {
                 _binaryStream.Seek(nodeOffset + offsets[i], SeekOrigin.Begin);
-                stringArray.Add(_binaryStream.ReadString(StringCoding.ZeroTerminated));
+                stringArray.Add(_binaryStream.ReadString(StringCoding.ZeroTerminated,_binaryStream.Encoding));
             }
             _binaryStream.Seek(oldPosition, SeekOrigin.Begin);
 

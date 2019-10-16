@@ -20,6 +20,7 @@ namespace SpotLight
             InitializeComponent();
             CenterToParent();
             StageList = new StageList(Program.GamePath + "\\SystemData\\StageList.szs");
+            StageList.Save();
         }
 
         public StageList StageList;

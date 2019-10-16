@@ -75,10 +75,22 @@ namespace SpotLight
             IllustItemNum = LevelInfo["IllustItemNum"];
         }
 
-        public override string ToString()
-        {
-            return $"({StageID}) {StageName} - {Timer} {(GreenStarNum > 0 ? $"[{GreenStarNum} Green Star{(GreenStarNum > 1 ? "s":"")}] ":"")}{(IllustItemNum > 0 ? "[Stamp] " : "")}{(GreenStarLock > 0 ? $"[Green Star Gate ({GreenStarLock})] " : "")}";
-        }
+        public override string ToString() => $"({StageID}) {StageName} - {Timer} {(GreenStarNum > 0 ? $"[{GreenStarNum} Green Star{(GreenStarNum > 1 ? "s" : "")}] " : "")}{(IllustItemNum > 0 ? "[Stamp] " : "")}{(GreenStarLock > 0 ? $"[Green Star Gate ({GreenStarLock})] " : "")}";
+
+        public dynamic ToByaml() => new Dictionary<string, object>
+            {
+                { "CourseId", CourseID },
+                { "DoubleMarioNum", DoubleMario },
+                { "GhostBaseTime", GhostBaseTime },
+                { "GhostId", GhostID },
+                { "GreenStarLock", GreenStarLock },
+                { "GreenStarNum", GreenStarNum },
+                { "IllustItemNum", IllustItemNum },
+                { "StageId", StageID },
+                { "StageName", StageName },
+                { "StageTimer", Timer },
+                { "StageType", StageType }
+            };
     }
 
     public class World
@@ -91,14 +103,19 @@ namespace SpotLight
             WorldID = WorldInfo["WorldId"];
             List<dynamic> temp = WorldInfo["StageList"];
             for (int i = 0; i < temp.Count; i++)
-            {
                 Levels.Add(new LevelParam(temp[i]));
-            }
         }
 
-        public override string ToString()
+        public override string ToString() => $"World {WorldID}";
+
+        public dynamic ToByaml()
         {
-            return $"World {WorldID}";
+            Dictionary<string, object> Final = new Dictionary<string, object>() { {"WorldId", WorldID } };
+            List<dynamic> levels = new List<dynamic>();
+            for (int i = 0; i < Levels.Count; i++)
+                levels.Add(Levels[i].ToByaml());
+            Final.Add("StageList",levels);
+            return Final;
         }
     }
 
@@ -120,21 +137,38 @@ namespace SpotLight
             BymlFileData Input;
             SarcData Data = SARC.UnpackRamN(YAZ0.Decompress(input));
             if (Data.Files.ContainsKey("StageList.byml"))
-                Input = ByamlFile.LoadN(new MemoryStream(Data.Files["StageList.byml"]), false, Syroot.BinaryData.Endian.Big);
+                Input = ByamlFile.LoadN(new MemoryStream(Data.Files["StageList.byml"]), true, Syroot.BinaryData.Endian.Big);
             else
                 throw new Exception("Failed to find the StageList");
 
             List<dynamic> temp = Input.RootNode["WorldList"];
 
             for (int i = 0; i < temp.Count; i++)
-            {
                 Worlds.Add(new World(temp[i]));
-            }
+
+            File.WriteAllBytes("Original.byml",Data.Files["StageList.byml"]);
         }
 
         public void Save()
         {
+            BymlFileData Output = new BymlFileData() { Version = 1, SupportPaths = false, byteOrder = Syroot.BinaryData.Endian.Big };
 
+            Dictionary<string, dynamic> FinalRoot = new Dictionary<string, dynamic>();
+            List<dynamic> worlds = new List<dynamic>();
+
+            for (int i = 0; i < Worlds.Count; i++)
+                worlds.Add(Worlds[i].ToByaml());
+
+            FinalRoot.Add("WorldList",worlds);
+            Output.RootNode = FinalRoot;
+            SarcData Data = new SarcData() { endianness = Syroot.BinaryData.Endian.Big, Files = new Dictionary<string, byte[]>() };
+            MemoryStream d = new MemoryStream();
+            ByamlFile.FastSaveN(d, Output);
+            
+            Data.Files.Add("StageList.byml",d.ToArray());
+            Tuple<int, byte[]> x = SARC.PackN(Data);
+            File.WriteAllBytes(Filename.Replace(".szs","2.szs"),YAZ0.Compress(x.Item2));
+            File.WriteAllBytes("Broken.byml", Data.Files["StageList.byml"]);
         }
 
         public override string ToString()
