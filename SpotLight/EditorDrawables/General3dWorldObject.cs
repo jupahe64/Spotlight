@@ -151,7 +151,7 @@ namespace SpotLight.EditorDrawables
                 objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
             }
 
-            objNode.AddDynamicValue("ModelName", ModelName==""?null:ModelName);
+            objNode.AddDynamicValue("ModelName", (ModelName=="")?null:ModelName);
             objNode.AddDynamicValue("Rotate", Vector3ToDict(Rotation), true);
             objNode.AddDynamicValue("Scale", Vector3ToDict(Scale), true);
             objNode.AddDynamicValue("Translate", Vector3ToDict(Position, 100f), true);

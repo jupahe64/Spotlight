@@ -265,7 +265,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         {
             if (Directory.Exists(Program.GamePath + "\\SystemData") && File.Exists(Program.GamePath + "\\SystemData\\StageList.szs"))
             {
-                LPF = new LevelParameterForm();
+                LPF = new LevelParameterForm(currentLevel == null ? "" : currentLevel.ToString());
                 LPF.Show();
             }
             else
