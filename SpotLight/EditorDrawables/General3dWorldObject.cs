@@ -367,10 +367,10 @@ namespace SpotLight.EditorDrawables
             else
             {
                 control.UpdateModelMatrix(
-                    Matrix4.CreateScale(DisplayScale) *
+                    Matrix4.CreateScale(DisplayScale * 0.5f) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale) : Scale) * 0.5f) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale) : Scale)) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }
@@ -424,6 +424,11 @@ namespace SpotLight.EditorDrawables
             return Position+Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation);
         }
 
+        public override void GetSelectionBox(ref BoundingBox boundingBox)
+        {
+            boundingBox.Include(Position + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
+        }
+
         public override IObjectUIProvider GetPropertyProvider(EditorSceneBase scene) => new PropertyProvider(this, scene);
 
         public new class PropertyProvider : IObjectUIProvider
@@ -441,11 +446,11 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
-                obj.ObjectName = control.FullWidthTextInput(obj.ObjectName, "Object Name");
-                obj.ClassName = control.FullWidthTextInput(obj.ClassName, "Class Name");
-                obj.ModelName = control.FullWidthTextInput(obj.ModelName, "Model Name");
+                obj.ObjectName = control.TextInput(obj.ObjectName, "Object Name");
+                obj.ClassName = control.TextInput(obj.ClassName, "Class Name");
+                obj.ModelName = control.TextInput(obj.ModelName, "Model Name");
 
-                control.Spacing(20);
+                control.VerticalSeperator();
 
                 if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
                     obj.Position = control.Vector3Input(obj.Position, "Position", 1, 16);
@@ -462,7 +467,7 @@ namespace SpotLight.EditorDrawables
                 else
                     obj.Scale = control.Vector3Input(obj.Scale, "Scale", 0.125f, 2);
 
-                control.Spacing(20);
+                control.VerticalSeperator();
 
                 if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
                     obj.DisplayTranslation = control.Vector3Input(obj.DisplayTranslation, "Display Position", 1, 16);
