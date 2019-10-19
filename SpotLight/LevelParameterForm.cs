@@ -17,26 +17,7 @@ namespace SpotLight
             InitializeComponent();
             CenterToParent();
             Loading = true;
-            Dictionary<int,StageTypes> comboSource = new Dictionary<int, StageTypes>
-            {
-                { 15, (StageTypes)0 },
-                { 1, (StageTypes)1 },
-                { 13, (StageTypes)2 },
-                { 16, (StageTypes)3 },
-                { 0, (StageTypes)4 },
-                { 2, (StageTypes)5 },
-                { 12, (StageTypes)6 },
-                { 14, (StageTypes)7 },
-                { 8, (StageTypes)8 },
-                { 9, (StageTypes)9 },
-                { 10, (StageTypes)10 },
-                { 3, (StageTypes)11 },
-                { 4, (StageTypes)12 },
-                { 5, (StageTypes)13 },
-                { 6, (StageTypes)14 },
-                { 7, (StageTypes)15 },
-                { 11, (StageTypes)16 },
-            };
+
             StageTypeComboBox.DataSource = new BindingSource(comboSource, null);
             StageTypeComboBox.DisplayMember = "Value";
             StageTypeComboBox.ValueMember = "Key";
@@ -64,6 +45,27 @@ namespace SpotLight
                 }
             }
         }
+
+        Dictionary<int, StageTypes> comboSource = new Dictionary<int, StageTypes>
+            {
+                { 15, (StageTypes)0 },
+                { 1, (StageTypes)1 },
+                { 13, (StageTypes)2 },
+                { 16, (StageTypes)3 },
+                { 0, (StageTypes)4 },
+                { 2, (StageTypes)5 },
+                { 12, (StageTypes)6 },
+                { 14, (StageTypes)7 },
+                { 8, (StageTypes)8 },
+                { 9, (StageTypes)9 },
+                { 10, (StageTypes)10 },
+                { 3, (StageTypes)11 },
+                { 4, (StageTypes)12 },
+                { 5, (StageTypes)13 },
+                { 6, (StageTypes)14 },
+                { 7, (StageTypes)15 },
+                { 11, (StageTypes)16 },
+            };
 
         public bool Loading = false, Changed = false;
         public StageList StageList;
@@ -141,12 +143,13 @@ namespace SpotLight
 
             Loading = true;
             for (int i = 0; i < JapaneseStageTypes.Length; i++)
+            { 
                 if (LV.StageType == JapaneseStageTypes[i])
                 {
-                    StageTypeComboBox.SelectedValue = i;
+                    StageTypeComboBox.SelectedIndex = (int)comboSource[i];
                     break;
                 }
-
+            }
             StageNameTextBox.Text = LV.StageName;
             CourseLabel.Text = $"World {worldID}-{LV.StageID}";
             WorldIDNumericUpDown.Value = worldID;
@@ -224,7 +227,7 @@ namespace SpotLight
             if (Loading == true)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageType = JapaneseStageTypes[Convert.ToInt32(StageTypeComboBox.SelectedValue)];
+            StageList.Worlds[LevelID[0]-1].Levels[LevelID[1]].StageType = JapaneseStageTypes[Convert.ToInt32(((KeyValuePair<int, StageTypes>)StageTypeComboBox.Items[StageTypeComboBox.SelectedIndex]).Key)];
             Changed = true;
         }
 
