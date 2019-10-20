@@ -28,7 +28,7 @@ namespace SpotLight.EditorDrawables
         public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
         public new static Vector4 hoverColor = new Vector4(EditableObject.hoverColor.Xyz, 0.125f);
 
-        protected static Vector4 LinkColor = new Vector4(1f, 0.25f, 0f, 1f);
+        protected static Vector4 LinkColor = new Vector4(0f, 1f, 1f, 1f);
 
         /// <summary>
         /// Converts a <see cref="Vector3"/> to a <see cref="Dictionary"/>
@@ -379,12 +379,14 @@ namespace SpotLight.EditorDrawables
 
             Vector4 blockColor;
             Vector4 lineColor;
-            Vector4 col = linkDestinations.Count > 0 ? LinkColor : Color;
+            Vector4 col = (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count > 0) ? LinkColor : Color;
 
             if (hovered && Selected)
                 lineColor = hoverColor;
             else if (hovered || Selected)
                 lineColor = selectColor;
+            else if (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count == 0)
+                lineColor = new Vector4(1, 0, 0, 1);
             else
                 lineColor = col;
 
@@ -392,6 +394,8 @@ namespace SpotLight.EditorDrawables
                 blockColor = col * 0.5f + hoverColor * 0.5f;
             else if (hovered || Selected)
                 blockColor = col * 0.5f + selectColor * 0.5f;
+            else if (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count == 0)
+                blockColor = col * 0.5f + new Vector4(1, 0, 0, 1) * 0.5f;
             else
                 blockColor = col;
 
