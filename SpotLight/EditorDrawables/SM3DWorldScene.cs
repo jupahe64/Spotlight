@@ -17,15 +17,142 @@ using SZS;
 
 namespace SpotLight.EditorDrawables
 {
-    class SM3DWorldScene : CategorizedScene
+    class SM3DWorldScene : EditorSceneBase
     {
+        public struct Revertable3DWorldObjDeletion : IRevertable
+        {
+            public struct DeleteInfo
+            {
+                public int index;
+                public I3dWorldObject obj;
+
+                public DeleteInfo(int index, I3dWorldObject obj)
+                {
+                    this.index = index;
+                    this.obj = obj;
+                }
+            }
+
+            public struct ObjListInfo
+            {
+                public List<I3dWorldObject> objList;
+                public DeleteInfo[] deleteInfos;
+
+                public ObjListInfo(List<I3dWorldObject> objList, DeleteInfo[] deleteInfos)
+                {
+                    this.objList = objList;
+                    this.deleteInfos = deleteInfos;
+                }
+            }
+
+            ObjListInfo[] objListInfos;
+            int[] linkIndices;
+
+            public Revertable3DWorldObjDeletion(ObjListInfo[] objListInfos, int[] linkIndices)
+            {
+                this.objListInfos = objListInfos;
+                this.linkIndices = linkIndices;
+            }
+
+            public IRevertable Revert(EditorSceneBase scene) //Insert deleted objs back in
+            {
+                Revertable3DWorldObjAddition.ObjListInfo[] newObjListInfos = new Revertable3DWorldObjAddition.ObjListInfo[objListInfos.Length];
+                int i_newObjListInfos = 0;
+
+                int i_index = linkIndices.Length;
+
+                foreach (ObjListInfo objListInfo in objListInfos.Reverse())
+                {
+                    newObjListInfos[i_newObjListInfos].objList = objListInfo.objList;
+
+                    I3dWorldObject[] newObjs = newObjListInfos[i_newObjListInfos++].objects = new I3dWorldObject[objListInfo.deleteInfos.Length];
+                    int i_newObjs = 0;
+                    foreach (DeleteInfo info in objListInfo.deleteInfos.Reverse())
+                    {
+                        //Insert obj into the list
+                        objListInfo.objList.Insert(info.index,info.obj);
+                        newObjs[i_newObjs++] = info.obj;
+
+                        //Insert obj into all links linking to it
+                        for (int i = info.obj.LinkDestinations.Count - 1; i >= 0; i--)
+                        {
+                            (string, I3dWorldObject) dest = info.obj.LinkDestinations[i];
+                            dest.Item2.Links[dest.Item1].Insert(linkIndices[--i_index], info.obj);
+                        }
+                    }
+                }
+
+                (scene as SM3DWorldScene)?.UpdateLinkDestinations();
+
+                return new Revertable3DWorldObjAddition(newObjListInfos);
+            }
+        }
+
+        public struct Revertable3DWorldObjAddition : IRevertable
+        {
+            public struct ObjListInfo
+            {
+                public List<I3dWorldObject> objList;
+                public I3dWorldObject[] objects;
+
+                public ObjListInfo(List<I3dWorldObject> objList, I3dWorldObject[] objects)
+                {
+                    this.objList = objList;
+                    this.objects = objects;
+                }
+            }
+
+            ObjListInfo[] objListInfos;
+
+            public Revertable3DWorldObjAddition(ObjListInfo[] objListInfos)
+            {
+                this.objListInfos = objListInfos;
+            }
+
+            public IRevertable Revert(EditorSceneBase scene)
+            {
+                Revertable3DWorldObjDeletion.ObjListInfo[] newObjListInfos = new Revertable3DWorldObjDeletion.ObjListInfo[objListInfos.Length];
+                int i_newObjListInfos = 0;
+
+                List<int> newLinkIndices = new List<int>();
+
+                foreach (ObjListInfo objListInfo in objListInfos)
+                {
+                    newObjListInfos[i_newObjListInfos].objList = objListInfo.objList;
+
+                    Revertable3DWorldObjDeletion.DeleteInfo[] newObjs = 
+                        newObjListInfos[i_newObjListInfos++].deleteInfos = new Revertable3DWorldObjDeletion.DeleteInfo[objListInfo.objects.Length];
+                    int i_newObjs = 0;
+
+                    foreach (I3dWorldObject obj in objListInfo.objects)
+                    {
+                        //Remove obj from the list
+                        newObjs[i_newObjs++] = new Revertable3DWorldObjDeletion.DeleteInfo(objListInfo.objList.IndexOf(obj), obj);
+                        objListInfo.objList.Remove(obj);
+
+                        //remove obj from all links linking to it
+                        foreach ((string, I3dWorldObject) dest in obj.LinkDestinations)
+                        {
+                            newLinkIndices.Add(dest.Item2.Links[dest.Item1].IndexOf(obj));
+                            dest.Item2.Links[dest.Item1].Remove(obj);
+                        }
+                    }
+                }
+
+                (scene as SM3DWorldScene)?.UpdateLinkDestinations();
+
+                return new Revertable3DWorldObjDeletion(newObjListInfos, newLinkIndices.ToArray());
+            }
+        }
+
         /// <summary>
         /// Creates a blank SM3DW Scene
         /// </summary>
         public SM3DWorldScene()
         {
-            
+            multiSelect = true;
         }
+
         /// <summary>
         /// Prepares to draw models
         /// </summary>
@@ -37,22 +164,52 @@ namespace SpotLight.EditorDrawables
             base.Prepare(control);
         }
 
+        public Dictionary<string, List<I3dWorldObject>> objLists = new Dictionary<string, List<I3dWorldObject>>();
+
         public List<I3dWorldObject> linkedObjects = new List<I3dWorldObject>();
+
+        public static bool IteratesThroughLinks;
+
         /// <summary>
         /// Gets all the editable objects
         /// </summary>
         /// <returns><see cref="IEnumerable{IEditableObject}"/></returns>
         protected override IEnumerable<IEditableObject> GetObjects()
         {
-            foreach (List<IEditableObject> objects in categories.Values)
+            IteratesThroughLinks = false;
+            foreach (List<I3dWorldObject> objects in objLists.Values)
             {
                 foreach (IEditableObject obj in objects)
                     yield return obj;
             }
-
+            IteratesThroughLinks = true;
             foreach (I3dWorldObject obj in linkedObjects)
                 yield return obj;
         }
+
+        public void UpdateLinkDestinations()
+        {
+            IteratesThroughLinks = false;
+            foreach (List<I3dWorldObject> objects in objLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
+                    obj.ClearLinkDestinations();
+            }
+            IteratesThroughLinks = true;
+            foreach (I3dWorldObject obj in linkedObjects)
+                obj.ClearLinkDestinations();
+
+            IteratesThroughLinks = false;
+            foreach (List<I3dWorldObject> objects in objLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
+                    obj.AddLinkDestinations();
+            }
+            IteratesThroughLinks = true;
+            foreach (I3dWorldObject obj in linkedObjects)
+                obj.AddLinkDestinations();
+        }
+
         /// <summary>
         /// Deletes the selected object from the level
         /// </summary>
@@ -60,16 +217,36 @@ namespace SpotLight.EditorDrawables
         {
             DeletionManager manager = new DeletionManager();
 
-            foreach (List<IEditableObject> objects in categories.Values)
+            List<Revertable3DWorldObjAddition.ObjListInfo> objsToDelete = new List<Revertable3DWorldObjAddition.ObjListInfo>();
+
+            foreach (List<I3dWorldObject> objects in objLists.Values)
             {
-                foreach (IEditableObject obj in objects)
+                List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
+
+                foreach (I3dWorldObject obj in objects)
+                {
                     obj.DeleteSelected(manager, objects, CurrentList);
+                    obj.DeleteSelected3DWorldObject(_objsToDelete);
+                }
+                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, _objsToDelete.ToArray()));
             }
 
+            List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
+
             foreach (I3dWorldObject obj in linkedObjects)
+            {
                 obj.DeleteSelected(manager, linkedObjects, CurrentList);
+                obj.DeleteSelected3DWorldObject(linkedObjsToDelete);
+            }
+
+            objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(linkedObjects, linkedObjsToDelete.ToArray()));
+
+            //A little hack: Delete objects by reverting their creation
+            AddToUndo(new Revertable3DWorldObjAddition(objsToDelete.ToArray()).Revert(this));
 
             _ExecuteDeletion(manager);
+
+            UpdateLinkDestinations();
         }
         /// <summary>
         /// Saves the scene to a BYAML for saving
@@ -79,7 +256,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="categoryName">Category to save in</param>
         public void Save(ByamlNodeWriter writer, string levelName, string categoryName)
         {
-            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(categories);
+            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(objLists);
 
             ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
 
@@ -87,7 +264,7 @@ namespace SpotLight.EditorDrawables
             
             rootNode.AddDynamicValue("FilePath", $"D:/home/TokyoProject/RedCarpet/Asset/StageData/{levelName}/Map/{levelName}{categoryName}.muunt");
 
-            foreach (KeyValuePair<string, List<IEditableObject>> keyValuePair in categories)
+            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in objLists)
             {
                 ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode(keyValuePair.Value);
 

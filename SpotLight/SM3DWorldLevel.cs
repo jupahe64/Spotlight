@@ -72,13 +72,13 @@ namespace SpotLight
             {
                 if (entry.Key == "FilePath" || entry.Key == "Objs")
                     continue;
-                scene.categories.Add(entry.Key, new List<GL_EditorFramework.EditorDrawables.IEditableObject>());
+                scene.objLists.Add(entry.Key, new List<I3dWorldObject>());
                 
                 foreach (ArrayEntry obj in entry.IterArray())
                 {
-                    scene.categories[entry.Key].Add(new General3dWorldObject(obj, scene.linkedObjects, objectsByReference));
+                    scene.objLists[entry.Key].Add(new General3dWorldObject(obj, scene.linkedObjects, objectsByReference));
                 }
-                sceneListView.RootLists.Add(entry.Key, scene.categories[entry.Key]);
+                sceneListView.RootLists.Add(entry.Key, scene.objLists[entry.Key]);
             }
         }
 

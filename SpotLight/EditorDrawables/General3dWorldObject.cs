@@ -94,7 +94,10 @@ namespace SpotLight.EditorDrawables
         /// <summary>
         /// All places where this object is linked to
         /// </summary>
-        public List<(string, I3dWorldObject)> LinkDestinations { get; } = new List<(string, I3dWorldObject)>();
+        public IReadOnlyList<(string, I3dWorldObject)> LinkDestinations { get => linkDestinations; }
+
+
+        List<(string, I3dWorldObject)> linkDestinations = new List<(string, I3dWorldObject)>();
 
         [PropertyCapture.Undoable]
         public Vector3 DisplayTranslation { get; set; }
@@ -103,7 +106,7 @@ namespace SpotLight.EditorDrawables
         [PropertyCapture.Undoable]
         public Vector3 DisplayScale { get; set; }
 
-        public Dictionary<string, List<I3dWorldObject>> links = null;
+        public Dictionary<string, List<I3dWorldObject>> Links { get; } = null;
         public Dictionary<string, dynamic> properties;
 
         private static readonly Dictionary<string, List<I3dWorldObject>> EMPTY_LINKS = new Dictionary<string, List<I3dWorldObject>>();
@@ -122,11 +125,11 @@ namespace SpotLight.EditorDrawables
             
             alreadyWrittenObjs.Add(this);
 
-            if (links != null)
+            if (Links != null)
             {
-                DictionaryNode linksNode = writer.CreateDictionaryNode(links);
+                DictionaryNode linksNode = writer.CreateDictionaryNode(Links);
 
-                foreach (KeyValuePair<string,List<I3dWorldObject>> keyValuePair in links)
+                foreach (KeyValuePair<string,List<I3dWorldObject>> keyValuePair in Links)
                 {
                     ArrayNode linkNode = writer.CreateArrayNode(keyValuePair.Value);
                     
@@ -191,22 +194,22 @@ namespace SpotLight.EditorDrawables
                         ID = entry.Parse();
                         break;
                     case "Links":
-                        links = new Dictionary<string, List<I3dWorldObject>>();
+                        Links = new Dictionary<string, List<I3dWorldObject>>();
                         foreach (ByamlIterator.DictionaryEntry link in entry.IterDictionary())
                         {
-                            links.Add(link.Key, new List<I3dWorldObject>());
+                            Links.Add(link.Key, new List<I3dWorldObject>());
                             foreach (ByamlIterator.ArrayEntry linked in link.IterArray())
                             {
                                 if (objectsByReference.ContainsKey(linked.Position))
                                 {
-                                    links[link.Key].Add(objectsByReference[linked.Position]);
-                                    objectsByReference[linked.Position].LinkDestinations.Add((link.Key, this));
+                                    Links[link.Key].Add(objectsByReference[linked.Position]);
+                                    objectsByReference[linked.Position].AddLinkDestination(link.Key, this);
                                 }
                                 else
                                 {
                                     I3dWorldObject obj = new General3dWorldObject(linked, linkedObjs, objectsByReference);
-                                    obj.LinkDestinations.Add((link.Key, this));
-                                    links[link.Key].Add(obj);
+                                    obj.AddLinkDestination(link.Key, this);
+                                    Links[link.Key].Add(obj);
                                     linkedObjs.Add(obj);
                                 }
                             }
@@ -271,27 +274,24 @@ namespace SpotLight.EditorDrawables
             if (properties.Count == 0)
                 properties = null;
 
-            if (links.Count == 0)
-                links = null;
+            if (Links.Count == 0)
+                Links = null;
         }
         /// <summary>
         /// Deletes this object from the Scene
         /// </summary>
-        /// <param name="manager">Unknown</param>
-        /// <param name="list">Unknown</param>
-        /// <param name="currentList">Unknown</param>
+        /// <param name="manager">The deletion manager that executes the deletion afterwards</param>
+        /// <param name="list">The main list this object is referenced in</param>
+        /// <param name="currentList">The list selected as the currentList in the EditorScene</param>
         public override void DeleteSelected(EditorSceneBase.DeletionManager manager, IList list, IList currentList)
         {
-            base.DeleteSelected(manager, list, currentList);
+            //Deletion is handled by DeleteSelected3DWorldObject
+        }
 
-            //if (links != null)
-            //{
-            //    foreach (List<I3dWorldObject> link in links.Values)
-            //    {
-            //        foreach (I3dWorldObject obj in link)
-            //            obj.DeleteSelected(manager, link, currentList);
-            //    }
-            //}
+        public void DeleteSelected3DWorldObject(List<I3dWorldObject> objectsToDelete)
+        {
+            if (Selected)
+                objectsToDelete.Add(this);
         }
         /// <summary>
         /// Prepares to draw this Object
@@ -355,9 +355,11 @@ namespace SpotLight.EditorDrawables
 
                 if (Selected)
                     highlightColor = selectColor;
-                else if(hovered)
+                else if (hovered)
                     highlightColor = hoverColor;
-                else 
+                else if (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count == 0)
+                    highlightColor = new Vector4(1, 0, 0, 0.5f);
+                else
                     highlightColor = Vector4.Zero;
 
                 BfresModelCache.TryDraw(ModelName=="" ? ObjectName : ModelName, control, pass, highlightColor);
@@ -377,7 +379,7 @@ namespace SpotLight.EditorDrawables
 
             Vector4 blockColor;
             Vector4 lineColor;
-            Vector4 col = LinkDestinations.Count > 0 ? LinkColor : Color;
+            Vector4 col = linkDestinations.Count > 0 ? LinkColor : Color;
 
             if (hovered && Selected)
                 lineColor = hoverColor;
@@ -397,7 +399,7 @@ namespace SpotLight.EditorDrawables
 
             RENDER_LINKS:
 
-            if (links != null && pass == Pass.OPAQUE)
+            if (Links != null && pass == Pass.OPAQUE)
             {
                 control.ResetModelMatrix();
 
@@ -406,7 +408,7 @@ namespace SpotLight.EditorDrawables
 
                 GL.LineWidth(1);
                 GL.Begin(PrimitiveType.Lines);
-                foreach (List<I3dWorldObject> link in links.Values)
+                foreach (List<I3dWorldObject> link in Links.Values)
                 {
                     foreach (I3dWorldObject obj in link)
                     {
@@ -430,6 +432,30 @@ namespace SpotLight.EditorDrawables
         }
 
         public override IObjectUIProvider GetPropertyProvider(EditorSceneBase scene) => new PropertyProvider(this, scene);
+
+        public void ClearLinkDestinations()
+        {
+            linkDestinations.Clear();
+        }
+
+        public void AddLinkDestinations()
+        {
+            if (Links != null)
+            {
+                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
+                {
+                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    {
+                        obj.AddLinkDestination(keyValuePair.Key, this);
+                    }
+                }
+            }
+        }
+
+        public void AddLinkDestination(string linkName, I3dWorldObject linkingObject)
+        {
+            linkDestinations.Add((linkName, linkingObject));
+        }
 
         public new class PropertyProvider : IObjectUIProvider
         {
