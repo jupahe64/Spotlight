@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using SZS;
 
 namespace SpotLight.EditorDrawables
@@ -168,6 +169,19 @@ namespace SpotLight.EditorDrawables
 
         public List<I3dWorldObject> linkedObjects = new List<I3dWorldObject>();
 
+        private ulong highestObjID = 0;
+
+        public void SubmitID(string id)
+        {
+            if (id.StartsWith("obj") && ulong.TryParse(id.Substring(3), out ulong objID))
+            {
+                if (objID > highestObjID)
+                    highestObjID = objID;
+            }
+        }
+
+        public string NextObjID() => "obj" + (++highestObjID);
+
         public static bool IteratesThroughLinks;
 
         /// <summary>
@@ -289,6 +303,47 @@ namespace SpotLight.EditorDrawables
             rootNode.AddArrayNodeRef("Objs", objsNode);
 
             writer.Write(rootNode, true);
+        }
+
+        public override uint KeyDown(KeyEventArgs e, GL_ControlBase control)
+        {
+            if(e.Control && e.KeyCode == Keys.D)
+            {
+                if (SelectedObjects.Count == 0)
+                    return 0;
+                else
+                {
+                    //Duplicate Selected Objects
+                    Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+                    List<I3dWorldObject> newLinkedObjects = new List<I3dWorldObject>();
+
+                    IteratesThroughLinks = false;
+                    foreach (List<I3dWorldObject> objects in objLists.Values)
+                    {
+                        foreach (I3dWorldObject obj in objects)
+                            obj.DuplicateSelected(duplicates, newLinkedObjects, this);
+                    }
+                    IteratesThroughLinks = true;
+                    foreach (I3dWorldObject obj in linkedObjects)
+                        obj.DuplicateSelected(duplicates, newLinkedObjects, this);
+
+                    linkedObjects.AddRange(newLinkedObjects);
+
+                    IteratesThroughLinks = false;
+                    foreach (List<I3dWorldObject> objects in objLists.Values)
+                    {
+                        foreach (I3dWorldObject obj in objects)
+                            obj.LinkDuplicatesAndAddLinkDestinations(duplicates);
+                    }
+                    IteratesThroughLinks = true;
+                    foreach (I3dWorldObject obj in linkedObjects)
+                        obj.LinkDuplicatesAndAddLinkDestinations(duplicates);
+
+                    return REDRAW_PICKING;
+                }
+            }
+            else
+                return base.KeyDown(e, control);
         }
     }
 }

@@ -107,7 +107,7 @@ namespace SpotLight.EditorDrawables
         public Vector3 DisplayScale { get; set; }
 
         public Dictionary<string, List<I3dWorldObject>> Links { get; } = null;
-        public Dictionary<string, dynamic> properties;
+        public Dictionary<string, dynamic> Properties { get; }
 
         private static readonly Dictionary<string, List<I3dWorldObject>> EMPTY_LINKS = new Dictionary<string, List<I3dWorldObject>>();
         /// <summary>
@@ -163,9 +163,9 @@ namespace SpotLight.EditorDrawables
 
             objNode.AddDynamicValue("UnitConfigName", ObjectName);
 
-            if (properties != null)
+            if (Properties != null)
             {
-                foreach (KeyValuePair<string, dynamic> keyValuePair in properties)
+                foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
                     objNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
             }
         }
@@ -175,9 +175,9 @@ namespace SpotLight.EditorDrawables
         /// <param name="objectEntry">Unknown</param>
         /// <param name="linkedObjs">List of objects that are linked with this object</param>
         /// <param name="objectsByReference">Unknown</param>
-        public General3dWorldObject(ByamlIterator.ArrayEntry objectEntry, List<I3dWorldObject> linkedObjs, Dictionary<long, I3dWorldObject> objectsByReference) : base(Vector3.Zero, Vector3.Zero, Vector3.One)
+        public General3dWorldObject(ByamlIterator.ArrayEntry objectEntry, SM3DWorldScene scene, Dictionary<long, I3dWorldObject> objectsByReference) : base(Vector3.Zero, Vector3.Zero, Vector3.One)
         {
-            properties = new Dictionary<string, dynamic>();
+            Properties = new Dictionary<string, dynamic>();
             
             foreach (ByamlIterator.DictionaryEntry entry in objectEntry.IterDictionary())
             {
@@ -192,6 +192,7 @@ namespace SpotLight.EditorDrawables
                         break; //ignore these
                     case "Id":
                         ID = entry.Parse();
+                        scene.SubmitID(ID);
                         break;
                     case "Links":
                         Links = new Dictionary<string, List<I3dWorldObject>>();
@@ -207,10 +208,10 @@ namespace SpotLight.EditorDrawables
                                 }
                                 else
                                 {
-                                    I3dWorldObject obj = new General3dWorldObject(linked, linkedObjs, objectsByReference);
+                                    I3dWorldObject obj = new General3dWorldObject(linked, scene, objectsByReference);
                                     obj.AddLinkDestination(link.Key, this);
                                     Links[link.Key].Add(obj);
-                                    linkedObjs.Add(obj);
+                                    scene.linkedObjects.Add(obj);
                                 }
                             }
                         }
@@ -266,17 +267,36 @@ namespace SpotLight.EditorDrawables
                         ClassName = _data["ParameterConfigName"];
                         break;
                     default:
-                        properties.Add(entry.Key, entry.Parse());
+                        Properties.Add(entry.Key, entry.Parse());
                         break;
                 }
             }
 
-            if (properties.Count == 0)
-                properties = null;
+            if (Properties.Count == 0)
+                Properties = null;
 
             if (Links.Count == 0)
                 Links = null;
         }
+
+        public General3dWorldObject(
+            Vector3 pos, Vector3 rot, Vector3 scale, 
+            string iD, string objectName, string modelName, string className, 
+            Vector3 displayTranslation, Vector3 displayRotation, Vector3 displayScale, 
+            Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties)
+            : base(pos,rot,scale)
+        {
+            ID = iD;
+            ObjectName = objectName;
+            ModelName = modelName;
+            ClassName = className;
+            DisplayTranslation = displayTranslation;
+            DisplayRotation = displayRotation;
+            DisplayScale = displayScale;
+            Links = links;
+            this.Properties = properties;
+        }
+
         /// <summary>
         /// Deletes this object from the Scene
         /// </summary>
@@ -460,6 +480,80 @@ namespace SpotLight.EditorDrawables
         {
             linkDestinations.Add((linkName, linkingObject));
         }
+
+        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, List<I3dWorldObject> newLinkedObjects, SM3DWorldScene scene)
+        {
+            if (!Selected)
+                return;
+
+            Selected = false;
+            scene.SelectedObjects.Remove(this);
+
+            //copy links
+            Dictionary<string, List<I3dWorldObject>> newLinks;
+            if (Links != null)
+            {
+                newLinks = new Dictionary<string, List<I3dWorldObject>>();
+                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
+                {
+                    newLinks[keyValuePair.Key] = new List<I3dWorldObject>();
+                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    {
+                        newLinks[keyValuePair.Key].Add(obj);
+                    }
+                }
+            }
+            else
+                newLinks = null;
+
+            //copy properties
+            Dictionary<string, dynamic> newProperties;
+            if (Properties != null)
+            {
+                newProperties = new Dictionary<string, dynamic>();
+                foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
+                    newProperties[keyValuePair.Key] = keyValuePair.Value;
+            }
+            else
+                newProperties = null;
+            
+            duplicates[this] = new General3dWorldObject(Position, Rotation, Scale, scene.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
+                newLinks, newProperties);
+
+            duplicates[this].SelectDefault(scene.SelectedObjects);
+
+            if (SM3DWorldScene.IteratesThroughLinks)
+                newLinkedObjects.Add(duplicates[this]);
+        }
+
+        public void LinkDuplicatesAndAddLinkDestinations(Dictionary<I3dWorldObject, I3dWorldObject> duplicates)
+        {
+            if (Links != null)
+            {
+                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
+                {
+                    //Add link destinations
+                    List<I3dWorldObject> duplicatesToBeLinked = new List<I3dWorldObject>();
+                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    {
+                        obj.AddLinkDestination(keyValuePair.Key, this);
+                        if (duplicates.ContainsKey(obj))
+                        {
+                            duplicates[obj].AddLinkDestination(keyValuePair.Key, this);
+                            duplicatesToBeLinked.Add(duplicates[obj]);
+                        }
+                    }
+
+                    //Link duplicates
+                    foreach (I3dWorldObject obj in duplicatesToBeLinked)
+                    {
+                        keyValuePair.Value.Add(obj);
+                    }
+                }
+            }
+        }
+
+
 
         public new class PropertyProvider : IObjectUIProvider
         {
