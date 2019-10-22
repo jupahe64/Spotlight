@@ -138,7 +138,7 @@ namespace SpotLight
 
         private void LoadLevelData(LevelParam LV, int worldID, int levelID)
         {
-            LevelID[0] = worldID;
+            LevelID[0] = worldID-1;
             LevelID[1] = levelID;
 
             Loading = true;
@@ -227,7 +227,7 @@ namespace SpotLight
             if (Loading == true)
                 return;
 
-            StageList.Worlds[LevelID[0]-1].Levels[LevelID[1]].StageType = JapaneseStageTypes[Convert.ToInt32(((KeyValuePair<int, StageTypes>)StageTypeComboBox.Items[StageTypeComboBox.SelectedIndex]).Key)];
+            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageType = JapaneseStageTypes[Convert.ToInt32(((KeyValuePair<int, StageTypes>)StageTypeComboBox.Items[StageTypeComboBox.SelectedIndex]).Key)];
             Changed = true;
         }
 
