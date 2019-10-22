@@ -314,36 +314,82 @@ namespace SpotLight.EditorDrawables
                 else
                 {
                     //Duplicate Selected Objects
-                    Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+                    Dictionary<I3dWorldObject, I3dWorldObject> totalDuplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
                     List<I3dWorldObject> newLinkedObjects = new List<I3dWorldObject>();
 
-                    IteratesThroughLinks = false;
-                    foreach (List<I3dWorldObject> objects in objLists.Values)
-                    {
-                        foreach (I3dWorldObject obj in objects)
-                            obj.DuplicateSelected(duplicates, newLinkedObjects, this);
-                    }
-                    IteratesThroughLinks = true;
-                    foreach (I3dWorldObject obj in linkedObjects)
-                        obj.DuplicateSelected(duplicates, newLinkedObjects, this);
-
-                    linkedObjects.AddRange(newLinkedObjects);
+                    Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
                     IteratesThroughLinks = false;
                     foreach (List<I3dWorldObject> objects in objLists.Values)
                     {
                         foreach (I3dWorldObject obj in objects)
-                            obj.LinkDuplicatesAndAddLinkDestinations(duplicates);
+                            obj.DuplicateSelected(duplicates, this);
+
+                        objects.AddRange(duplicates.Values);
+
+                        foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+
+                        duplicates.Clear();
                     }
                     IteratesThroughLinks = true;
                     foreach (I3dWorldObject obj in linkedObjects)
-                        obj.LinkDuplicatesAndAddLinkDestinations(duplicates);
+                        obj.DuplicateSelected(duplicates, this);
+
+                    foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+
+                    linkedObjects.AddRange(duplicates.Values);
+
+
+                    //Clear LinkDestinations
+                    IteratesThroughLinks = false;
+                    foreach (List<I3dWorldObject> objects in objLists.Values)
+                    {
+                        foreach (I3dWorldObject obj in objects)
+                            obj.ClearLinkDestinations();
+                    }
+                    IteratesThroughLinks = true;
+                    foreach (I3dWorldObject obj in linkedObjects)
+                        obj.ClearLinkDestinations();
+
+
+                    //Rebuild links
+                    DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
+
+                    IteratesThroughLinks = false;
+                    foreach (List<I3dWorldObject> objects in objLists.Values)
+                    {
+                        foreach (I3dWorldObject obj in objects)
+                            obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
+                    }
+                    IteratesThroughLinks = true;
+                    foreach (I3dWorldObject obj in linkedObjects)
+                        obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
 
                     return REDRAW_PICKING;
                 }
             }
             else
                 return base.KeyDown(e, control);
+        }
+
+        public class DuplicationInfo
+        {
+            Dictionary<I3dWorldObject, I3dWorldObject> duplicatedObjects;
+            HashSet<I3dWorldObject> duplicates = new HashSet<I3dWorldObject>();
+
+            public DuplicationInfo(Dictionary<I3dWorldObject, I3dWorldObject> duplicates)
+            {
+                duplicatedObjects = duplicates;
+
+                foreach (I3dWorldObject obj in duplicates.Values)
+                    this.duplicates.Add(obj);
+            }
+
+            public bool IsDuplicate(I3dWorldObject obj) => duplicates.Contains(obj);
+
+            public bool HasDuplicate(I3dWorldObject obj) => duplicatedObjects.ContainsKey(obj) || duplicates.Contains(obj);
+
+            public bool TryGetDuplicate(I3dWorldObject obj, out I3dWorldObject duplicate) => duplicatedObjects.TryGetValue(obj, out duplicate);
         }
     }
 }

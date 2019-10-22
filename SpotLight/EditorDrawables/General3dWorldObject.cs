@@ -481,7 +481,7 @@ namespace SpotLight.EditorDrawables
             linkDestinations.Add((linkName, linkingObject));
         }
 
-        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, List<I3dWorldObject> newLinkedObjects, SM3DWorldScene scene)
+        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene)
         {
             if (!Selected)
                 return;
@@ -521,33 +521,41 @@ namespace SpotLight.EditorDrawables
                 newLinks, newProperties);
 
             duplicates[this].SelectDefault(scene.SelectedObjects);
-
-            if (SM3DWorldScene.IteratesThroughLinks)
-                newLinkedObjects.Add(duplicates[this]);
         }
 
-        public void LinkDuplicatesAndAddLinkDestinations(Dictionary<I3dWorldObject, I3dWorldObject> duplicates)
+        public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo)
         {
             if (Links != null)
             {
+                bool isDuplicate = duplicationInfo.IsDuplicate(this);
+
+                bool hasDuplicate = duplicationInfo.HasDuplicate(this);
+
                 foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
                 {
-                    //Add link destinations
-                    List<I3dWorldObject> duplicatesToBeLinked = new List<I3dWorldObject>();
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
-                    {
-                        obj.AddLinkDestination(keyValuePair.Key, this);
-                        if (duplicates.ContainsKey(obj))
-                        {
-                            duplicates[obj].AddLinkDestination(keyValuePair.Key, this);
-                            duplicatesToBeLinked.Add(duplicates[obj]);
-                        }
-                    }
+                    I3dWorldObject[] oldLink = keyValuePair.Value.ToArray();
 
-                    //Link duplicates
-                    foreach (I3dWorldObject obj in duplicatesToBeLinked)
+                    //Clear Link
+                    keyValuePair.Value.Clear();
+
+                    //Populate Link
+                    foreach (I3dWorldObject obj in oldLink)
                     {
-                        keyValuePair.Value.Add(obj);
+                        bool objHasDuplicate = duplicationInfo.TryGetDuplicate(obj, out I3dWorldObject duplicate);
+
+                        if (!(isDuplicate && objHasDuplicate))
+                        {
+                            //Link to original
+                            keyValuePair.Value.Add(obj);
+                            obj.AddLinkDestination(keyValuePair.Key, this);
+                        }
+
+                        if(objHasDuplicate && (hasDuplicate==isDuplicate))
+                        {
+                            //Link to duplicate
+                            keyValuePair.Value.Add(duplicate);
+                            duplicate.AddLinkDestination(keyValuePair.Key, this);
+                        }
                     }
                 }
             }

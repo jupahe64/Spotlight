@@ -20,8 +20,8 @@ namespace SpotLight.EditorDrawables
         void AddLinkDestinations();
         void AddLinkDestination(string linkName, I3dWorldObject linkingObject);
 
-        void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, List<I3dWorldObject> newLinkedObjects, SM3DWorldScene scene);
-        void LinkDuplicatesAndAddLinkDestinations(Dictionary<I3dWorldObject, I3dWorldObject> duplicates);
+        void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene);
+        void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo);
 
         Dictionary<string, List<I3dWorldObject>> Links { get; }
         void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);
