@@ -313,63 +313,81 @@ namespace SpotLight.EditorDrawables
                     return 0;
                 else
                 {
-                    //Duplicate Selected Objects
-                    Dictionary<I3dWorldObject, I3dWorldObject> totalDuplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
-                    List<I3dWorldObject> newLinkedObjects = new List<I3dWorldObject>();
-
-                    Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
-
-                    IteratesThroughLinks = false;
-                    foreach (List<I3dWorldObject> objects in objLists.Values)
-                    {
-                        foreach (I3dWorldObject obj in objects)
-                            obj.DuplicateSelected(duplicates, this);
-
-                        objects.AddRange(duplicates.Values);
-
-                        foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
-
-                        duplicates.Clear();
-                    }
-                    IteratesThroughLinks = true;
-                    foreach (I3dWorldObject obj in linkedObjects)
-                        obj.DuplicateSelected(duplicates, this);
-
-                    foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
-
-                    linkedObjects.AddRange(duplicates.Values);
-
-
-                    //Clear LinkDestinations
-                    IteratesThroughLinks = false;
-                    foreach (List<I3dWorldObject> objects in objLists.Values)
-                    {
-                        foreach (I3dWorldObject obj in objects)
-                            obj.ClearLinkDestinations();
-                    }
-                    IteratesThroughLinks = true;
-                    foreach (I3dWorldObject obj in linkedObjects)
-                        obj.ClearLinkDestinations();
-
-
-                    //Rebuild links
-                    DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
-
-                    IteratesThroughLinks = false;
-                    foreach (List<I3dWorldObject> objects in objLists.Values)
-                    {
-                        foreach (I3dWorldObject obj in objects)
-                            obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
-                    }
-                    IteratesThroughLinks = true;
-                    foreach (I3dWorldObject obj in linkedObjects)
-                        obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
+                    DuplicateSelectedObjects();
 
                     return REDRAW_PICKING;
                 }
             }
             else
                 return base.KeyDown(e, control);
+        }
+
+        public void DuplicateSelectedObjects()
+        {
+            //Duplicate Selected Objects
+            List<Revertable3DWorldObjAddition.ObjListInfo> objListInfos = new List<Revertable3DWorldObjAddition.ObjListInfo>();
+
+            Dictionary<I3dWorldObject, I3dWorldObject> totalDuplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+            List<I3dWorldObject> newLinkedObjects = new List<I3dWorldObject>();
+
+            Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+
+            IteratesThroughLinks = false;
+            foreach (List<I3dWorldObject> objects in objLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
+                    obj.DuplicateSelected(duplicates, this);
+
+                objects.AddRange(duplicates.Values);
+
+                foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+
+                if (duplicates.Count > 0)
+                    objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, duplicates.Values.ToArray()));
+
+                duplicates.Clear();
+            }
+            IteratesThroughLinks = true;
+            foreach (I3dWorldObject obj in linkedObjects)
+                obj.DuplicateSelected(duplicates, this);
+
+            foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+
+            if (duplicates.Count > 0)
+                objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(linkedObjects, duplicates.Values.ToArray()));
+
+            linkedObjects.AddRange(duplicates.Values);
+
+
+            //Clear LinkDestinations
+            IteratesThroughLinks = false;
+            foreach (List<I3dWorldObject> objects in objLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
+                    obj.ClearLinkDestinations();
+            }
+            IteratesThroughLinks = true;
+            foreach (I3dWorldObject obj in linkedObjects)
+                obj.ClearLinkDestinations();
+
+
+            //Rebuild links
+            DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
+
+            IteratesThroughLinks = false;
+            foreach (List<I3dWorldObject> objects in objLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
+                    obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
+            }
+            IteratesThroughLinks = true;
+            foreach (I3dWorldObject obj in linkedObjects)
+                obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
+
+
+            //Add to undo
+            if (objListInfos.Count > 0)
+                AddToUndo(new Revertable3DWorldObjAddition(objListInfos.ToArray()));
         }
 
         public class DuplicationInfo
