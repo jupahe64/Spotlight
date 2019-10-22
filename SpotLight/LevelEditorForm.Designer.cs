@@ -31,7 +31,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelEditorForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.MainSceneListView = new GL_EditorFramework.SceneListView();
             this.lblCurrentObject = new System.Windows.Forms.Label();
+            this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
+            this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,9 +48,8 @@
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.MainSceneListView = new GL_EditorFramework.SceneListView();
-            this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
-            this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
+            this.DuplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.OpenExToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -97,6 +99,16 @@
             this.splitContainer2.SplitterDistance = 245;
             this.splitContainer2.TabIndex = 1;
             // 
+            // MainSceneListView
+            // 
+            this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainSceneListView.Enabled = false;
+            this.MainSceneListView.Location = new System.Drawing.Point(0, 0);
+            this.MainSceneListView.Name = "MainSceneListView";
+            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
+            this.MainSceneListView.Size = new System.Drawing.Size(260, 245);
+            this.MainSceneListView.TabIndex = 0;
+            // 
             // lblCurrentObject
             // 
             this.lblCurrentObject.AutoSize = true;
@@ -105,6 +117,37 @@
             this.lblCurrentObject.Size = new System.Drawing.Size(87, 13);
             this.lblCurrentObject.TabIndex = 0;
             this.lblCurrentObject.Text = "Nothing selected";
+            // 
+            // ObjectUIControl
+            // 
+            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ObjectUIControl.CurrentObjectUIProvider = null;
+            this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
+            this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
+            this.ObjectUIControl.Name = "ObjectUIControl";
+            this.ObjectUIControl.Size = new System.Drawing.Size(254, 247);
+            this.ObjectUIControl.TabIndex = 1;
+            // 
+            // LevelGLControlModern
+            // 
+            this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
+            this.LevelGLControlModern.CamRotX = 0F;
+            this.LevelGLControlModern.CamRotY = 0F;
+            this.LevelGLControlModern.CurrentShader = null;
+            this.LevelGLControlModern.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LevelGLControlModern.Fov = 0.7853982F;
+            this.LevelGLControlModern.Location = new System.Drawing.Point(0, 0);
+            this.LevelGLControlModern.Name = "LevelGLControlModern";
+            this.LevelGLControlModern.NormPickingDepth = 0F;
+            this.LevelGLControlModern.ShowOrientationCube = true;
+            this.LevelGLControlModern.Size = new System.Drawing.Size(520, 515);
+            this.LevelGLControlModern.Stereoscopy = false;
+            this.LevelGLControlModern.TabIndex = 0;
+            this.LevelGLControlModern.VSync = false;
+            this.LevelGLControlModern.ZFar = 32000F;
+            this.LevelGLControlModern.ZNear = 1.5F;
             // 
             // SpotlightMenuStrip
             // 
@@ -121,6 +164,7 @@
             // 
             this.FileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.OpenToolStripMenuItem,
+            this.OpenExToolStripMenuItem,
             this.SaveToolStripMenuItem,
             this.SaveAsToolStripMenuItem,
             this.OptionsToolStripMenuItem});
@@ -168,6 +212,7 @@
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.UndoToolStripMenuItem,
             this.RedoToolStripMenuItem,
+            this.DuplicateToolStripMenuItem,
             this.LevelParametersToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
@@ -215,46 +260,20 @@
             this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
             this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.1.0";
             // 
-            // MainSceneListView
+            // DuplicateToolStripMenuItem
             // 
-            this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MainSceneListView.Enabled = false;
-            this.MainSceneListView.Location = new System.Drawing.Point(0, 0);
-            this.MainSceneListView.Name = "MainSceneListView";
-            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
-            this.MainSceneListView.Size = new System.Drawing.Size(260, 245);
-            this.MainSceneListView.TabIndex = 0;
+            this.DuplicateToolStripMenuItem.Name = "DuplicateToolStripMenuItem";
+            this.DuplicateToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
+            this.DuplicateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.DuplicateToolStripMenuItem.Text = "Duplicate";
+            this.DuplicateToolStripMenuItem.Click += new System.EventHandler(this.DuplicateToolStripMenuItem_Click);
             // 
-            // ObjectUIControl
+            // OpenExToolStripMenuItem
             // 
-            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ObjectUIControl.CurrentObjectUIProvider = null;
-            this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
-            this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
-            this.ObjectUIControl.Name = "ObjectUIControl";
-            this.ObjectUIControl.Size = new System.Drawing.Size(254, 247);
-            this.ObjectUIControl.TabIndex = 1;
-            // 
-            // LevelGLControlModern
-            // 
-            this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
-            this.LevelGLControlModern.CamRotX = 0F;
-            this.LevelGLControlModern.CamRotY = 0F;
-            this.LevelGLControlModern.CurrentShader = null;
-            this.LevelGLControlModern.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.LevelGLControlModern.Fov = 0.7853982F;
-            this.LevelGLControlModern.Location = new System.Drawing.Point(0, 0);
-            this.LevelGLControlModern.Name = "LevelGLControlModern";
-            this.LevelGLControlModern.NormPickingDepth = 0F;
-            this.LevelGLControlModern.ShowOrientationCube = true;
-            this.LevelGLControlModern.Size = new System.Drawing.Size(520, 515);
-            this.LevelGLControlModern.Stereoscopy = false;
-            this.LevelGLControlModern.TabIndex = 0;
-            this.LevelGLControlModern.VSync = false;
-            this.LevelGLControlModern.ZFar = 32000F;
-            this.LevelGLControlModern.ZNear = 1.5F;
+            this.OpenExToolStripMenuItem.Name = "OpenExToolStripMenuItem";
+            this.OpenExToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.OpenExToolStripMenuItem.Text = "Open With Selector";
+            this.OpenExToolStripMenuItem.Click += new System.EventHandler(this.OpenExToolStripMenuItem_Click);
             // 
             // LevelEditorForm
             // 
@@ -308,6 +327,8 @@
         private System.Windows.Forms.ToolStripMenuItem UndoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem RedoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem LevelParametersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem DuplicateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem OpenExToolStripMenuItem;
     }
 }
 

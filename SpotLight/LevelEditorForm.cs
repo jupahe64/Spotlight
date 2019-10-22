@@ -187,26 +187,9 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
+                SpotlightToolStripStatusLabel.Text = "Waiting...";
             if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
-            {
-                if (SM3DWorldLevel.TryOpen(ofd.FileName, LevelGLControlModern, MainSceneListView, out SM3DWorldLevel level))
-                {
-                    SpotlightToolStripProgressBar.Maximum = 100;
-                    SpotlightToolStripProgressBar.Value = 0;
-                    currentLevel = level;
-                    SpotlightToolStripProgressBar.Value = 50;
-                    level.scene.SelectionChanged += Scene_SelectionChanged;
-                    level.scene.ListChanged += Scene_ListChanged;
-                    level.scene.ObjectsMoved += Scene_ObjectsMoved;
-
-                    MainSceneListView.Enabled = true;
-                    MainSceneListView.SetRootList("ObjectList");
-                    MainSceneListView.ListExited += MainSceneListView_ListExited;
-                    MainSceneListView.Refresh();
-                    SpotlightToolStripProgressBar.Value = 100;
-                    SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
-                }
-            }
+                LoadLevel(ofd.FileName);
         }
 
         private void Scene_ObjectsMoved(object sender, EventArgs e)
@@ -271,6 +254,82 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             else
             {
                 MessageBox.Show("StageList.szs is missing from "+Program.GamePath+"\\SystemData", "Missing File",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
+        }
+
+        private void DuplicateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel.scene.SelectedObjects.Count == 0)
+                SpotlightToolStripStatusLabel.Text = "Can't duplicate nothing!";
+            else
+            {
+                string SelectedObjects = "";
+                string previousobject = "";
+                int multi = 1;
+
+                List<string> selectedobjectnames = new List<string>();
+                for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
+                    selectedobjectnames.Add(currentLevel.scene.SelectedObjects.ElementAt(i).ToString());
+
+                selectedobjectnames.Sort();
+                for (int i = 0; i < selectedobjectnames.Count; i++)
+                {
+                    string currentobject = selectedobjectnames[i];
+                    if (previousobject == currentobject)
+                    {
+                        SelectedObjects = SelectedObjects.Remove(SelectedObjects.Length - (multi.ToString().Length + 1));
+                        multi++;
+                        SelectedObjects += $"x{multi}";
+                    }
+                    else if (multi > 1)
+                    {
+                        SelectedObjects += ", " + $"\"{currentobject}\"" + ", ";
+                        multi = 1;
+                    }
+                    else
+                    {
+                        SelectedObjects += $"\"{currentobject}\"" + ", ";
+                        multi = 1;
+                    }
+                    previousobject = currentobject;
+                }
+                SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
+                SpotlightToolStripStatusLabel.Text = $"Duplicated {SelectedObjects}";
+            }
+        }
+
+        private void OpenExToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SpotlightToolStripStatusLabel.Text = "Waiting...";
+            StageList STGLST = new StageList(Program.GamePath + "\\SystemData\\StageList.szs");
+            LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST);
+            LPSF.ShowDialog();
+            if (LPSF.levelname == "")
+            {
+                SpotlightToolStripStatusLabel.Text = "Open Cancelled";
+                return;
+            }
+            LoadLevel($"{Program.GamePath}\\StageData\\{LPSF.levelname}Map1.szs");
+        }
+
+        private void LoadLevel(string Filename)
+        {
+            SpotlightToolStripProgressBar.Value = 0;
+            SpotlightToolStripStatusLabel.Text = "Loading Level...";
+            if (SM3DWorldLevel.TryOpen(Filename, LevelGLControlModern, MainSceneListView, out SM3DWorldLevel level))
+            {
+                currentLevel = level;
+                SpotlightToolStripProgressBar.Value = 50;
+                level.scene.SelectionChanged += Scene_SelectionChanged;
+                level.scene.ListChanged += Scene_ListChanged;
+                level.scene.ObjectsMoved += Scene_ObjectsMoved;
+
+                MainSceneListView.Enabled = true;
+                MainSceneListView.SetRootList("ObjectList");
+                MainSceneListView.ListExited += MainSceneListView_ListExited;
+                MainSceneListView.Refresh();
+                SpotlightToolStripProgressBar.Value = 100;
+                SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
             }
         }
     }
