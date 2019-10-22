@@ -294,6 +294,9 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                     previousobject = currentobject;
                 }
                 SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
+
+                currentLevel.scene.DuplicateSelectedObjects();
+
                 SpotlightToolStripStatusLabel.Text = $"Duplicated {SelectedObjects}";
             }
         }

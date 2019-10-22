@@ -305,23 +305,6 @@ namespace SpotLight.EditorDrawables
             writer.Write(rootNode, true);
         }
 
-        public override uint KeyDown(KeyEventArgs e, GL_ControlBase control)
-        {
-            if(e.Control && e.KeyCode == Keys.D)
-            {
-                if (SelectedObjects.Count == 0)
-                    return 0;
-                else
-                {
-                    DuplicateSelectedObjects();
-
-                    return REDRAW_PICKING;
-                }
-            }
-            else
-                return base.KeyDown(e, control);
-        }
-
         public void DuplicateSelectedObjects()
         {
             //Duplicate Selected Objects
@@ -388,6 +371,9 @@ namespace SpotLight.EditorDrawables
             //Add to undo
             if (objListInfos.Count > 0)
                 AddToUndo(new Revertable3DWorldObjAddition(objListInfos.ToArray()));
+
+            control.Refresh();
+            control.Repick();
         }
 
         public class DuplicationInfo
