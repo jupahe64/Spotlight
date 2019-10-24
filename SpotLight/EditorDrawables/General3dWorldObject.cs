@@ -520,7 +520,7 @@ namespace SpotLight.EditorDrawables
             duplicates[this] = new General3dWorldObject(Position, Rotation, Scale, scene.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
                 newLinks, newProperties);
 
-            duplicates[this].SelectDefault(scene.SelectedObjects);
+            duplicates[this].SelectDefault(scene.GL_Control,scene.SelectedObjects);
         }
 
         public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo)
