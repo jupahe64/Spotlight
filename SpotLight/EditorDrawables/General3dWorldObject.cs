@@ -460,6 +460,10 @@ namespace SpotLight.EditorDrawables
             if (!Selected)
                 return false;
             objectUIControl.AddObjectUIContainer(new BasicPropertyProvider(this, scene), "General");
+
+            if (Properties != null)
+                objectUIControl.AddObjectUIContainer(new ExtraPropertiesProvider(Properties, scene), "Properties");
+
             return true;
         }
 
@@ -637,6 +641,68 @@ namespace SpotLight.EditorDrawables
             {
                 capture?.HandleUndo(scene);
                 capture = null;
+                scene.Refresh();
+            }
+
+            public void UpdateProperties()
+            {
+
+            }
+        }
+
+        public class ExtraPropertiesProvider : IObjectUIContainer
+        {
+            Dictionary<string, dynamic> dict;
+            EditorSceneBase scene;
+
+            string[] keys;
+
+            List<KeyValuePair<string, dynamic>> capture = null;
+
+            public ExtraPropertiesProvider(Dictionary<string, dynamic> dict, EditorSceneBase scene)
+            {
+                this.dict = dict;
+                this.scene = scene;
+                keys = dict.Keys.ToArray();
+            }
+
+            public void DoUI(IObjectUIControl control)
+            {
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    string key = keys[i];
+                    if (dict[key] is int)
+                        dict[key] = (int)control.NumberInput(dict[key], key);
+                    else if (dict[key] is float)
+                        dict[key] = control.NumberInput(dict[key], key);
+                    else if (dict[key] is string)
+                        dict[key] = control.TextInput(dict[key], key);
+                }
+            }
+
+            public void OnValueChangeStart()
+            {
+                capture = dict.ToList();
+            }
+
+            public void OnValueChanged()
+            {
+                scene.Refresh();
+            }
+
+            public void OnValueSet()
+            {
+
+                foreach (var keyValuePair in capture)
+                {
+                    if(keyValuePair.Value!= dict[keyValuePair.Key])
+                    {
+                        scene.AddToUndo(new RevertableDictEntryChange(keyValuePair.Key, dict, keyValuePair.Value));
+                    }
+
+                }
+                capture = null;
+
                 scene.Refresh();
             }
 
