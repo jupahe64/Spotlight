@@ -123,7 +123,6 @@
             this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ObjectUIControl.CurrentObjectUIProvider = null;
             this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
             this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
             this.ObjectUIControl.Name = "ObjectUIControl";

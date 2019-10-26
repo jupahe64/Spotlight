@@ -455,7 +455,13 @@ namespace SpotLight.EditorDrawables
             boundingBox.Include(Position + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
         }
 
-        public override IObjectUIProvider GetPropertyProvider(EditorSceneBase scene) => new PropertyProvider(this, scene);
+        public override bool TrySetupObjectUIControl(EditorSceneBase scene, ObjectUIControl objectUIControl)
+        {
+            if (!Selected)
+                return false;
+            objectUIControl.AddObjectUIContainer(new BasicPropertyProvider(this, scene), "General");
+            return true;
+        }
 
         public void ClearLinkDestinations()
         {
@@ -563,14 +569,14 @@ namespace SpotLight.EditorDrawables
 
 
 
-        public new class PropertyProvider : IObjectUIProvider
+        public class BasicPropertyProvider : IObjectUIContainer
         {
             PropertyCapture? capture = null;
 
             General3dWorldObject obj;
             EditorSceneBase scene;
 
-            public PropertyProvider(General3dWorldObject obj, EditorSceneBase scene)
+            public BasicPropertyProvider(General3dWorldObject obj, EditorSceneBase scene)
             {
                 this.obj = obj;
                 this.scene = scene;

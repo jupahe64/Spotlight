@@ -74,7 +74,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         {
             currentLevel.scene.CurrentList = e.List;
             //fetch availible properties for list
-            ObjectUIControl.CurrentObjectUIProvider = currentLevel.scene.GetObjectUIProvider();
+            currentLevel.scene.SetupObjectUIControl(ObjectUIControl);
         }
 
         private void MainSceneListView_ItemsMoved(object sender, ItemsMovedEventArgs e)
@@ -173,7 +173,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             }
             MainSceneListView.Refresh();
 
-            ObjectUIControl.CurrentObjectUIProvider = currentLevel.scene.GetObjectUIProvider();
+            currentLevel.scene.SetupObjectUIControl(ObjectUIControl);
         }
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
