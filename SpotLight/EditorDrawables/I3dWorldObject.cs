@@ -13,7 +13,7 @@ namespace SpotLight.EditorDrawables
     /// <summary>
     /// Interface object for SM3DW Objects
     /// </summary>
-    interface I3dWorldObject : IEditableObject
+    public interface I3dWorldObject : IEditableObject
     {
         IReadOnlyList<(string, I3dWorldObject)> LinkDestinations { get; }
         void ClearLinkDestinations();
@@ -23,9 +23,8 @@ namespace SpotLight.EditorDrawables
         void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene);
         void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo);
 
-        Dictionary<string, List<I3dWorldObject>> Links { get; }
+        Dictionary<string, List<I3dWorldObject>> Links { get; set; }
         void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);
         Vector3 GetLinkingPoint();
-        void DeleteSelected3DWorldObject(List<I3dWorldObject> objectsToDelete);
     }
 }

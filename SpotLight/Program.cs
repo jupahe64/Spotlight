@@ -19,6 +19,7 @@ namespace SpotLight
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new LevelEditorForm());
         }
+
         /// <summary>
         /// Checks the game path to see if it is a valid SM3DW path
         /// </summary>

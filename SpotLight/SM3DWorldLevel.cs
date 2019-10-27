@@ -76,7 +76,7 @@ namespace SpotLight
                 
                 foreach (ArrayEntry obj in entry.IterArray())
                 {
-                    scene.objLists[entry.Key].Add(new General3dWorldObject(obj, scene, objectsByReference));
+                    scene.objLists[entry.Key].Add(LevelIO.ParseObject(obj, scene, objectsByReference));
                 }
                 sceneListView.RootLists.Add(entry.Key, scene.objLists[entry.Key]);
             }

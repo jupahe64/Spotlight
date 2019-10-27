@@ -86,6 +86,7 @@
     <None Include="Clear Pipes.cs" />
     <Compile Include="EditorDrawables\General3dWorldObject.cs" />
     <Compile Include="EditorDrawables\I3dWorldObject.cs" />
+    <Compile Include="EditorDrawables\Rail.cs" />
     <Compile Include="EditorDrawables\SM3DWorldScene.cs" />
     <Compile Include="LevelEditorForm.cs">
       <SubType>Form</SubType>
@@ -93,6 +94,7 @@
     <Compile Include="LevelEditorForm.Designer.cs">
       <DependentUpon>LevelEditorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="LevelIO.cs" />
     <Compile Include="LevelParam.cs" />
     <Compile Include="LevelParameterForm.cs">
       <SubType>Form</SubType>

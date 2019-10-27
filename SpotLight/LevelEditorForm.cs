@@ -178,7 +178,8 @@ Please select the folder than contains these folders", "Introduction", MessageBo
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
-            General3dWorldObject obj = (General3dWorldObject)currentLevel.scene.SelectedObjects.First();
+            General3dWorldObject obj = (currentLevel.scene.SelectedObjects.First() as General3dWorldObject);
+            Rail rail = (currentLevel.scene.SelectedObjects.First() as Rail);
             Debugger.Break();
         }
 
@@ -325,6 +326,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 SpotlightToolStripProgressBar.Value = 50;
                 level.scene.SelectionChanged += Scene_SelectionChanged;
                 level.scene.ListChanged += Scene_ListChanged;
+                level.scene.ListEntered += Scene_ListEntered;
                 level.scene.ObjectsMoved += Scene_ObjectsMoved;
 
                 MainSceneListView.Enabled = true;
@@ -334,6 +336,11 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 SpotlightToolStripProgressBar.Value = 100;
                 SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
             }
+        }
+
+        private void Scene_ListEntered(object sender, ListEventArgs e)
+        {
+            MainSceneListView.EnterList(e.List);
         }
     }
 }

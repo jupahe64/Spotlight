@@ -18,7 +18,7 @@ using SZS;
 
 namespace SpotLight.EditorDrawables
 {
-    class SM3DWorldScene : EditorSceneBase
+    public class SM3DWorldScene : EditorSceneBase
     {
         public struct Revertable3DWorldObjDeletion : IRevertable
         {
@@ -180,7 +180,20 @@ namespace SpotLight.EditorDrawables
             }
         }
 
+        private ulong highestRailID = 0;
+
+        public void SubmitRailID(string id)
+        {
+            if (id.StartsWith("rail") && ulong.TryParse(id.Substring(4), out ulong objID))
+            {
+                if (objID > highestRailID)
+                    highestRailID = objID;
+            }
+        }
+
         public string NextObjID() => "obj" + (++highestObjID);
+
+        public string NextRailID() => "rail" + (++highestRailID);
 
         public static bool IteratesThroughLinks;
 
@@ -231,34 +244,65 @@ namespace SpotLight.EditorDrawables
         {
             DeletionManager manager = new DeletionManager();
 
-            List<Revertable3DWorldObjAddition.ObjListInfo> objsToDelete = new List<Revertable3DWorldObjAddition.ObjListInfo>();
-
-            foreach (List<I3dWorldObject> objects in objLists.Values)
+            foreach (List<I3dWorldObject> objList in objLists.Values)
             {
-                List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
+                //List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
 
-                foreach (I3dWorldObject obj in objects)
+                foreach (I3dWorldObject obj in objList)
                 {
-                    obj.DeleteSelected(manager, objects, CurrentList);
-                    obj.DeleteSelected3DWorldObject(_objsToDelete);
+                    obj.DeleteSelected(manager, objList, CurrentList);
+                    //obj.DeleteSelected3DWorldObject(_objsToDelete);
                 }
-                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, _objsToDelete.ToArray()));
+                //objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, _objsToDelete.ToArray()));
             }
 
-            List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
+            //List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
 
             foreach (I3dWorldObject obj in linkedObjects)
             {
                 obj.DeleteSelected(manager, linkedObjects, CurrentList);
-                obj.DeleteSelected3DWorldObject(linkedObjsToDelete);
+                //obj.DeleteSelected3DWorldObject(linkedObjsToDelete);
             }
 
-            objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(linkedObjects, linkedObjsToDelete.ToArray()));
 
+            List<Revertable3DWorldObjAddition.ObjListInfo> objsToDelete = new List<Revertable3DWorldObjAddition.ObjListInfo>();
+
+            List<IEditableObject> objects;
+
+            foreach (List<I3dWorldObject> objList in objLists.Values)
+            {
+                if(manager.Dictionary.TryGetValue(objList, out objects))
+                {
+                    manager.Dictionary.Remove(objList);
+                    List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
+                    
+                    foreach (I3dWorldObject obj in objects)
+                    {
+                        _objsToDelete.Add(obj);
+                    }
+                    objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
+                }
+            }
+
+            List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
+
+            if (manager.Dictionary.TryGetValue(linkedObjects, out objects))
+            {
+                manager.Dictionary.Remove(linkedObjects);
+                foreach (I3dWorldObject obj in objects)
+                {
+                    linkedObjsToDelete.Add(obj);
+                }
+
+                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(linkedObjects, linkedObjsToDelete.ToArray()));
+            }
+
+            BeginUndoCollection();
             //A little hack: Delete objects by reverting their creation
             AddToUndo(new Revertable3DWorldObjAddition(objsToDelete.ToArray()).Revert(this));
 
             _ExecuteDeletion(manager);
+            EndUndoCollection();
 
             UpdateLinkDestinations();
         }
