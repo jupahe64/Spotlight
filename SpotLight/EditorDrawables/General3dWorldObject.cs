@@ -108,7 +108,7 @@ namespace SpotLight.EditorDrawables
                 Properties = new Dictionary<string, dynamic>();
                 foreach (var entry in info.PropertyEntries.Values)
                 {
-                    Properties.Add(entry.Key, entry.Parse());
+                    Properties.Add(entry.Key, entry.Parse()??"");
                 }
             }
 
@@ -195,7 +195,12 @@ namespace SpotLight.EditorDrawables
             if (Properties != null)
             {
                 foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
-                    objNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
+                {
+                    if(keyValuePair.Value is string && keyValuePair.Value == "")
+                        objNode.AddDynamicValue(keyValuePair.Key, null, true);
+                    else
+                        objNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
+                }
             }
         }
 
@@ -569,6 +574,8 @@ namespace SpotLight.EditorDrawables
                         dict[key] = control.NumberInput(dict[key], key);
                     else if (dict[key] is string)
                         dict[key] = control.TextInput(dict[key], key);
+                    else if (dict[key] is bool)
+                        dict[key] = control.CheckBox(key, dict[key]);
                 }
             }
 
