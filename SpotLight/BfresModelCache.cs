@@ -137,7 +137,6 @@ namespace SpotLight
 
 
                 ResFile bfres = new ResFile(stream);
-
                 Model mdl = bfres.Models[0];
 
                 vaos = new VertexArrayObject[mdl.Shapes.Count];
@@ -153,7 +152,16 @@ namespace SpotLight
 
                     if (mdl.Materials[shape.MaterialIndex].TextureRefs.Count != 0)
                     {
-                        TextureRef texRef = mdl.Materials[shape.MaterialIndex].TextureRefs[0];
+                        int Target = 0;
+                        for (int i = 0; i < mdl.Materials[shape.MaterialIndex].TextureRefs.Count; i++)
+                        {
+                            if (mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains("_alb"))
+                            {
+                                Target = i;
+                                break;
+                            }
+                        }
+                        TextureRef texRef = mdl.Materials[shape.MaterialIndex].TextureRefs[Target];
                         if (texRef.Texture != null)
                         {
                             textures[shapeIndex] = UploadTexture(texRef.Texture);
@@ -513,6 +521,8 @@ namespace SpotLight
                 surf.numMips = 1;
 
             byte[] deswizzled = GX2.Decode(surf, 0, 0);
+
+
             #endregion
             int tex = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, tex);
@@ -520,11 +530,9 @@ namespace SpotLight
             GetPixelFormats(texture.Format, out PixelInternalFormat internalFormat, out PixelFormat format);
 
             if (internalFormat == PixelInternalFormat.Rgba)
-                GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat,
-                (int)texture.Width/4, (int)texture.Height/4, 0, format, PixelType.UnsignedByte, deswizzled);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat, (int)texture.Width/4, (int)texture.Height/4, 0, format, PixelType.UnsignedByte, deswizzled);
             else
-                GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat,
-                (int)texture.Width, (int)texture.Height, 0, deswizzled.Length, deswizzled);
+                GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat, (int)texture.Width, (int)texture.Height, 0, deswizzled.Length, deswizzled);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);

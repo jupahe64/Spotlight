@@ -191,6 +191,8 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 SpotlightToolStripStatusLabel.Text = "Waiting...";
             if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
                 LoadLevel(ofd.FileName);
+            else
+                SpotlightToolStripStatusLabel.Text = "Open Cancelled";
         }
 
         private void Scene_ObjectsMoved(object sender, EventArgs e)
