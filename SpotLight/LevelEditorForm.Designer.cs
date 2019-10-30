@@ -38,18 +38,18 @@
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.OpenExToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UndoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.DuplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LevelParametersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.DuplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.OpenExToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -123,6 +123,7 @@
             this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.ObjectUIControl.BackColor = System.Drawing.SystemColors.Control;
             this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
             this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
             this.ObjectUIControl.Name = "ObjectUIControl";
@@ -180,6 +181,13 @@
             this.OpenToolStripMenuItem.ToolTipText = "Open a Level file";
             this.OpenToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
+            // OpenExToolStripMenuItem
+            // 
+            this.OpenExToolStripMenuItem.Name = "OpenExToolStripMenuItem";
+            this.OpenExToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.OpenExToolStripMenuItem.Text = "Open With Selector";
+            this.OpenExToolStripMenuItem.Click += new System.EventHandler(this.OpenExToolStripMenuItem_Click);
+            // 
             // SaveToolStripMenuItem
             // 
             this.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
@@ -231,6 +239,14 @@
             this.RedoToolStripMenuItem.Text = "Redo               Ctrl+Y";
             this.RedoToolStripMenuItem.Click += new System.EventHandler(this.RedoToolStripMenuItem_Click);
             // 
+            // DuplicateToolStripMenuItem
+            // 
+            this.DuplicateToolStripMenuItem.Name = "DuplicateToolStripMenuItem";
+            this.DuplicateToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
+            this.DuplicateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.DuplicateToolStripMenuItem.Text = "Duplicate";
+            this.DuplicateToolStripMenuItem.Click += new System.EventHandler(this.DuplicateToolStripMenuItem_Click);
+            // 
             // LevelParametersToolStripMenuItem
             // 
             this.LevelParametersToolStripMenuItem.Name = "LevelParametersToolStripMenuItem";
@@ -257,22 +273,7 @@
             // 
             this.SpotlightToolStripStatusLabel.Name = "SpotlightToolStripStatusLabel";
             this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
-            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.0.1.0";
-            // 
-            // DuplicateToolStripMenuItem
-            // 
-            this.DuplicateToolStripMenuItem.Name = "DuplicateToolStripMenuItem";
-            this.DuplicateToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
-            this.DuplicateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.DuplicateToolStripMenuItem.Text = "Duplicate";
-            this.DuplicateToolStripMenuItem.Click += new System.EventHandler(this.DuplicateToolStripMenuItem_Click);
-            // 
-            // OpenExToolStripMenuItem
-            // 
-            this.OpenExToolStripMenuItem.Name = "OpenExToolStripMenuItem";
-            this.OpenExToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.OpenExToolStripMenuItem.Text = "Open With Selector";
-            this.OpenExToolStripMenuItem.Click += new System.EventHandler(this.OpenExToolStripMenuItem_Click);
+            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.1.5.0";
             // 
             // LevelEditorForm
             // 

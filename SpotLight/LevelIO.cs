@@ -34,7 +34,8 @@ namespace SpotLight
                         break; //ignore these
                     case "Id":
                         info.ID = entry.Parse();
-                        scene.SubmitID(info.ID);
+                        if (scene != null)
+                            scene.SubmitID(info.ID);
                         break;
                     case "Links":
                         info.LinksEntry = entry;
@@ -126,7 +127,8 @@ namespace SpotLight
                             I3dWorldObject _obj = ParseObject(linked, scene, objectsByReference);
                             _obj.AddLinkDestination(link.Key, obj);
                             obj.Links[link.Key].Add(_obj);
-                            scene.linkedObjects.Add(_obj);
+                            if (scene != null)
+                                scene.linkedObjects.Add(_obj);
                         }
                     }
                 }

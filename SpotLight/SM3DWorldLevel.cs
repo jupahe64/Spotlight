@@ -37,6 +37,7 @@ namespace SpotLight
         /// Any extra files that may be inside the map
         /// </summary>
         Dictionary<string, BymlFileData> extraFiles = new Dictionary<string, BymlFileData>();
+        public readonly Dictionary<long, I3dWorldObject> ObjectBaseReference = new Dictionary<long, I3dWorldObject>();
 
         public SM3DWorldScene scene;
 
@@ -80,6 +81,35 @@ namespace SpotLight
                 }
                 sceneListView.RootLists.Add(entry.Key, scene.objLists[entry.Key]);
             }
+        }
+        public SM3DWorldLevel(string Filename, string Levelname, string CATEGORY)
+        {
+            levelName = Levelname;
+            fileName = Filename;
+            categoryName = CATEGORY;
+
+            SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+            foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
+            {
+                if (keyValuePair.Key != levelName.Replace("Map1.szs", "") + categoryName + ".byml")
+                    extraFiles.Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+            }
+            Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
+
+            ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(sarc.Files[levelName.Replace("Map1.szs","") + CATEGORY + ".byml"]));
+            int id = 0;
+            foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
+            {
+                if (entry.Key == "FilePath" || entry.Key == "Objs")
+                    continue;
+
+                foreach (ArrayEntry obj in entry.IterArray())
+                {
+                    objectsByReference.Add(id,LevelIO.ParseObject(obj, scene, objectsByReference));
+                    id++;
+                }
+            }
+            ObjectBaseReference = objectsByReference;
         }
 
         /// <summary>

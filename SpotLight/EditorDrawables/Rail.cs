@@ -79,6 +79,7 @@ namespace SpotLight.EditorDrawables
             : base(PathPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]))
         {
             ID = info.ID;
+            if (scene != null)
             scene.SubmitRailID(ID);
 
             IsLadder = info.PropertyEntries["IsLadder"].Parse();
