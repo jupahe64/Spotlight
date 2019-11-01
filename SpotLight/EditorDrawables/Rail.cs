@@ -279,22 +279,23 @@ namespace SpotLight.EditorDrawables
 
         public override bool TrySetupObjectUIControl(EditorSceneBase scene, ObjectUIControl objectUIControl)
         {
-            if (scene.SelectedObjects.Count > PathPoints.Count + 1)
+            bool any = false;
+
+            foreach (PathPoint point in pathPoints)
+                any |= point.Selected;
+
+
+            if (!any)
                 return false;
-            foreach (object obj in scene.SelectedObjects)
-            {
-                if (!PathPoints.Contains(obj) && obj != this)
-                    return false;
-            }
 
             objectUIControl.AddObjectUIContainer(new RailUIContainer(this, scene), "Path");
 
             List<PathPoint> points = new List<PathPoint>();
 
-            foreach (IEditableObject obj in scene.SelectedObjects)
+            foreach (PathPoint point in pathPoints)
             {
-                if (obj is PathPoint)
-                    points.Add((PathPoint)obj);
+                if (point.Selected)
+                    points.Add(point);
             }
 
             if (points.Count == 1)

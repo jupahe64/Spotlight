@@ -257,7 +257,6 @@ namespace SpotLight.EditorDrawables
                 return;
 
             Selected = false;
-            scene.SelectedObjects.Remove(this);
 
             //copy links
             Dictionary<string, List<I3dWorldObject>> newLinks;
@@ -538,6 +537,29 @@ namespace SpotLight.EditorDrawables
             {
                 capture?.HandleUndo(scene);
                 capture = null;
+
+                string mdlName = obj.ModelName == "" ? obj.ObjectName : obj.ModelName;
+                if (File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
+                {
+                    SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
+
+                    if (objArc.Files.ContainsKey(mdlName + ".bfres"))
+                    {
+                        if (objArc.Files.ContainsKey("InitModel.byml"))
+                        {
+                            dynamic initModel = ByamlFile.FastLoadN(new MemoryStream(objArc.Files["InitModel.byml"]), false, Syroot.BinaryData.Endian.Big).RootNode;
+
+                            if (initModel is Dictionary<string, dynamic>)
+                            {
+                                BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), (GL_ControlModern)scene.GL_Control,
+                                initModel.TryGetValue("TextureArc", out dynamic texArc) ? texArc : null);
+                                return;
+                            }
+                        }
+                        BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), (GL_ControlModern)scene.GL_Control, null);
+                    }
+                }
+
                 scene.Refresh();
             }
 
