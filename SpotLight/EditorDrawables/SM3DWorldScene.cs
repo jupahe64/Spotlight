@@ -246,22 +246,15 @@ namespace SpotLight.EditorDrawables
 
             foreach (List<I3dWorldObject> objList in objLists.Values)
             {
-                //List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
-
                 foreach (I3dWorldObject obj in objList)
                 {
-                    obj.DeleteSelected(manager, objList, CurrentList);
-                    //obj.DeleteSelected3DWorldObject(_objsToDelete);
+                    obj.DeleteSelected(this, manager, objList);
                 }
-                //objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, _objsToDelete.ToArray()));
             }
-
-            //List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
 
             foreach (I3dWorldObject obj in linkedObjects)
             {
-                obj.DeleteSelected(manager, linkedObjects, CurrentList);
-                //obj.DeleteSelected3DWorldObject(linkedObjsToDelete);
+                obj.DeleteSelected(this, manager, linkedObjects);
             }
 
 

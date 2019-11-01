@@ -290,7 +290,7 @@ namespace SpotLight.EditorDrawables
             duplicates[this] = new General3dWorldObject(Position, Rotation, Scale, scene.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
                 newLinks, newProperties);
 
-            duplicates[this].SelectDefault(scene.GL_Control,scene.SelectedObjects);
+            duplicates[this].SelectDefault(scene.GL_Control);
         }
 
         public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo)
@@ -386,7 +386,7 @@ namespace SpotLight.EditorDrawables
                     Matrix4.CreateScale(DisplayScale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale) : Scale)) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale, rotMtx) : Scale)) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
 
@@ -411,7 +411,7 @@ namespace SpotLight.EditorDrawables
                     Matrix4.CreateScale(DisplayScale * 0.5f) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale) : Scale)) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale, rotMtx) : Scale)) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
             }

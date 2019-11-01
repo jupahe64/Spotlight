@@ -80,6 +80,8 @@ namespace SpotLight
                     scene.objLists[entry.Key].Add(LevelIO.ParseObject(obj, scene, objectsByReference));
                 }
                 sceneListView.RootLists.Add(entry.Key, scene.objLists[entry.Key]);
+
+                sceneListView.UpdateComboBoxItems();
             }
         }
         public SM3DWorldLevel(string Filename, string Levelname, string CATEGORY)

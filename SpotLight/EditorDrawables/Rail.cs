@@ -230,11 +230,11 @@ namespace SpotLight.EditorDrawables
 
             var duplicate = duplicates[this];
 
-            DeselectAll(scene.GL_Control, scene.SelectedObjects);
+            DeselectAll(scene.GL_Control);
             
             duplicates[this].Prepare((GL_EditorFramework.GL_Core.GL_ControlModern)scene.GL_Control);
 
-            duplicates[this].SelectDefault(scene.GL_Control, scene.SelectedObjects);
+            duplicates[this].SelectDefault(scene.GL_Control);
         }
 
         public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo)
