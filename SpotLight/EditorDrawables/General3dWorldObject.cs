@@ -465,7 +465,8 @@ namespace SpotLight.EditorDrawables
 
         public override void GetSelectionBox(ref BoundingBox boundingBox)
         {
-            boundingBox.Include(Position + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
+            if(Selected)
+                boundingBox.Include(Position + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
         }
 
 
