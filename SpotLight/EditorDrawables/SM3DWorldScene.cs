@@ -197,6 +197,14 @@ namespace SpotLight.EditorDrawables
 
         public static bool IteratesThroughLinks;
 
+        public enum Mode
+        {
+            DEFAULT,
+            LINKS_EDIT
+        }
+
+        public static Mode CurrentMode = Mode.LINKS_EDIT;
+
         /// <summary>
         /// Gets all the editable objects
         /// </summary>

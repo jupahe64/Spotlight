@@ -224,6 +224,9 @@ namespace SpotLight.EditorDrawables
             if (Properties != null)
                 objectUIControl.AddObjectUIContainer(new ExtraPropertiesProvider(Properties, scene), "Properties");
 
+            if (Links != null)
+                objectUIControl.AddObjectUIContainer(new LinksProvider(this, scene), "Links");
+
             return true;
         }
 
@@ -331,6 +334,10 @@ namespace SpotLight.EditorDrawables
         }
         #endregion
 
+        static bool Initialized = false;
+
+        static ShaderProgram LinksShaderProgram;
+
         /// <summary>
         /// Prepares to draw this Object
         /// </summary>
@@ -359,6 +366,33 @@ namespace SpotLight.EditorDrawables
                     BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control, null);
                 }
             }
+
+            if (!Initialized)
+            {
+                LinksShaderProgram = new ShaderProgram(
+                    new FragmentShader(
+              @"#version 330
+                in vec4 fragColor;
+                void main(){
+                    gl_FragColor = fragColor;
+                }"),
+                    new VertexShader(
+              @"#version 330
+                layout(location = 0) in vec4 position;
+                layout(location = 1) in vec4 color;
+
+                out vec4 fragColor;
+
+                uniform mat4 mtxMdl;
+                uniform mat4 mtxCam;
+                void main(){
+                    gl_Position = mtxCam*mtxMdl*position;
+                    fragColor = color;
+                }"), control);
+
+                Initialized = true;
+            }
+
             base.Prepare(control);
         }
         /// <summary>
@@ -441,25 +475,30 @@ namespace SpotLight.EditorDrawables
 
         RENDER_LINKS:
 
-            if (Links != null && pass == Pass.OPAQUE)
+            if (Links != null)
             {
-                control.ResetModelMatrix();
-
-                control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
-                control.CurrentShader.SetVector4("color", Vector4.One);
-
-                GL.LineWidth(1);
-                GL.Begin(PrimitiveType.Lines);
-                foreach (List<I3dWorldObject> link in Links.Values)
+                if (pass == Pass.OPAQUE)
                 {
-                    foreach (I3dWorldObject obj in link)
+                    control.ResetModelMatrix();
+
+                    control.CurrentShader = LinksShaderProgram;
+                    
+                    GL.Begin(PrimitiveType.Lines);
+                    foreach (List<I3dWorldObject> link in Links.Values)
                     {
-                        GL.Vertex3(GetLinkingPoint());
-                        GL.Vertex3(obj.GetLinkingPoint());
+                        foreach (I3dWorldObject obj in link)
+                        {
+                            if (Selected || obj.IsSelected())
+                            {
+                                GL.VertexAttrib4(1, new Vector4(1, 1, 1, 1));
+                                GL.Vertex3(GetLinkingPoint());
+                                GL.VertexAttrib4(1, new Vector4(0, 1, 1, 1));
+                                GL.Vertex3(obj.GetLinkingPoint());
+                            }
+                        }
                     }
+                    GL.End();
                 }
-                GL.End();
-                GL.LineWidth(2);
             }
         }
 
@@ -631,6 +670,47 @@ namespace SpotLight.EditorDrawables
             public void UpdateProperties()
             {
 
+            }
+        }
+
+        public class LinksProvider : IObjectUIContainer
+        {
+            General3dWorldObject obj;
+            EditorSceneBase scene;
+
+            public LinksProvider(General3dWorldObject obj, EditorSceneBase scene)
+            {
+                this.obj = obj;
+                this.scene = scene;
+            }
+
+            public void DoUI(IObjectUIControl control)
+            {
+                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in obj.Links)
+                {
+                    if (control.Link(keyValuePair.Key))
+                        scene.EnterList(keyValuePair.Value);
+                }
+            }
+
+            public void OnValueChanged()
+            {
+                
+            }
+
+            public void OnValueChangeStart()
+            {
+                
+            }
+
+            public void OnValueSet()
+            {
+                
+            }
+
+            public void UpdateProperties()
+            {
+                
             }
         }
     }

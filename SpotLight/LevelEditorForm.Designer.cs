@@ -50,6 +50,7 @@
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -127,7 +128,7 @@
             this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
             this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
             this.ObjectUIControl.Name = "ObjectUIControl";
-            this.ObjectUIControl.Size = new System.Drawing.Size(254, 247);
+            this.ObjectUIControl.Size = new System.Drawing.Size(254, 245);
             this.ObjectUIControl.TabIndex = 1;
             // 
             // LevelGLControlModern
@@ -275,6 +276,11 @@
             this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
             this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.1.5.0";
             // 
+            // toolStripTextBox1
+            // 
+            this.toolStripTextBox1.Name = "toolStripTextBox1";
+            this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
+            // 
             // LevelEditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -329,6 +335,7 @@
         private System.Windows.Forms.ToolStripMenuItem LevelParametersToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DuplicateToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OpenExToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
     }
 }
 
