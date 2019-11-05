@@ -157,6 +157,20 @@ namespace SpotLight.EditorDrawables
             StaticObjects.Add(new LinkRenderer(this));
         }
 
+        public IEnumerable<I3dWorldObject> Objects
+        {
+            get
+            {
+                foreach (List<I3dWorldObject> objects in ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        yield return obj;
+                }
+                foreach (I3dWorldObject obj in LinkedObjects)
+                    yield return obj;
+            }
+        }
+
         public Stack<IRevertable> UndoStack
         {
             get => undoStack;

@@ -163,11 +163,9 @@ namespace SpotLight
 
             if (scene.ObjLists.ContainsKey("PlayerList") && scene.ObjLists["PlayerList"].Count > 0)
             {
-                GL_EditorFramework.EditorDrawables.EditableObject.BoundingBox box = GL_EditorFramework.EditorDrawables.EditableObject.BoundingBox.Default;
-                scene.ObjLists["PlayerList"][0].GetSelectionBox(ref box);
-                scene.GL_Control.CamRotX = Framework.HALF_PI / 2;
+                scene.GL_Control.CamRotX = 0;
                 scene.GL_Control.CamRotY = Framework.HALF_PI/4;
-                scene.GL_Control.CameraTarget = box.GetCenter();
+                scene.GL_Control.CameraTarget = scene.ObjLists["PlayerList"][0].GetFocusPoint();
             }
 
             return true;

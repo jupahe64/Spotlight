@@ -27,7 +27,6 @@ namespace SpotLight
             InitializeComponent();
             
             LevelGLControlModern.CameraDistance = 20;
-            LevelGLControlModern.KeyDown += LevelGL_ControlModern_KeyDown;
             
             MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
             MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
@@ -108,22 +107,6 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             LevelGLControlModern.Refresh();
 
             Scene_SelectionChanged(this, null);
-        }
-
-        private void LevelGL_ControlModern_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Delete && currentLevel!=null)
-            {
-                string DeletedObjects = "";
-                for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
-                    DeletedObjects += currentLevel.scene.SelectedObjects.ElementAt(i).ToString()+(i+1 == currentLevel.scene.SelectedObjects.Count ? ".":", ");
-                SpotlightToolStripStatusLabel.Text = $"Deleted {DeletedObjects}";
-
-                currentLevel.scene.DeleteSelected();
-                LevelGLControlModern.Refresh();
-                MainSceneListView.UpdateAutoScrollHeight();
-                Scene_SelectionChanged(this, null);
-            }
         }
 
         private void Scene_SelectionChanged(object sender, EventArgs e)
@@ -389,6 +372,52 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 LevelGLControlModern.MainDrawable = newScene;
                 LevelGLControlModern.Refresh();
             }
+        }
+
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel == null)
+                return;
+
+            string DeletedObjects = "";
+            for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
+                DeletedObjects += currentLevel.scene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currentLevel.scene.SelectedObjects.Count ? "." : ", ");
+            SpotlightToolStripStatusLabel.Text = $"Deleted {DeletedObjects}";
+
+            currentLevel.scene.DeleteSelected();
+            LevelGLControlModern.Refresh();
+            MainSceneListView.UpdateAutoScrollHeight();
+            Scene_SelectionChanged(this, null);
+        }
+
+        private void SelectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel == null)
+                return;
+
+            foreach (I3dWorldObject obj in currentLevel.scene.Objects)
+                obj.SelectAll(LevelGLControlModern);
+
+            LevelGLControlModern.Refresh();
+            MainSceneListView.Refresh();
+        }
+
+        private void DeselectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel == null)
+                return;
+
+            foreach (I3dWorldObject obj in currentLevel.scene.Objects)
+                obj.DeselectAll(LevelGLControlModern);
+
+            LevelGLControlModern.Refresh();
+            MainSceneListView.Refresh();
+        }
+
+        private void MainSceneListView_ItemDoubleClicked(object sender, ItemDoubleClickedEventArgs e)
+        {
+            if (e.Item is I3dWorldObject obj)
+                LevelGLControlModern.CameraTarget = obj.GetFocusPoint();
         }
     }
 }
