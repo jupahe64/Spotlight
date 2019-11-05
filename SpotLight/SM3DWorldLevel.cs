@@ -19,7 +19,7 @@ using Syroot.NintenTools.Bfres.Helpers;
 
 namespace SpotLight
 {
-    class SM3DWorldLevel
+    public class SM3DWorldLevel
     {
         /// <summary>
         /// Name of the Level
@@ -73,13 +73,13 @@ namespace SpotLight
             {
                 if (entry.Key == "FilePath" || entry.Key == "Objs")
                     continue;
-                scene.objLists.Add(entry.Key, new List<I3dWorldObject>());
+                scene.ObjLists.Add(entry.Key, new List<I3dWorldObject>());
                 
                 foreach (ArrayEntry obj in entry.IterArray())
                 {
-                    scene.objLists[entry.Key].Add(LevelIO.ParseObject(obj, scene, objectsByReference));
+                    scene.ObjLists[entry.Key].Add(LevelIO.ParseObject(obj, scene, objectsByReference));
                 }
-                sceneListView.RootLists.Add(entry.Key, scene.objLists[entry.Key]);
+                sceneListView.RootLists.Add(entry.Key, scene.ObjLists[entry.Key]);
 
                 sceneListView.UpdateComboBoxItems();
             }
@@ -161,10 +161,10 @@ namespace SpotLight
 
             control.MainDrawable = scene;
 
-            if (scene.objLists.ContainsKey("PlayerList") && scene.objLists["PlayerList"].Count > 0)
+            if (scene.ObjLists.ContainsKey("PlayerList") && scene.ObjLists["PlayerList"].Count > 0)
             {
                 GL_EditorFramework.EditorDrawables.EditableObject.BoundingBox box = GL_EditorFramework.EditorDrawables.EditableObject.BoundingBox.Default;
-                scene.objLists["PlayerList"][0].GetSelectionBox(ref box);
+                scene.ObjLists["PlayerList"][0].GetSelectionBox(ref box);
                 scene.GL_Control.CamRotX = Framework.HALF_PI / 2;
                 scene.GL_Control.CamRotY = Framework.HALF_PI/4;
                 scene.GL_Control.CameraTarget = box.GetCenter();

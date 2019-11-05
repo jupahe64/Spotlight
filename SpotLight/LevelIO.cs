@@ -128,7 +128,7 @@ namespace SpotLight
                             _obj.AddLinkDestination(link.Key, obj);
                             obj.Links[link.Key].Add(_obj);
                             if (scene != null)
-                                scene.linkedObjects.Add(_obj);
+                                scene.LinkedObjects.Add(_obj);
                         }
                     }
                 }

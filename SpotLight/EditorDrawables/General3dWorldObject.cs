@@ -334,10 +334,6 @@ namespace SpotLight.EditorDrawables
         }
         #endregion
 
-        static bool Initialized = false;
-
-        static ShaderProgram LinksShaderProgram;
-
         /// <summary>
         /// Prepares to draw this Object
         /// </summary>
@@ -365,32 +361,6 @@ namespace SpotLight.EditorDrawables
                     }
                     BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control, null);
                 }
-            }
-
-            if (!Initialized)
-            {
-                LinksShaderProgram = new ShaderProgram(
-                    new FragmentShader(
-              @"#version 330
-                in vec4 fragColor;
-                void main(){
-                    gl_FragColor = fragColor;
-                }"),
-                    new VertexShader(
-              @"#version 330
-                layout(location = 0) in vec4 position;
-                layout(location = 1) in vec4 color;
-
-                out vec4 fragColor;
-
-                uniform mat4 mtxMdl;
-                uniform mat4 mtxCam;
-                void main(){
-                    gl_Position = mtxCam*mtxMdl*position;
-                    fragColor = color;
-                }"), control);
-
-                Initialized = true;
             }
 
             base.Prepare(control);
@@ -435,8 +405,7 @@ namespace SpotLight.EditorDrawables
                     highlightColor = Vector4.Zero;
 
                 BfresModelCache.TryDraw(ModelName == "" ? ObjectName : ModelName, control, pass, highlightColor);
-
-                goto RENDER_LINKS;
+                return;
             }
             else
             {
@@ -472,34 +441,6 @@ namespace SpotLight.EditorDrawables
                 blockColor = col;
 
             Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
-
-        RENDER_LINKS:
-
-            if (Links != null)
-            {
-                if (pass == Pass.OPAQUE)
-                {
-                    control.ResetModelMatrix();
-
-                    control.CurrentShader = LinksShaderProgram;
-                    
-                    GL.Begin(PrimitiveType.Lines);
-                    foreach (List<I3dWorldObject> link in Links.Values)
-                    {
-                        foreach (I3dWorldObject obj in link)
-                        {
-                            if (Selected || obj.IsSelected())
-                            {
-                                GL.VertexAttrib4(1, new Vector4(1, 1, 1, 1));
-                                GL.Vertex3(GetLinkingPoint());
-                                GL.VertexAttrib4(1, new Vector4(0, 1, 1, 1));
-                                GL.Vertex3(obj.GetLinkingPoint());
-                            }
-                        }
-                    }
-                    GL.End();
-                }
-            }
         }
 
         public override void GetSelectionBox(ref BoundingBox boundingBox)

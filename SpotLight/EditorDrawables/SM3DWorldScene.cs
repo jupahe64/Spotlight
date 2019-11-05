@@ -9,6 +9,7 @@ using Syroot.NintenTools.Bfres;
 using Syroot.NintenTools.Bfres.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -152,7 +153,25 @@ namespace SpotLight.EditorDrawables
         public SM3DWorldScene()
         {
             multiSelect = true;
+
+            StaticObjects.Add(new LinkRenderer(this));
         }
+
+        public Stack<IRevertable> UndoStack
+        {
+            get => undoStack;
+            set => undoStack = value;
+        }
+
+        public Stack<IRevertable> RedoStack
+        {
+            get => redoStack;
+            set => redoStack = value;
+        }
+
+        static bool Initialized = false;
+
+        static ShaderProgram LinksShaderProgram;
 
         /// <summary>
         /// Prepares to draw models
@@ -161,13 +180,137 @@ namespace SpotLight.EditorDrawables
         public override void Prepare(GL_ControlModern control)
         {
             BfresModelCache.Initialize(control);
-            
+
+            if (!Initialized)
+            {
+                LinksShaderProgram = new ShaderProgram(
+                    new FragmentShader(
+              @"#version 330
+                in vec4 fragColor;
+                void main(){
+                    gl_FragColor = fragColor;
+                }"),
+                    new VertexShader(
+              @"#version 330
+                layout(location = 0) in vec4 position;
+                layout(location = 1) in vec4 color;
+
+                out vec4 fragColor;
+
+                uniform mat4 mtxMdl;
+                uniform mat4 mtxCam;
+                void main(){
+                    gl_Position = mtxCam*mtxMdl*position;
+                    fragColor = color;
+                }"), control);
+
+                Initialized = true;
+            }
+
             base.Prepare(control);
         }
 
-        public Dictionary<string, List<I3dWorldObject>> objLists = new Dictionary<string, List<I3dWorldObject>>();
+        class LinkRenderer : AbstractGlDrawable
+        {
+            readonly SM3DWorldScene scene;
 
-        public List<I3dWorldObject> linkedObjects = new List<I3dWorldObject>();
+            public LinkRenderer(SM3DWorldScene scene)
+            {
+                this.scene = scene;
+            }
+
+            public override void Prepare(GL_ControlModern control)
+            {
+                if (!Initialized)
+                {
+                    LinksShaderProgram = new ShaderProgram(
+                        new FragmentShader(
+                  @"#version 330
+                in vec4 fragColor;
+                void main(){
+                    gl_FragColor = fragColor;
+                }"),
+                        new VertexShader(
+                  @"#version 330
+                layout(location = 0) in vec4 position;
+                layout(location = 1) in vec4 color;
+
+                out vec4 fragColor;
+
+                uniform mat4 mtxMdl;
+                uniform mat4 mtxCam;
+                void main(){
+                    gl_Position = mtxCam*mtxMdl*position;
+                    fragColor = color;
+                }"), control);
+
+                    Initialized = true;
+                }
+            }
+
+            public override void Draw(GL_ControlModern control, Pass pass)
+            {
+                if (pass == Pass.OPAQUE)
+                {
+                    control.ResetModelMatrix();
+
+                    control.CurrentShader = LinksShaderProgram;
+
+                    GL.Begin(PrimitiveType.Lines);
+                    foreach (I3dWorldObject _obj in scene.GetObjects())
+                    {
+                        if (_obj.Links != null)
+                        {
+                            foreach (KeyValuePair<string, List<I3dWorldObject>> link in _obj.Links)
+                            {
+                                foreach (I3dWorldObject obj in link.Value)
+                                {
+                                    if (_obj.IsSelected() || obj.IsSelected())
+                                    {
+                                        GL.VertexAttrib4(1, new OpenTK.Vector4(1, 1, 1, 1));
+                                        GL.Vertex3(_obj.GetLinkingPoint());
+                                        GL.VertexAttrib4(1, new OpenTK.Vector4(0, 1, 1, 1));
+                                        GL.Vertex3(obj.GetLinkingPoint());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    GL.End();
+                }
+            }
+
+            public override int GetPickableSpan()
+            {
+                return 0;
+            }
+
+            public override void Prepare(GL_ControlLegacy control)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Draw(GL_ControlLegacy control, Pass pass)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public I3dWorldObject Hovered3dObject { get; protected set; } = null;
+
+        public override uint MouseEnter(int inObjectIndex, GL_ControlBase control)
+        {
+            uint var = base.MouseEnter(inObjectIndex, control);
+
+            if (Hovered is I3dWorldObject)
+                Hovered3dObject = (I3dWorldObject)Hovered;
+
+            return var;
+        }
+
+        public Dictionary<string, List<I3dWorldObject>> ObjLists = new Dictionary<string, List<I3dWorldObject>>();
+
+        public List<I3dWorldObject> LinkedObjects = new List<I3dWorldObject>();
 
         private ulong highestObjID = 0;
 
@@ -196,15 +339,7 @@ namespace SpotLight.EditorDrawables
         public string NextRailID() => "rail" + (++highestRailID);
 
         public static bool IteratesThroughLinks;
-
-        public enum Mode
-        {
-            DEFAULT,
-            LINKS_EDIT
-        }
-
-        public static Mode CurrentMode = Mode.LINKS_EDIT;
-
+        
         /// <summary>
         /// Gets all the editable objects
         /// </summary>
@@ -212,36 +347,36 @@ namespace SpotLight.EditorDrawables
         protected override IEnumerable<IEditableObject> GetObjects()
         {
             IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in objLists.Values)
+            foreach (List<I3dWorldObject> objects in ObjLists.Values)
             {
                 foreach (IEditableObject obj in objects)
                     yield return obj;
             }
             IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in linkedObjects)
+            foreach (I3dWorldObject obj in LinkedObjects)
                 yield return obj;
         }
 
         public void UpdateLinkDestinations()
         {
             IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in objLists.Values)
+            foreach (List<I3dWorldObject> objects in ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objects)
                     obj.ClearLinkDestinations();
             }
             IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in linkedObjects)
+            foreach (I3dWorldObject obj in LinkedObjects)
                 obj.ClearLinkDestinations();
 
             IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in objLists.Values)
+            foreach (List<I3dWorldObject> objects in ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objects)
                     obj.AddLinkDestinations();
             }
             IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in linkedObjects)
+            foreach (I3dWorldObject obj in LinkedObjects)
                 obj.AddLinkDestinations();
         }
 
@@ -252,7 +387,7 @@ namespace SpotLight.EditorDrawables
         {
             DeletionManager manager = new DeletionManager();
 
-            foreach (List<I3dWorldObject> objList in objLists.Values)
+            foreach (List<I3dWorldObject> objList in ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objList)
                 {
@@ -260,9 +395,9 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-            foreach (I3dWorldObject obj in linkedObjects)
+            foreach (I3dWorldObject obj in LinkedObjects)
             {
-                obj.DeleteSelected(this, manager, linkedObjects);
+                obj.DeleteSelected(this, manager, LinkedObjects);
             }
 
 
@@ -270,7 +405,7 @@ namespace SpotLight.EditorDrawables
 
             List<IEditableObject> objects;
 
-            foreach (List<I3dWorldObject> objList in objLists.Values)
+            foreach (List<I3dWorldObject> objList in ObjLists.Values)
             {
                 if(manager.Dictionary.TryGetValue(objList, out objects))
                 {
@@ -287,15 +422,15 @@ namespace SpotLight.EditorDrawables
 
             List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
 
-            if (manager.Dictionary.TryGetValue(linkedObjects, out objects))
+            if (manager.Dictionary.TryGetValue(LinkedObjects, out objects))
             {
-                manager.Dictionary.Remove(linkedObjects);
+                manager.Dictionary.Remove(LinkedObjects);
                 foreach (I3dWorldObject obj in objects)
                 {
                     linkedObjsToDelete.Add(obj);
                 }
 
-                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(linkedObjects, linkedObjsToDelete.ToArray()));
+                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(LinkedObjects, linkedObjsToDelete.ToArray()));
             }
 
             BeginUndoCollection();
@@ -315,7 +450,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="categoryName">Category to save in</param>
         public void Save(ByamlNodeWriter writer, string levelName, string categoryName)
         {
-            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(objLists);
+            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(ObjLists);
 
             ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
 
@@ -323,7 +458,7 @@ namespace SpotLight.EditorDrawables
             
             rootNode.AddDynamicValue("FilePath", $"D:/home/TokyoProject/RedCarpet/Asset/StageData/{levelName}/Map/{levelName}{categoryName}.muunt");
 
-            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in objLists)
+            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in ObjLists)
             {
                 ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode(keyValuePair.Value);
 
@@ -361,7 +496,7 @@ namespace SpotLight.EditorDrawables
             Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
             IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in objLists.Values)
+            foreach (List<I3dWorldObject> objects in ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objects)
                     obj.DuplicateSelected(duplicates, this);
@@ -376,26 +511,26 @@ namespace SpotLight.EditorDrawables
                 duplicates.Clear();
             }
             IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in linkedObjects)
+            foreach (I3dWorldObject obj in LinkedObjects)
                 obj.DuplicateSelected(duplicates, this);
 
             foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
 
             if (duplicates.Count > 0)
-                objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(linkedObjects, duplicates.Values.ToArray()));
+                objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(LinkedObjects, duplicates.Values.ToArray()));
 
-            linkedObjects.AddRange(duplicates.Values);
+            LinkedObjects.AddRange(duplicates.Values);
 
 
             //Clear LinkDestinations
             IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in objLists.Values)
+            foreach (List<I3dWorldObject> objects in ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objects)
                     obj.ClearLinkDestinations();
             }
             IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in linkedObjects)
+            foreach (I3dWorldObject obj in LinkedObjects)
                 obj.ClearLinkDestinations();
 
 
@@ -403,13 +538,13 @@ namespace SpotLight.EditorDrawables
             DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
 
             IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in objLists.Values)
+            foreach (List<I3dWorldObject> objects in ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objects)
                     obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
             }
             IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in linkedObjects)
+            foreach (I3dWorldObject obj in LinkedObjects)
                 obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
 
 
@@ -440,5 +575,118 @@ namespace SpotLight.EditorDrawables
 
             public bool TryGetDuplicate(I3dWorldObject obj, out I3dWorldObject duplicate) => duplicatedObjects.TryGetValue(obj, out duplicate);
         }
+
+        #region Link Connection Editing
+
+        public struct RevertableConnectionAddition : IRevertable
+        {
+            I3dWorldObject source;
+            I3dWorldObject dest;
+            string name;
+
+            public RevertableConnectionAddition(I3dWorldObject source, I3dWorldObject dest, string name)
+            {
+                this.source = source;
+                this.dest = dest;
+                this.name = name;
+            }
+
+            public IRevertable Revert(EditorSceneBase scene)
+            {
+                SM3DWorldScene s = (SM3DWorldScene)scene;
+                s.RemoveConnection(source, dest, name);
+                s.UpdateLinkDestinations();
+                return new RevertableConnectionDeletion(source, dest, name);
+            }
+        }
+
+        public struct RevertableConnectionDeletion : IRevertable
+        {
+            I3dWorldObject source;
+            I3dWorldObject dest;
+            string name;
+
+            public RevertableConnectionDeletion(I3dWorldObject source, I3dWorldObject dest, string name)
+            {
+                this.source = source;
+                this.dest = dest;
+                this.name = name;
+            }
+
+            public IRevertable Revert(EditorSceneBase scene)
+            {
+                SM3DWorldScene s = (SM3DWorldScene)scene;
+                s.AddConnection(source, dest, name);
+                s.UpdateLinkDestinations();
+                return new RevertableConnectionAddition(source, dest, name);
+            }
+        }
+
+        public struct RevertableConnectionChange : IRevertable
+        {
+            I3dWorldObject source;
+            I3dWorldObject dest;
+            string name;
+
+            I3dWorldObject prevSource;
+            I3dWorldObject prevDest;
+            string prevName;
+
+            public RevertableConnectionChange(I3dWorldObject source, I3dWorldObject dest, string name, 
+                I3dWorldObject prevSource, I3dWorldObject prevDest, string prevName)
+            {
+                this.source = source;
+                this.dest = dest;
+                this.name = name;
+                this.prevSource = prevSource;
+                this.prevDest = prevDest;
+                this.prevName = prevName;
+            }
+
+            public IRevertable Revert(EditorSceneBase scene)
+            {
+                SM3DWorldScene s = (SM3DWorldScene)scene;
+                s.RemoveConnection(source, dest, name);
+                s.AddConnection(prevSource, prevDest, prevName);
+                s.UpdateLinkDestinations();
+                return new RevertableConnectionChange(
+                    prevSource, prevDest, prevName,
+                    source, dest, name);
+            }
+        }
+
+        public void RemoveConnection(I3dWorldObject source, I3dWorldObject dest, string name)
+        {
+            source.Links[name].Remove(dest);
+
+            if (source.Links[name].Count == 0)
+                source.Links.Remove(name);
+
+            if (source.Links.Count == 0)
+                source.Links = null;
+
+            if(this is LinkEdit3DWScene)
+            {
+                LinkEdit3DWScene les = (LinkEdit3DWScene)this;
+
+                if (les.SelectedConnection?.Source == source && les.SelectedConnection?.Dest == dest && les.SelectedConnection?.Name == name)
+                    les.SelectedConnection = null;
+
+                control.Refresh();
+            }
+        }
+
+        public void AddConnection(I3dWorldObject source, I3dWorldObject dest, string name)
+        {
+            if (source.Links == null)
+                source.Links = new Dictionary<string, List<I3dWorldObject>>();
+
+            if (!source.Links.ContainsKey(name))
+                source.Links.Add(name, new List<I3dWorldObject>());
+
+            source.Links[name].Add(dest);
+        }
+
+        #endregion
     }
 }

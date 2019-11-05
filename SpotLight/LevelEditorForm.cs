@@ -326,10 +326,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             {
                 currentLevel = level;
                 SpotlightToolStripProgressBar.Value = 50;
-                level.scene.SelectionChanged += Scene_SelectionChanged;
-                level.scene.ListChanged += Scene_ListChanged;
-                level.scene.ListEntered += Scene_ListEntered;
-                level.scene.ObjectsMoved += Scene_ObjectsMoved;
+                SetupScene(level.scene);
 
                 MainSceneListView.Enabled = true;
                 MainSceneListView.SetRootList("ObjectList");
@@ -340,9 +337,58 @@ Please select the folder than contains these folders", "Introduction", MessageBo
             }
         }
 
+        private void SetupScene(SM3DWorldScene scene)
+        {
+            scene.SelectionChanged += Scene_SelectionChanged;
+            scene.ListChanged += Scene_ListChanged;
+            scene.ListEntered += Scene_ListEntered;
+            scene.ObjectsMoved += Scene_ObjectsMoved;
+
+            ObjectUIControl.ClearObjectUIContainers();
+            ObjectUIControl.Refresh();
+        }
+
         private void Scene_ListEntered(object sender, ListEventArgs e)
         {
             MainSceneListView.EnterList(e.List);
+        }
+
+        private void EditObjectsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel.scene.GetType() != typeof(SM3DWorldScene))
+            {
+                var newScene = new SM3DWorldScene()
+                {
+                    ObjLists = currentLevel.scene.ObjLists,
+                    LinkedObjects = currentLevel.scene.LinkedObjects,
+                    UndoStack = currentLevel.scene.UndoStack,
+                    RedoStack = currentLevel.scene.RedoStack
+                };
+
+                currentLevel.scene = newScene;
+                SetupScene(newScene);
+                LevelGLControlModern.MainDrawable = newScene;
+                LevelGLControlModern.Refresh();
+            }
+        }
+
+        private void EditLinksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentLevel.scene.GetType() != typeof(LinkEdit3DWScene))
+            {
+                var newScene = new LinkEdit3DWScene()
+                {
+                    ObjLists = currentLevel.scene.ObjLists,
+                    LinkedObjects = currentLevel.scene.LinkedObjects,
+                    UndoStack = currentLevel.scene.UndoStack,
+                    RedoStack = currentLevel.scene.RedoStack
+                };
+
+                currentLevel.scene = newScene;
+                SetupScene(newScene);
+                LevelGLControlModern.MainDrawable = newScene;
+                LevelGLControlModern.Refresh();
+            }
         }
     }
 }

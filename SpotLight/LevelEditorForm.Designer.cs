@@ -47,6 +47,9 @@
             this.RedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DuplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LevelParametersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.modeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editObjectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editLinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -154,7 +157,8 @@
             // 
             this.SpotlightMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FileToolStripMenuItem,
-            this.editToolStripMenuItem});
+            this.editToolStripMenuItem,
+            this.modeToolStripMenuItem});
             this.SpotlightMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.SpotlightMenuStrip.Name = "SpotlightMenuStrip";
             this.SpotlightMenuStrip.Size = new System.Drawing.Size(784, 24);
@@ -255,6 +259,33 @@
             this.LevelParametersToolStripMenuItem.Text = "Level Parameters";
             this.LevelParametersToolStripMenuItem.Click += new System.EventHandler(this.LevelParametersToolStripMenuItem_Click);
             // 
+            // modeToolStripMenuItem
+            // 
+            this.modeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editObjectsToolStripMenuItem,
+            this.editLinksToolStripMenuItem});
+            this.modeToolStripMenuItem.Name = "modeToolStripMenuItem";
+            this.modeToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
+            this.modeToolStripMenuItem.Text = "Mode";
+            // 
+            // editObjectsToolStripMenuItem
+            // 
+            this.editObjectsToolStripMenuItem.Name = "editObjectsToolStripMenuItem";
+            this.editObjectsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.O)));
+            this.editObjectsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.editObjectsToolStripMenuItem.Text = "Edit Objects";
+            this.editObjectsToolStripMenuItem.Click += new System.EventHandler(this.EditObjectsToolStripMenuItem_Click);
+            // 
+            // editLinksToolStripMenuItem
+            // 
+            this.editLinksToolStripMenuItem.Name = "editLinksToolStripMenuItem";
+            this.editLinksToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.L)));
+            this.editLinksToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.editLinksToolStripMenuItem.Text = "Edit Links";
+            this.editLinksToolStripMenuItem.Click += new System.EventHandler(this.EditLinksToolStripMenuItem_Click);
+            // 
             // SpotlightStatusStrip
             // 
             this.SpotlightStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -336,6 +367,9 @@
         private System.Windows.Forms.ToolStripMenuItem DuplicateToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OpenExToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
+        private System.Windows.Forms.ToolStripMenuItem modeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editObjectsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editLinksToolStripMenuItem;
     }
 }
 
