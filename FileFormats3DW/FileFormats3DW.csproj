@@ -13,9 +13,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DLLs\**" />
+    <EmbeddedResource Remove="DLLs\**" />
+    <None Remove="DLLs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Syroot.BinaryData" Version="5.1.0" />
     <PackageReference Include="Syroot.Maths" Version="1.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DirectXTex">
+      <HintPath>DLLs\DirectXTex.dll</HintPath>
+    </Reference>
+    <Reference Include="DirectXTexNet">
+      <HintPath>DLLs\DirectXTexNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -26,6 +26,8 @@ namespace SpotLight
 
         static Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
 
+        static Dictionary<string, (Vector4, VertexArrayObject, int)> extraModels = new Dictionary<string, (Vector4, VertexArrayObject, int)>();
+
         static Dictionary<string, Dictionary<string, int>> texArcCache = new Dictionary<string, Dictionary<string, int>>();
 
         public static int DefaultTetxure;
@@ -46,9 +48,10 @@ namespace SpotLight
                     in vec2 fragUV;
                     in vec4 fragColor;
                     void main(){
-                        vec4 hc_rgb = vec4(highlight_color.xyz,1);
                         float hc_a   = highlight_color.w;
-                        gl_FragColor = fragColor * texture(tex,fragUV) * (1-hc_a) + hc_rgb * hc_a;
+                        vec4 color = fragColor * texture(tex,fragUV);
+                        gl_FragColor = vec4(color.rgb * (1-hc_a) + highlight_color.rgb * hc_a, color.a);
+                        //gl_FragColor = vec4(color.a, color.a, color.a, 1);
                     }"),
                     new VertexShader(
                         @"#version 330
@@ -66,6 +69,45 @@ namespace SpotLight
                         gl_Position = mtxCam*mtxMdl*position;
                     }"), control);
             #endregion
+
+            foreach(var fileName in Directory.EnumerateFiles("AreaModels"))
+            {
+                int[] buffers = new int[2];
+                GL.GenBuffers(2, buffers);
+
+                int indexBuffer = buffers[0];
+                int vaoBuffer = buffers[1];
+
+                List<int> indices = new List<int>();
+
+                List<float> data = new List<float>();
+
+                foreach (string line in File.ReadLines(fileName))
+                {
+                    if(line.StartsWith("f ")) //face
+                    {
+                        foreach (string index in line.Substring(2).Split(' '))
+                            indices.Add(int.Parse(index)-1);
+                    }
+                    else if (line.StartsWith("v ")) //vertex position
+                    {
+                        foreach (string coord in line.Substring(2).Split(' '))
+                            data.Add(float.Parse(coord));
+                    }
+                }
+
+                VertexArrayObject vao = new VertexArrayObject(vaoBuffer, indexBuffer);
+                vao.AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 3, 0);
+                vao.Initialize(control);
+
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(int), indices.ToArray(), BufferUsageHint.StaticDraw);
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vaoBuffer);
+                GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * data.Count, data.ToArray(), BufferUsageHint.StaticDraw);
+
+                extraModels.Add(Path.GetFileNameWithoutExtension(fileName), (new Vector4(0, 0.5f, 1, 1), vao, indices.Count));
+            }
 
             DefaultTetxure = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
@@ -103,11 +145,28 @@ namespace SpotLight
                 cache[modelName].Draw(control, pass, highlightColor);
                 return true;
             }
+            else if (extraModels.TryGetValue(modelName, out (Vector4, VertexArrayObject, int) entry))
+            {
+                control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+
+                if (pass == Pass.PICKING)
+                    control.CurrentShader.SetVector4("color", control.NextPickingColor());
+                else
+                    control.CurrentShader.SetVector4("color", entry.Item1 * (1-highlightColor.W) + highlightColor * highlightColor.W);
+
+                entry.Item2.Use(control);
+
+                GL.DrawElements(BeginMode.Triangles, entry.Item3, DrawElementsType.UnsignedInt, 0);
+
+                return true;
+            }
             else
                 return false;
         }
 
-        public static bool Contains(string modelName) => cache.ContainsKey(modelName);
+
+
+        public static bool Contains(string modelName) => cache.ContainsKey(modelName) || extraModels.ContainsKey(modelName);
 
         public struct CachedModel
         {
@@ -117,6 +176,7 @@ namespace SpotLight
             readonly int[] indexBufferLengths;
             readonly int[] textures;
             readonly (int,int)[] wrapModes;
+            readonly Pass[] passes;
 
             public CachedModel(Stream stream, string textureArc, GL_ControlModern control)
             {
@@ -143,6 +203,7 @@ namespace SpotLight
                 indexBufferLengths = new int[mdl.Shapes.Count];
                 textures           = new int[mdl.Shapes.Count];
                 wrapModes =    new (int,int)[mdl.Shapes.Count];
+                passes = new Pass[mdl.Shapes.Count];
                 
                 int shapeIndex = 0;
 
@@ -162,32 +223,47 @@ namespace SpotLight
                             }
                         }
                         TextureRef texRef = mdl.Materials[shape.MaterialIndex].TextureRefs[Target];
+
+                        TexSampler sampler = mdl.Materials[shape.MaterialIndex].Samplers[Target].TexSampler;
+
                         if (texRef.Texture != null)
                         {
                             textures[shapeIndex] = UploadTexture(texRef.Texture);
 
-                            wrapModes[shapeIndex] = ((int)GetWrapMode(mdl.Materials[shape.MaterialIndex].Samplers[0].TexSampler.ClampX),
-                                (int)GetWrapMode(mdl.Materials[shape.MaterialIndex].Samplers[0].TexSampler.ClampY));
+                            
+
+
                         }
                         else if (textureArc != null)
                         {
                             if (texArcCache.ContainsKey(textureArc) && texArcCache[textureArc].ContainsKey(texRef.Name))
                             {
                                 textures[shapeIndex] = texArcCache[textureArc][texRef.Name];
-
-                                wrapModes[shapeIndex] = ((int)TextureWrapMode.Repeat, (int)TextureWrapMode.Repeat);
                             }
                             else
                             {
                                 textures[shapeIndex] = -2;
-
-                                wrapModes[shapeIndex] = ((int)TextureWrapMode.Repeat, (int)TextureWrapMode.Repeat);
                             }
                         }
+
+                        wrapModes[shapeIndex] = ((int)GetWrapMode(sampler.ClampX),
+                                (int)GetWrapMode(sampler.ClampY));
                     }
                     else
                     {
                         textures[shapeIndex] = -1;
+                    }
+
+                    switch (mdl.Materials[shape.MaterialIndex].RenderState.FlagsMode)
+                    {
+                        case RenderStateFlagsMode.AlphaMask:
+                        case RenderStateFlagsMode.Translucent:
+                        case RenderStateFlagsMode.Custom:
+                            passes[shapeIndex] = Pass.TRANSPARENT;
+                            break;
+                        default:
+                            passes[shapeIndex] = Pass.OPAQUE;
+                            break;
                     }
 
                     Matrix4[] transforms = GetTransforms(mdl.Skeleton.Bones.Values.ToArray());
@@ -397,6 +473,12 @@ namespace SpotLight
                 }
                 else
                 {
+                    if(pass == Pass.TRANSPARENT)
+                    {
+                        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                        GL.Enable(EnableCap.Blend);
+                    }
+
                     control.CurrentShader = BfresShaderProgram;
 
                     control.CurrentShader.SetVector4("highlight_color", highlightColor);
@@ -406,7 +488,7 @@ namespace SpotLight
 
                 for(int i = 0; i<vaos.Length; i++)
                 {
-                    if (pass != Pass.PICKING)
+                    if (pass == passes[i])
                     {
                         if (textures[i] == -1)
                             GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
@@ -419,16 +501,20 @@ namespace SpotLight
                         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapModes[i].Item2);
                     }
 
-                    vaos[i].Use(control);
+                    if(pass == passes[i] || pass == Pass.PICKING)
+                    {
+                        vaos[i].Use(control);
 
-                    GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+                        GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+                    }
                 }
+
+                GL.Disable(EnableCap.Blend);
             }
         }
         
-        private static void GetPixelFormats(GX2SurfaceFormat Format, out PixelInternalFormat pixelInternalFormat, out PixelFormat pixelFormat)
+        private static void GetPixelFormats(GX2SurfaceFormat Format, out PixelInternalFormat pixelInternalFormat)
         {
-            pixelFormat = PixelFormat.Rgba;
             switch (Format)
             {
                 case GX2SurfaceFormat.T_BC1_UNorm:
@@ -450,14 +536,16 @@ namespace SpotLight
                     pixelInternalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt5Ext;
                     break;
                 case GX2SurfaceFormat.T_BC4_UNorm:
-                case GX2SurfaceFormat.T_BC4_SNorm:
-                    pixelInternalFormat = PixelInternalFormat.Rgba;
+                    pixelInternalFormat = PixelInternalFormat.CompressedRedRgtc1;
                     break;
-                case GX2SurfaceFormat.T_BC5_SNorm:
-                    pixelInternalFormat = PixelInternalFormat.Rgba;
+                case GX2SurfaceFormat.T_BC4_SNorm:
+                    pixelInternalFormat = PixelInternalFormat.CompressedSignedRedRgtc1;
                     break;
                 case GX2SurfaceFormat.T_BC5_UNorm:
                     pixelInternalFormat = PixelInternalFormat.CompressedRgRgtc2;
+                    break;
+                case GX2SurfaceFormat.T_BC5_SNorm:
+                    pixelInternalFormat = PixelInternalFormat.CompressedSignedRgRgtc2;
                     break;
                 case GX2SurfaceFormat.TCS_R8_G8_B8_A8_UNorm:
                     pixelInternalFormat = PixelInternalFormat.Rgba;
@@ -516,7 +604,7 @@ namespace SpotLight
                 swizzle = texture.Swizzle,
                 numArray = texture.ArrayLength
             };
-
+            
             if (surf.mipData == null)
                 surf.numMips = 1;
 
@@ -527,12 +615,57 @@ namespace SpotLight
             int tex = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, tex);
 
-            GetPixelFormats(texture.Format, out PixelInternalFormat internalFormat, out PixelFormat format);
 
-            if (internalFormat == PixelInternalFormat.Rgba)
-                GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat, (int)texture.Width/4, (int)texture.Height/4, 0, format, PixelType.UnsignedByte, deswizzled);
+            if (texture.Format == GX2SurfaceFormat.T_BC4_UNorm)
+            {
+                deswizzled = DDSCompressor.DecompressBC4(deswizzled, (int)texture.Width, (int)texture.Height, false).Data;
+            }
+            else if (texture.Format == GX2SurfaceFormat.T_BC4_SNorm)
+            {
+                deswizzled = DDSCompressor.DecompressBC4(deswizzled, (int)texture.Width, (int)texture.Height, true).Data;
+            }
+            else if (texture.Format == GX2SurfaceFormat.T_BC5_UNorm)
+            {
+                deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, false, true);
+            }
+            else if (texture.Format == GX2SurfaceFormat.T_BC5_SNorm)
+            {
+                deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, true, true);
+            }
             else
-                GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat, (int)texture.Width, (int)texture.Height, 0, deswizzled.Length, deswizzled);
+            {
+                GetPixelFormats(texture.Format, out PixelInternalFormat internalFormat);
+                
+                if (internalFormat != PixelInternalFormat.Rgba)
+                {
+                    GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat, (int)texture.Width, (int)texture.Height, 0, deswizzled.Length, deswizzled);
+
+                    goto DATA_UPLOADED;
+                }
+            }
+
+            #region channel reassign
+
+            byte[] sources = new byte[] { 0, 0, 0, 0, 0, 0xFF };
+
+            for (int i = 0; i < deswizzled.Length; i += 4)
+            {
+                sources[0] = deswizzled[i];
+                sources[1] = deswizzled[i + 1];
+                sources[2] = deswizzled[i + 2];
+                sources[3] = deswizzled[i + 3];
+
+                deswizzled[i] = sources[(int)texture.CompSelR];
+                deswizzled[i + 1] = sources[(int)texture.CompSelG];
+                deswizzled[i + 2] = sources[(int)texture.CompSelB];
+                deswizzled[i + 3] = sources[(int)texture.CompSelA];
+                //deswizzled[i + 3] = 0xFF;
+            }
+            #endregion
+
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, (int)texture.Width, (int)texture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, deswizzled);
+
+        DATA_UPLOADED:
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);

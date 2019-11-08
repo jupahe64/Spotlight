@@ -373,9 +373,6 @@ namespace SpotLight.EditorDrawables
         /// <param name="editorScene">The current Editor Scene</param>
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
-            if (pass == Pass.TRANSPARENT)
-                return;
-
             if (!editorScene.ShouldBeDrawn(this))
                 return;
 
@@ -409,6 +406,9 @@ namespace SpotLight.EditorDrawables
             }
             else
             {
+                if (pass == Pass.TRANSPARENT)
+                    return;
+
                 control.UpdateModelMatrix(
                     Matrix4.CreateScale(DisplayScale * 0.5f) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
