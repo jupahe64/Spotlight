@@ -57,6 +57,7 @@
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
+            this.AddObjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -228,6 +229,7 @@
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.UndoToolStripMenuItem,
             this.RedoToolStripMenuItem,
+            this.AddObjectToolStripMenuItem,
             this.DuplicateToolStripMenuItem,
             this.deleteToolStripMenuItem,
             this.selectAllToolStripMenuItem,
@@ -344,6 +346,14 @@
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 
+            // AddObjectToolStripMenuItem
+            // 
+            this.AddObjectToolStripMenuItem.Name = "AddObjectToolStripMenuItem";
+            this.AddObjectToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.A)));
+            this.AddObjectToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.AddObjectToolStripMenuItem.Text = "Add Object";
+            this.AddObjectToolStripMenuItem.Click += new System.EventHandler(this.AddObjectToolStripMenuItem_Click);
+            // 
             // LevelEditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -405,6 +415,7 @@
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selectAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deselectAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem AddObjectToolStripMenuItem;
     }
 }
 

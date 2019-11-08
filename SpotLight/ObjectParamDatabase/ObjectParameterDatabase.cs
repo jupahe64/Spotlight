@@ -20,8 +20,8 @@ using System.Threading.Tasks;
  * Entry Count (0x04)
  * ---------------------------------------------- 
  * Entry - Contains the Parameter Data
- * Magic - OPAP (0x04)
- * Version - (0x04)
+ * Magic - OPP (0x03)
+ * Category - (0x01)
  * ClassName (0x??)
  * ObjectName Count (0x02)
  * ObjectName List (0x?? * ObjectNameCount)
@@ -49,7 +49,7 @@ namespace SpotLight.ObjectParamDatabase
     /// </summary>
     public class ObjectParameterDatabase
     {
-        public Version Version = new Version(1, 0);
+        public Version Version = new Version(1, 1);
         public List<ObjectParameter> ObjectParameters = new List<ObjectParameter>();
         
 
@@ -68,15 +68,16 @@ namespace SpotLight.ObjectParamDatabase
         {
             FileStream FS = new FileStream(Filename, FileMode.Open);
             byte[] Read = new byte[4];
-            FS.Read(Read,0,4);
+            FS.Read(Read, 0, 4);
             if (Encoding.ASCII.GetString(Read) != "SOPD")
                 throw new Exception("Invalid Database File");
 
-            Version Check = new Version(FS.ReadByte(),FS.ReadByte());
-            if (Check.CompareTo(Version) < 0)
+            Version Check = new Version(FS.ReadByte(), FS.ReadByte());
+            
+            if (Check < Version)
             {
-                System.Windows.Forms.MessageBox.Show("The Database is too old for this version of Spotlight","Version Error",System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 FS.Close();
+                Version = Check;
                 return;
             }
             FS.ReadByte();
@@ -203,6 +204,7 @@ namespace SpotLight.ObjectParamDatabase
     public class ObjectParameter
     {
         public string ClassName { get; set; }
+        public byte CategoryID { get; set; }
         public List<string> ObjectNames { get; set; } = new List<string>();
         public List<string> ModelNames { get; set; } = new List<string>();
         public List<KeyValuePair<string, string>> Properties { get; set; } = new List<KeyValuePair<string, string>>();
@@ -221,11 +223,11 @@ namespace SpotLight.ObjectParamDatabase
         /// <param name="FS"></param>
         public ObjectParameter(FileStream FS)
         {
-            byte[] Read = new byte[4];
-            FS.Read(Read, 0, 4);
-            if (Encoding.ASCII.GetString(Read) != "OPAP")
+            byte[] Read = new byte[3];
+            FS.Read(Read, 0, 3);
+            if (Encoding.ASCII.GetString(Read) != "OPP")
                 throw new Exception("Invalid Database File");
-            FS.Position += 0x04;
+            CategoryID = (byte)FS.ReadByte();
             ClassName = FS.ReadString();
 
             FS.Read(Read, 0, 2);
@@ -267,7 +269,7 @@ namespace SpotLight.ObjectParamDatabase
         /// <param name="FS"></param>
         public void Write(FileStream FS)
         {
-            List<byte> ByteList = new List<byte>() { (byte)'O', (byte)'P', (byte)'A', (byte)'P', 0x01, 0x00, 0x00, 0x00 };
+            List<byte> ByteList = new List<byte>() { (byte)'O', (byte)'P', (byte)'P', 0x02 };
             ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(ClassName));
             ByteList.Add(0x00);
 

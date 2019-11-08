@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
+using SpotLight.ObjectParamDatabase;
 
 namespace SpotLight
 {
@@ -22,12 +23,12 @@ namespace SpotLight
     {
         LevelParameterForm LPF;
         SM3DWorldLevel currentLevel;
+        ObjectParameterDatabase ObjectDatabase = null;
         public LevelEditorForm()
         {
             InitializeComponent();
-            
             LevelGLControlModern.CameraDistance = 20;
-            
+
             MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
             MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
 
@@ -64,6 +65,95 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 else
                 {
                     Environment.Exit(0);
+                }
+            }
+
+            if (!File.Exists("ParameterDatabase.sopd"))
+            {
+                bool Breakout = false;
+                while (!Breakout)
+                {
+                    DialogResult DR = MessageBox.Show(
+@"Spotlight could not find the Object Parameter Database (ParameterDatabase.sopd)
+
+Spotlight needs an Object Parameter Database in order for you to add objects.
+
+Would you like to generate a new object Database from your 3DW Directory?",
+"Database Missing", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Error);
+
+                    switch (DR)
+                    {
+                        case DialogResult.Yes:
+                            ObjectDatabase = new ObjectParameterDatabase();
+                            ObjectDatabase.Create(Program.StageDataPath);
+                            ObjectDatabase.Save("ParameterDatabase.sopd");
+                            Breakout = true;
+                            break;
+                        case DialogResult.No:
+                            DialogResult DR2 = MessageBox.Show("Are you sure? You cannot add objects without it?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                            switch (DR2)
+                            {
+                                case DialogResult.None:
+                                case DialogResult.Yes:
+                                    ObjectDatabase = null;
+                                    Breakout = true;
+                                    break;
+                                case DialogResult.No:
+                                    break;
+                            }
+                            break;
+                        case DialogResult.None:
+                        case DialogResult.Cancel:
+                            Environment.Exit(1);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                ObjectDatabase = new ObjectParameterDatabase("ParameterDatabase.sopd");
+                ObjectParameterDatabase Ver = new ObjectParameterDatabase();
+
+                if (Ver.Version > ObjectDatabase.Version)
+                {
+                    bool Breakout = false;
+                    while (!Breakout)
+                    {
+                        DialogResult DR = MessageBox.Show(
+$@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would you like to rebuild the database from your 3DW Files?",
+    "Database Outdated", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Error);
+
+                        switch (DR)
+                        {
+                            case DialogResult.Yes:
+                                ObjectDatabase = new ObjectParameterDatabase();
+                                ObjectDatabase.Create(Program.StageDataPath);
+                                ObjectDatabase.Save("ParameterDatabase.sopd");
+                                Breakout = true;
+                                break;
+                            case DialogResult.No:
+                                DialogResult DR2 = MessageBox.Show("Are you sure? You cannot add objects without it?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                                switch (DR2)
+                                {
+                                    case DialogResult.None:
+                                    case DialogResult.Yes:
+                                        ObjectDatabase = null;
+                                        Breakout = true;
+                                        break;
+                                    case DialogResult.No:
+                                        break;
+                                }
+                                break;
+                            case DialogResult.None:
+                            case DialogResult.Cancel:
+                                Environment.Exit(1);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
             }
         }
@@ -418,6 +508,29 @@ Please select the folder than contains these folders", "Introduction", MessageBo
         {
             if (e.Item is I3dWorldObject obj)
                 LevelGLControlModern.CameraTarget = obj.GetFocusPoint();
+        }
+
+        private void AddObjectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ObjectDatabase == null)
+            {
+                MessageBox.Show(
+@"Y o u  c h o s e  n o t  t o  g e n e r a t e
+a  v a l i d  d a t a b a s e  r e m e m b e r ?
+= )");
+
+                DialogResult DR = MessageBox.Show("The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?","Invalid Database", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                if (DR == DialogResult.Yes)
+                {
+                    ObjectDatabase = new ObjectParameterDatabase();
+                    ObjectDatabase.Create(Program.StageDataPath);
+                    ObjectDatabase.Save("ParameterDatabase.sopd");
+                }
+                MessageBox.Show("Database Created", "Operation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            AddObjectForm AOF = new AddObjectForm(ObjectDatabase);
+            AOF.ShowDialog();
         }
     }
 }
