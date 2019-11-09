@@ -26,7 +26,7 @@ namespace SpotLight
 
         static Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
 
-        static Dictionary<string, (Vector4, VertexArrayObject, int)> extraModels = new Dictionary<string, (Vector4, VertexArrayObject, int)>();
+        static Dictionary<string, (Vector4, VertexArrayObject, int, bool)> extraModels = new Dictionary<string, (Vector4, VertexArrayObject, int, bool)>();
 
         static Dictionary<string, Dictionary<string, int>> texArcCache = new Dictionary<string, Dictionary<string, int>>();
 
@@ -70,44 +70,141 @@ namespace SpotLight
                     }"), control);
             #endregion
 
-            foreach(var fileName in Directory.EnumerateFiles("AreaModels"))
+
+            #region Create Extra Models
+
+            #region AreaCubeBase
+            List<int> indices = new List<int>();
+
+            float r = 5;
+            float t = 10;
+            float b = 0;
+
+            float[] data = new float[]
             {
-                int[] buffers = new int[2];
-                GL.GenBuffers(2, buffers);
+                -r, t, -r,
+                 r, t, -r,
+                -r, t,  r,
+                 r, t,  r,
+                -r, b, -r,
+                 r, b, -r,
+                -r, b,  r,
+                 r, b,  r,
+            };
 
-                int indexBuffer = buffers[0];
-                int vaoBuffer = buffers[1];
+            //-x to x
+            indices.Add(0b000);
+            indices.Add(0b001);
+            indices.Add(0b010);
+            indices.Add(0b011);
+            indices.Add(0b100);
+            indices.Add(0b101);
+            indices.Add(0b110);
+            indices.Add(0b111);
 
-                List<int> indices = new List<int>();
+            //-y to y
+            indices.Add(0b000);
+            indices.Add(0b010);
+            indices.Add(0b001);
+            indices.Add(0b011);
+            indices.Add(0b100);
+            indices.Add(0b110);
+            indices.Add(0b101);
+            indices.Add(0b111);
 
-                List<float> data = new List<float>();
+            //-z to z
+            indices.Add(0b000);
+            indices.Add(0b100);
+            indices.Add(0b001);
+            indices.Add(0b101);
+            indices.Add(0b010);
+            indices.Add(0b110);
+            indices.Add(0b011);
+            indices.Add(0b111);
 
-                foreach (string line in File.ReadLines(fileName))
-                {
-                    if(line.StartsWith("f ")) //face
-                    {
-                        foreach (string index in line.Substring(2).Split(' '))
-                            indices.Add(int.Parse(index)-1);
-                    }
-                    else if (line.StartsWith("v ")) //vertex position
-                    {
-                        foreach (string coord in line.Substring(2).Split(' '))
-                            data.Add(float.Parse(coord));
-                    }
-                }
+            SubmitExtraModel(control, true, "AreaCubeBase", indices, data, new Vector4(0, 0.5f, 1, 1));
+            #endregion
 
-                VertexArrayObject vao = new VertexArrayObject(vaoBuffer, indexBuffer);
-                vao.AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 3, 0);
-                vao.Initialize(control);
+            #region AreaCylinder
+            indices = new List<int>();
 
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
-                GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(int), indices.ToArray(), BufferUsageHint.StaticDraw);
+            r = 5;
+            t = 5;
+            b = 0;
+            int v = 16;
 
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vaoBuffer);
-                GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * data.Count, data.ToArray(), BufferUsageHint.StaticDraw);
+            data = new float[v * 2 * 3];
 
-                extraModels.Add(Path.GetFileNameWithoutExtension(fileName), (new Vector4(0, 0.5f, 1, 1), vao, indices.Count));
+            double delta = Math.PI * 2 / v;
+
+            int i = 0;
+            
+            for (int edgeIndex = 0; edgeIndex < v; edgeIndex++)
+            {
+                float x  = (float)Math.Sin(Math.PI * 2 * edgeIndex / v) * r;
+                float z  = (float)Math.Cos(Math.PI * 2 * edgeIndex / v) * r;
+
+                //top
+                data[i++] = x;
+                data[i++] = t;
+                data[i++] = z;
+
+                //bottom
+                data[i++] = x;
+                data[i++] = b;
+                data[i++] = z;
+
+                //top
+                indices.Add( 2 * edgeIndex);
+                indices.Add((2 * edgeIndex + 2) % (v * 2));
+
+                //bottom
+                indices.Add( 2 * edgeIndex + 1);
+                indices.Add((2 * edgeIndex + 1 + 2) % (v * 2));
+
+                //top to bottom
+                indices.Add(2 * edgeIndex);
+                indices.Add(2 * edgeIndex + 1);
             }
+            
+            SubmitExtraModel(control, true, "AreaCylinder", indices, data, new Vector4(0, 0.5f, 1, 1));
+            #endregion
+
+            #region TransparentWall
+            indices = new List<int>();
+
+            r = 5;
+
+            data = new float[]
+            {
+                -r,  r, 0,
+                 r,  r, 0,
+                -r, -r, 0,
+                 r, -r, 0,
+            };
+            //front
+            indices.Add(0b00);
+            indices.Add(0b10);
+            indices.Add(0b01);
+
+            indices.Add(0b01);
+            indices.Add(0b10);
+            indices.Add(0b11);
+
+            //back
+            indices.Add(0b01);
+            indices.Add(0b10);
+            indices.Add(0b00);
+
+            indices.Add(0b11);
+            indices.Add(0b10);
+            indices.Add(0b01);
+
+            SubmitExtraModel(control, false, "TransparentWall", indices, data, new Vector4(0, 0.5f, 1, 0.5f));
+            #endregion
+
+            #endregion
+
 
             DefaultTetxure = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
@@ -131,7 +228,28 @@ namespace SpotLight
 
             initialized = true;
         }
-        
+
+        private static void SubmitExtraModel(GL_ControlModern control, bool isLines, string modelName, List<int> indices, float[] data, Vector4 color)
+        {
+            int[] buffers = new int[2];
+            GL.GenBuffers(2, buffers);
+
+            int indexBuffer = buffers[0];
+            int vaoBuffer = buffers[1];
+
+            VertexArrayObject vao = new VertexArrayObject(vaoBuffer, indexBuffer);
+            vao.AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 3, 0);
+            vao.Initialize(control);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(int), indices.ToArray(), BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vaoBuffer);
+            GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * data.Length, data, BufferUsageHint.StaticDraw);
+
+            extraModels.Add(Path.GetFileNameWithoutExtension(modelName), (color, vao, indices.Count, isLines));
+        }
+
         public static void Submit(string modelName, Stream stream, GL_ControlModern control, string textureArc = null)
         {
             if (!cache.ContainsKey(modelName))
@@ -145,18 +263,26 @@ namespace SpotLight
                 cache[modelName].Draw(control, pass, highlightColor);
                 return true;
             }
-            else if (extraModels.TryGetValue(modelName, out (Vector4, VertexArrayObject, int) entry))
+            else if (extraModels.TryGetValue(modelName, out (Vector4, VertexArrayObject, int, bool) entry))
             {
                 control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
-
+                
                 if (pass == Pass.PICKING)
+                {
+                    GL.LineWidth(5);
                     control.CurrentShader.SetVector4("color", control.NextPickingColor());
+                }
                 else
+                {
+                    GL.LineWidth(3);
                     control.CurrentShader.SetVector4("color", entry.Item1 * (1-highlightColor.W) + highlightColor * highlightColor.W);
+                }
 
                 entry.Item2.Use(control);
+                
+                GL.DrawElements(entry.Item4?PrimitiveType.Lines:PrimitiveType.Triangles, entry.Item3, DrawElementsType.UnsignedInt, 0);
 
-                GL.DrawElements(BeginMode.Triangles, entry.Item3, DrawElementsType.UnsignedInt, 0);
+                GL.LineWidth(2);
 
                 return true;
             }
