@@ -106,21 +106,6 @@
       <DependentUpon>AddObjectForm.cs</DependentUpon>
     </Compile>
     <Compile Include="BfresModelCache.cs" />
-    <None Include="AreaModels\AreaCubeBase.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="AreaModels\AreaCubeCenter.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="AreaModels\AreaCylinder.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="AreaModels\AreaCylinderCenter.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="AreaModels\AreaSphere.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Clear Pipes.cs" />
     <Compile Include="EditorDrawables\General3dWorldObject.cs" />
     <Compile Include="EditorDrawables\I3dWorldObject.cs" />

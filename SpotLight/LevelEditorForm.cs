@@ -187,11 +187,24 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
             if (currentLevel == null)
                 return;
 
-            foreach (object obj in e.ItemsToDeselect)
-                currentLevel.scene.ToogleSelected((EditableObject)obj, false);
+            //apply selection changes to scene
+            if (e.SelectionChangeMode == SelectionChangeMode.SET)
+            {
+                currentLevel.scene.SelectedObjects.Clear();
 
-            foreach (object obj in e.ItemsToSelect)
-                currentLevel.scene.ToogleSelected((EditableObject)obj, true);
+                foreach (ISelectable obj in e.Items)
+                    obj.SelectDefault(LevelGLControlModern);
+            }
+            else if (e.SelectionChangeMode == SelectionChangeMode.ADD)
+            {
+                foreach (ISelectable obj in e.Items)
+                    obj.SelectDefault(LevelGLControlModern);
+            }
+            else //SelectionChangeMode.SUBTRACT
+            {
+                foreach (ISelectable obj in e.Items)
+                    obj.DeselectAll(LevelGLControlModern);
+            }
 
             e.Handled = true;
             LevelGLControlModern.Refresh();
