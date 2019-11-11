@@ -89,6 +89,7 @@ namespace SpotLight
             levelName = Levelname;
             fileName = Filename;
             categoryName = CATEGORY;
+            scene = new SM3DWorldScene();
 
             SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
             foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
@@ -99,16 +100,14 @@ namespace SpotLight
             Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
 
             ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(sarc.Files[levelName.Replace("Map1.szs","") + CATEGORY + ".byml"]));
-            int id = 0;
             foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
             {
                 if (entry.Key == "FilePath" || entry.Key == "Objs")
                     continue;
-
+                scene.ObjLists.Add(entry.Key, new List<I3dWorldObject>());
                 foreach (ArrayEntry obj in entry.IterArray())
                 {
-                    objectsByReference.Add(id,LevelIO.ParseObject(obj, scene, objectsByReference));
-                    id++;
+                    scene.ObjLists[entry.Key].Add(LevelIO.ParseObject(obj, scene, objectsByReference));
                 }
             }
             ObjectBaseReference = objectsByReference;

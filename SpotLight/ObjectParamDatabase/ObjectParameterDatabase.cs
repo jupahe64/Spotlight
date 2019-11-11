@@ -49,7 +49,7 @@ namespace SpotLight.ObjectParamDatabase
     /// </summary>
     public class ObjectParameterDatabase
     {
-        public Version Version = new Version(1, 1);
+        public Version Version = new Version(1, 2);
         public List<ObjectParameter> ObjectParameters = new List<ObjectParameter>();
         
 
@@ -118,65 +118,72 @@ namespace SpotLight.ObjectParamDatabase
 
             for (int i = 0; i < Zones.Length; i++)
             {
-                SM3DWorldLevel Test = new SM3DWorldLevel(Zones[i],Zones[i].Replace(StageDataPath,""), "Map");
-                for (int Item = 0; Item < Test.ObjectBaseReference.Count; Item++)
+                SM3DWorldLevel Test = new SM3DWorldLevel(Zones[i], Zones[i].Replace(StageDataPath, ""), "Map");
+                byte ListID = 0;
+                foreach (string key in Test.scene.ObjLists.Keys)
                 {
-                    if (Test.ObjectBaseReference.ElementAt(Item).Value is Rail)
-                        continue;
-
-                    General3dWorldObject Tmp = (General3dWorldObject)Test.ObjectBaseReference.ElementAt(Item).Value;
-                    if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
+                    for (int j = 0; j < Test.scene.ObjLists[key].Count; j++)
                     {
-                        int ParamID = 0;
-                        for (int y = 0; y < ObjectParameters.Count; y++)
+                        if (Test.scene.ObjLists[key].ElementAt(j) is Rail Temp)
                         {
-                            if (ObjectParameters[y].ClassName == Tmp.ClassName)
-                            {
-                                ParamID = y;
-                                break;
-                            }
                         }
-                        if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
-                            ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
 
-                        if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
-                            ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
-
-                        if (Tmp.Properties != null)
-                            for (int y = 0; y < Tmp.Properties.Count; y++)
+                        General3dWorldObject Tmp = (General3dWorldObject)Test.scene.ObjLists[key].ElementAt(j);
+                        if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
+                        {
+                            int ParamID = 0;
+                            for (int y = 0; y < ObjectParameters.Count; y++)
                             {
-                                if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == Tmp.Properties.ElementAt(y).Key))
+                                if (ObjectParameters[y].ClassName == Tmp.ClassName)
                                 {
-                                    dynamic Prevalue = Tmp.Properties.ElementAt(y).Value.GetType();
-                                    ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(Tmp.Properties.ElementAt(y).Key, Prevalue.Name));
+                                    ParamID = y;
+                                    break;
                                 }
                             }
-                        if (Tmp.Links != null)
-                            for (int y = 0; y < Tmp.Links.Count; y++)
-                            {
-                                if (!ObjectParameters[ParamID].LinkNames.Any(O => O == Tmp.Links.ElementAt(y).Key))
-                                    ObjectParameters[ParamID].LinkNames.Add(Tmp.Links.ElementAt(y).Key);
-                            }
-                    }
-                    else
-                    {
-                        ObjectParameter OP = new ObjectParameter() { ClassName = Tmp.ClassName };
-                        if (Tmp.ObjectName != "")
-                            OP.ObjectNames.Add(Tmp.ObjectName);
-                        if (Tmp.ModelName != "" && Tmp.ModelName != null)
-                            OP.ModelNames.Add(Tmp.ModelName);
-                        if (Tmp.Properties != null)
-                            for (int x = 0; x < Tmp.Properties.Count; x++)
-                            {
-                                dynamic Prevalue = Tmp.Properties.ElementAt(x).Value.GetType();
-                                OP.Properties.Add(new KeyValuePair<string, string>(Tmp.Properties.ElementAt(x).Key, Prevalue.Name));
-                            }
-                        if (Tmp.Links != null)
-                            for (int x = 0; x < Tmp.Links.Count; x++)
-                                OP.LinkNames.Add(Tmp.Links.ElementAt(x).Key);
+                            if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
+                                ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
 
-                        ObjectParameters.Add(OP);
+                            if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
+                                ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
+
+                            if (Tmp.Properties != null)
+                                for (int y = 0; y < Tmp.Properties.Count; y++)
+                                {
+                                    if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == Tmp.Properties.ElementAt(y).Key))
+                                    {
+                                        dynamic Prevalue = Tmp.Properties.ElementAt(y).Value.GetType();
+                                        ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(Tmp.Properties.ElementAt(y).Key, Prevalue.Name));
+                                    }
+                                }
+                            if (Tmp.Links != null)
+                                for (int y = 0; y < Tmp.Links.Count; y++)
+                                {
+                                    if (!ObjectParameters[ParamID].LinkNames.Any(O => O == Tmp.Links.ElementAt(y).Key))
+                                        ObjectParameters[ParamID].LinkNames.Add(Tmp.Links.ElementAt(y).Key);
+                                }
+                        }
+                        else
+                        {
+                            ObjectParameter OP = new ObjectParameter() { ClassName = Tmp.ClassName };
+                            if (Tmp.ObjectName != "")
+                                OP.ObjectNames.Add(Tmp.ObjectName);
+                            if (Tmp.ModelName != "" && Tmp.ModelName != null)
+                                OP.ModelNames.Add(Tmp.ModelName);
+                            if (Tmp.Properties != null)
+                                for (int x = 0; x < Tmp.Properties.Count; x++)
+                                {
+                                    dynamic Prevalue = Tmp.Properties.ElementAt(x).Value.GetType();
+                                    OP.Properties.Add(new KeyValuePair<string, string>(Tmp.Properties.ElementAt(x).Key, Prevalue.Name));
+                                }
+                            if (Tmp.Links != null)
+                                for (int x = 0; x < Tmp.Links.Count; x++)
+                                    OP.LinkNames.Add(Tmp.Links.ElementAt(x).Key);
+
+                            OP.CategoryID = ListID;
+                            ObjectParameters.Add(OP);
+                        }
                     }
+                    ListID++;
                 }
             }
         }
@@ -389,7 +396,13 @@ namespace SpotLight.ObjectParamDatabase
         public override int GetHashCode() => base.GetHashCode();
     }
 
-    public static class FileStreamExExcerpt
+    public class RailParameter
+    {
+        public byte CategoryID { get; private set; } = 0x06;
+        List<float[]> PathPointLocations { get; set; } = new List<float[]>();
+    }
+
+    public static class HackioIOExcerpt
     {
         /// <summary>
         /// Excerpt from my FileStreamEx Extensions. Reads a string in SHIFT-JIS. 0x00 terminated

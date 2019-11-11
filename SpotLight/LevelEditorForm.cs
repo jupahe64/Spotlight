@@ -23,7 +23,7 @@ namespace SpotLight
     {
         LevelParameterForm LPF;
         SM3DWorldLevel currentLevel;
-        ObjectParameterDatabase ObjectDatabase = null;
+        public ObjectParameterDatabase ObjectDatabase = null;
         public LevelEditorForm()
         {
             InitializeComponent();
@@ -308,7 +308,7 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SettingsForm SF = new SettingsForm();
+            SettingsForm SF = new SettingsForm() { Home = this };
             SF.ShowDialog();
             SpotlightToolStripStatusLabel.Text = "Settings Saved.";
         }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using SpotLight.ObjectParamDatabase;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,6 +20,8 @@ namespace SpotLight
             CenterToParent();
             GamePathTextBox.Text = Program.GamePath;
         }
+
+        public LevelEditorForm Home;
 
         public static string UserName
         {
@@ -62,6 +65,14 @@ namespace SpotLight
                 e.Cancel = true;
                 MessageBox.Show("The game path is invalid.\nPlease try again","Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
             }
+        }
+
+        private void RebuildDatabaseButton_Click(object sender, EventArgs e)
+        {
+            Home.ObjectDatabase = new ObjectParameterDatabase();
+            Home.ObjectDatabase.Create(Program.StageDataPath);
+            Home.ObjectDatabase.Save("ParameterDatabase.sopd");
+            MessageBox.Show("Database has been rebuilt!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
