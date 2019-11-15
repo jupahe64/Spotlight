@@ -126,6 +126,7 @@ namespace SpotLight.ObjectParamDatabase
                     {
                         if (Test.scene.ObjLists[key].ElementAt(j) is Rail Temp)
                         {
+                            continue;
                         }
 
                         General3dWorldObject Tmp = (General3dWorldObject)Test.scene.ObjLists[key].ElementAt(j);
