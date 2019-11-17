@@ -22,7 +22,7 @@ namespace SpotLight
     public partial class LevelEditorForm : Form
     {
         LevelParameterForm LPF;
-        SM3DWorldLevel currentLevel;
+        SM3DWorldScene currentScene;
         public ObjectParameterDatabase ObjectDatabase = null;
         public LevelEditorForm()
         {
@@ -161,14 +161,14 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void MainSceneListView_ListExited(object sender, ListEventArgs e)
         {
-            currentLevel.scene.CurrentList = e.List;
+            currentScene.CurrentList = e.List;
             //fetch availible properties for list
-            currentLevel.scene.SetupObjectUIControl(ObjectUIControl);
+            currentScene.SetupObjectUIControl(ObjectUIControl);
         }
 
         private void MainSceneListView_ItemsMoved(object sender, ItemsMovedEventArgs e)
         {
-            currentLevel.scene.ReorderObjects(MainSceneListView.CurrentList, e.OriginalIndex, e.Count, e.Offset);
+            currentScene.ReorderObjects(MainSceneListView.CurrentList, e.OriginalIndex, e.Count, e.Offset);
             e.Handled = true;
             LevelGLControlModern.Refresh();
         }
@@ -184,13 +184,13 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void MainSceneListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
 
             //apply selection changes to scene
             if (e.SelectionChangeMode == SelectionChangeMode.SET)
             {
-                currentLevel.scene.SelectedObjects.Clear();
+                currentScene.SelectedObjects.Clear();
 
                 foreach (ISelectable obj in e.Items)
                     obj.SelectDefault(LevelGLControlModern);
@@ -214,7 +214,7 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
-            if (currentLevel.scene.SelectedObjects.Count > 1)
+            if (currentScene.SelectedObjects.Count > 1)
             {
                 lblCurrentObject.Text = "Multiple objects selected";
                 string SelectedObjects = "";
@@ -222,8 +222,8 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
                 int multi = 1;
 
                 List<string> selectedobjectnames = new List<string>();
-                for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
-                    selectedobjectnames.Add(currentLevel.scene.SelectedObjects.ElementAt(i).ToString());
+                for (int i = 0; i < currentScene.SelectedObjects.Count; i++)
+                    selectedobjectnames.Add(currentScene.SelectedObjects.ElementAt(i).ToString());
 
                 selectedobjectnames.Sort();
                 for (int i = 0; i < selectedobjectnames.Count; i++)
@@ -250,22 +250,22 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
                 SelectedObjects = multi > 1 ? SelectedObjects+"." : SelectedObjects.Remove(SelectedObjects.Length-2) + ".";
                 SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
             }
-            else if (currentLevel.scene.SelectedObjects.Count == 0)
+            else if (currentScene.SelectedObjects.Count == 0)
                 lblCurrentObject.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected.";
             else
             {
-                lblCurrentObject.Text = currentLevel.scene.SelectedObjects.First().ToString() + " selected";
-                SpotlightToolStripStatusLabel.Text = $"Selected \"{currentLevel.scene.SelectedObjects.First().ToString()}\".";
+                lblCurrentObject.Text = currentScene.SelectedObjects.First().ToString() + " selected";
+                SpotlightToolStripStatusLabel.Text = $"Selected \"{currentScene.SelectedObjects.First().ToString()}\".";
             }
             MainSceneListView.Refresh();
 
-            currentLevel.scene.SetupObjectUIControl(ObjectUIControl);
+            currentScene.SetupObjectUIControl(ObjectUIControl);
         }
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
-            General3dWorldObject obj = (currentLevel.scene.SelectedObjects.First() as General3dWorldObject);
-            Rail rail = (currentLevel.scene.SelectedObjects.First() as Rail);
+            General3dWorldObject obj = (currentScene.SelectedObjects.First() as General3dWorldObject);
+            Rail rail = (currentScene.SelectedObjects.First() as Rail);
             Debugger.Break();
         }
 
@@ -288,19 +288,19 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
 
-            currentLevel.Save();
+            currentScene.Save();
             SpotlightToolStripStatusLabel.Text = "Level saved!";
         }
 
         private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
 
-            if (currentLevel.SaveAs())
+            if (currentScene.SaveAs())
                 SpotlightToolStripStatusLabel.Text = "Level saved!";
             else
                 SpotlightToolStripStatusLabel.Text = "Save Cancelled or Failed.";
@@ -317,17 +317,17 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void UndoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
-            currentLevel.scene.Undo();
+            currentScene.Undo();
             LevelGLControlModern.Refresh();
         }
 
         private void RedoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
-            currentLevel.scene.Redo();
+            currentScene.Redo();
             LevelGLControlModern.Refresh();
         }
 
@@ -337,7 +337,7 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
         {
             if (Directory.Exists(Program.GamePath + "\\SystemData") && File.Exists(Program.GamePath + "\\SystemData\\StageList.szs"))
             {
-                LPF = new LevelParameterForm(currentLevel == null ? "" : currentLevel.ToString());
+                LPF = new LevelParameterForm(currentScene == null ? "" : currentScene.ToString());
                 LPF.Show();
             }
             else
@@ -348,7 +348,7 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void DuplicateToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel.scene.SelectedObjects.Count == 0)
+            if (currentScene.SelectedObjects.Count == 0)
                 SpotlightToolStripStatusLabel.Text = "Can't duplicate nothing!";
             else
             {
@@ -357,8 +357,8 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
                 int multi = 1;
 
                 List<string> selectedobjectnames = new List<string>();
-                for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
-                    selectedobjectnames.Add(currentLevel.scene.SelectedObjects.ElementAt(i).ToString());
+                for (int i = 0; i < currentScene.SelectedObjects.Count; i++)
+                    selectedobjectnames.Add(currentScene.SelectedObjects.ElementAt(i).ToString());
 
                 selectedobjectnames.Sort();
                 for (int i = 0; i < selectedobjectnames.Count; i++)
@@ -384,7 +384,7 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
                 }
                 SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
 
-                currentLevel.scene.DuplicateSelectedObjects();
+                currentScene.DuplicateSelectedObjects();
 
                 SpotlightToolStripStatusLabel.Text = $"Duplicated {SelectedObjects}";
             }
@@ -408,18 +408,18 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
         {
             SpotlightToolStripProgressBar.Value = 0;
             SpotlightToolStripStatusLabel.Text = "Loading Level...";
-            if (SM3DWorldLevel.TryOpen(Filename, LevelGLControlModern, MainSceneListView, out SM3DWorldLevel level))
+            if (Level.LevelIO.TryOpenLevel(Filename, LevelGLControlModern, MainSceneListView, out SM3DWorldScene scene))
             {
-                currentLevel = level;
+                currentScene = scene;
                 SpotlightToolStripProgressBar.Value = 50;
-                SetupScene(level.scene);
+                SetupScene(scene);
 
                 MainSceneListView.Enabled = true;
                 MainSceneListView.SetRootList("ObjectList");
                 MainSceneListView.ListExited += MainSceneListView_ListExited;
                 MainSceneListView.Refresh();
                 SpotlightToolStripProgressBar.Value = 100;
-                SpotlightToolStripStatusLabel.Text = $"\"{level.ToString()}\" has been Loaded successfully.";
+                SpotlightToolStripStatusLabel.Text = $"\"{scene.ToString()}\" has been Loaded successfully.";
             }
         }
 
@@ -441,17 +441,16 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void EditObjectsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel.scene.GetType() != typeof(SM3DWorldScene))
+            if (currentScene.GetType() != typeof(SM3DWorldScene))
             {
                 var newScene = new SM3DWorldScene()
                 {
-                    ObjLists = currentLevel.scene.ObjLists,
-                    LinkedObjects = currentLevel.scene.LinkedObjects,
-                    UndoStack = currentLevel.scene.UndoStack,
-                    RedoStack = currentLevel.scene.RedoStack
+                    Zones = currentScene.Zones,
+                    UndoStack = currentScene.UndoStack,
+                    RedoStack = currentScene.RedoStack
                 };
 
-                currentLevel.scene = newScene;
+                currentScene = newScene;
                 SetupScene(newScene);
                 LevelGLControlModern.MainDrawable = newScene;
                 LevelGLControlModern.Refresh();
@@ -460,17 +459,16 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void EditLinksToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel.scene.GetType() != typeof(LinkEdit3DWScene))
+            if (currentScene.GetType() != typeof(LinkEdit3DWScene))
             {
                 var newScene = new LinkEdit3DWScene()
                 {
-                    ObjLists = currentLevel.scene.ObjLists,
-                    LinkedObjects = currentLevel.scene.LinkedObjects,
-                    UndoStack = currentLevel.scene.UndoStack,
-                    RedoStack = currentLevel.scene.RedoStack
+                    Zones = currentScene.Zones,
+                    UndoStack = currentScene.UndoStack,
+                    RedoStack = currentScene.RedoStack
                 };
 
-                currentLevel.scene = newScene;
+                currentScene = newScene;
                 SetupScene(newScene);
                 LevelGLControlModern.MainDrawable = newScene;
                 LevelGLControlModern.Refresh();
@@ -479,15 +477,15 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
 
             string DeletedObjects = "";
-            for (int i = 0; i < currentLevel.scene.SelectedObjects.Count; i++)
-                DeletedObjects += currentLevel.scene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currentLevel.scene.SelectedObjects.Count ? "." : ", ");
+            for (int i = 0; i < currentScene.SelectedObjects.Count; i++)
+                DeletedObjects += currentScene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currentScene.SelectedObjects.Count ? "." : ", ");
             SpotlightToolStripStatusLabel.Text = $"Deleted {DeletedObjects}";
 
-            currentLevel.scene.DeleteSelected();
+            currentScene.DeleteSelected();
             LevelGLControlModern.Refresh();
             MainSceneListView.UpdateAutoScrollHeight();
             Scene_SelectionChanged(this, null);
@@ -495,10 +493,10 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void SelectAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
 
-            foreach (I3dWorldObject obj in currentLevel.scene.Objects)
+            foreach (I3dWorldObject obj in currentScene.Objects)
                 obj.SelectAll(LevelGLControlModern);
 
             LevelGLControlModern.Refresh();
@@ -507,10 +505,10 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
 
         private void DeselectAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentLevel == null)
+            if (currentScene == null)
                 return;
 
-            foreach (I3dWorldObject obj in currentLevel.scene.Objects)
+            foreach (I3dWorldObject obj in currentScene.Objects)
                 obj.DeselectAll(LevelGLControlModern);
 
             LevelGLControlModern.Refresh();

@@ -1,6 +1,7 @@
 ﻿using BYAML;
 using GL_EditorFramework.EditorDrawables;
 using OpenTK;
+using SpotLight.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace SpotLight.EditorDrawables
         void AddLinkDestinations();
         void AddLinkDestination(string linkName, I3dWorldObject linkingObject);
 
-        void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene);
+        void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, SM3DWorldZone zone);
         void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo);
 
         Dictionary<string, List<I3dWorldObject>> Links { get; set; }

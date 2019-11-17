@@ -118,7 +118,7 @@
     <Compile Include="LevelEditorForm.Designer.cs">
       <DependentUpon>LevelEditorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="LevelIO.cs" />
+    <Compile Include="Level\LevelIO.cs" />
     <Compile Include="LevelParam.cs" />
     <Compile Include="LevelParameterForm.cs">
       <SubType>Form</SubType>
@@ -132,6 +132,7 @@
     <Compile Include="LevelParamSelectForm.Designer.cs">
       <DependentUpon>LevelParamSelectForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Level\SM3DWorldZone.cs" />
     <Compile Include="ObjectParamDatabase\ObjectParameterDatabase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -141,7 +142,7 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SM3DWorldLevel.cs" />
+    <Compile Include="Level\SM3DWorldLevel.cs" />
     <EmbeddedResource Include="AddObjectForm.resx">
       <DependentUpon>AddObjectForm.cs</DependentUpon>
     </EmbeddedResource>

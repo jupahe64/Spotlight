@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SpotLight.Level.LevelIO;
 
 /* File Format .sopd
  * ----------------------------------------------
@@ -116,76 +117,88 @@ namespace SpotLight.ObjectParamDatabase
         {
             string[] Zones = Directory.GetFiles(StageDataPath,"*Map1.szs");
 
+            Dictionary<string, List<ObjectInfo>> infosByListName = new Dictionary<string, List<ObjectInfo>>()
+            {
+                ["AreaList"] = new List<ObjectInfo>(),
+                ["CheckPointList"] = new List<ObjectInfo>(),
+                ["DemoObjList"] = new List<ObjectInfo>(),
+                ["GoalList"] = new List<ObjectInfo>(),
+                ["ObjectList"] = new List<ObjectInfo>(),
+                ["PlayerList"] = new List<ObjectInfo>(),
+                ["SkyList"] = new List<ObjectInfo>(),
+                ["Links"] = new List<ObjectInfo>()
+            };
+
             for (int i = 0; i < Zones.Length; i++)
             {
-                SM3DWorldLevel Test = new SM3DWorldLevel(Zones[i], Zones[i].Replace(StageDataPath, ""), "Map");
-                byte ListID = 0;
-                foreach (string key in Test.scene.ObjLists.Keys)
+                GetObjectInfos(Zones[i], infosByListName);
+            }
+
+            byte ListID = 0;
+            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in infosByListName)
+            {
+                for (int j = 0; j < keyValuePair.Value.Count; j++)
                 {
-                    for (int j = 0; j < Test.scene.ObjLists[key].Count; j++)
+                    if (keyValuePair.Value[j].ClassName == "Rail")
                     {
-                        if (Test.scene.ObjLists[key].ElementAt(j) is Rail Temp)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        General3dWorldObject Tmp = (General3dWorldObject)Test.scene.ObjLists[key].ElementAt(j);
-                        if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
+                    ObjectInfo Tmp = keyValuePair.Value[j];
+                    if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
+                    {
+                        int ParamID = 0;
+                        for (int y = 0; y < ObjectParameters.Count; y++)
                         {
-                            int ParamID = 0;
-                            for (int y = 0; y < ObjectParameters.Count; y++)
+                            if (ObjectParameters[y].ClassName == Tmp.ClassName)
                             {
-                                if (ObjectParameters[y].ClassName == Tmp.ClassName)
-                                {
-                                    ParamID = y;
-                                    break;
-                                }
+                                ParamID = y;
+                                break;
                             }
-                            if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
-                                ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
-
-                            if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
-                                ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
-
-                            if (Tmp.Properties != null)
-                                for (int y = 0; y < Tmp.Properties.Count; y++)
-                                {
-                                    if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == Tmp.Properties.ElementAt(y).Key))
-                                    {
-                                        dynamic Prevalue = Tmp.Properties.ElementAt(y).Value.GetType();
-                                        ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(Tmp.Properties.ElementAt(y).Key, Prevalue.Name));
-                                    }
-                                }
-                            if (Tmp.Links != null)
-                                for (int y = 0; y < Tmp.Links.Count; y++)
-                                {
-                                    if (!ObjectParameters[ParamID].LinkNames.Any(O => O == Tmp.Links.ElementAt(y).Key))
-                                        ObjectParameters[ParamID].LinkNames.Add(Tmp.Links.ElementAt(y).Key);
-                                }
                         }
-                        else
-                        {
-                            ObjectParameter OP = new ObjectParameter() { ClassName = Tmp.ClassName };
-                            if (Tmp.ObjectName != "")
-                                OP.ObjectNames.Add(Tmp.ObjectName);
-                            if (Tmp.ModelName != "" && Tmp.ModelName != null)
-                                OP.ModelNames.Add(Tmp.ModelName);
-                            if (Tmp.Properties != null)
-                                for (int x = 0; x < Tmp.Properties.Count; x++)
-                                {
-                                    dynamic Prevalue = Tmp.Properties.ElementAt(x).Value.GetType();
-                                    OP.Properties.Add(new KeyValuePair<string, string>(Tmp.Properties.ElementAt(x).Key, Prevalue.Name));
-                                }
-                            if (Tmp.Links != null)
-                                for (int x = 0; x < Tmp.Links.Count; x++)
-                                    OP.LinkNames.Add(Tmp.Links.ElementAt(x).Key);
+                        if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
+                            ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
 
-                            OP.CategoryID = ListID;
-                            ObjectParameters.Add(OP);
+                        if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
+                            ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
+
+                        foreach (var propertyEntry in Tmp.PropertyEntries)
+                        {
+                            if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
+                            {
+                                Type type = propertyEntry.Value.GetType();
+                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                            }
+                        }
+
+                        foreach (string key in Tmp.LinkEntries.Keys)
+                        {
+                            if (!ObjectParameters[ParamID].LinkNames.Any(O => O == key))
+                                ObjectParameters[ParamID].LinkNames.Add(key);
                         }
                     }
-                    ListID++;
+                    else
+                    {
+                        ObjectParameter OP = new ObjectParameter() { ClassName = Tmp.ClassName };
+                        if (Tmp.ObjectName != "")
+                            OP.ObjectNames.Add(Tmp.ObjectName);
+                        if (Tmp.ModelName != "" && Tmp.ModelName != null)
+                            OP.ModelNames.Add(Tmp.ModelName);
+
+                        foreach (var propertyEntry in Tmp.PropertyEntries)
+                        {
+                            Type type = propertyEntry.Value.GetType();
+                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                        }
+
+                        foreach (string key in Tmp.LinkEntries.Keys)
+                            OP.LinkNames.Add(key);
+
+                        OP.CategoryID = ListID;
+                        ObjectParameters.Add(OP);
+                    }
                 }
+                ListID++;
             }
         }
         /// <summary>

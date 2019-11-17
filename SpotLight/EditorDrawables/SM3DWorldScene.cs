@@ -2,11 +2,10 @@
 using GL_EditorFramework.EditorDrawables;
 using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using SpotLight.Level;
 using Syroot.BinaryData;
-using Syroot.Maths;
-using Syroot.NintenTools.Bfres;
-using Syroot.NintenTools.Bfres.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -161,13 +160,18 @@ namespace SpotLight.EditorDrawables
         {
             get
             {
-                foreach (List<I3dWorldObject> objects in ObjLists.Values)
+                foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
                 {
-                    foreach (I3dWorldObject obj in objects)
+                    IteratedZoneOffset = position;
+
+                    foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                    {
+                        foreach (I3dWorldObject obj in objects)
+                            yield return obj;
+                    }
+                    foreach (I3dWorldObject obj in zone.LinkedObjects)
                         yield return obj;
                 }
-                foreach (I3dWorldObject obj in LinkedObjects)
-                    yield return obj;
             }
         }
 
@@ -181,6 +185,11 @@ namespace SpotLight.EditorDrawables
         {
             get => redoStack;
             set => redoStack = value;
+        }
+
+        public override string ToString()
+        {
+            return Zones[0].Item2.levelName;
         }
 
         static bool Initialized = false;
@@ -322,76 +331,65 @@ namespace SpotLight.EditorDrawables
             return var;
         }
 
-        public Dictionary<string, List<I3dWorldObject>> ObjLists = new Dictionary<string, List<I3dWorldObject>>();
+        public List<(Vector3, SM3DWorldZone)> Zones { get; set; }
 
-        public List<I3dWorldObject> LinkedObjects = new List<I3dWorldObject>();
+        public static bool IteratesThroughLinks { get; protected set; }
 
-        private ulong highestObjID = 0;
+        public static Vector3 IteratedZoneOffset { get; protected set; }
 
-        public void SubmitID(string id)
-        {
-            if (id.StartsWith("obj") && ulong.TryParse(id.Substring(3), out ulong objID))
-            {
-                if (objID > highestObjID)
-                    highestObjID = objID;
-            }
-        }
-
-        private ulong highestRailID = 0;
-
-        public void SubmitRailID(string id)
-        {
-            if (id.StartsWith("rail") && ulong.TryParse(id.Substring(4), out ulong objID))
-            {
-                if (objID > highestRailID)
-                    highestRailID = objID;
-            }
-        }
-
-        public string NextObjID() => "obj" + (++highestObjID);
-
-        public string NextRailID() => "rail" + (++highestRailID);
-
-        public static bool IteratesThroughLinks;
-        
         /// <summary>
         /// Gets all the editable objects
         /// </summary>
         /// <returns><see cref="IEnumerable{IEditableObject}"/></returns>
         protected override IEnumerable<IEditableObject> GetObjects()
         {
-            IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in ObjLists.Values)
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
             {
-                foreach (IEditableObject obj in objects)
+                IteratedZoneOffset = position;
+
+                IteratesThroughLinks = false;
+                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                {
+                    foreach (IEditableObject obj in objects)
+                        yield return obj;
+                }
+                IteratesThroughLinks = true;
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
                     yield return obj;
             }
-            IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in LinkedObjects)
-                yield return obj;
         }
 
         public void UpdateLinkDestinations()
         {
-            IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in ObjLists.Values)
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
             {
-                foreach (I3dWorldObject obj in objects)
+                IteratedZoneOffset = position;
+
+                IteratesThroughLinks = false;
+                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        obj.ClearLinkDestinations();
+                }
+                IteratesThroughLinks = true;
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
                     obj.ClearLinkDestinations();
             }
-            IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in LinkedObjects)
-                obj.ClearLinkDestinations();
 
-            IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in ObjLists.Values)
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
             {
-                foreach (I3dWorldObject obj in objects)
+                IteratedZoneOffset = position;
+
+                IteratesThroughLinks = false;
+                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        obj.AddLinkDestinations();
+                }
+                IteratesThroughLinks = true;
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
                     obj.AddLinkDestinations();
             }
-            IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in LinkedObjects)
-                obj.AddLinkDestinations();
         }
 
         /// <summary>
@@ -401,17 +399,22 @@ namespace SpotLight.EditorDrawables
         {
             DeletionManager manager = new DeletionManager();
 
-            foreach (List<I3dWorldObject> objList in ObjLists.Values)
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
             {
-                foreach (I3dWorldObject obj in objList)
-                {
-                    obj.DeleteSelected(this, manager, objList);
-                }
-            }
+                IteratedZoneOffset = position;
 
-            foreach (I3dWorldObject obj in LinkedObjects)
-            {
-                obj.DeleteSelected(this, manager, LinkedObjects);
+                foreach (List<I3dWorldObject> objList in zone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objList)
+                    {
+                        obj.DeleteSelected(this, manager, objList);
+                    }
+                }
+
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
+                {
+                    obj.DeleteSelected(this, manager, zone.LinkedObjects);
+                }
             }
 
 
@@ -419,32 +422,35 @@ namespace SpotLight.EditorDrawables
 
             List<IEditableObject> objects;
 
-            foreach (List<I3dWorldObject> objList in ObjLists.Values)
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
             {
-                if(manager.Dictionary.TryGetValue(objList, out objects))
+                foreach (List<I3dWorldObject> objList in zone.ObjLists.Values)
                 {
-                    manager.Dictionary.Remove(objList);
-                    List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
-                    
+                    if (manager.Dictionary.TryGetValue(objList, out objects))
+                    {
+                        manager.Dictionary.Remove(objList);
+                        List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
+
+                        foreach (I3dWorldObject obj in objects)
+                        {
+                            _objsToDelete.Add(obj);
+                        }
+                        objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
+                    }
+                }
+
+                List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
+
+                if (manager.Dictionary.TryGetValue(zone.LinkedObjects, out objects))
+                {
+                    manager.Dictionary.Remove(zone.LinkedObjects);
                     foreach (I3dWorldObject obj in objects)
                     {
-                        _objsToDelete.Add(obj);
+                        linkedObjsToDelete.Add(obj);
                     }
-                    objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
+
+                    objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(zone.LinkedObjects, linkedObjsToDelete.ToArray()));
                 }
-            }
-
-            List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
-
-            if (manager.Dictionary.TryGetValue(LinkedObjects, out objects))
-            {
-                manager.Dictionary.Remove(LinkedObjects);
-                foreach (I3dWorldObject obj in objects)
-                {
-                    linkedObjsToDelete.Add(obj);
-                }
-
-                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(LinkedObjects, linkedObjsToDelete.ToArray()));
             }
 
             BeginUndoCollection();
@@ -455,48 +461,6 @@ namespace SpotLight.EditorDrawables
             EndUndoCollection();
 
             UpdateLinkDestinations();
-        }
-        /// <summary>
-        /// Saves the scene to a BYAML for saving
-        /// </summary>
-        /// <param name="writer">The current BYAML Node Writer</param>
-        /// <param name="levelName">The name of the Level</param>
-        /// <param name="categoryName">Category to save in</param>
-        public void Save(ByamlNodeWriter writer, string levelName, string categoryName)
-        {
-            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(ObjLists);
-
-            ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
-
-            HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
-            
-            rootNode.AddDynamicValue("FilePath", $"D:/home/TokyoProject/RedCarpet/Asset/StageData/{levelName}/Map/{levelName}{categoryName}.muunt");
-
-            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in ObjLists)
-            {
-                ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode(keyValuePair.Value);
-
-                foreach (I3dWorldObject obj in keyValuePair.Value)
-                {
-                    if (!alreadyWrittenObjs.Contains(obj))
-                    {
-                        ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
-                        obj.Save(alreadyWrittenObjs, writer, objNode, false);
-                        categoryNode.AddDictionaryNodeRef(objNode);
-                        objsNode.AddDictionaryNodeRef(objNode);
-                    }
-                    else
-                    {
-                        categoryNode.AddDictionaryRef(obj);
-                        objsNode.AddDictionaryRef(obj);
-                    }
-                }
-                rootNode.AddArrayNodeRef(keyValuePair.Key, categoryNode, true);
-            }
-
-            rootNode.AddArrayNodeRef("Objs", objsNode);
-
-            writer.Write(rootNode, true);
         }
 
         public void DuplicateSelectedObjects()
@@ -509,58 +473,65 @@ namespace SpotLight.EditorDrawables
 
             Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
-            IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in ObjLists.Values)
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
             {
-                foreach (I3dWorldObject obj in objects)
-                    obj.DuplicateSelected(duplicates, this);
+                IteratedZoneOffset = position;
 
-                objects.AddRange(duplicates.Values);
+                IteratesThroughLinks = false;
+                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        obj.DuplicateSelected(duplicates, this, zone);
+
+                    objects.AddRange(duplicates.Values);
+
+                    foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+
+                    if (duplicates.Count > 0)
+                        objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, duplicates.Values.ToArray()));
+
+                    duplicates.Clear();
+                }
+                IteratesThroughLinks = true;
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
+                    obj.DuplicateSelected(duplicates, this, zone);
 
                 foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
 
                 if (duplicates.Count > 0)
-                    objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, duplicates.Values.ToArray()));
+                    objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(zone.LinkedObjects, duplicates.Values.ToArray()));
 
-                duplicates.Clear();
+                zone.LinkedObjects.AddRange(duplicates.Values);
             }
-            IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in LinkedObjects)
-                obj.DuplicateSelected(duplicates, this);
 
-            foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
-
-            if (duplicates.Count > 0)
-                objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(LinkedObjects, duplicates.Values.ToArray()));
-
-            LinkedObjects.AddRange(duplicates.Values);
-
-
-            //Clear LinkDestinations
-            IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in ObjLists.Values)
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
             {
-                foreach (I3dWorldObject obj in objects)
+                IteratedZoneOffset = position;
+
+                //Clear LinkDestinations
+                IteratesThroughLinks = false;
+                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        obj.ClearLinkDestinations();
+                }
+                IteratesThroughLinks = true;
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
                     obj.ClearLinkDestinations();
-            }
-            IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in LinkedObjects)
-                obj.ClearLinkDestinations();
 
+                //Rebuild links
+                DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
 
-            //Rebuild links
-            DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
-
-            IteratesThroughLinks = false;
-            foreach (List<I3dWorldObject> objects in ObjLists.Values)
-            {
-                foreach (I3dWorldObject obj in objects)
+                IteratesThroughLinks = false;
+                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
+                }
+                IteratesThroughLinks = true;
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
                     obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
             }
-            IteratesThroughLinks = true;
-            foreach (I3dWorldObject obj in LinkedObjects)
-                obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
-
 
             //Add to undo
             if (objListInfos.Count > 0)
@@ -679,10 +650,8 @@ namespace SpotLight.EditorDrawables
             if (source.Links.Count == 0)
                 source.Links = null;
 
-            if(this is LinkEdit3DWScene)
+            if (this is LinkEdit3DWScene les)
             {
-                LinkEdit3DWScene les = (LinkEdit3DWScene)this;
-
                 if (les.SelectedConnection?.Source == source && les.SelectedConnection?.Dest == dest && les.SelectedConnection?.Name == name)
                     les.SelectedConnection = null;
 
@@ -702,5 +671,41 @@ namespace SpotLight.EditorDrawables
         }
 
         #endregion
+
+        /// <summary>
+        /// Saves the level over the original file
+        /// </summary>
+        /// <returns>true if the save succeeded, false if it failed</returns>
+        public bool Save()
+        {
+            IteratedZoneOffset = Vector3.Zero;
+
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            {
+                zone.Save();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Saves the level to a new file (.szs)
+        /// </summary>
+        /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
+        public bool SaveAs()
+        {
+            IteratedZoneOffset = Vector3.Zero;
+
+            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            {
+                SaveFileDialog sfd = new SaveFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    zone.Save(sfd.FileName);
+                }
+            }
+
+            return true;
+        }
     }
 }

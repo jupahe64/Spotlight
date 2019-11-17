@@ -5,6 +5,7 @@ using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using SpotLight.Level;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -40,6 +41,8 @@ namespace SpotLight.EditorDrawables
             ["ParameterConfigName"] = obj.ClassName,
             ["PlacementTargetFile"] = "Map"
         };
+        
+        public override Vector3 Position { get => base.Position + SM3DWorldScene.IteratedZoneOffset; set => base.Position = value - SM3DWorldScene.IteratedZoneOffset; }
 
         /// <summary>
         /// Id of this object
@@ -92,7 +95,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="objectEntry">Unknown</param>
         /// <param name="linkedObjs">List of objects that are linked with this object</param>
         /// <param name="objectsByReference">Unknown</param>
-        public General3dWorldObject(LevelIO.ObjectBaseInfo info, SM3DWorldScene scene, out bool loadLinks) 
+        public General3dWorldObject(LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks) 
             : base(info.Position, info.Rotation, info.Scale)
         {
             ID = info.ID;
@@ -254,7 +257,7 @@ namespace SpotLight.EditorDrawables
             linkDestinations.Add((linkName, linkingObject));
         }
 
-        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene)
+        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, SM3DWorldZone zone)
         {
             if (!Selected)
                 return;
@@ -289,7 +292,7 @@ namespace SpotLight.EditorDrawables
             else
                 newProperties = null;
             
-            duplicates[this] = new General3dWorldObject(Position, Rotation, Scale, scene.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
+            duplicates[this] = new General3dWorldObject(Position, Rotation, Scale, zone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
                 newLinks, newProperties);
 
             duplicates[this].SelectDefault(scene.GL_Control);

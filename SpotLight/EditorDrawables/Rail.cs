@@ -2,6 +2,7 @@
 using GL_EditorFramework;
 using GL_EditorFramework.EditorDrawables;
 using OpenTK;
+using SpotLight.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,12 +76,12 @@ namespace SpotLight.EditorDrawables
         [Undoable]
         public bool IsLadder { get; set; }
 
-        public Rail(LevelIO.ObjectBaseInfo info, SM3DWorldScene scene, out bool loadLinks)
+        public Rail(LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
             : base(PathPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]))
         {
             ID = info.ID;
-            if (scene != null)
-            scene.SubmitRailID(ID);
+            if (zone != null)
+            zone.SubmitRailID(ID);
 
             IsLadder = info.PropertyEntries["IsLadder"].Parse();
 
@@ -203,7 +204,7 @@ namespace SpotLight.EditorDrawables
             linkDestinations.Add((linkName, linkingObject));
         }
 
-        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene)
+        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, SM3DWorldZone zone)
         {
             bool anyPointsSelected = false;
             foreach (PathPoint point in pathPoints)
@@ -226,7 +227,7 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-            duplicates[this] = new Rail(newPoints, scene.NextRailID(), Closed, IsLadder);
+            duplicates[this] = new Rail(newPoints, zone.NextRailID(), Closed, IsLadder);
 
             var duplicate = duplicates[this];
 
