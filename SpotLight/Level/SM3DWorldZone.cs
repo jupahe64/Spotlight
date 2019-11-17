@@ -124,7 +124,12 @@ namespace SpotLight.Level
             foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
             {
                 if (keyValuePair.Key != levelName + categoryName + ".byml")
-                    extraFiles.Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                {
+                    if (((ushort)keyValuePair.Value[0] | (ushort)keyValuePair.Value[0] << 8) == ByamlFile.BYAML_MAGIC)
+                        extraFiles.Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                    else
+                        extraFiles.Add(keyValuePair.Key, keyValuePair.Value);
+                }
             }
 
             Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
