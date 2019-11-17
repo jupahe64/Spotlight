@@ -125,7 +125,7 @@ namespace SpotLight.Level
             {
                 if (keyValuePair.Key != levelName + categoryName + ".byml")
                 {
-                    if (((ushort)keyValuePair.Value[0] | (ushort)keyValuePair.Value[0] << 8) == ByamlFile.BYAML_MAGIC)
+                    if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
                         extraFiles.Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
                     else
                         extraFiles.Add(keyValuePair.Key, keyValuePair.Value);
