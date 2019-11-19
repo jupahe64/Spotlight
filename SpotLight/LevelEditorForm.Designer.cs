@@ -30,11 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelEditorForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.MainSceneListView = new GL_EditorFramework.SceneListView();
-            this.lblCurrentObject = new System.Windows.Forms.Label();
-            this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
-            this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,6 +40,7 @@
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UndoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AddObjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DuplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,17 +53,29 @@
             this.SpotlightToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
-            this.AddObjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPageZones = new System.Windows.Forms.TabPage();
+            this.btnEditIndividual = new System.Windows.Forms.Button();
+            this.LevelZoneTreeView = new System.Windows.Forms.TreeView();
+            this.tabPageObjects = new System.Windows.Forms.TabPage();
+            this.MainSceneListView = new GL_EditorFramework.SceneListView();
+            this.lblCurrentObject = new System.Windows.Forms.Label();
+            this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
+            this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.SpotlightMenuStrip.SuspendLayout();
+            this.SpotlightStatusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.SpotlightMenuStrip.SuspendLayout();
-            this.SpotlightStatusStrip.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPageZones.SuspendLayout();
+            this.tabPageObjects.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -86,77 +94,6 @@
             this.splitContainer1.Size = new System.Drawing.Size(784, 515);
             this.splitContainer1.SplitterDistance = 260;
             this.splitContainer1.TabIndex = 2;
-            // 
-            // splitContainer2
-            // 
-            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer2.Name = "splitContainer2";
-            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer2.Panel1
-            // 
-            this.splitContainer2.Panel1.Controls.Add(this.MainSceneListView);
-            // 
-            // splitContainer2.Panel2
-            // 
-            this.splitContainer2.Panel2.Controls.Add(this.lblCurrentObject);
-            this.splitContainer2.Panel2.Controls.Add(this.ObjectUIControl);
-            this.splitContainer2.Panel2.Click += new System.EventHandler(this.SplitContainer2_Panel2_Click);
-            this.splitContainer2.Size = new System.Drawing.Size(260, 515);
-            this.splitContainer2.SplitterDistance = 245;
-            this.splitContainer2.TabIndex = 1;
-            // 
-            // MainSceneListView
-            // 
-            this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MainSceneListView.Enabled = false;
-            this.MainSceneListView.Location = new System.Drawing.Point(0, 0);
-            this.MainSceneListView.Name = "MainSceneListView";
-            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
-            this.MainSceneListView.Size = new System.Drawing.Size(260, 245);
-            this.MainSceneListView.TabIndex = 0;
-            this.MainSceneListView.ItemDoubleClicked += new GL_EditorFramework.ItemDoubleClickedEventHandler(this.MainSceneListView_ItemDoubleClicked);
-            // 
-            // lblCurrentObject
-            // 
-            this.lblCurrentObject.AutoSize = true;
-            this.lblCurrentObject.Location = new System.Drawing.Point(12, 0);
-            this.lblCurrentObject.Name = "lblCurrentObject";
-            this.lblCurrentObject.Size = new System.Drawing.Size(87, 13);
-            this.lblCurrentObject.TabIndex = 0;
-            this.lblCurrentObject.Text = "Nothing selected";
-            // 
-            // ObjectUIControl
-            // 
-            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ObjectUIControl.BackColor = System.Drawing.SystemColors.Control;
-            this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
-            this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
-            this.ObjectUIControl.Name = "ObjectUIControl";
-            this.ObjectUIControl.Size = new System.Drawing.Size(254, 245);
-            this.ObjectUIControl.TabIndex = 1;
-            // 
-            // LevelGLControlModern
-            // 
-            this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
-            this.LevelGLControlModern.CamRotX = 0F;
-            this.LevelGLControlModern.CamRotY = 0F;
-            this.LevelGLControlModern.CurrentShader = null;
-            this.LevelGLControlModern.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.LevelGLControlModern.Fov = 0.7853982F;
-            this.LevelGLControlModern.Location = new System.Drawing.Point(0, 0);
-            this.LevelGLControlModern.Name = "LevelGLControlModern";
-            this.LevelGLControlModern.NormPickingDepth = 0F;
-            this.LevelGLControlModern.ShowOrientationCube = true;
-            this.LevelGLControlModern.Size = new System.Drawing.Size(520, 515);
-            this.LevelGLControlModern.Stereoscopy = false;
-            this.LevelGLControlModern.TabIndex = 0;
-            this.LevelGLControlModern.VSync = false;
-            this.LevelGLControlModern.ZFar = 32000F;
-            this.LevelGLControlModern.ZNear = 1.5F;
             // 
             // SpotlightMenuStrip
             // 
@@ -253,6 +190,14 @@
             this.RedoToolStripMenuItem.Text = "Redo               Ctrl+Y";
             this.RedoToolStripMenuItem.Click += new System.EventHandler(this.RedoToolStripMenuItem_Click);
             // 
+            // AddObjectToolStripMenuItem
+            // 
+            this.AddObjectToolStripMenuItem.Name = "AddObjectToolStripMenuItem";
+            this.AddObjectToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.A)));
+            this.AddObjectToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.AddObjectToolStripMenuItem.Text = "Add Object";
+            this.AddObjectToolStripMenuItem.Click += new System.EventHandler(this.AddObjectToolStripMenuItem_Click);
+            // 
             // DuplicateToolStripMenuItem
             // 
             this.DuplicateToolStripMenuItem.Name = "DuplicateToolStripMenuItem";
@@ -346,13 +291,133 @@
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 
-            // AddObjectToolStripMenuItem
+            // splitContainer2
             // 
-            this.AddObjectToolStripMenuItem.Name = "AddObjectToolStripMenuItem";
-            this.AddObjectToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.A)));
-            this.AddObjectToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
-            this.AddObjectToolStripMenuItem.Text = "Add Object";
-            this.AddObjectToolStripMenuItem.Click += new System.EventHandler(this.AddObjectToolStripMenuItem_Click);
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer2.Name = "splitContainer2";
+            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.tabControl1);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.lblCurrentObject);
+            this.splitContainer2.Panel2.Controls.Add(this.ObjectUIControl);
+            this.splitContainer2.Panel2.Click += new System.EventHandler(this.SplitContainer2_Panel2_Click);
+            this.splitContainer2.Size = new System.Drawing.Size(260, 515);
+            this.splitContainer2.SplitterDistance = 245;
+            this.splitContainer2.TabIndex = 1;
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPageZones);
+            this.tabControl1.Controls.Add(this.tabPageObjects);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(260, 245);
+            this.tabControl1.TabIndex = 1;
+            // 
+            // tabPageZones
+            // 
+            this.tabPageZones.Controls.Add(this.btnEditIndividual);
+            this.tabPageZones.Controls.Add(this.LevelZoneTreeView);
+            this.tabPageZones.Location = new System.Drawing.Point(4, 22);
+            this.tabPageZones.Name = "tabPageZones";
+            this.tabPageZones.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageZones.Size = new System.Drawing.Size(252, 219);
+            this.tabPageZones.TabIndex = 0;
+            this.tabPageZones.Text = "Zones";
+            this.tabPageZones.UseVisualStyleBackColor = true;
+            // 
+            // btnEditIndividual
+            // 
+            this.btnEditIndividual.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnEditIndividual.Location = new System.Drawing.Point(3, 190);
+            this.btnEditIndividual.Name = "btnEditIndividual";
+            this.btnEditIndividual.Size = new System.Drawing.Size(246, 23);
+            this.btnEditIndividual.TabIndex = 1;
+            this.btnEditIndividual.Text = "Edit Individual";
+            this.btnEditIndividual.UseVisualStyleBackColor = true;
+            this.btnEditIndividual.Click += new System.EventHandler(this.btnEditIndividual_Click);
+            // 
+            // LevelZoneTreeView
+            // 
+            this.LevelZoneTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LevelZoneTreeView.Location = new System.Drawing.Point(3, 3);
+            this.LevelZoneTreeView.Name = "LevelZoneTreeView";
+            this.LevelZoneTreeView.Size = new System.Drawing.Size(246, 184);
+            this.LevelZoneTreeView.TabIndex = 0;
+            this.LevelZoneTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.LevelZoneTreeView_AfterSelect);
+            // 
+            // tabPageObjects
+            // 
+            this.tabPageObjects.Controls.Add(this.MainSceneListView);
+            this.tabPageObjects.Location = new System.Drawing.Point(4, 22);
+            this.tabPageObjects.Name = "tabPageObjects";
+            this.tabPageObjects.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageObjects.Size = new System.Drawing.Size(252, 219);
+            this.tabPageObjects.TabIndex = 1;
+            this.tabPageObjects.Text = "Objects";
+            this.tabPageObjects.UseVisualStyleBackColor = true;
+            // 
+            // MainSceneListView
+            // 
+            this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainSceneListView.Enabled = false;
+            this.MainSceneListView.Location = new System.Drawing.Point(3, 3);
+            this.MainSceneListView.Name = "MainSceneListView";
+            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
+            this.MainSceneListView.Size = new System.Drawing.Size(246, 213);
+            this.MainSceneListView.TabIndex = 1;
+            this.MainSceneListView.ItemDoubleClicked += new GL_EditorFramework.ItemDoubleClickedEventHandler(this.MainSceneListView_ItemDoubleClicked);
+            // 
+            // lblCurrentObject
+            // 
+            this.lblCurrentObject.AutoSize = true;
+            this.lblCurrentObject.Location = new System.Drawing.Point(12, 0);
+            this.lblCurrentObject.Name = "lblCurrentObject";
+            this.lblCurrentObject.Size = new System.Drawing.Size(87, 13);
+            this.lblCurrentObject.TabIndex = 0;
+            this.lblCurrentObject.Text = "Nothing selected";
+            // 
+            // ObjectUIControl
+            // 
+            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ObjectUIControl.BackColor = System.Drawing.SystemColors.Control;
+            this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
+            this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
+            this.ObjectUIControl.Name = "ObjectUIControl";
+            this.ObjectUIControl.Size = new System.Drawing.Size(254, 245);
+            this.ObjectUIControl.TabIndex = 1;
+            // 
+            // LevelGLControlModern
+            // 
+            this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
+            this.LevelGLControlModern.CamRotX = 0F;
+            this.LevelGLControlModern.CamRotY = 0F;
+            this.LevelGLControlModern.CurrentShader = null;
+            this.LevelGLControlModern.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LevelGLControlModern.Fov = 0.7853982F;
+            this.LevelGLControlModern.Location = new System.Drawing.Point(0, 0);
+            this.LevelGLControlModern.Name = "LevelGLControlModern";
+            this.LevelGLControlModern.NormPickingDepth = 0F;
+            this.LevelGLControlModern.ShowOrientationCube = true;
+            this.LevelGLControlModern.Size = new System.Drawing.Size(520, 515);
+            this.LevelGLControlModern.Stereoscopy = false;
+            this.LevelGLControlModern.TabIndex = 0;
+            this.LevelGLControlModern.VSync = false;
+            this.LevelGLControlModern.ZFar = 32000F;
+            this.LevelGLControlModern.ZNear = 1.5F;
             // 
             // LevelEditorForm
             // 
@@ -371,28 +436,27 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.SpotlightMenuStrip.ResumeLayout(false);
+            this.SpotlightMenuStrip.PerformLayout();
+            this.SpotlightStatusStrip.ResumeLayout(false);
+            this.SpotlightStatusStrip.PerformLayout();
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
-            this.SpotlightMenuStrip.ResumeLayout(false);
-            this.SpotlightMenuStrip.PerformLayout();
-            this.SpotlightStatusStrip.ResumeLayout(false);
-            this.SpotlightStatusStrip.PerformLayout();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPageZones.ResumeLayout(false);
+            this.tabPageObjects.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private GL_EditorFramework.SceneListView MainSceneListView;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Label lblCurrentObject;
-        private GL_EditorFramework.ObjectUIControl ObjectUIControl;
         private System.Windows.Forms.MenuStrip SpotlightMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem FileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OpenToolStripMenuItem;
@@ -416,6 +480,14 @@
         private System.Windows.Forms.ToolStripMenuItem selectAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deselectAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AddObjectToolStripMenuItem;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPageZones;
+        private System.Windows.Forms.TabPage tabPageObjects;
+        private System.Windows.Forms.Button btnEditIndividual;
+        public GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
+        public GL_EditorFramework.ObjectUIControl ObjectUIControl;
+        public System.Windows.Forms.TreeView LevelZoneTreeView;
+        public GL_EditorFramework.SceneListView MainSceneListView;
     }
 }
 

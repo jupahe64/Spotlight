@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using SZS;
 using static BYAML.ByamlIterator;
 
@@ -16,7 +17,7 @@ namespace SpotLight.Level
 {
     public class LevelIO
     {
-        public static bool TryOpenLevel(string fileName, GL_ControlBase control, SceneListView sceneListView, out SM3DWorldScene scene)
+        public static bool TryOpenLevel(string fileName, LevelEditorForm levelEditorForm, out SM3DWorldScene scene)
         {
             scene = new SM3DWorldScene();
 
@@ -32,16 +33,31 @@ namespace SpotLight.Level
                     scene.Zones.Add(subZone);
                 }
 
-                sceneListView.SelectedItems = scene.SelectedObjects;
-                sceneListView.Refresh();
+                levelEditorForm.MainSceneListView.SelectedItems = scene.SelectedObjects;
+                levelEditorForm.MainSceneListView.Refresh();
 
-                control.MainDrawable = scene;
+                levelEditorForm.LevelZoneTreeView.BeginUpdate();
+                levelEditorForm.LevelZoneTreeView.Nodes.Clear();
+                TreeNode toplevelZoneNode = levelEditorForm.LevelZoneTreeView.Nodes.Add(zone.levelName);
+                toplevelZoneNode.Tag = zone;
+
+                foreach ((ZoneTransform t, SM3DWorldZone subZone) in zone.SubZones)
+                {
+                    toplevelZoneNode.Nodes.Add(subZone.levelName).Tag = subZone;
+                }
+
+                levelEditorForm.LevelZoneTreeView.EndUpdate();
+                levelEditorForm.LevelZoneTreeView.SelectedNode = toplevelZoneNode;
+
+                levelEditorForm.LevelZoneTreeView_AfterSelect(levelEditorForm.LevelZoneTreeView, new TreeViewEventArgs(toplevelZoneNode));
+
+                levelEditorForm.LevelGLControlModern.MainDrawable = scene;
 
                 if (zone.ObjLists.ContainsKey("PlayerList") && zone.ObjLists["PlayerList"].Count > 0)
                 {
                     scene.GL_Control.CamRotX = 0;
                     scene.GL_Control.CamRotY = Framework.HALF_PI / 4;
-                    scene.GL_Control.CameraTarget = zone.ObjLists["PlayerList"][0].GetFocusPoint();
+                    scene.FocusOn(zone.ObjLists["PlayerList"][0]);
                 }
 
                 return true;

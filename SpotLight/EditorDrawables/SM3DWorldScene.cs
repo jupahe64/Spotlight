@@ -714,5 +714,22 @@ namespace SpotLight.EditorDrawables
 
             return true;
         }
+
+        public void FocusOn(IEditableObject obj)
+        {
+            if(obj is I3dWorldObject)
+            {
+                foreach (IEditableObject _obj in GetObjects())
+                {
+                    if (_obj == obj)
+                    {
+                        control.CameraTarget = _obj.GetFocusPoint();
+                        return;
+                    }
+                }
+            }
+            else
+                control.CameraTarget = obj.GetFocusPoint();
+        }
     }
 }

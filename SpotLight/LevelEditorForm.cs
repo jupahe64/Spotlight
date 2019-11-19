@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
 using SpotLight.ObjectParamDatabase;
+using SpotLight.Level;
 
 namespace SpotLight
 {
@@ -27,6 +28,8 @@ namespace SpotLight
         public LevelEditorForm()
         {
             InitializeComponent();
+
+            tabControl1.SelectedTab = tabPageObjects;
             LevelGLControlModern.CameraDistance = 20;
 
             MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
@@ -408,7 +411,7 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
         {
             SpotlightToolStripProgressBar.Value = 0;
             SpotlightToolStripStatusLabel.Text = "Loading Level...";
-            if (Level.LevelIO.TryOpenLevel(Filename, LevelGLControlModern, MainSceneListView, out SM3DWorldScene scene))
+            if (LevelIO.TryOpenLevel(Filename, this, out SM3DWorldScene scene))
             {
                 currentScene = scene;
                 SpotlightToolStripProgressBar.Value = 50;
@@ -518,7 +521,7 @@ $@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would 
         private void MainSceneListView_ItemDoubleClicked(object sender, ItemDoubleClickedEventArgs e)
         {
             if (e.Item is I3dWorldObject obj)
-                LevelGLControlModern.CameraTarget = obj.GetFocusPoint();
+                currentScene.FocusOn(obj);
         }
 
         private void AddObjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -542,6 +545,27 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             }
             AddObjectForm AOF = new AddObjectForm(ObjectDatabase);
             AOF.ShowDialog();
+        }
+
+        public void LevelZoneTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            SM3DWorldZone zone = (SM3DWorldZone)e.Node.Tag;
+
+            MainSceneListView.RootLists.Clear();
+
+            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in zone.ObjLists)
+            {
+                MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+
+            MainSceneListView.UpdateComboBoxItems();
+
+            MainSceneListView.SetRootList("ObjectList");
+        }
+
+        private void btnEditIndividual_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Not implemented yet");
         }
     }
 }
