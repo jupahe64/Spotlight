@@ -22,12 +22,12 @@ namespace SpotLight.Level
 
             if (SM3DWorldZone.TryOpen(fileName, out SM3DWorldZone zone))
             {
-                scene.Zones = new List<(Vector3, SM3DWorldZone)>
+                scene.Zones = new List<(ZoneTransform, SM3DWorldZone)>
                 {
-                    (Vector3.Zero, zone)
+                    (ZoneTransform.Identity, zone)
                 };
 
-                foreach ((Vector3, SM3DWorldZone) subZone in zone.SubZones)
+                foreach (var subZone in zone.SubZones)
                 {
                     scene.Zones.Add(subZone);
                 }

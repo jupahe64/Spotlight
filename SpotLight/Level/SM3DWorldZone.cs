@@ -38,7 +38,7 @@ namespace SpotLight.Level
 
         public List<I3dWorldObject> LinkedObjects = new List<I3dWorldObject>();
 
-        public List<(Vector3 position, SM3DWorldZone zone)> SubZones = new List<(Vector3 position, SM3DWorldZone zone)>();
+        public List<(ZoneTransform, SM3DWorldZone)> SubZones = new List<(ZoneTransform, SM3DWorldZone)>();
 
         private ulong highestObjID = 0;
 
@@ -147,6 +147,7 @@ namespace SpotLight.Level
                     foreach (ArrayEntry obj in entry.IterArray())
                     {
                         Vector3 position = new Vector3();
+                        Vector3 rotation = new Vector3();
                         SM3DWorldZone zone = null;
                         foreach (DictionaryEntry _entry in obj.IterDictionary())
                         {
@@ -161,12 +162,26 @@ namespace SpotLight.Level
                                     data["Z"] / 100f
                                 );
                             }
+                            else if (_entry.Key == "Rotate")
+                            {
+                                dynamic data = _entry.Parse();
+                                rotation = new Vector3(
+                                    data["X"],
+                                    data["Y"],
+                                    data["Z"]
+                                );
+                            }
                         }
 
                         if (zone == null)
                             ObjLists[entry.Key].Add(LevelIO.ParseObject(obj, this, objectsByReference));
                         else
-                            SubZones.Add((position, zone));
+                        {
+                            Matrix3 rotMat = GL_EditorFramework.Framework.Mat3FromEulerAnglesDeg(rotation);
+                            SubZones.Add((new ZoneTransform(
+                                new Matrix4(rotMat) * Matrix4.CreateTranslation(position),
+                                rotMat), zone));
+                        }
                     }
 
                     continue;
@@ -262,5 +277,19 @@ namespace SpotLight.Level
 
             return true;
         }
+    }
+
+    public struct ZoneTransform
+    {
+        public ZoneTransform(Matrix4 positionTransform, Matrix3 rotationTransform)
+        {
+            PositionTransform = positionTransform;
+            RotationTransform = rotationTransform;
+        }
+
+        public static ZoneTransform Identity = new ZoneTransform(Matrix4.Identity, Matrix3.Identity);
+
+        public Matrix4 PositionTransform { get; set; }
+        public Matrix3 RotationTransform { get; set; }
     }
 }

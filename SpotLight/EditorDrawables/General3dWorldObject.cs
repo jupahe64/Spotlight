@@ -42,7 +42,21 @@ namespace SpotLight.EditorDrawables
             ["PlacementTargetFile"] = "Map"
         };
         
-        public override Vector3 Position { get => base.Position + SM3DWorldScene.IteratedZoneOffset; set => base.Position = value - SM3DWorldScene.IteratedZoneOffset; }
+        public override Vector3 GlobalPosition {
+            get => Vector4.Transform(new Vector4(Position, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform).Xyz;
+            set => Position = Vector4.Transform(new Vector4(value, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform.Inverted()).Xyz;
+        }
+
+        public override Matrix3 GlobalRotation
+        {
+            get => Framework.Mat3FromEulerAnglesDeg(Rotation) * SM3DWorldScene.IteratedZoneTransform.RotationTransform;
+            set => Rotation = (value * SM3DWorldScene.IteratedZoneTransform.RotationTransform.Inverted())
+                    .ExtractDegreeEulerAngles() + new Vector3(
+                        (float)Math.Round(Rotation.X / 360f) * 360,
+                        (float)Math.Round(Rotation.Y / 360f) * 360,
+                        (float)Math.Round(Rotation.Z / 360f) * 360
+                        );
+        }
 
         /// <summary>
         /// Id of this object
@@ -381,7 +395,7 @@ namespace SpotLight.EditorDrawables
 
             bool hovered = editorScene.Hovered == this;
 
-            Matrix3 rotMtx = Framework.Mat3FromEulerAnglesDeg(Rotation);
+            Matrix3 rotMtx = GlobalRotation;
 
             if (BfresModelCache.Contains(ModelName == "" ? ObjectName : ModelName))
             {
@@ -389,9 +403,9 @@ namespace SpotLight.EditorDrawables
                     Matrix4.CreateScale(DisplayScale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale, rotMtx) : Scale)) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
-                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition));
 
                 Vector4 highlightColor;
 
@@ -416,9 +430,9 @@ namespace SpotLight.EditorDrawables
                     Matrix4.CreateScale(DisplayScale * 0.5f) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(Scale, rotMtx) : Scale)) *
+                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
-                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position));
+                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition));
             }
 
             Vector4 blockColor;
@@ -449,7 +463,7 @@ namespace SpotLight.EditorDrawables
         public override void GetSelectionBox(ref BoundingBox boundingBox)
         {
             if(Selected)
-                boundingBox.Include(Position + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
+                boundingBox.Include(GlobalPosition + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
         }
 
 

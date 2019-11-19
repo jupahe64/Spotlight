@@ -160,9 +160,9 @@ namespace SpotLight.EditorDrawables
         {
             get
             {
-                foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+                foreach ((var offset, SM3DWorldZone zone) in Zones)
                 {
-                    IteratedZoneOffset = position;
+                    IteratedZoneTransform = offset;
 
                     foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
                     {
@@ -172,6 +172,8 @@ namespace SpotLight.EditorDrawables
                     foreach (I3dWorldObject obj in zone.LinkedObjects)
                         yield return obj;
                 }
+
+                IteratedZoneTransform = ZoneTransform.Identity;
             }
         }
 
@@ -331,11 +333,11 @@ namespace SpotLight.EditorDrawables
             return var;
         }
 
-        public List<(Vector3, SM3DWorldZone)> Zones { get; set; }
+        public List<(ZoneTransform, SM3DWorldZone)> Zones { get; set; }
 
         public static bool IteratesThroughLinks { get; protected set; }
 
-        public static Vector3 IteratedZoneOffset { get; protected set; }
+        public static ZoneTransform IteratedZoneTransform { get; protected set; } = ZoneTransform.Identity;
 
         /// <summary>
         /// Gets all the editable objects
@@ -343,9 +345,9 @@ namespace SpotLight.EditorDrawables
         /// <returns><see cref="IEnumerable{IEditableObject}"/></returns>
         protected override IEnumerable<IEditableObject> GetObjects()
         {
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                IteratedZoneOffset = position;
+                IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
                 foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
@@ -357,13 +359,15 @@ namespace SpotLight.EditorDrawables
                 foreach (I3dWorldObject obj in zone.LinkedObjects)
                     yield return obj;
             }
+
+            IteratedZoneTransform = ZoneTransform.Identity;
         }
 
         public void UpdateLinkDestinations()
         {
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                IteratedZoneOffset = position;
+                IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
                 foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
@@ -376,9 +380,9 @@ namespace SpotLight.EditorDrawables
                     obj.ClearLinkDestinations();
             }
 
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                IteratedZoneOffset = position;
+                IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
                 foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
@@ -390,6 +394,8 @@ namespace SpotLight.EditorDrawables
                 foreach (I3dWorldObject obj in zone.LinkedObjects)
                     obj.AddLinkDestinations();
             }
+
+            IteratedZoneTransform = ZoneTransform.Identity;
         }
 
         /// <summary>
@@ -399,9 +405,9 @@ namespace SpotLight.EditorDrawables
         {
             DeletionManager manager = new DeletionManager();
 
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                IteratedZoneOffset = position;
+                IteratedZoneTransform = offset;
 
                 foreach (List<I3dWorldObject> objList in zone.ObjLists.Values)
                 {
@@ -417,12 +423,14 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
+            IteratedZoneTransform = ZoneTransform.Identity;
+
 
             List<Revertable3DWorldObjAddition.ObjListInfo> objsToDelete = new List<Revertable3DWorldObjAddition.ObjListInfo>();
 
             List<IEditableObject> objects;
 
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
                 foreach (List<I3dWorldObject> objList in zone.ObjLists.Values)
                 {
@@ -473,9 +481,9 @@ namespace SpotLight.EditorDrawables
 
             Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                IteratedZoneOffset = position;
+                IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
                 foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
@@ -504,9 +512,9 @@ namespace SpotLight.EditorDrawables
                 zone.LinkedObjects.AddRange(duplicates.Values);
             }
 
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                IteratedZoneOffset = position;
+                IteratedZoneTransform = offset;
 
                 //Clear LinkDestinations
                 IteratesThroughLinks = false;
@@ -532,6 +540,8 @@ namespace SpotLight.EditorDrawables
                 foreach (I3dWorldObject obj in zone.LinkedObjects)
                     obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
             }
+
+            IteratedZoneTransform = ZoneTransform.Identity;
 
             //Add to undo
             if (objListInfos.Count > 0)
@@ -678,9 +688,7 @@ namespace SpotLight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed</returns>
         public bool Save()
         {
-            IteratedZoneOffset = Vector3.Zero;
-
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
                 zone.Save();
             }
@@ -694,9 +702,8 @@ namespace SpotLight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
         public bool SaveAs()
         {
-            IteratedZoneOffset = Vector3.Zero;
-
-            foreach ((Vector3 position, SM3DWorldZone zone) in Zones)
+            
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
                 SaveFileDialog sfd = new SaveFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
                 if (sfd.ShowDialog() == DialogResult.OK)
