@@ -62,7 +62,7 @@ namespace SpotLight.EditorDrawables
                         );
                     }
                 }
-                pathPoints.Add(new PathPoint(pos, cp1 - pos, cp2 - pos));
+                pathPoints.Add(new RailPoint(pos, cp1 - pos, cp2 - pos));
             }
 
             return pathPoints;
@@ -353,6 +353,33 @@ namespace SpotLight.EditorDrawables
             {
 
             }
+        }
+    }
+
+    public class RailPoint : PathPoint
+    {
+        public override Vector3 GlobalPosition
+        {
+            get => Vector4.Transform(new Vector4(Position, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform).Xyz;
+            set => Position = Vector4.Transform(new Vector4(value, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform.Inverted()).Xyz;
+        }
+
+        public override Vector3 GlobalCP1
+        {
+            get => Vector3.Transform(ControlPoint1, SM3DWorldScene.IteratedZoneTransform.RotationTransform);
+            set => ControlPoint1 = Vector3.Transform(value, SM3DWorldScene.IteratedZoneTransform.RotationTransform.Inverted());
+        }
+
+        public override Vector3 GlobalCP2
+        {
+            get => Vector3.Transform(ControlPoint2, SM3DWorldScene.IteratedZoneTransform.RotationTransform);
+            set => ControlPoint2 = Vector3.Transform(value, SM3DWorldScene.IteratedZoneTransform.RotationTransform.Inverted());
+        }
+
+        public RailPoint(Vector3 position, Vector3 controlPoint1, Vector3 controlPoint2)
+            : base(position, controlPoint1, controlPoint2)
+        {
+
         }
     }
 }
