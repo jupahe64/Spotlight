@@ -51,11 +51,7 @@ namespace SpotLight.EditorDrawables
         {
             get => Framework.Mat3FromEulerAnglesDeg(Rotation) * SM3DWorldScene.IteratedZoneTransform.RotationTransform;
             set => Rotation = (value * SM3DWorldScene.IteratedZoneTransform.RotationTransform.Inverted())
-                    .ExtractDegreeEulerAngles() + new Vector3(
-                        (float)Math.Round(Rotation.X / 360f) * 360,
-                        (float)Math.Round(Rotation.Y / 360f) * 360,
-                        (float)Math.Round(Rotation.Z / 360f) * 360
-                        );
+                    .ExtractDegreeEulerAngles();
         }
 
         /// <summary>
