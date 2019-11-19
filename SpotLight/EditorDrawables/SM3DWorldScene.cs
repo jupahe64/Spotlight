@@ -232,7 +232,32 @@ namespace SpotLight.EditorDrawables
                 Initialized = true;
             }
 
-            base.Prepare(control);
+            this.control = control;
+
+            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            {
+                if (zone.IsPrepared)
+                    continue;
+
+                IteratedZoneTransform = offset;
+
+                IteratesThroughLinks = false;
+                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                {
+                    foreach (IEditableObject obj in objects)
+                        obj.Prepare(control);
+                }
+                IteratesThroughLinks = true;
+                foreach (I3dWorldObject obj in zone.LinkedObjects)
+                    obj.Prepare(control);
+
+                zone.IsPrepared = true;
+            }
+
+            IteratedZoneTransform = ZoneTransform.Identity;
+
+            foreach (AbstractGlDrawable obj in StaticObjects)
+                obj.Prepare(control);
         }
 
         class LinkRenderer : AbstractGlDrawable
