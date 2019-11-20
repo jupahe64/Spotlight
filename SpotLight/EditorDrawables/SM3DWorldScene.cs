@@ -317,10 +317,10 @@ namespace SpotLight.EditorDrawables
                                 {
                                     if (_obj.IsSelected() || obj.IsSelected())
                                     {
-                                        GL.VertexAttrib4(1, new OpenTK.Vector4(1, 1, 1, 1));
-                                        GL.Vertex3(_obj.GetLinkingPoint());
-                                        GL.VertexAttrib4(1, new OpenTK.Vector4(0, 1, 1, 1));
-                                        GL.Vertex3(obj.GetLinkingPoint());
+                                        GL.VertexAttrib4(1, new Vector4(1, 1, 1, 1));
+                                        GL.Vertex3(_obj.GetLinkingPoint(scene));
+                                        GL.VertexAttrib4(1, new Vector4(0, 1, 1, 1));
+                                        GL.Vertex3(obj.GetLinkingPoint(scene));
                                     }
                                 }
                             }

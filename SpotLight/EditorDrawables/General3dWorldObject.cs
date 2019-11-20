@@ -223,9 +223,9 @@ namespace SpotLight.EditorDrawables
                 objectsToDelete.Add(this);
         }
         
-        public virtual Vector3 GetLinkingPoint()
+        public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
         {
-            return Position+Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation);
+            return Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition + Vector3.Transform(GlobalRotation, DisplayTranslation);
         }
 
         public override bool TrySetupObjectUIControl(EditorSceneBase scene, ObjectUIControl objectUIControl)

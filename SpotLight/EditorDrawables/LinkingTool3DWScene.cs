@@ -47,8 +47,8 @@ namespace SpotLight.EditorDrawables
             else if (SelectedConnection != null)
             {
                 //Check if mouse is on the Dest Point
-                Point linkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint());
-                Point nextToLinkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint() + control.InvertedRotationMatrix.Row0 * 0.25f);
+                Point linkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint(this));
+                Point nextToLinkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint(this) + control.InvertedRotationMatrix.Row0 * 0.25f);
                 Vector2 diff = new Vector2(e.X, e.Y) - new Vector2(linkingPoint.X, linkingPoint.Y);
                 Vector2 nextToDiff = new Vector2(nextToLinkingPoint.X, nextToLinkingPoint.Y) - new Vector2(linkingPoint.X, linkingPoint.Y);
                 if (diff.LengthSquared < nextToDiff.LengthSquared)
@@ -58,8 +58,8 @@ namespace SpotLight.EditorDrawables
                 }
 
                 //Check if mouse is on the Source Point
-                linkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Source.GetLinkingPoint());
-                nextToLinkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Source.GetLinkingPoint() + control.InvertedRotationMatrix.Row0 * 0.25f);
+                linkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Source.GetLinkingPoint(this));
+                nextToLinkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Source.GetLinkingPoint(this) + control.InvertedRotationMatrix.Row0 * 0.25f);
                 diff = new Vector2(e.X, e.Y) - new Vector2(linkingPoint.X, linkingPoint.Y);
                 nextToDiff = new Vector2(nextToLinkingPoint.X, nextToLinkingPoint.Y) - new Vector2(linkingPoint.X, linkingPoint.Y);
                 if (diff.LengthSquared < nextToDiff.LengthSquared)
@@ -143,10 +143,16 @@ namespace SpotLight.EditorDrawables
         private void ChangeSelectedConnection(I3dWorldObject newSource, I3dWorldObject newDest, string newName)
         {
             if (newSource == SelectedConnection.Source && newDest == SelectedConnection.Dest && newName == SelectedConnection.Name)
-                return;
+                return; //nothing has changed
 
-            if (newSource == newDest || newName=="")
-                return;
+            if (newSource == newDest)
+                return; //a link can't load to itself
+
+            if(newName == "")
+                return; //a links name can't be empty
+
+            if (newSource is Rail)
+                return; //Rails can't have links
 
             AddToUndo(new RevertableConnectionChange(
                 newSource, newDest, newName,
@@ -361,15 +367,29 @@ namespace SpotLight.EditorDrawables
 
                 control.CurrentShader = LinksShaderProgram;
 
+
+
                 if (pass == Pass.OPAQUE)
                 {
+                    Vector3 sourceObjPoint = Vector3.Zero;
+                    Vector3 destObjPoint = Vector3.Zero;
+                    Vector3 hoveredObjPoint = Vector3.Zero;
+
                     GL.LineWidth(1);
                     GL.Begin(PrimitiveType.Lines);
                     GL.VertexAttrib2(2, Vector2.Zero);
                     foreach (I3dWorldObject _obj in scene.GetObjects())
                     {
+                        Vector3 _objPoint = _obj.GetLinkingPoint(scene);
+
+                        if (_obj == scene.SelectedConnection?.Dest)
+                            destObjPoint = _objPoint;
+
                         if (_obj.Links != null)
                         {
+                            if (_obj == scene.SelectedConnection?.Source)
+                                sourceObjPoint = _objPoint;
+
                             foreach (KeyValuePair<string, List<I3dWorldObject>> link in _obj.Links)
                             {
                                 foreach (I3dWorldObject obj in link.Value)
@@ -378,18 +398,20 @@ namespace SpotLight.EditorDrawables
                                         obj      != scene.SelectedConnection?.Dest ||
                                         link.Key != scene.SelectedConnection?.Name)
                                     {
-                                        if(_obj      == hoveredConnection?.Source &&
+                                        Vector3 objPoint = obj.GetLinkingPoint(scene);
+
+                                        if (_obj      == hoveredConnection?.Source &&
                                             obj      == hoveredConnection?.Dest &&
                                             link.Key == hoveredConnection?.Name)
                                         {
                                             GL.VertexAttrib4(1, EditableObject.selectColor);
-                                            GL.Vertex3(_obj.GetLinkingPoint());
-                                            GL.Vertex3(obj.GetLinkingPoint());
+                                            GL.Vertex3(_objPoint);
+                                            GL.Vertex3(objPoint);
                                         }
                                         else{
-                                            GL.VertexAttrib4(1, new OpenTK.Vector4(1, 1, 1, 1));
-                                            GL.Vertex3(_obj.GetLinkingPoint());
-                                            GL.Vertex3(obj.GetLinkingPoint());
+                                            GL.VertexAttrib4(1, new Vector4(1, 1, 1, 1));
+                                            GL.Vertex3(_objPoint);
+                                            GL.Vertex3(objPoint);
                                         }
                                     }
                                 }
@@ -400,8 +422,8 @@ namespace SpotLight.EditorDrawables
 
                     if (scene.SelectedConnection != null)
                     {
-                        Vector3 sourcePoint = ((scene.linkDragMode == LinkDragMode.Source) ? scene.Hovered3dObject : scene.SelectedConnection.Source).GetLinkingPoint();
-                        Vector3 destPoint = ((scene.linkDragMode == LinkDragMode.Dest) ? scene.Hovered3dObject : scene.SelectedConnection.Dest).GetLinkingPoint();
+                        Vector3 sourcePoint = (scene.linkDragMode == LinkDragMode.Source) ? hoveredObjPoint : sourceObjPoint;
+                        Vector3 destPoint = (scene.linkDragMode == LinkDragMode.Dest) ? hoveredObjPoint : destObjPoint;
 
                         GL.DepthFunc(DepthFunction.Always);
 
@@ -466,8 +488,8 @@ namespace SpotLight.EditorDrawables
                                 foreach (I3dWorldObject obj in link)
                                 {
                                     GL.VertexAttrib4(1, control.NextPickingColor());
-                                    GL.Vertex3(_obj.GetLinkingPoint());
-                                    GL.Vertex3(obj.GetLinkingPoint());
+                                    GL.Vertex3(_obj.GetLinkingPoint(scene));
+                                    GL.Vertex3(obj.GetLinkingPoint(scene));
                                 }
                             }
                         }

@@ -175,9 +175,9 @@ namespace SpotLight.EditorDrawables
             objNode.AddDynamicValue("UnitConfigName", "Rail");
         }
 
-        public virtual Vector3 GetLinkingPoint()
+        public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
         {
-            return PathPoints[0].Position;
+            return (PathPoints[0] as RailPoint)?.GetLinkingPoint(editorScene) ?? Vector3.Zero;
         }
 
         public void ClearLinkDestinations()
@@ -380,6 +380,11 @@ namespace SpotLight.EditorDrawables
             : base(position, controlPoint1, controlPoint2)
         {
 
+        }
+
+        public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
+        {
+            return Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition;
         }
     }
 }
