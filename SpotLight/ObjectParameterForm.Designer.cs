@@ -36,7 +36,7 @@
             this.lblType = new System.Windows.Forms.Label();
             this.lblName = new System.Windows.Forms.Label();
             this.cbNewType = new System.Windows.Forms.ComboBox();
-            this.panel1 = new SpotLight.ObjectParameterEditorControl();
+            this.editorControl = new SpotLight.ObjectParameterEditorControl();
             this.SuspendLayout();
             // 
             // btnOk
@@ -70,6 +70,7 @@
             this.btnAdd.TabIndex = 4;
             this.btnAdd.Text = "Add";
             this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.BtnAdd_Click);
             // 
             // tbNewName
             // 
@@ -90,6 +91,7 @@
             this.checkUseProgrammingTerms.TabIndex = 5;
             this.checkUseProgrammingTerms.Text = "Use Programming Terms";
             this.checkUseProgrammingTerms.UseVisualStyleBackColor = true;
+            this.checkUseProgrammingTerms.CheckedChanged += new System.EventHandler(this.CheckUseProgrammingTerms_CheckedChanged);
             // 
             // lblType
             // 
@@ -120,17 +122,17 @@
             this.cbNewType.Size = new System.Drawing.Size(130, 21);
             this.cbNewType.TabIndex = 3;
             // 
-            // panel1
+            // editorControl
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.editorControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Location = new System.Drawing.Point(12, 68);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(433, 374);
-            this.panel1.TabIndex = 2;
+            this.editorControl.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.editorControl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.editorControl.Location = new System.Drawing.Point(12, 68);
+            this.editorControl.Name = "editorControl";
+            this.editorControl.Size = new System.Drawing.Size(433, 374);
+            this.editorControl.TabIndex = 2;
             // 
             // ObjectParameterForm
             // 
@@ -142,7 +144,7 @@
             this.Controls.Add(this.lblType);
             this.Controls.Add(this.checkUseProgrammingTerms);
             this.Controls.Add(this.btnAdd);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.editorControl);
             this.Controls.Add(this.tbNewName);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
@@ -158,7 +160,7 @@
 
         private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.Button btnCancel;
-        private ObjectParameterEditorControl panel1;
+        private ObjectParameterEditorControl editorControl;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.TextBox tbNewName;
         private System.Windows.Forms.CheckBox checkUseProgrammingTerms;

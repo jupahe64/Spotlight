@@ -17,7 +17,6 @@ namespace SpotLight
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new ObjectParameterForm());
             Application.Run(new LevelEditorForm());
         }
 

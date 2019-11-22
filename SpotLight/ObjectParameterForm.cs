@@ -29,39 +29,76 @@ namespace SpotLight
 
             public override string ToString()
             {
-                return AltName;
+                return useAltNames ? AltName : ActualName;
             }
         }
-
-        List<ComboBox> comboBoxes = new List<ComboBox>();
+        
         public static TypeDef[] typeDefs = new TypeDef[]
         {
-            new TypeDef(0,     "int",    "Integer"),
-            new TypeDef(0f,    "float",  "Floating Point Number"),
+            new TypeDef(0,     "int",    "Whole Number"),
+            new TypeDef(0f,    "float",  "Decimal Number"),
             new TypeDef("",    "string", "Text/Word"),
             new TypeDef(false, "bool",   "Flag")
         };
 
-        public ObjectParameterForm()
+        public IReadOnlyList<(TypeDef typeDef, string name)> Parameters => editorControl.parameters;
+
+        public static bool useAltNames = true;
+
+        public ObjectParameterForm(List<(TypeDef typeDef, string name)> parameters)
         {
             InitializeComponent();
-
-            comboBoxes.Add(cbNewType);
 
             for (int i = 0; i < typeDefs.Length; i++)
             {
                 cbNewType.Items.Add(typeDefs[i].AltName);
             }
+            cbNewType.SelectedIndex = 0;
+
+            editorControl.parameters = parameters;
+        }
+
+        private void BtnAdd_Click(object sender, EventArgs e)
+        {
+            if (tbNewName.Text == "")
+                return;
+
+            editorControl.parameters.Add((typeDefs[cbNewType.SelectedIndex], tbNewName.Text));
+            tbNewName.Text = "";
+            editorControl.Refresh();
+        }
+
+        private void CheckUseProgrammingTerms_CheckedChanged(object sender, EventArgs e)
+        {
+            useAltNames = !checkUseProgrammingTerms.Checked;
+            editorControl.Refresh();
+
+            int tmp = cbNewType.SelectedIndex;
+
+            cbNewType.Items.Clear();
+            
+            if (useAltNames)
+            {
+                for (int i = 0; i < typeDefs.Length; i++)
+                {
+                    cbNewType.Items.Add(typeDefs[i].AltName);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < typeDefs.Length; i++)
+                {
+                    cbNewType.Items.Add(typeDefs[i].ActualName);
+                }
+            }
+
+            cbNewType.SelectedIndex = tmp;
         }
     }
 
     public class ObjectParameterEditorControl : FlexibleUIControl
     {
-        List<(ObjectParameterForm.TypeDef typeDef, string name)> parameters = new List<(ObjectParameterForm.TypeDef typeDef, string name)>()
-        {
-            (ObjectParameterForm.typeDefs[0], "SomeParameter"),
-            (ObjectParameterForm.typeDefs[3], "SomeOtherParameter")
-        };
+        public List<(ObjectParameterForm.TypeDef typeDef, string name)> parameters = new List<(ObjectParameterForm.TypeDef typeDef, string name)>();
 
         protected override bool HasNoUIContent() => false;
         
@@ -71,14 +108,14 @@ namespace SpotLight
 
             if (!TryInitDrawing(e))
                 return;
-
-            int currentY = 10;
-
+            
             bool alreadyRemoved = false;
 
             for (int i = parameters.Count-1; i >= 0; i--)
             {
-                if(Button(Width-60, currentY - 2, 50, "Remove") && !alreadyRemoved)
+                int currentY = 10 + i * 30 + AutoScrollPosition.Y;
+
+                if (Button(usableWidth-60, currentY - 2, 50, "Remove") && !alreadyRemoved)
                 {
                     parameters.RemoveAt(i);
                     alreadyRemoved = true;
@@ -87,12 +124,12 @@ namespace SpotLight
                 {
                     parameters[i] = (
                     (ObjectParameterForm.TypeDef)ChoicePickerField(10, currentY, 150, parameters[i].typeDef, ObjectParameterForm.typeDefs),
-                    TextInputField(170, currentY, Width - 180 - 60, parameters[i].name, false)
+                    TextInputField(170, currentY, usableWidth - 180 - 60, parameters[i].name, false)
                     );
-                    
-                    currentY += 30;
                 }
             }
+
+            AutoScrollMinSize = new Size(0, parameters.Count * 30 + 20);
         }
     }
 }

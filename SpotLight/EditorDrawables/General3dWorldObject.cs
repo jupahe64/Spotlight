@@ -593,6 +593,52 @@ namespace SpotLight.EditorDrawables
                     else if (dict[key] is bool)
                         dict[key] = control.CheckBox(key, dict[key]);
                 }
+
+                if (control.Button("Edit"))
+                {
+                    List<(ObjectParameterForm.TypeDef typeDef, string name)> parameters = new List<(ObjectParameterForm.TypeDef typeDef, string name)>();
+
+                    List<KeyValuePair<string, dynamic>> otherParameters = new List<KeyValuePair<string, dynamic>>();
+
+                    foreach (var item in dict)
+                    {
+                        if (item.Value is int)
+                            parameters.Add((ObjectParameterForm.typeDefs[0], item.Key));
+                        else if (item.Value is float)
+                            parameters.Add((ObjectParameterForm.typeDefs[1], item.Key));
+                        else if (item.Value is string)
+                            parameters.Add((ObjectParameterForm.typeDefs[2], item.Key));
+                        else if (item.Value is bool)
+                            parameters.Add((ObjectParameterForm.typeDefs[3], item.Key));
+                        else
+                            otherParameters.Add(item);
+                    }
+
+                    var parameterForm = new ObjectParameterForm(parameters);
+
+                    if(parameterForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        List<KeyValuePair<string, dynamic>> newEntries = new List<KeyValuePair<string, dynamic>>();
+                        foreach ((ObjectParameterForm.TypeDef def, string name) in parameterForm.Parameters)
+                        {
+                            if (dict.ContainsKey(name))
+                                newEntries.Add(new KeyValuePair<string, dynamic>(name, dict[name]));
+                            else
+                                newEntries.Add(new KeyValuePair<string, dynamic>(name, def.DefaultValue));
+                        }
+
+                        dict.Clear();
+
+                        foreach (var item in newEntries)
+                            dict.Add(item.Key, item.Value);
+
+                        foreach (var item in otherParameters)
+                            dict.Add(item.Key, item.Value);
+                        
+
+                        keys = dict.Keys.ToArray();
+                    }
+                }
             }
 
             public void OnValueChangeStart()
