@@ -478,6 +478,8 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
+                control.TextInput(obj.ID, "Object ID");
+
                 obj.ObjectName = control.TextInput(obj.ObjectName, "Object Name");
                 obj.ClassName = control.TextInput(obj.ClassName, "Class Name");
                 obj.ModelName = control.TextInput(obj.ModelName, "Model Name");
