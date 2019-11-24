@@ -503,11 +503,11 @@ namespace SpotLight.EditorDrawables
 
             Dictionary<I3dWorldObject, I3dWorldObject> totalDuplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
             List<I3dWorldObject> newLinkedObjects = new List<I3dWorldObject>();
-
-            Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
-
+            
             foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
+                Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+
                 IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
@@ -727,13 +727,14 @@ namespace SpotLight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
         public bool SaveAs()
         {
-            
+            string currentDirectory = System.IO.Path.GetDirectoryName(Zones[0].Item2.fileName);
             foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                SaveFileDialog sfd = new SaveFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
+                SaveFileDialog sfd = new SaveFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = currentDirectory, FileName = System.IO.Path.GetFileName(zone.fileName) };
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     zone.Save(sfd.FileName);
+                    currentDirectory = System.IO.Path.GetDirectoryName(sfd.FileName);
                 }
             }
 

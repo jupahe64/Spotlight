@@ -1,4 +1,5 @@
 ﻿using BYAML;
+using GL_EditorFramework;
 using OpenTK;
 using SpotLight.EditorDrawables;
 using Syroot.BinaryData;
@@ -142,8 +143,6 @@ namespace SpotLight.Level
                 if (entry.Key == "FilePath" || entry.Key == "Objs")
                     continue;
 
-                ObjLists.Add(entry.Key, new List<I3dWorldObject>());
-
                 if (entry.Key == "ZoneList")
                 {
                     foreach (ArrayEntry obj in entry.IterArray())
@@ -188,6 +187,8 @@ namespace SpotLight.Level
 
                     continue;
                 }
+
+                ObjLists.Add(entry.Key, new List<I3dWorldObject>());
 
                 foreach (ArrayEntry obj in entry.IterArray())
                 {
@@ -241,7 +242,7 @@ namespace SpotLight.Level
                 ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(ObjLists);
 
                 ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
-
+                
                 HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
 
                 rootNode.AddDynamicValue("FilePath", $"D:/home/TokyoProject/RedCarpet/Asset/StageData/{levelName}/Map/{levelName}{categoryName}.muunt");
@@ -269,6 +270,46 @@ namespace SpotLight.Level
                 }
 
                 rootNode.AddArrayNodeRef("Objs", objsNode);
+
+                ByamlNodeWriter.ArrayNode zonesNode = writer.CreateArrayNode();
+
+                int zoneID = 0;
+
+                foreach ((ZoneTransform transform, SM3DWorldZone zone) in SubZones)
+                {
+                    ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode();
+
+                    objNode.AddDynamicValue("Comment", null);
+                    objNode.AddDynamicValue("Id", "zone" + zoneID++);
+                    objNode.AddDynamicValue("IsLinkDest", false);
+                    objNode.AddDynamicValue("LayerConfigName", "Common");
+
+                    {
+                        objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
+                    }
+
+                    objNode.AddDynamicValue("ModelName", null);
+                    objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(transform.RotationTransform.ExtractDegreeEulerAngles()), true);
+                    objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
+                    objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(transform.PositionTransform.Row3.Xyz, 100f), true);
+
+                    objNode.AddDynamicValue("UnitConfig", new Dictionary<string, dynamic>
+                    {
+                        ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
+                        ["DisplayRotate"] = LevelIO.Vector3ToDict(Vector3.Zero),
+                        ["DisplayScale"] = LevelIO.Vector3ToDict(Vector3.One),
+                        ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero),
+                        ["GenerateCategory"] = "",
+                        ["ParameterConfigName"] = "Zone",
+                        ["PlacementTargetFile"] = "Map"
+                    }, true);
+
+                    objNode.AddDynamicValue("UnitConfigName", zone.levelName);
+
+                    zonesNode.AddDictionaryNodeRef(objNode, true);
+                }
+
+                rootNode.AddArrayNodeRef("ZoneList", zonesNode);
 
                 writer.Write(rootNode, true);
 
