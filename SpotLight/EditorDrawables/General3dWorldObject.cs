@@ -617,25 +617,54 @@ namespace SpotLight.EditorDrawables
                     }
 
                     var parameterForm = new ObjectParameterForm(parameters);
-
-                    if(parameterForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    
+                    if (parameterForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
+                        List<RevertableDictAddition.AddInfo> addInfos = new List<RevertableDictAddition.AddInfo>();
+                        List<RevertableDictDeletion.DeleteInfo> deleteInfos = new List<RevertableDictDeletion.DeleteInfo>();
+
+                        HashSet<string> newParamNames = new HashSet<string>();
+
                         List<KeyValuePair<string, dynamic>> newEntries = new List<KeyValuePair<string, dynamic>>();
                         foreach ((ObjectParameterForm.TypeDef def, string name) in parameterForm.Parameters)
                         {
                             if (dict.ContainsKey(name))
                                 newEntries.Add(new KeyValuePair<string, dynamic>(name, dict[name]));
                             else
+                            {
                                 newEntries.Add(new KeyValuePair<string, dynamic>(name, def.DefaultValue));
+                                addInfos.Add(new RevertableDictAddition.AddInfo(def.DefaultValue, name));
+                            }
+                            newParamNames.Add(name);
                         }
+
+                        foreach (var keyValuePair in dict)
+                        {
+                            if (!newParamNames.Contains(keyValuePair.Key))
+                                deleteInfos.Add(new RevertableDictDeletion.DeleteInfo(keyValuePair.Value, keyValuePair.Key));
+                        }
+
+                        scene.BeginUndoCollection();
+                        scene.AddToUndo(new RevertableDictAddition(new RevertableDictAddition.AddInDictInfo[]
+                        {
+                            new RevertableDictAddition.AddInDictInfo(addInfos.ToArray(), dict)
+                        },
+                        new RevertableDictAddition.SingleAddInDictInfo[0]));
+
+                        scene.AddToUndo(new RevertableDictDeletion(new RevertableDictDeletion.DeleteInDictInfo[]
+                        {
+                            new RevertableDictDeletion.DeleteInDictInfo(deleteInfos.ToArray(), dict)
+                        },
+                        new RevertableDictDeletion.SingleDeleteInDictInfo[0]));
+                        scene.EndUndoCollection();
 
                         dict.Clear();
 
-                        foreach (var item in newEntries)
-                            dict.Add(item.Key, item.Value);
+                        foreach (var keyValuePair in newEntries)
+                            dict.Add(keyValuePair.Key, keyValuePair.Value);
 
-                        foreach (var item in otherParameters)
-                            dict.Add(item.Key, item.Value);
+                        foreach (var keyValuePair in otherParameters)
+                            dict.Add(keyValuePair.Key, keyValuePair.Value);
                         
 
                         keys = dict.Keys.ToArray();
