@@ -245,7 +245,7 @@ namespace SpotLight.Level
                 
                 HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
 
-                rootNode.AddDynamicValue("FilePath", $"D:/home/TokyoProject/RedCarpet/Asset/StageData/{levelName}/Map/{levelName}{categoryName}.muunt");
+                rootNode.AddDynamicValue("FilePath", "N/A");
 
                 foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in ObjLists)
                 {
