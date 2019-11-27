@@ -50,9 +50,9 @@ namespace SpotLight.ObjectParamDatabase
     /// </summary>
     public class ObjectParameterDatabase
     {
-        public Version Version = new Version(1, 2);
+        public Version Version = LatestVersion;
         public List<ObjectParameter> ObjectParameters = new List<ObjectParameter>();
-        
+        public static Version LatestVersion { get; } = new Version(1, 3);
 
         /// <summary>
         /// Create an empty Object Parameters File
@@ -416,6 +416,9 @@ namespace SpotLight.ObjectParamDatabase
         List<float[]> PathPointLocations { get; set; } = new List<float[]>();
     }
 
+    /// <summary>
+    /// An exerpt from the Hackio.IO Library
+    /// </summary>
     public static class HackioIOExcerpt
     {
         /// <summary>

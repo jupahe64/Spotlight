@@ -125,7 +125,9 @@ Would you like to generate a new object Database from your 3DW Directory?",
                     while (!Breakout)
                     {
                         DialogResult DR = MessageBox.Show(
-$@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}), would you like to rebuild the database from your 3DW Files?",
+$@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}).
+The latest Database version is {ObjectParameterDatabase.LatestVersion}.
+Would you like to rebuild the database from your 3DW Files?",
     "Database Outdated", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Error);
 
                         switch (DR)
