@@ -278,8 +278,15 @@ Would you like to rebuild the database from your 3DW Files?",
 
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = Program.StageDataPath };
-                SpotlightToolStripStatusLabel.Text = "Waiting...";
+            OpenFileDialog ofd = new OpenFileDialog() { Filter = 
+                "Level Files (Map)|*Map1.szs|" +
+                "Level Files (Design)|*Design1.szs|" +
+                "Level Files (Sound)|*Sound1.szs|" +
+                "All Level Files|*Map1.szs;*Design1.szs;*Sound1.szs",
+                InitialDirectory = currentScene?.Zones[0].Item2.Directory ?? Program.StageDataPath };
+
+            SpotlightToolStripStatusLabel.Text = "Waiting...";
+
             if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
                 LoadLevel(ofd.FileName);
             else

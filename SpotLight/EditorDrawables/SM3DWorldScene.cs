@@ -742,7 +742,11 @@ namespace SpotLight.EditorDrawables
             string currentDirectory = Zones[0].Item2.Directory;
             foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                SaveFileDialog sfd = new SaveFileDialog() { Filter = "Level Files (Map)|*Map1.szs|Level Files (Design)|*Design1.szs|Level Files (Sound)|*Sound1.szs",
+                SaveFileDialog sfd = new SaveFileDialog() { Filter =
+                    "Level Files (Map)|*Map1.szs|" +
+                    "Level Files (Design)|*Design1.szs|" +
+                    "Level Files (Sound)|*Sound1.szs|" +
+                    "All Level Files|*Map1.szs;*Design1.szs;*Sound1.szs",
                     InitialDirectory = currentDirectory, FileName = zone.LevelFileName};
 
                 sfd.FileOk += (s, e) =>
