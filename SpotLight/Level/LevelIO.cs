@@ -38,12 +38,12 @@ namespace SpotLight.Level
 
                 levelEditorForm.LevelZoneTreeView.BeginUpdate();
                 levelEditorForm.LevelZoneTreeView.Nodes.Clear();
-                TreeNode toplevelZoneNode = levelEditorForm.LevelZoneTreeView.Nodes.Add(zone.levelName);
+                TreeNode toplevelZoneNode = levelEditorForm.LevelZoneTreeView.Nodes.Add(zone.LevelName);
                 toplevelZoneNode.Tag = zone;
 
                 foreach ((ZoneTransform t, SM3DWorldZone subZone) in zone.SubZones)
                 {
-                    toplevelZoneNode.Nodes.Add(subZone.levelName).Tag = subZone;
+                    toplevelZoneNode.Nodes.Add(subZone.LevelName).Tag = subZone;
                 }
 
                 levelEditorForm.LevelZoneTreeView.EndUpdate();

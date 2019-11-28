@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -191,7 +193,7 @@ namespace SpotLight.EditorDrawables
 
         public override string ToString()
         {
-            return Zones[0].Item2.levelName;
+            return Zones[0].Item2.LevelName;
         }
 
         static bool Initialized = false;
@@ -721,16 +723,43 @@ namespace SpotLight.EditorDrawables
             return true;
         }
 
+        //[DllImport("User32")]
+        //public static extern int SetDlgItemText(IntPtr hwnd, int id, string title);
+
+        //public const int FileTitleCntrlID = 0x47c;
+
+        //void SetFileName(IntPtr hdlg, string name)
+        //{
+        //    SetDlgItemText(hdlg, FileTitleCntrlID, name);
+        //}
+
         /// <summary>
         /// Saves the level to a new file (.szs)
         /// </summary>
         /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
         public bool SaveAs()
         {
-            string currentDirectory = System.IO.Path.GetDirectoryName(Zones[0].Item2.fileName);
+            string currentDirectory = Zones[0].Item2.Directory;
             foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                SaveFileDialog sfd = new SaveFileDialog() { Filter = "3DW Levels|*.szs", InitialDirectory = currentDirectory, FileName = System.IO.Path.GetFileName(zone.fileName) };
+                SaveFileDialog sfd = new SaveFileDialog() { Filter = "Level Files (Map)|*Map1.szs|Level Files (Design)|*Design1.szs|Level Files (Sound)|*Sound1.szs",
+                    InitialDirectory = currentDirectory, FileName = zone.LevelFileName};
+
+                sfd.FileOk += (s, e) =>
+                {
+                    if (!zone.IsValidSaveName(sfd.FileName))
+                    {
+                        //Type type = typeof(FileDialog);
+                        //FieldInfo info = type.GetField("dialogHWnd", BindingFlags.NonPublic
+                        //                                           | BindingFlags.Instance);
+                        //IntPtr fileDialogHandle = (IntPtr)info.GetValue(sfd);
+
+                        //SetFileName(fileDialogHandle, zone.GetProperSaveName(sfd.FileName));
+                        
+                        e.Cancel = true;
+                    }
+                };
+
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     zone.Save(sfd.FileName);
