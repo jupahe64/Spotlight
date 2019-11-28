@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using static SpotLight.Level.LevelIO;
 
 /* File Format .sopd
@@ -50,9 +49,9 @@ namespace SpotLight.ObjectParamDatabase
     /// </summary>
     public class ObjectParameterDatabase
     {
-        public Version Version = new Version(1, 2);
-        public List<ObjectParameter> ObjectParameters = new List<ObjectParameter>();
-        
+        public Version Version = LatestVersion;
+        public List<Parameter> ObjectParameters = new List<Parameter>();
+        public static Version LatestVersion { get; } = new Version(1, 4);
 
         /// <summary>
         /// Create an empty Object Parameters File
@@ -74,7 +73,7 @@ namespace SpotLight.ObjectParamDatabase
                 throw new Exception("Invalid Database File");
 
             Version Check = new Version(FS.ReadByte(), FS.ReadByte());
-            
+
             if (Check < Version)
             {
                 FS.Close();
@@ -88,11 +87,26 @@ namespace SpotLight.ObjectParamDatabase
             if (Encoding.ASCII.GetString(Read) != "DICT")
                 throw new Exception("Invalid Database File");
 
-            FS.Read(Read,0,4);
+            FS.Read(Read, 0, 4);
             int ParamCount = BitConverter.ToInt32(Read, 0);
 
             for (int i = 0; i < ParamCount; i++)
-                ObjectParameters.Add(new ObjectParameter(FS));
+            {
+                string ID = FS.PeekString(3);
+                Parameter param;
+
+                if (ID == "OBJ")
+                     param = new ObjectParameter();
+                else if (ID == "DSN")
+                    param = new DesignParameter();
+                else if (ID == "SND")
+                    param = new SoundFXParameter();
+                else
+                    param = new ObjectParameter();
+
+                param.Read(FS);
+                ObjectParameters.Add(param);
+            }
 
             FS.Close();
         }
@@ -116,8 +130,32 @@ namespace SpotLight.ObjectParamDatabase
         public void Create(string StageDataPath)
         {
             string[] Zones = Directory.GetFiles(StageDataPath,"*Map1.szs");
+            string[] Designs = Directory.GetFiles(StageDataPath, "*Design1.szs");
+            string[] Sounds = Directory.GetFiles(StageDataPath, "*Sound1.szs");
 
-            Dictionary<string, List<ObjectInfo>> infosByListName = new Dictionary<string, List<ObjectInfo>>()
+            Dictionary<string, List<ObjectInfo>> MAPinfosByListName = new Dictionary<string, List<ObjectInfo>>()
+            {
+                ["AreaList"] = new List<ObjectInfo>(),
+                ["CheckPointList"] = new List<ObjectInfo>(),
+                ["DemoObjList"] = new List<ObjectInfo>(),
+                ["GoalList"] = new List<ObjectInfo>(),
+                ["ObjectList"] = new List<ObjectInfo>(),
+                ["PlayerList"] = new List<ObjectInfo>(),
+                ["SkyList"] = new List<ObjectInfo>(),
+                ["Links"] = new List<ObjectInfo>()
+            };
+            Dictionary<string, List<ObjectInfo>> DESIGNinfosByListName = new Dictionary<string, List<ObjectInfo>>()
+            {
+                ["AreaList"] = new List<ObjectInfo>(),
+                ["CheckPointList"] = new List<ObjectInfo>(),
+                ["DemoObjList"] = new List<ObjectInfo>(),
+                ["GoalList"] = new List<ObjectInfo>(),
+                ["ObjectList"] = new List<ObjectInfo>(),
+                ["PlayerList"] = new List<ObjectInfo>(),
+                ["SkyList"] = new List<ObjectInfo>(),
+                ["Links"] = new List<ObjectInfo>()
+            };
+            Dictionary<string, List<ObjectInfo>> SOUNDinfosByListName = new Dictionary<string, List<ObjectInfo>>()
             {
                 ["AreaList"] = new List<ObjectInfo>(),
                 ["CheckPointList"] = new List<ObjectInfo>(),
@@ -130,12 +168,14 @@ namespace SpotLight.ObjectParamDatabase
             };
 
             for (int i = 0; i < Zones.Length; i++)
-            {
-                GetObjectInfos(Zones[i], infosByListName);
-            }
+                GetObjectInfos(Zones[i], MAPinfosByListName);
+            for (int i = 0; i < Designs.Length; i++)
+                GetObjectInfos(Designs[i], DESIGNinfosByListName);
+            for (int i = 0; i < Sounds.Length; i++)
+                GetObjectInfos(Sounds[i], SOUNDinfosByListName);
 
             byte ListID = 0;
-            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in infosByListName)
+            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in MAPinfosByListName)
             {
                 for (int j = 0; j < keyValuePair.Value.Count; j++)
                 {
@@ -200,6 +240,138 @@ namespace SpotLight.ObjectParamDatabase
                 }
                 ListID++;
             }
+            ListID = 0;
+            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in DESIGNinfosByListName)
+            {
+                for (int j = 0; j < keyValuePair.Value.Count; j++)
+                {
+                    if (keyValuePair.Value[j].ClassName == "Rail")
+                    {
+                        continue;
+                    }
+
+                    ObjectInfo Tmp = keyValuePair.Value[j];
+                    if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
+                    {
+                        int ParamID = 0;
+                        for (int y = 0; y < ObjectParameters.Count; y++)
+                        {
+                            if (ObjectParameters[y].ClassName == Tmp.ClassName)
+                            {
+                                ParamID = y;
+                                break;
+                            }
+                        }
+                        if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
+                            ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
+
+                        if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
+                            ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
+
+                        foreach (var propertyEntry in Tmp.PropertyEntries)
+                        {
+                            if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
+                            {
+                                Type type = propertyEntry.Value.GetType();
+                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                            }
+                        }
+
+                        foreach (string key in Tmp.LinkEntries.Keys)
+                        {
+                            if (!ObjectParameters[ParamID].LinkNames.Any(O => O == key))
+                                ObjectParameters[ParamID].LinkNames.Add(key);
+                        }
+                    }
+                    else
+                    {
+                        DesignParameter OP = new DesignParameter() { ClassName = Tmp.ClassName };
+                        if (Tmp.ObjectName != "")
+                            OP.ObjectNames.Add(Tmp.ObjectName);
+                        if (Tmp.ModelName != "" && Tmp.ModelName != null)
+                            OP.ModelNames.Add(Tmp.ModelName);
+
+                        foreach (var propertyEntry in Tmp.PropertyEntries)
+                        {
+                            Type type = propertyEntry.Value.GetType();
+                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                        }
+
+                        foreach (string key in Tmp.LinkEntries.Keys)
+                            OP.LinkNames.Add(key);
+
+                        OP.CategoryID = ListID;
+                        ObjectParameters.Add(OP);
+                    }
+                }
+                ListID++;
+            }
+            ListID = 0;
+            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in SOUNDinfosByListName)
+            {
+                for (int j = 0; j < keyValuePair.Value.Count; j++)
+                {
+                    if (keyValuePair.Value[j].ClassName == "Rail")
+                    {
+                        continue;
+                    }
+
+                    ObjectInfo Tmp = keyValuePair.Value[j];
+                    if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
+                    {
+                        int ParamID = 0;
+                        for (int y = 0; y < ObjectParameters.Count; y++)
+                        {
+                            if (ObjectParameters[y].ClassName == Tmp.ClassName)
+                            {
+                                ParamID = y;
+                                break;
+                            }
+                        }
+                        if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
+                            ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
+
+                        if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
+                            ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
+
+                        foreach (var propertyEntry in Tmp.PropertyEntries)
+                        {
+                            if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
+                            {
+                                Type type = propertyEntry.Value.GetType();
+                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                            }
+                        }
+
+                        foreach (string key in Tmp.LinkEntries.Keys)
+                        {
+                            if (!ObjectParameters[ParamID].LinkNames.Any(O => O == key))
+                                ObjectParameters[ParamID].LinkNames.Add(key);
+                        }
+                    }
+                    else
+                    {
+                        SoundFXParameter OP = new SoundFXParameter() { ClassName = Tmp.ClassName };
+                        if (Tmp.ObjectName != "")
+                            OP.ObjectNames.Add(Tmp.ObjectName);
+                        if (Tmp.ModelName != "" && Tmp.ModelName != null)
+                            OP.ModelNames.Add(Tmp.ModelName);
+
+                        foreach (var propertyEntry in Tmp.PropertyEntries)
+                        {
+                            Type type = propertyEntry.Value.GetType();
+                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                        }
+
+                        foreach (string key in Tmp.LinkEntries.Keys)
+                            OP.LinkNames.Add(key);
+
+                        OP.CategoryID = ListID;
+                        ObjectParameters.Add(OP);
+                    }
+                }
+                ListID++;
+            }
         }
         /// <summary>
         /// Finds an Object Parameter based on a string. This will return the ID of the first instance found.
@@ -222,32 +394,32 @@ namespace SpotLight.ObjectParamDatabase
     /// <summary>
     /// Base class for Object Parameters
     /// </summary>
-    public class ObjectParameter
+    public abstract class Parameter
     {
-        public string ClassName { get; set; }
-        public byte CategoryID { get; set; }
-        public List<string> ObjectNames { get; set; } = new List<string>();
-        public List<string> ModelNames { get; set; } = new List<string>();
-        public List<KeyValuePair<string, string>> Properties { get; set; } = new List<KeyValuePair<string, string>>();
-        public List<string> LinkNames { get; set; } = new List<string>();
+        abstract internal string Identifier { get; set; }
+        public virtual string ClassName { get; set; }
+        public virtual byte CategoryID { get; set; }
+        public virtual List<string> ObjectNames { get; set; }
+        public virtual List<string> ModelNames { get; set; }
+        public virtual List<KeyValuePair<string, string>> Properties { get; set; }
+        public virtual List<string> LinkNames { get; set; }
+
+        public Parameter() => InitLists();
 
         /// <summary>
-        /// Create an empty Object Parameter
-        /// </summary>
-        public ObjectParameter()
-        {
-
-        }
-        /// <summary>
-        /// Read one from a file
+        /// Read a parameter from a file
         /// </summary>
         /// <param name="FS"></param>
-        public ObjectParameter(FileStream FS)
+        public virtual void Read(Stream FS)
         {
             byte[] Read = new byte[3];
             FS.Read(Read, 0, 3);
-            if (Encoding.ASCII.GetString(Read) != "OPP")
-                throw new Exception("Invalid Database File");
+//            if (Encoding.ASCII.GetString(Read) != Identifier)
+//                throw new Exception(
+//$@"Database Error at Spotlight.ObjectParameterDatabase.cs in ABSTRACT CLASS: Parameter.
+//Database Read Exception => File Offset 0x{FS.Position.ToString("X2").PadLeft(8, '0')}
+//Got {Encoding.ASCII.GetString(Read)}, Expected {Identifier}");
+            Identifier = Encoding.ASCII.GetString(Read);
             CategoryID = (byte)FS.ReadByte();
             ClassName = FS.ReadString();
 
@@ -271,7 +443,7 @@ namespace SpotLight.ObjectParamDatabase
             int ParamNameCount = BitConverter.ToInt16(Read, 0);
 
             for (int i = 0; i < ParamNameCount; i++)
-                Properties.Add(new KeyValuePair<string, string>(FS.ReadString(),FS.ReadString()));
+                Properties.Add(new KeyValuePair<string, string>(FS.ReadString(), FS.ReadString()));
             while (FS.Position % 4 != 0)
                 FS.Position++;
 
@@ -288,9 +460,10 @@ namespace SpotLight.ObjectParamDatabase
         /// Write this parameter
         /// </summary>
         /// <param name="FS"></param>
-        public void Write(FileStream FS)
+        public virtual void Write(FileStream FS)
         {
-            List<byte> ByteList = new List<byte>() { (byte)'O', (byte)'P', (byte)'P', 0x02 };
+            List<byte> ByteList = new List<byte>() { (byte)Identifier[0], (byte)Identifier[1], (byte)Identifier[2] };
+            ByteList.Add(CategoryID);
             ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(ClassName));
             ByteList.Add(0x00);
 
@@ -332,8 +505,9 @@ namespace SpotLight.ObjectParamDatabase
             while (ByteList.Count % 4 != 0)
                 ByteList.Add(0x00);
 
-            FS.Write(ByteList.ToArray(),0,ByteList.Count);
+            FS.Write(ByteList.ToArray(), 0, ByteList.Count);
         }
+
         /// <summary>
         /// Cast an Object Parameter to a new General 3DW Object with mostly empty values
         /// </summary>
@@ -341,7 +515,7 @@ namespace SpotLight.ObjectParamDatabase
         /// <param name="ObjectNameID">For Classes that have multiple Object Names. default is 0</param>
         /// <param name="ModelNameID">For Classes that have multiple Model Names. Default is -1 (No Model Name)</param>
         /// <returns>new General 3DW Object</returns>
-        public General3dWorldObject ToGeneral3DWorldObject(string ID = "", int ObjectNameID = 0, int ModelNameID = -1)
+        public virtual General3dWorldObject ToGeneral3DWorldObject(string ID = "", int ObjectNameID = 0, int ModelNameID = -1)
         {
             Dictionary<string, dynamic> Params = new Dictionary<string, dynamic>();
             for (int i = 0; i < Properties.Count; i++)
@@ -367,13 +541,21 @@ namespace SpotLight.ObjectParamDatabase
 
             Dictionary<string, List<I3dWorldObject>> Links = new Dictionary<string, List<I3dWorldObject>>();
             for (int i = 0; i < LinkNames.Count; i++)
-                Links.Add(LinkNames[i],new List<I3dWorldObject>());
+                Links.Add(LinkNames[i], new List<I3dWorldObject>());
 
 
             return new General3dWorldObject(new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), $"New_{ClassName}", ObjectNames[ObjectNameID], ModelNameID == -1 ? "" : ModelNames[ModelNameID], ClassName, new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), Links, Params);
         }
 
-        public override string ToString() => $"{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
+        internal void InitLists()
+        {
+            ObjectNames = new List<string>();
+            ModelNames = new List<string>();
+            LinkNames = new List<string>();
+            Properties = new List<KeyValuePair<string, string>>();
+        }
+
+        public override string ToString() => "Base Parameter Class";
         /// <summary>
         /// Compare 2 Object Parameters
         /// </summary>
@@ -381,7 +563,7 @@ namespace SpotLight.ObjectParamDatabase
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            if (obj is ObjectParameter)
+            if (!(obj is RailParameter))
             {
                 if (ClassName != ((ObjectParameter)obj).ClassName || ObjectNames.Count != ((ObjectParameter)obj).ObjectNames.Count || ModelNames.Count != ((ObjectParameter)obj).ModelNames.Count || Properties.Count != ((ObjectParameter)obj).Properties.Count || LinkNames.Count != ((ObjectParameter)obj).LinkNames.Count)
                     return false;
@@ -409,17 +591,49 @@ namespace SpotLight.ObjectParamDatabase
         }
         public override int GetHashCode() => base.GetHashCode();
     }
-
-    public class RailParameter
+    /// <summary>
+    /// Object Parameter for objects that go in the MAP Archive
+    /// </summary>
+    public class ObjectParameter : Parameter
     {
-        public byte CategoryID { get; private set; } = 0x06;
-        List<float[]> PathPointLocations { get; set; } = new List<float[]>();
+        internal override string Identifier { get => "OBJ"; set { } }
+
+        public override string ToString() => $"Map Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
+    }
+    /// <summary>
+    /// Object Parameter for objects that go in the DESIGN Archive
+    /// </summary>
+    public class DesignParameter : Parameter
+    {
+        internal override string Identifier { get => "DSN"; set { } }
+
+        public override string ToString() => $"Design Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
+    }
+    /// <summary>
+    /// Object Parameter for objects that go in the SOUND Archive
+    /// </summary>
+    public class SoundFXParameter : Parameter
+    {
+        internal override string Identifier { get => "SND"; set { } }
+
+        public override string ToString() => $"Sound Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
     }
 
+    /// <summary>
+    /// Base class for Rails
+    /// </summary>
+    public abstract class RailParameter
+    {
+
+    }
+
+    /// <summary>
+    /// An exerpt from the Hackio.IO Library
+    /// </summary>
     public static class HackioIOExcerpt
     {
         /// <summary>
-        /// Excerpt from my FileStreamEx Extensions. Reads a string in SHIFT-JIS. 0x00 terminated
+        /// Excerpt from Hackio.IO. Reads a string in SHIFT-JIS. 0x00 terminated
         /// </summary>
         /// <param name="FS"></param>
         /// <returns>string</returns>
@@ -437,6 +651,43 @@ namespace SpotLight.ObjectParamDatabase
                     throw new IOException("An error has occurred while reading the string");
             }
             return Encoding.GetEncoding("Shift-JIS").GetString(bytes.ToArray(), 0, bytes.ToArray().Length);
+        }
+        /// <summary>
+        /// Excerpt from Hackio.IO Reads a string in SHIFT-JIS. 0x00 terminated
+        /// </summary>
+        /// <param name="FS"></param>
+        /// <returns>string</returns>
+        public static string ReadString(this Stream FS)
+        {
+            List<byte> bytes = new List<byte>();
+            int strCount = 0;
+            while (FS.ReadByte() != 0)
+            {
+                FS.Position -= 1;
+                bytes.Add((byte)FS.ReadByte());
+
+                strCount++;
+                if (strCount > FS.Length)
+                    throw new IOException("An error has occurred while reading the string");
+            }
+            return Encoding.GetEncoding("Shift-JIS").GetString(bytes.ToArray(), 0, bytes.ToArray().Length);
+        }
+        /// <summary>
+        /// Excerpt from Hackio.IO Reads a string in SHIFT-JIS of a specified length
+        /// </summary>
+        /// <param name="FS"></param>
+        /// <returns>string</returns>
+        public static string ReadString(this Stream FS, int length)
+        {
+                byte[] bytes = new byte[length];
+                FS.Read(bytes, 0, length);
+                return Encoding.GetEncoding("Shift-JIS").GetString(bytes, 0, bytes.Length);
+        }
+        public static string PeekString(this Stream FS, int length)
+        {
+            string target = FS.ReadString(length);
+            FS.Position -= target.Length;
+            return target;
         }
     }
 }
