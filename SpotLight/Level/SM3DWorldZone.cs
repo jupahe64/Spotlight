@@ -116,6 +116,8 @@ namespace SpotLight.Level
             
             zone = new SM3DWorldZone(Path.GetDirectoryName(fileName), levelName, categoryName, fileNameWithoutPath);
 
+            loadedZones.Add(fileName, new WeakReference<SM3DWorldZone>(zone));
+
             return true;
         }
 

@@ -50,9 +50,7 @@ namespace SpotLight.Level
                 levelEditorForm.LevelZoneTreeView.SelectedNode = toplevelZoneNode;
 
                 levelEditorForm.LevelZoneTreeView_AfterSelect(levelEditorForm.LevelZoneTreeView, new TreeViewEventArgs(toplevelZoneNode));
-
-                levelEditorForm.LevelGLControlModern.MainDrawable = scene;
-
+                
                 if (zone.ObjLists.ContainsKey("PlayerList") && zone.ObjLists["PlayerList"].Count > 0)
                 {
                     scene.GL_Control.CamRotX = 0;

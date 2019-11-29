@@ -35,6 +35,8 @@ namespace SpotLight
             MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
             MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
 
+            closableTabControl1.TabPages.Clear();
+
             //Properties.Settings.Default.Reset();
 
             if (Program.GamePath == "")
@@ -426,11 +428,16 @@ Would you like to rebuild the database from your 3DW Files?",
                 SpotlightToolStripProgressBar.Value = 50;
                 SetupScene(scene);
 
+                closableTabControl1.TabPages.Add(new TabPage(scene.Zones[0].Item2.LevelFileName) { Tag = scene });
+
+                ClosableTabControl1_SelectedIndexChanged(null, null);
+
                 MainSceneListView.Enabled = true;
                 MainSceneListView.SetRootList("ObjectList");
                 MainSceneListView.ListExited += MainSceneListView_ListExited;
                 MainSceneListView.Refresh();
                 SpotlightToolStripProgressBar.Value = 100;
+
                 SpotlightToolStripStatusLabel.Text = $"\"{scene.ToString()}\" has been Loaded successfully.";
             }
         }
@@ -572,9 +579,18 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             MainSceneListView.SetRootList("ObjectList");
         }
 
-        private void btnEditIndividual_Click(object sender, EventArgs e)
+        private void BtnEditIndividual_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Not implemented yet");
+        }
+
+        private void ClosableTabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (closableTabControl1.SelectedTab == null)
+                return;
+            closableTabControl1.SelectedTab.Controls.Add(LevelGLControlModern);
+            currentScene = (SM3DWorldScene)closableTabControl1.SelectedTab.Tag;
+            LevelGLControlModern.MainDrawable = currentScene;
         }
     }
 }
