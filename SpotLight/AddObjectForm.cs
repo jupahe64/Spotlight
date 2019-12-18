@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SpotLight.ObjectParamDatabase;
+using Spotlight.ObjectDescDatabase;
+using SpotLight.EditorDrawables;
 
 namespace SpotLight
 {
@@ -20,40 +22,71 @@ namespace SpotLight
             ObjectSelectListView.ShowGroups = true;
             for (int i = 0; i < Database.ObjectParameters.Count; i++)
             {
-                string Category = "";
-                switch (Database.ObjectParameters[i].CategoryID)
+                ListViewGroup LVG = null;
+                if (Database.ObjectParameters[i].CategoryID >= 0 && Database.ObjectParameters[i].CategoryID <= 7)
                 {
-                    case 0:
-                        Category = "Area";
-                        break;
-                    case 1:
-                        Category = "Checkpoint";
-                        break;
-                    case 2:
-                        Category = "Demo";
-                        break;
-                    case 3:
-                        Category = "Goal";
-                        break;
-                    case 4:
-                        Category = "Object";
-                        break;
-                    case 5:
-                        Category = "Player";
-                        break;
-                    case 6:
-                        Category = "Sky";
-                        break;
-                    case 7:
-                        Category = "Zone";
-                        break;
-                    default:
-                        Category = "Uncategorized";
-                        break;
+                    LVG = ObjectSelectListView.Groups[Database.ObjectParameters[i].CategoryID];
                 }
-                ListViewItem LVI = new ListViewItem(new string[] { Category, Database.ObjectParameters[i].ClassName });
+                else if (Database.ObjectParameters[i].CategoryID == 8)
+                {
+
+                }
+
+                ListViewItem LVI = new ListViewItem(new string[] { Database.ObjectParameters[i].ClassName }) { Group = LVG, Tag = Database.ObjectParameters[i] };
                 ObjectSelectListView.Items.Add(LVI);
             }
+        }
+        bool Loading = false;
+        bool Edited = false;
+        bool YesObjectIsChosen = false;
+        ObjectDescriptionDatabase ODD = new ObjectDescriptionDatabase();
+        private void ObjectSelectListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ObjectSelectListView.SelectedItems.Count == 0)
+                return;
+            Loading = true;
+            Description tmp = ODD.GetDescription(ObjectSelectListView.SelectedItems[0].SubItems[0].Text);
+            ObjectDescriptionTextBox.Text = tmp.Text;
+            ObjectNameGroupBox.Text = tmp.ObjectName;
+            Loading = false;
+        }
+
+        private void ObjectDescriptionTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (Loading || ObjectSelectListView.SelectedItems.Count == 0)
+                return;
+            ODD.SetDescription(ObjectSelectListView.SelectedItems[0].SubItems[0].Text, ObjectDescriptionTextBox.Text);
+            Edited = true;
+        }
+
+        private void AddObjectForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (Edited)
+            {
+                DialogResult DR = MessageBox.Show("You edited one or more object descriptions\nWould you like to save?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (DR == DialogResult.Yes)
+                {
+                    //Save Database
+                }
+                else if (DR == DialogResult.Cancel)
+                    e.Cancel = true;
+            }
+            if (YesObjectIsChosen)
+            {
+                DialogResult = DialogResult.OK;
+                SelectedObject = ((ObjectParameter)ObjectSelectListView.SelectedItems[0].Tag).ToGeneral3DWorldObject(ObjectSelectListView.SelectedItems[0].SubItems[0].Text);
+            }
+            else
+                DialogResult = DialogResult.Cancel;
+        }
+        public General3dWorldObject SelectedObject;
+        private void SelectObjectButton_Click(object sender, EventArgs e)
+        {
+            if (Loading || ObjectSelectListView.SelectedItems.Count == 0)
+                return;
+
+            YesObjectIsChosen = true;
+            Close();
         }
     }
 }

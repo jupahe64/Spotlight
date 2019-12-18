@@ -560,7 +560,11 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 return;
             }
             AddObjectForm AOF = new AddObjectForm(ObjectDatabase);
-            AOF.ShowDialog();
+            if (AOF.ShowDialog() == DialogResult.OK)
+            {
+                //@JuPaHe64 How are we gonna actually do adding objects? Probably similiar to Whitehole I assume
+                //The object is ready in AOF.SelectedObject
+            }
         }
 
         public void LevelZoneTreeView_AfterSelect(object sender, TreeViewEventArgs e)

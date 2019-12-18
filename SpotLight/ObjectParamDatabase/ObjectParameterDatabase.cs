@@ -691,3 +691,36 @@ namespace SpotLight.ObjectParamDatabase
         }
     }
 }
+
+namespace Spotlight.ObjectDescDatabase
+{
+    public class ObjectDescriptionDatabase
+    {
+        public Version Version = LatestVersion;
+        private List<Description> ObjectDescriptions = new List<Description>();
+        public static Version LatestVersion { get; } = new Version(1, 4);
+
+        public Description GetDescription(string ObjectName)
+        {
+            List<Description> found = ObjectDescriptions.Where(p => string.Equals(p.ObjectName, ObjectName)).ToList();
+            if (found.Count == 0)
+                return new Description() { ObjectName = ObjectName, Text = "No Description Found" };
+            return found[0];
+        }
+
+        public void SetDescription(string ObjectName, string Description)
+        {
+            List<Description> found = ObjectDescriptions.Where(p => string.Equals(p.ObjectName, ObjectName)).ToList();
+            if (found.Count == 0)
+                ObjectDescriptions.Add(new Description() { ObjectName = ObjectName, Text = Description });
+            else
+                found[0].Text = Description;
+        }
+    }
+
+    public class Description
+    {
+        public string ObjectName;
+        public string Text;
+    }
+}
