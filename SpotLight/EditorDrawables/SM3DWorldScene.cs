@@ -158,6 +158,13 @@ namespace SpotLight.EditorDrawables
             StaticObjects.Add(new LinkRenderer(this));
         }
 
+        public T ConvertToOtherSceneType<T>() where T : SM3DWorldScene, new() => new T
+        {
+            Zones = Zones,
+            UndoStack = UndoStack,
+            RedoStack = RedoStack
+        };
+
         public IEnumerable<I3dWorldObject> Objects
         {
             get

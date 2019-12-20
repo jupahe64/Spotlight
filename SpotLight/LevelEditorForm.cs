@@ -462,16 +462,9 @@ Would you like to rebuild the database from your 3DW Files?",
         {
             if (currentScene.GetType() != typeof(SM3DWorldScene))
             {
-                var newScene = new SM3DWorldScene()
-                {
-                    Zones = currentScene.Zones,
-                    UndoStack = currentScene.UndoStack,
-                    RedoStack = currentScene.RedoStack
-                };
-
-                currentScene = newScene;
-                SetupScene(newScene);
-                LevelGLControlModern.MainDrawable = newScene;
+                currentScene = currentScene.ConvertToOtherSceneType<SM3DWorldScene>();
+                SetupScene(currentScene);
+                LevelGLControlModern.MainDrawable = currentScene;
                 LevelGLControlModern.Refresh();
             }
         }
@@ -480,16 +473,9 @@ Would you like to rebuild the database from your 3DW Files?",
         {
             if (currentScene.GetType() != typeof(LinkEdit3DWScene))
             {
-                var newScene = new LinkEdit3DWScene()
-                {
-                    Zones = currentScene.Zones,
-                    UndoStack = currentScene.UndoStack,
-                    RedoStack = currentScene.RedoStack
-                };
-
-                currentScene = newScene;
-                SetupScene(newScene);
-                LevelGLControlModern.MainDrawable = newScene;
+                currentScene = currentScene.ConvertToOtherSceneType<LinkEdit3DWScene>();
+                SetupScene(currentScene);
+                LevelGLControlModern.MainDrawable = currentScene;
                 LevelGLControlModern.Refresh();
             }
         }
