@@ -14,6 +14,11 @@ using static BYAML.ByamlIterator;
 
 namespace SpotLight.Level
 {
+    public class ObjectList : List<I3dWorldObject>
+    {
+
+    }
+
     public class SM3DWorldZone
     {
         public static Dictionary<string, WeakReference<SM3DWorldZone>> loadedZones = new Dictionary<string, WeakReference<SM3DWorldZone>>();
@@ -40,9 +45,9 @@ namespace SpotLight.Level
             new Dictionary<string, dynamic>()
         };
 
-        public Dictionary<string, List<I3dWorldObject>> ObjLists = new Dictionary<string, List<I3dWorldObject>>();
+        public Dictionary<string, ObjectList> ObjLists = new Dictionary<string, ObjectList>();
 
-        public List<I3dWorldObject> LinkedObjects = new List<I3dWorldObject>();
+        public ObjectList LinkedObjects = new ObjectList();
 
         public List<(ZoneTransform, SM3DWorldZone)> SubZones = new List<(ZoneTransform, SM3DWorldZone)>();
 
@@ -121,9 +126,9 @@ namespace SpotLight.Level
             return true;
         }
 
-        const string MAP_SUFFIX = "Map1.szs";
-        const string DESIGN_SUFFIX = "Design1.szs";
-        const string SOUND_SUFFIX = "Sound1.szs";
+        public const string MAP_SUFFIX = "Map1.szs";
+        public const string DESIGN_SUFFIX = "Design1.szs";
+        public const string SOUND_SUFFIX = "Sound1.szs";
 
         static readonly string[] extensionsToReplace = new string[]
         {
@@ -136,9 +141,9 @@ namespace SpotLight.Level
             ".szs"
         };
 
-        const string MAP_PREFIX = "Map_";
-        const string DESIGN_PREFIX = "Design_";
-        const string SOUND_PREFIX = "Sound_";
+        public const string MAP_PREFIX = "Map_";
+        public const string DESIGN_PREFIX = "Design_";
+        public const string SOUND_PREFIX = "Sound_";
 
         public bool HasCategoryMap { get; private set; }
         public bool HasCategoryDesign { get; private set; }
@@ -258,7 +263,7 @@ namespace SpotLight.Level
                             continue;
                         }
 
-                        ObjLists.Add(prefix + entry.Key, new List<I3dWorldObject>());
+                        ObjLists.Add(prefix + entry.Key, new ObjectList());
 
                         foreach (ArrayEntry obj in entry.IterArray())
                         {
@@ -362,7 +367,7 @@ namespace SpotLight.Level
 
                 rootNode.AddDynamicValue("FilePath", "N/A");
 
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in ObjLists)
+                foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
                 {
                     if (!keyValuePair.Key.StartsWith(prefix)) //ObjList is not part of the Category
                         continue;

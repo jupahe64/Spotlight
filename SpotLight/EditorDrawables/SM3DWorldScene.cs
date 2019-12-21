@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SZS;
+using WinInput = System.Windows.Input;
 
 namespace SpotLight.EditorDrawables
 {
@@ -38,10 +39,10 @@ namespace SpotLight.EditorDrawables
 
             public struct ObjListInfo
             {
-                public List<I3dWorldObject> objList;
+                public ObjectList objList;
                 public DeleteInfo[] deleteInfos;
 
-                public ObjListInfo(List<I3dWorldObject> objList, DeleteInfo[] deleteInfos)
+                public ObjListInfo(ObjectList objList, DeleteInfo[] deleteInfos)
                 {
                     this.objList = objList;
                     this.deleteInfos = deleteInfos;
@@ -95,10 +96,10 @@ namespace SpotLight.EditorDrawables
         {
             public struct ObjListInfo
             {
-                public List<I3dWorldObject> objList;
+                public ObjectList objList;
                 public I3dWorldObject[] objects;
 
-                public ObjListInfo(List<I3dWorldObject> objList, I3dWorldObject[] objects)
+                public ObjListInfo(ObjectList objList, I3dWorldObject[] objects)
                 {
                     this.objList = objList;
                     this.objects = objects;
@@ -165,6 +166,49 @@ namespace SpotLight.EditorDrawables
             RedoStack = RedoStack
         };
 
+        public delegate (I3dWorldObject obj, ObjectList objList)[] ObjectPlacementHandler(Vector3 position, SM3DWorldZone zone);
+
+        public ObjectPlacementHandler ObjectPlaceDelegate { get; set; }
+
+        public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)
+        {
+            if (ObjectPlaceDelegate != null && e.Button==MouseButtons.Left)
+            {
+                var placements = ObjectPlaceDelegate.Invoke(control.CoordFor(e.X, e.Y, control.PickingDepth), Zones[0].zone);
+                
+                Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
+
+
+
+                for (int i = 0; i < placements.Length; i++)
+                {
+                    if (!objsByLists.ContainsKey(placements[i].objList))
+                        objsByLists[placements[i].objList] = new List<I3dWorldObject>();
+
+                    objsByLists[placements[i].objList].Add(placements[i].obj);
+
+                    placements[i].objList.Add(placements[i].obj);
+
+                }
+
+                List<Revertable3DWorldObjAddition.ObjListInfo> objListInfos = new List<Revertable3DWorldObjAddition.ObjListInfo>(objsByLists.Count);
+
+                foreach (var item in objsByLists)
+                {
+                    objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(item.Key, item.Value.ToArray()));
+                }
+
+                AddToUndo(new Revertable3DWorldObjAddition(objListInfos.ToArray()));
+
+                if (!WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+                    ObjectPlaceDelegate = null;
+
+                return REDRAW_PICKING;
+            }
+            else
+                return base.MouseClick(e, control);
+        }
+
         public IEnumerable<I3dWorldObject> Objects
         {
             get
@@ -173,7 +217,7 @@ namespace SpotLight.EditorDrawables
                 {
                     IteratedZoneTransform = offset;
 
-                    foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                    foreach (ObjectList objects in zone.ObjLists.Values)
                     {
                         foreach (I3dWorldObject obj in objects)
                             yield return obj;
@@ -251,7 +295,7 @@ namespace SpotLight.EditorDrawables
                 IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
-                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                foreach (ObjectList objects in zone.ObjLists.Values)
                 {
                     foreach (IEditableObject obj in objects)
                         obj.Prepare(control);
@@ -367,7 +411,7 @@ namespace SpotLight.EditorDrawables
             return var;
         }
 
-        public List<(ZoneTransform, SM3DWorldZone)> Zones { get; set; }
+        public List<(ZoneTransform transform, SM3DWorldZone zone)> Zones { get; set; }
 
         public static bool IteratesThroughLinks { get; protected set; }
 
@@ -384,7 +428,7 @@ namespace SpotLight.EditorDrawables
                 IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
-                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                foreach (ObjectList objects in zone.ObjLists.Values)
                 {
                     foreach (IEditableObject obj in objects)
                         yield return obj;
@@ -404,7 +448,7 @@ namespace SpotLight.EditorDrawables
                 IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
-                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                foreach (ObjectList objects in zone.ObjLists.Values)
                 {
                     foreach (I3dWorldObject obj in objects)
                         obj.ClearLinkDestinations();
@@ -419,7 +463,7 @@ namespace SpotLight.EditorDrawables
                 IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
-                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                foreach (ObjectList objects in zone.ObjLists.Values)
                 {
                     foreach (I3dWorldObject obj in objects)
                         obj.AddLinkDestinations();
@@ -443,7 +487,7 @@ namespace SpotLight.EditorDrawables
             {
                 IteratedZoneTransform = offset;
 
-                foreach (List<I3dWorldObject> objList in zone.ObjLists.Values)
+                foreach (ObjectList objList in zone.ObjLists.Values)
                 {
                     foreach (I3dWorldObject obj in objList)
                     {
@@ -466,7 +510,7 @@ namespace SpotLight.EditorDrawables
 
             foreach ((var offset, SM3DWorldZone zone) in Zones)
             {
-                foreach (List<I3dWorldObject> objList in zone.ObjLists.Values)
+                foreach (ObjectList objList in zone.ObjLists.Values)
                 {
                     if (manager.Dictionary.TryGetValue(objList, out objects))
                     {
@@ -520,17 +564,17 @@ namespace SpotLight.EditorDrawables
                 IteratedZoneTransform = offset;
 
                 IteratesThroughLinks = false;
-                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                foreach (ObjectList objList in zone.ObjLists.Values)
                 {
-                    foreach (I3dWorldObject obj in objects)
+                    foreach (I3dWorldObject obj in objList)
                         obj.DuplicateSelected(duplicates, this, zone);
 
-                    objects.AddRange(duplicates.Values);
+                    objList.AddRange(duplicates.Values);
 
                     foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
 
                     if (duplicates.Count > 0)
-                        objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objects, duplicates.Values.ToArray()));
+                        objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, duplicates.Values.ToArray()));
 
                     duplicates.Clear();
                 }
@@ -565,7 +609,7 @@ namespace SpotLight.EditorDrawables
                 DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
 
                 IteratesThroughLinks = false;
-                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
+                foreach (ObjectList objects in zone.ObjLists.Values)
                 {
                     foreach (I3dWorldObject obj in objects)
                         obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);

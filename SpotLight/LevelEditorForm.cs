@@ -548,8 +548,17 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             AddObjectForm AOF = new AddObjectForm(ObjectDatabase);
             if (AOF.ShowDialog() == DialogResult.OK)
             {
-                //@JuPaHe64 How are we gonna actually do adding objects? Probably similiar to Whitehole I assume
-                //The object is ready in AOF.SelectedObject
+                currentScene.ObjectPlaceDelegate = (p, z) =>
+                {
+                    var entry = ObjectDatabase.ObjectParameters[0];
+                    return new (I3dWorldObject, ObjectList)[] { (
+                        entry.ToGeneral3DWorldObject(z.NextObjID()), 
+                        z.ObjLists[SM3DWorldZone.MAP_PREFIX + "ObjectList"]
+                        )};
+                };
+
+                //@Super Hackio, now it's your turn to make it so it puts it in the right object list and in the right position
+                //also make sure to actually USE the objID parameter in ToGeneral3DWorldObject()
             }
         }
 
@@ -559,7 +568,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
 
             MainSceneListView.RootLists.Clear();
 
-            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in zone.ObjLists)
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
             {
                 MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
             }
