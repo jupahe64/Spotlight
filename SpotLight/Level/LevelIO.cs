@@ -23,14 +23,13 @@ namespace SpotLight.Level
 
             if (SM3DWorldZone.TryOpen(fileName, out SM3DWorldZone zone))
             {
-                scene.Zones = new List<(ZoneTransform, SM3DWorldZone)>
-                {
-                    (ZoneTransform.Identity, zone)
-                };
+                scene.EditZone = zone;
 
-                foreach (var subZone in zone.SubZones)
+                scene.EditZoneTransform = ZoneTransform.Identity;
+
+                foreach (var zonePlacement in zone.ZonePlacements)
                 {
-                    scene.Zones.Add(subZone);
+                    scene.ZonePlacements.Add(zonePlacement);
                 }
 
                 levelEditorForm.MainSceneListView.SelectedItems = scene.SelectedObjects;
@@ -41,9 +40,9 @@ namespace SpotLight.Level
                 TreeNode toplevelZoneNode = levelEditorForm.LevelZoneTreeView.Nodes.Add(zone.LevelName);
                 toplevelZoneNode.Tag = zone;
 
-                foreach ((ZoneTransform t, SM3DWorldZone subZone) in zone.SubZones)
+                foreach (var zonePlacement in zone.ZonePlacements)
                 {
-                    toplevelZoneNode.Nodes.Add(subZone.LevelName).Tag = subZone;
+                    toplevelZoneNode.Nodes.Add(zonePlacement.Zone.LevelName).Tag = zonePlacement.Zone;
                 }
 
                 levelEditorForm.LevelZoneTreeView.EndUpdate();

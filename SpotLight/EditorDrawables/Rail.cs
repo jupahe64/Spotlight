@@ -360,20 +360,20 @@ namespace SpotLight.EditorDrawables
     {
         public override Vector3 GlobalPosition
         {
-            get => Vector4.Transform(new Vector4(Position, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform).Xyz;
-            set => Position = Vector4.Transform(new Vector4(value, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform.Inverted()).Xyz;
+            get => Vector4.Transform(new Vector4(Position, 1), SceneDrawState.ZoneTransform.PositionTransform).Xyz;
+            set => Position = Vector4.Transform(new Vector4(value, 1), SceneDrawState.ZoneTransform.PositionTransform.Inverted()).Xyz;
         }
 
         public override Vector3 GlobalCP1
         {
-            get => Vector3.Transform(ControlPoint1, SM3DWorldScene.IteratedZoneTransform.RotationTransform);
-            set => ControlPoint1 = Vector3.Transform(value, SM3DWorldScene.IteratedZoneTransform.RotationTransform.Inverted());
+            get => Vector3.Transform(ControlPoint1, SceneDrawState.ZoneTransform.RotationTransform);
+            set => ControlPoint1 = Vector3.Transform(value, SceneDrawState.ZoneTransform.RotationTransform.Inverted());
         }
 
         public override Vector3 GlobalCP2
         {
-            get => Vector3.Transform(ControlPoint2, SM3DWorldScene.IteratedZoneTransform.RotationTransform);
-            set => ControlPoint2 = Vector3.Transform(value, SM3DWorldScene.IteratedZoneTransform.RotationTransform.Inverted());
+            get => Vector3.Transform(ControlPoint2, SceneDrawState.ZoneTransform.RotationTransform);
+            set => ControlPoint2 = Vector3.Transform(value, SceneDrawState.ZoneTransform.RotationTransform.Inverted());
         }
 
         public RailPoint(Vector3 position, Vector3 controlPoint1, Vector3 controlPoint2)

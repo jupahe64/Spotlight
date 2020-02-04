@@ -294,6 +294,8 @@ namespace SpotLight
 
         public static bool Contains(string modelName) => cache.ContainsKey(modelName) || extraModels.ContainsKey(modelName);
 
+        public const bool LoadTextures = true;
+
         public struct CachedModel
         {
             static readonly float white = BitConverter.ToSingle(new byte[] {255, 255, 255, 255},0);
@@ -306,7 +308,7 @@ namespace SpotLight
 
             public CachedModel(Stream stream, string textureArc, GL_ControlModern control)
             {
-                if (textureArc != null && File.Exists(Program.ObjectDataPath + textureArc + ".szs"))
+                if (LoadTextures && textureArc != null && File.Exists(Program.ObjectDataPath + textureArc + ".szs"))
                 {
                     SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + textureArc + ".szs"));
 
@@ -337,48 +339,53 @@ namespace SpotLight
                 {
                     uint[] indices = shape.Meshes[0].GetIndices().ToArray();
 
-                    if (mdl.Materials[shape.MaterialIndex].TextureRefs.Count != 0)
+                    if (LoadTextures)
                     {
-                        int Target = 0;
-                        for (int i = 0; i < mdl.Materials[shape.MaterialIndex].TextureRefs.Count; i++)
+                        if (mdl.Materials[shape.MaterialIndex].TextureRefs.Count != 0)
                         {
-                            if (mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains("_alb"))
+                            int Target = 0;
+                            for (int i = 0; i < mdl.Materials[shape.MaterialIndex].TextureRefs.Count; i++)
                             {
-                                Target = i;
-                                break;
+                                if (mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains("_alb"))
+                                {
+                                    Target = i;
+                                    break;
+                                }
                             }
+                            TextureRef texRef = mdl.Materials[shape.MaterialIndex].TextureRefs[Target];
+
+                            TexSampler sampler = mdl.Materials[shape.MaterialIndex].Samplers[Target].TexSampler;
+
+                            if (texRef.Texture != null)
+                            {
+                                textures[shapeIndex] = UploadTexture(texRef.Texture);
+
+
+
+
+                            }
+                            else if (textureArc != null)
+                            {
+                                if (texArcCache.ContainsKey(textureArc) && texArcCache[textureArc].ContainsKey(texRef.Name))
+                                {
+                                    textures[shapeIndex] = texArcCache[textureArc][texRef.Name];
+                                }
+                                else
+                                {
+                                    textures[shapeIndex] = -2;
+                                }
+                            }
+
+                            wrapModes[shapeIndex] = ((int)GetWrapMode(sampler.ClampX),
+                                    (int)GetWrapMode(sampler.ClampY));
                         }
-                        TextureRef texRef = mdl.Materials[shape.MaterialIndex].TextureRefs[Target];
-
-                        TexSampler sampler = mdl.Materials[shape.MaterialIndex].Samplers[Target].TexSampler;
-
-                        if (texRef.Texture != null)
+                        else
                         {
-                            textures[shapeIndex] = UploadTexture(texRef.Texture);
-
-                            
-
-
+                            textures[shapeIndex] = -1;
                         }
-                        else if (textureArc != null)
-                        {
-                            if (texArcCache.ContainsKey(textureArc) && texArcCache[textureArc].ContainsKey(texRef.Name))
-                            {
-                                textures[shapeIndex] = texArcCache[textureArc][texRef.Name];
-                            }
-                            else
-                            {
-                                textures[shapeIndex] = -2;
-                            }
-                        }
-
-                        wrapModes[shapeIndex] = ((int)GetWrapMode(sampler.ClampX),
-                                (int)GetWrapMode(sampler.ClampY));
                     }
                     else
-                    {
-                        textures[shapeIndex] = -1;
-                    }
+                        textures[shapeIndex] = -2;
 
                     switch (mdl.Materials[shape.MaterialIndex].RenderState.FlagsMode)
                     {
@@ -612,7 +619,16 @@ namespace SpotLight
                     GL.ActiveTexture(TextureUnit.Texture0);
                 }
 
-                for(int i = 0; i<vaos.Length; i++)
+                if (pass == Pass.OPAQUE && highlightColor.W != 0)
+                {
+                    GL.Enable(EnableCap.StencilTest);
+                    GL.Clear(ClearBufferMask.StencilBufferBit);
+                    GL.ClearStencil(0);
+                    GL.StencilFunc(StencilFunction.Always, 0x1, 0x1);
+                    GL.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
+                }
+
+                for (int i = 0; i<vaos.Length; i++)
                 {
                     if (pass == passes[i])
                     {
@@ -627,15 +643,56 @@ namespace SpotLight
                         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapModes[i].Item2);
                     }
 
-                    if(pass == passes[i] || pass == Pass.PICKING)
+                    if (pass == passes[i] || pass == Pass.PICKING)
                     {
                         vaos[i].Use(control);
 
                         GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
                     }
+                    else if (pass == Pass.OPAQUE && highlightColor.W != 0)
+                    {
+                        GL.ColorMask(false, false, false, false);
+                        GL.DepthMask(false);
+
+                        vaos[i].Use(control);
+
+                        GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+
+                        GL.ColorMask(true, true, true, true);
+                        GL.DepthMask(true);
+                    }
                 }
 
                 GL.Disable(EnableCap.Blend);
+
+                if (pass == Pass.OPAQUE && highlightColor.W != 0)
+                {
+                    control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+                    control.CurrentShader.SetVector4("color", new Vector4(highlightColor.Xyz, 1));
+
+                    GL.LineWidth(3.0f);
+                    GL.StencilFunc(StencilFunction.Equal, 0x0, 0x1);
+                    GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);
+
+                    //GL.DepthFunc(DepthFunction.Always);
+
+                    GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
+
+                    
+                    for (int i = 0; i < vaos.Length; i++)
+                    {
+                        vaos[i].Use(control);
+                        GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+                    }
+                    
+
+                    GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill);
+
+                    //GL.DepthFunc(DepthFunction.Lequal);
+
+                    GL.Disable(EnableCap.StencilTest);
+                    GL.LineWidth(2);
+                }
             }
         }
         

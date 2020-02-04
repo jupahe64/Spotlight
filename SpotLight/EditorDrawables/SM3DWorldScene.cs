@@ -161,7 +161,8 @@ namespace SpotLight.EditorDrawables
 
         public T ConvertToOtherSceneType<T>() where T : SM3DWorldScene, new() => new T
         {
-            Zones = Zones,
+            EditZone = EditZone,
+            EditZoneTransform = EditZoneTransform,
             UndoStack = UndoStack,
             RedoStack = RedoStack
         };
@@ -174,7 +175,7 @@ namespace SpotLight.EditorDrawables
         {
             if (ObjectPlaceDelegate != null && e.Button==MouseButtons.Left)
             {
-                var placements = ObjectPlaceDelegate.Invoke(control.CoordFor(e.X, e.Y, control.PickingDepth), Zones[0].zone);
+                var placements = ObjectPlaceDelegate.Invoke(control.CoordFor(e.X, e.Y, control.PickingDepth), EditZone);
                 
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
 
@@ -209,24 +210,23 @@ namespace SpotLight.EditorDrawables
                 return base.MouseClick(e, control);
         }
 
+        public ZoneTransform EditZoneTransform;
+
         public IEnumerable<I3dWorldObject> Objects
         {
             get
             {
-                foreach ((var offset, SM3DWorldZone zone) in Zones)
-                {
-                    IteratedZoneTransform = offset;
+                SceneDrawState.ZoneTransform = EditZoneTransform;
 
-                    foreach (ObjectList objects in zone.ObjLists.Values)
-                    {
-                        foreach (I3dWorldObject obj in objects)
-                            yield return obj;
-                    }
-                    foreach (I3dWorldObject obj in zone.LinkedObjects)
+                foreach (ObjectList objects in EditZone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
                         yield return obj;
                 }
+                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                    yield return obj;
 
-                IteratedZoneTransform = ZoneTransform.Identity;
+                SceneDrawState.ZoneTransform = ZoneTransform.Identity;
             }
         }
 
@@ -244,7 +244,7 @@ namespace SpotLight.EditorDrawables
 
         public override string ToString()
         {
-            return Zones[0].Item2.LevelName;
+            return EditZone.LevelName;
         }
 
         static bool Initialized = false;
@@ -287,30 +287,30 @@ namespace SpotLight.EditorDrawables
 
             this.control = control;
 
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            if (!EditZone.IsPrepared)
             {
-                if (zone.IsPrepared)
-                    continue;
+                SceneDrawState.ZoneTransform = EditZoneTransform;
 
-                IteratedZoneTransform = offset;
-
-                IteratesThroughLinks = false;
-                foreach (ObjectList objects in zone.ObjLists.Values)
+                SceneObjectIterState.InLinks = false;
+                foreach (ObjectList objects in EditZone.ObjLists.Values)
                 {
-                    foreach (IEditableObject obj in objects)
+                    foreach (I3dWorldObject obj in objects)
                         obj.Prepare(control);
                 }
-                IteratesThroughLinks = true;
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
+                SceneObjectIterState.InLinks = true;
+                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
                     obj.Prepare(control);
 
-                zone.IsPrepared = true;
+                EditZone.IsPrepared = true;
             }
 
-            IteratedZoneTransform = ZoneTransform.Identity;
+            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
 
             foreach (AbstractGlDrawable obj in StaticObjects)
                 obj.Prepare(control);
+
+            foreach (var zonePlacement in ZonePlacements)
+                zonePlacement.Prepare(control);
         }
 
         class LinkRenderer : AbstractGlDrawable
@@ -360,7 +360,7 @@ namespace SpotLight.EditorDrawables
                     control.CurrentShader = LinksShaderProgram;
 
                     GL.Begin(PrimitiveType.Lines);
-                    foreach (I3dWorldObject _obj in scene.GetObjects())
+                    foreach (I3dWorldObject _obj in scene.Get3DWObjects())
                     {
                         if (_obj.Links != null)
                         {
@@ -401,6 +401,8 @@ namespace SpotLight.EditorDrawables
 
         public I3dWorldObject Hovered3dObject { get; protected set; } = null;
 
+        public List<ZonePlacement> ZonePlacements { get; set; } = new List<ZonePlacement>();
+
         public override uint MouseEnter(int inObjectIndex, GL_ControlBase control)
         {
             uint var = base.MouseEnter(inObjectIndex, control);
@@ -411,11 +413,11 @@ namespace SpotLight.EditorDrawables
             return var;
         }
 
-        public List<(ZoneTransform transform, SM3DWorldZone zone)> Zones { get; set; }
+        //public List<(ZoneTransform transform, SM3DWorldZone zone)> Zones { get; set; }
 
-        public static bool IteratesThroughLinks { get; protected set; }
+        public SM3DWorldZone EditZone;
 
-        public static ZoneTransform IteratedZoneTransform { get; protected set; } = ZoneTransform.Identity;
+        public int EditZoneIndex { get; private set; }
 
         /// <summary>
         /// Gets all the editable objects
@@ -423,57 +425,60 @@ namespace SpotLight.EditorDrawables
         /// <returns><see cref="IEnumerable{IEditableObject}"/></returns>
         protected override IEnumerable<IEditableObject> GetObjects()
         {
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
-            {
-                IteratedZoneTransform = offset;
+            foreach (var obj in Get3DWObjects())
+                yield return obj;
 
-                IteratesThroughLinks = false;
-                foreach (ObjectList objects in zone.ObjLists.Values)
-                {
-                    foreach (IEditableObject obj in objects)
-                        yield return obj;
-                }
-                IteratesThroughLinks = true;
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
+            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
+
+            foreach (var zonePlacement in ZonePlacements)
+                yield return zonePlacement;
+        }
+
+        protected IEnumerable<I3dWorldObject> Get3DWObjects()
+        {
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            SceneObjectIterState.InLinks = false;
+            foreach (ObjectList objects in EditZone.ObjLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
                     yield return obj;
             }
+            SceneObjectIterState.InLinks = true;
+            foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                yield return obj;
 
-            IteratedZoneTransform = ZoneTransform.Identity;
+            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
         }
 
         public void UpdateLinkDestinations()
         {
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
-            {
-                IteratedZoneTransform = offset;
+            SceneDrawState.ZoneTransform = EditZoneTransform;
 
-                IteratesThroughLinks = false;
-                foreach (ObjectList objects in zone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        obj.ClearLinkDestinations();
-                }
-                IteratesThroughLinks = true;
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
+            SceneObjectIterState.InLinks = false;
+            foreach (ObjectList objects in EditZone.ObjLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
                     obj.ClearLinkDestinations();
             }
+            SceneObjectIterState.InLinks = true;
+            foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                obj.ClearLinkDestinations();
 
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            SceneObjectIterState.InLinks = false;
+            foreach (ObjectList objects in EditZone.ObjLists.Values)
             {
-                IteratedZoneTransform = offset;
-
-                IteratesThroughLinks = false;
-                foreach (ObjectList objects in zone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        obj.AddLinkDestinations();
-                }
-                IteratesThroughLinks = true;
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
+                foreach (I3dWorldObject obj in objects)
                     obj.AddLinkDestinations();
             }
+            SceneObjectIterState.InLinks = true;
+            foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                obj.AddLinkDestinations();
 
-            IteratedZoneTransform = ZoneTransform.Identity;
+            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
         }
 
         /// <summary>
@@ -483,60 +488,54 @@ namespace SpotLight.EditorDrawables
         {
             DeletionManager manager = new DeletionManager();
 
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            foreach (ObjectList objList in EditZone.ObjLists.Values)
             {
-                IteratedZoneTransform = offset;
-
-                foreach (ObjectList objList in zone.ObjLists.Values)
+                foreach (I3dWorldObject obj in objList)
                 {
-                    foreach (I3dWorldObject obj in objList)
-                    {
-                        obj.DeleteSelected(this, manager, objList);
-                    }
-                }
-
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
-                {
-                    obj.DeleteSelected(this, manager, zone.LinkedObjects);
+                    obj.DeleteSelected(this, manager, objList);
                 }
             }
 
-            IteratedZoneTransform = ZoneTransform.Identity;
+            foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+            {
+                obj.DeleteSelected(this, manager, EditZone.LinkedObjects);
+            }
+
+            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
 
 
             List<Revertable3DWorldObjAddition.ObjListInfo> objsToDelete = new List<Revertable3DWorldObjAddition.ObjListInfo>();
 
             List<IEditableObject> objects;
 
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            foreach (ObjectList objList in EditZone.ObjLists.Values)
             {
-                foreach (ObjectList objList in zone.ObjLists.Values)
+                if (manager.Dictionary.TryGetValue(objList, out objects))
                 {
-                    if (manager.Dictionary.TryGetValue(objList, out objects))
-                    {
-                        manager.Dictionary.Remove(objList);
-                        List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
+                    manager.Dictionary.Remove(objList);
+                    List<I3dWorldObject> _objsToDelete = new List<I3dWorldObject>();
 
-                        foreach (I3dWorldObject obj in objects)
-                        {
-                            _objsToDelete.Add(obj);
-                        }
-                        objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
-                    }
-                }
-
-                List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
-
-                if (manager.Dictionary.TryGetValue(zone.LinkedObjects, out objects))
-                {
-                    manager.Dictionary.Remove(zone.LinkedObjects);
                     foreach (I3dWorldObject obj in objects)
                     {
-                        linkedObjsToDelete.Add(obj);
+                        _objsToDelete.Add(obj);
                     }
-
-                    objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(zone.LinkedObjects, linkedObjsToDelete.ToArray()));
+                    objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
                 }
+            }
+
+            List<I3dWorldObject> linkedObjsToDelete = new List<I3dWorldObject>();
+
+            if (manager.Dictionary.TryGetValue(EditZone.LinkedObjects, out objects))
+            {
+                manager.Dictionary.Remove(EditZone.LinkedObjects);
+                foreach (I3dWorldObject obj in objects)
+                {
+                    linkedObjsToDelete.Add(obj);
+                }
+
+                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(EditZone.LinkedObjects, linkedObjsToDelete.ToArray()));
             }
 
             BeginUndoCollection();
@@ -556,70 +555,66 @@ namespace SpotLight.EditorDrawables
 
             Dictionary<I3dWorldObject, I3dWorldObject> totalDuplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
             List<I3dWorldObject> newLinkedObjects = new List<I3dWorldObject>();
-            
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+
+            Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            SceneObjectIterState.InLinks = false;
+            foreach (ObjectList objList in EditZone.ObjLists.Values)
             {
-                Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+                foreach (I3dWorldObject obj in objList)
+                    obj.DuplicateSelected(duplicates, this, EditZone);
 
-                IteratedZoneTransform = offset;
-
-                IteratesThroughLinks = false;
-                foreach (ObjectList objList in zone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objList)
-                        obj.DuplicateSelected(duplicates, this, zone);
-
-                    objList.AddRange(duplicates.Values);
-
-                    foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
-
-                    if (duplicates.Count > 0)
-                        objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, duplicates.Values.ToArray()));
-
-                    duplicates.Clear();
-                }
-                IteratesThroughLinks = true;
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
-                    obj.DuplicateSelected(duplicates, this, zone);
+                objList.AddRange(duplicates.Values);
 
                 foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
 
                 if (duplicates.Count > 0)
-                    objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(zone.LinkedObjects, duplicates.Values.ToArray()));
+                    objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, duplicates.Values.ToArray()));
 
-                zone.LinkedObjects.AddRange(duplicates.Values);
+                duplicates.Clear();
             }
+            SceneObjectIterState.InLinks = true;
+            foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                obj.DuplicateSelected(duplicates, this, EditZone);
 
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+
+            if (duplicates.Count > 0)
+                objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(EditZone.LinkedObjects, duplicates.Values.ToArray()));
+
+            EditZone.LinkedObjects.AddRange(duplicates.Values);
+
+
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            //Clear LinkDestinations
+            SceneObjectIterState.InLinks = false;
+            foreach (List<I3dWorldObject> objects in EditZone.ObjLists.Values)
             {
-                IteratedZoneTransform = offset;
-
-                //Clear LinkDestinations
-                IteratesThroughLinks = false;
-                foreach (List<I3dWorldObject> objects in zone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        obj.ClearLinkDestinations();
-                }
-                IteratesThroughLinks = true;
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
+                foreach (I3dWorldObject obj in objects)
                     obj.ClearLinkDestinations();
+            }
+            SceneObjectIterState.InLinks = true;
+            foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                obj.ClearLinkDestinations();
 
-                //Rebuild links
-                DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
+            //Rebuild links
+            DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
 
-                IteratesThroughLinks = false;
-                foreach (ObjectList objects in zone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
-                }
-                IteratesThroughLinks = true;
-                foreach (I3dWorldObject obj in zone.LinkedObjects)
+            SceneObjectIterState.InLinks = false;
+            foreach (ObjectList objects in EditZone.ObjLists.Values)
+            {
+                foreach (I3dWorldObject obj in objects)
                     obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
             }
+            SceneObjectIterState.InLinks = true;
+            foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
 
-            IteratedZoneTransform = ZoneTransform.Identity;
+            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
+
 
             //Add to undo
             if (objListInfos.Count > 0)
@@ -766,9 +761,11 @@ namespace SpotLight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed</returns>
         public bool Save()
         {
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            EditZone.Save();
+
+            foreach (var zonePlacement in ZonePlacements)
             {
-                zone.Save();
+                zonePlacement.Zone.Save();
             }
 
             return true;
@@ -790,19 +787,30 @@ namespace SpotLight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
         public bool SaveAs()
         {
-            string currentDirectory = Zones[0].Item2.Directory;
-            foreach ((var offset, SM3DWorldZone zone) in Zones)
+            string currentDirectory = EditZone.Directory;
+
+            HashSet<SM3DWorldZone> zonesToSave = new HashSet<SM3DWorldZone>();
+
+            zonesToSave.Add(EditZone);
+
+            foreach (var zonePlacement in ZonePlacements)
+            {
+                if(!zonesToSave.Contains(zonePlacement.Zone))
+                    zonesToSave.Add(zonePlacement.Zone);
+            }
+
+            foreach (SM3DWorldZone _zone in zonesToSave)
             {
                 SaveFileDialog sfd = new SaveFileDialog() { Filter =
                     "Level Files (Map)|*Map1.szs|" +
                     "Level Files (Design)|*Design1.szs|" +
                     "Level Files (Sound)|*Sound1.szs|" +
                     "All Level Files|*Map1.szs;*Design1.szs;*Sound1.szs",
-                    InitialDirectory = currentDirectory, FileName = zone.LevelFileName};
+                    InitialDirectory = currentDirectory, FileName = _zone.LevelFileName};
 
                 sfd.FileOk += (s, e) =>
                 {
-                    if (!zone.IsValidSaveName(sfd.FileName))
+                    if (!_zone.IsValidSaveName(sfd.FileName))
                     {
                         //Type type = typeof(FileDialog);
                         //FieldInfo info = type.GetField("dialogHWnd", BindingFlags.NonPublic
@@ -817,7 +825,7 @@ namespace SpotLight.EditorDrawables
 
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    zone.Save(sfd.FileName);
+                    _zone.Save(sfd.FileName);
                     currentDirectory = System.IO.Path.GetDirectoryName(sfd.FileName);
                 }
             }

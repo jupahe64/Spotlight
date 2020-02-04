@@ -27,7 +27,7 @@ namespace SpotLight.EditorDrawables
     public class General3dWorldObject : TransformableObject, I3dWorldObject
     {
         public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
-        public new static Vector4 hoverColor = new Vector4(EditableObject.hoverColor.Xyz, 0.125f);
+        public new static Vector4 hoverColor = new Vector4(1,1,1, 0.125f);
 
         protected static Vector4 LinkColor = new Vector4(0f, 1f, 1f, 1f);
         
@@ -43,14 +43,14 @@ namespace SpotLight.EditorDrawables
         };
         
         public override Vector3 GlobalPosition {
-            get => Vector4.Transform(new Vector4(Position, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform).Xyz;
-            set => Position = Vector4.Transform(new Vector4(value, 1), SM3DWorldScene.IteratedZoneTransform.PositionTransform.Inverted()).Xyz;
+            get => Vector4.Transform(new Vector4(Position, 1), SceneDrawState.ZoneTransform.PositionTransform).Xyz;
+            set => Position = Vector4.Transform(new Vector4(value, 1), SceneDrawState.ZoneTransform.PositionTransform.Inverted()).Xyz;
         }
 
         public override Matrix3 GlobalRotation
         {
-            get => Framework.Mat3FromEulerAnglesDeg(Rotation) * SM3DWorldScene.IteratedZoneTransform.RotationTransform;
-            set => Rotation = (value * SM3DWorldScene.IteratedZoneTransform.RotationTransform.Inverted())
+            get => Framework.Mat3FromEulerAnglesDeg(Rotation) * SceneDrawState.ZoneTransform.RotationTransform;
+            set => Rotation = (value * SceneDrawState.ZoneTransform.RotationTransform.Inverted())
                     .ExtractDegreeEulerAngles();
         }
 
@@ -386,15 +386,31 @@ namespace SpotLight.EditorDrawables
         /// <param name="editorScene">The current Editor Scene</param>
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
-            if (!editorScene.ShouldBeDrawn(this))
+            if (!ObjectRenderState.ShouldBeDrawn(this))
                 return;
 
             bool hovered = editorScene.Hovered == this;
 
             Matrix3 rotMtx = GlobalRotation;
 
+            Vector4 highlightColor;
+
+            if (SceneDrawState.HighlightColorOverride.HasValue)
+                highlightColor = SceneDrawState.HighlightColorOverride.Value;
+            else if (Selected)
+                highlightColor = selectColor;
+            else if (hovered)
+                highlightColor = hoverColor;
+            else
+                highlightColor = Vector4.Zero;
+
+            if (SceneObjectIterState.InLinks && linkDestinations.Count == 0)
+                highlightColor = new Vector4(1, 0, 0, 1) * 0.5f + highlightColor * 0.5f;
+
             if (BfresModelCache.Contains(ModelName == "" ? ObjectName : ModelName))
             {
+
+
                 control.UpdateModelMatrix(
                     Matrix4.CreateScale(DisplayScale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
@@ -403,24 +419,14 @@ namespace SpotLight.EditorDrawables
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition));
 
-                Vector4 highlightColor;
-
-                if (Selected)
-                    highlightColor = selectColor;
-                else if (hovered)
-                    highlightColor = hoverColor;
-                else if (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count == 0)
-                    highlightColor = new Vector4(1, 0, 0, 0.5f);
-                else
-                    highlightColor = Vector4.Zero;
-
-                BfresModelCache.TryDraw(ModelName == "" ? ObjectName : ModelName, control, pass, highlightColor);
-                return;
+                BfresModelCache.TryDraw(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, control, pass, highlightColor);
             }
             else
             {
                 if (pass == Pass.TRANSPARENT)
                     return;
+
+
 
                 control.UpdateModelMatrix(
                     Matrix4.CreateScale(DisplayScale * 0.5f) *
@@ -429,31 +435,21 @@ namespace SpotLight.EditorDrawables
                     Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
                     new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition));
+
+                Vector4 blockColor;
+                Vector4 lineColor;
+
+                blockColor = Color * (1 - highlightColor.W) + highlightColor * highlightColor.W;
+
+                if (highlightColor.W != 0)
+                    lineColor = highlightColor;
+                else
+                    lineColor = Color;
+
+                lineColor.W = 1;
+
+                Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
             }
-
-            Vector4 blockColor;
-            Vector4 lineColor;
-            Vector4 col = (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count > 0) ? LinkColor : Color;
-
-            if (hovered && Selected)
-                lineColor = hoverColor;
-            else if (hovered || Selected)
-                lineColor = selectColor;
-            else if (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count == 0)
-                lineColor = new Vector4(1, 0, 0, 1);
-            else
-                lineColor = col;
-
-            if (hovered && Selected)
-                blockColor = col * 0.5f + hoverColor * 0.5f;
-            else if (hovered || Selected)
-                blockColor = col * 0.5f + selectColor * 0.5f;
-            else if (SM3DWorldScene.IteratesThroughLinks && linkDestinations.Count == 0)
-                blockColor = col * 0.5f + new Vector4(1, 0, 0, 1) * 0.5f;
-            else
-                blockColor = col;
-
-            Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
         }
 
         public override void GetSelectionBox(ref BoundingBox boundingBox)

@@ -49,7 +49,7 @@ namespace SpotLight.Level
 
         public ObjectList LinkedObjects = new ObjectList();
 
-        public List<(ZoneTransform, SM3DWorldZone)> SubZones = new List<(ZoneTransform, SM3DWorldZone)>();
+        public readonly List<ZonePlacement> ZonePlacements = new List<ZonePlacement>();
 
         private ulong highestObjID = 0;
 
@@ -222,8 +222,9 @@ namespace SpotLight.Level
                         {
                             foreach (ArrayEntry obj in entry.IterArray())
                             {
-                                Vector3 position = new Vector3();
-                                Vector3 rotation = new Vector3();
+                                Vector3 position = Vector3.Zero;
+                                Vector3 rotation = Vector3.Zero;
+                                Vector3 scale =    Vector3.One;
                                 SM3DWorldZone zone = null;
                                 foreach (DictionaryEntry _entry in obj.IterDictionary())
                                 {
@@ -247,16 +248,22 @@ namespace SpotLight.Level
                                             data["Z"]
                                         );
                                     }
+                                    else if (_entry.Key == "Scale")
+                                    {
+                                        dynamic data = _entry.Parse();
+                                        scale = new Vector3(
+                                            data["X"],
+                                            data["Y"],
+                                            data["Z"]
+                                        );
+                                    }
                                 }
 
                                 if (zone == null)
                                     ObjLists[entry.Key].Add(LevelIO.ParseObject(obj, this, objectsByReference));
                                 else
                                 {
-                                    Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(rotation);
-                                    SubZones.Add((new ZoneTransform(
-                                        new Matrix4(rotMat) * Matrix4.CreateTranslation(position),
-                                        rotMat), zone));
+                                    ZonePlacements.Add(new ZonePlacement(position, rotation, scale, zone));
                                 }
                             }
 
@@ -400,7 +407,7 @@ namespace SpotLight.Level
                 {
                     int zoneID = 0;
 
-                    foreach ((ZoneTransform transform, SM3DWorldZone zone) in SubZones)
+                    foreach (var zonePlacement in ZonePlacements)
                     {
                         ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode();
 
@@ -414,9 +421,9 @@ namespace SpotLight.Level
                         }
 
                         objNode.AddDynamicValue("ModelName", null);
-                        objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(transform.RotationTransform.ExtractDegreeEulerAngles()), true);
-                        objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
-                        objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(transform.PositionTransform.Row3.Xyz, 100f), true);
+                        objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(zonePlacement.Rotation), true);
+                        objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(zonePlacement.Scale), true);
+                        objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(zonePlacement.Position, 100f), true);
 
                         objNode.AddDynamicValue("UnitConfig", new Dictionary<string, dynamic>
                         {
@@ -429,7 +436,7 @@ namespace SpotLight.Level
                             ["PlacementTargetFile"] = "Map"
                         }, true);
 
-                        objNode.AddDynamicValue("UnitConfigName", zone.LevelName);
+                        objNode.AddDynamicValue("UnitConfigName", zonePlacement.Zone.LevelName);
 
                         zonesNode.AddDictionaryNodeRef(objNode, true);
                     }

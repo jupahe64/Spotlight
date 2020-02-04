@@ -285,7 +285,7 @@ Would you like to rebuild the database from your 3DW Files?",
                 "Level Files (Design)|*Design1.szs|" +
                 "Level Files (Sound)|*Sound1.szs|" +
                 "All Level Files|*Map1.szs;*Design1.szs;*Sound1.szs",
-                InitialDirectory = currentScene?.Zones[0].Item2.Directory ?? Program.StageDataPath };
+                InitialDirectory = currentScene?.EditZone.Directory ?? Program.StageDataPath };
 
             SpotlightToolStripStatusLabel.Text = "Waiting...";
 
@@ -428,7 +428,7 @@ Would you like to rebuild the database from your 3DW Files?",
                 SpotlightToolStripProgressBar.Value = 50;
                 SetupScene(scene);
 
-                closableTabControl1.TabPages.Add(new TabPage(scene.Zones[0].Item2.LevelFileName) { Tag = scene });
+                closableTabControl1.TabPages.Add(new TabPage(scene.EditZone.LevelFileName) { Tag = scene });
 
                 ClosableTabControl1_SelectedIndexChanged(null, null);
 
