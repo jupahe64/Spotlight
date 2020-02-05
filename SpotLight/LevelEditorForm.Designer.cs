@@ -219,6 +219,9 @@
             // 
             // LevelGLControlModern
             // 
+            this.LevelGLControlModern.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
             this.LevelGLControlModern.CameraDistance = 10F;
             this.LevelGLControlModern.CameraTarget = ((OpenTK.Vector3)(resources.GetObject("LevelGLControlModern.CameraTarget")));
@@ -226,11 +229,12 @@
             this.LevelGLControlModern.CamRotY = 0F;
             this.LevelGLControlModern.CurrentShader = null;
             this.LevelGLControlModern.Fov = 0.7853982F;
-            this.LevelGLControlModern.Location = new System.Drawing.Point(3, 35);
+            this.LevelGLControlModern.Location = new System.Drawing.Point(3, 32);
+            this.LevelGLControlModern.Margin = new System.Windows.Forms.Padding(3, 32, 3, 3);
             this.LevelGLControlModern.Name = "LevelGLControlModern";
             this.LevelGLControlModern.NormPickingDepth = 0F;
             this.LevelGLControlModern.ShowOrientationCube = true;
-            this.LevelGLControlModern.Size = new System.Drawing.Size(514, 477);
+            this.LevelGLControlModern.Size = new System.Drawing.Size(515, 481);
             this.LevelGLControlModern.Stereoscopy = false;
             this.LevelGLControlModern.TabIndex = 0;
             this.LevelGLControlModern.VSync = false;
