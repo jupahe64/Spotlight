@@ -28,14 +28,13 @@ namespace SpotLight
         public LevelEditorForm()
         {
             InitializeComponent();
-
             tabControl1.SelectedTab = tabPageObjects;
             LevelGLControlModern.CameraDistance = 20;
 
             MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
             MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
 
-            closableTabControl1.TabPages.Clear();
+            LevelGLControlModern.Visible = false;
 
             //Properties.Settings.Default.Reset();
 
@@ -428,9 +427,7 @@ Would you like to rebuild the database from your 3DW Files?",
                 SpotlightToolStripProgressBar.Value = 50;
                 SetupScene(scene);
 
-                closableTabControl1.TabPages.Add(new TabPage(scene.EditZone.LevelFileName) { Tag = scene });
-
-                ClosableTabControl1_SelectedIndexChanged(null, null);
+                documentTabControl1.AddTab(new DocumentTabControl.DocumentTab(scene.EditZone.LevelName, scene), true);
 
                 MainSceneListView.Enabled = true;
                 MainSceneListView.SetRootList("ObjectList");
@@ -583,13 +580,24 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             MessageBox.Show("Not implemented yet");
         }
 
-        private void ClosableTabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        private void DocumentTabControl1_SelectedTabChanged(object sender, EventArgs e)
         {
-            if (closableTabControl1.SelectedTab == null)
+            if (documentTabControl1.SelectedTab == null)
+            {
+                LevelGLControlModern.Visible = false;
                 return;
-            closableTabControl1.SelectedTab.Controls.Add(LevelGLControlModern);
-            currentScene = (SM3DWorldScene)closableTabControl1.SelectedTab.Tag;
+            }
+
+            currentScene = (SM3DWorldScene)documentTabControl1.SelectedTab.Tag;
+
+            LevelGLControlModern.Visible = true;
+
             LevelGLControlModern.MainDrawable = currentScene;
+        }
+
+        private void DocumentTabControl1_TabClosing(object sender, HandledEventArgs e)
+        {
+            //TODO: ask to save unsaved changes
         }
     }
 }

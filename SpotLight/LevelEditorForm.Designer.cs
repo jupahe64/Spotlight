@@ -39,8 +39,7 @@
             this.MainSceneListView = new GL_EditorFramework.SceneListView();
             this.lblCurrentObject = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
-            this.closableTabControl1 = new GL_EditorFramework.ClosableTabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.documentTabControl1 = new SpotLight.DocumentTabControl();
             this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,8 +75,7 @@
             this.tabControl1.SuspendLayout();
             this.tabPageZones.SuspendLayout();
             this.tabPageObjects.SuspendLayout();
-            this.closableTabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
+            this.documentTabControl1.SuspendLayout();
             this.SpotlightMenuStrip.SuspendLayout();
             this.SpotlightStatusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -94,7 +92,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.closableTabControl1);
+            this.splitContainer1.Panel2.Controls.Add(this.documentTabControl1);
             this.splitContainer1.Size = new System.Drawing.Size(784, 515);
             this.splitContainer1.SplitterDistance = 260;
             this.splitContainer1.TabIndex = 2;
@@ -208,45 +206,31 @@
             this.ObjectUIControl.Size = new System.Drawing.Size(254, 245);
             this.ObjectUIControl.TabIndex = 1;
             // 
-            // closableTabControl1
+            // documentTabControl1
             // 
-            this.closableTabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.closableTabControl1.Controls.Add(this.tabPage1);
-            this.closableTabControl1.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
-            this.closableTabControl1.Location = new System.Drawing.Point(3, 3);
-            this.closableTabControl1.Name = "closableTabControl1";
-            this.closableTabControl1.Padding = new System.Drawing.Point(16, 4);
-            this.closableTabControl1.SelectedIndex = 0;
-            this.closableTabControl1.Size = new System.Drawing.Size(517, 512);
-            this.closableTabControl1.TabIndex = 1;
-            this.closableTabControl1.SelectedIndexChanged += new System.EventHandler(this.ClosableTabControl1_SelectedIndexChanged);
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.LevelGLControlModern);
-            this.tabPage1.Location = new System.Drawing.Point(4, 24);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Size = new System.Drawing.Size(509, 484);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "tabPage1";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.documentTabControl1.Controls.Add(this.LevelGLControlModern);
+            this.documentTabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.documentTabControl1.Location = new System.Drawing.Point(0, 0);
+            this.documentTabControl1.Name = "documentTabControl1";
+            this.documentTabControl1.Size = new System.Drawing.Size(520, 515);
+            this.documentTabControl1.TabIndex = 1;
+            this.documentTabControl1.SelectedTabChanged += new System.EventHandler(this.DocumentTabControl1_SelectedTabChanged);
+            this.documentTabControl1.TabClosing += new System.ComponentModel.HandledEventHandler(this.DocumentTabControl1_TabClosing);
             // 
             // LevelGLControlModern
             // 
             this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
+            this.LevelGLControlModern.CameraDistance = 10F;
+            this.LevelGLControlModern.CameraTarget = ((OpenTK.Vector3)(resources.GetObject("LevelGLControlModern.CameraTarget")));
             this.LevelGLControlModern.CamRotX = 0F;
             this.LevelGLControlModern.CamRotY = 0F;
             this.LevelGLControlModern.CurrentShader = null;
-            this.LevelGLControlModern.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LevelGLControlModern.Fov = 0.7853982F;
-            this.LevelGLControlModern.Location = new System.Drawing.Point(0, 0);
+            this.LevelGLControlModern.Location = new System.Drawing.Point(3, 35);
             this.LevelGLControlModern.Name = "LevelGLControlModern";
             this.LevelGLControlModern.NormPickingDepth = 0F;
             this.LevelGLControlModern.ShowOrientationCube = true;
-            this.LevelGLControlModern.Size = new System.Drawing.Size(509, 484);
+            this.LevelGLControlModern.Size = new System.Drawing.Size(514, 477);
             this.LevelGLControlModern.Stereoscopy = false;
             this.LevelGLControlModern.TabIndex = 0;
             this.LevelGLControlModern.VSync = false;
@@ -446,6 +430,7 @@
             // 
             // toolStripTextBox1
             // 
+            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 
@@ -474,8 +459,7 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPageZones.ResumeLayout(false);
             this.tabPageObjects.ResumeLayout(false);
-            this.closableTabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
+            this.documentTabControl1.ResumeLayout(false);
             this.SpotlightMenuStrip.ResumeLayout(false);
             this.SpotlightMenuStrip.PerformLayout();
             this.SpotlightStatusStrip.ResumeLayout(false);
@@ -520,8 +504,7 @@
         public GL_EditorFramework.ObjectUIControl ObjectUIControl;
         public System.Windows.Forms.TreeView LevelZoneTreeView;
         public GL_EditorFramework.SceneListView MainSceneListView;
-        private GL_EditorFramework.ClosableTabControl closableTabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
+        private DocumentTabControl documentTabControl1;
     }
 }
 
