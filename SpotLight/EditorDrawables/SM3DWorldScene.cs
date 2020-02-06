@@ -163,6 +163,7 @@ namespace SpotLight.EditorDrawables
         {
             EditZone = EditZone,
             EditZoneTransform = EditZoneTransform,
+            ZonePlacements = ZonePlacements,
             UndoStack = UndoStack,
             RedoStack = RedoStack
         };
@@ -212,23 +213,7 @@ namespace SpotLight.EditorDrawables
 
         public ZoneTransform EditZoneTransform;
 
-        public IEnumerable<I3dWorldObject> Objects
-        {
-            get
-            {
-                SceneDrawState.ZoneTransform = EditZoneTransform;
-
-                foreach (ObjectList objects in EditZone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        yield return obj;
-                }
-                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
-                    yield return obj;
-
-                SceneDrawState.ZoneTransform = ZoneTransform.Identity;
-            }
-        }
+        public IEnumerable<I3dWorldObject> Objects => Get3DWObjects();
 
         public Stack<IRevertable> UndoStack
         {
@@ -409,6 +394,8 @@ namespace SpotLight.EditorDrawables
 
             if (Hovered is I3dWorldObject)
                 Hovered3dObject = (I3dWorldObject)Hovered;
+            else 
+                Hovered3dObject = null;
 
             return var;
         }

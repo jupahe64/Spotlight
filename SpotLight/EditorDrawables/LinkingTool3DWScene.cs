@@ -79,6 +79,10 @@ namespace SpotLight.EditorDrawables
             uint var = base.MouseMove(e, lastMousePos, control);
             if (linkDragMode != LinkDragMode.None)
                 var |= NO_CAMERA_ACTION;
+
+            if (linkDragMode != LinkDragMode.None)
+                var |= REDRAW;
+
             return var;
         }
 
@@ -128,16 +132,11 @@ namespace SpotLight.EditorDrawables
 
                 else
                     ChangeSelectedConnection(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name);
-                
-
-                linkDragMode = LinkDragMode.None;
-
-                return base.MouseUp(e, control) | REDRAW;
             }
 
             linkDragMode = LinkDragMode.None;
 
-            return base.MouseUp(e, control);
+            return base.MouseUp(e, control) | REDRAW;
         }
         
         private void ChangeSelectedConnection(I3dWorldObject newSource, I3dWorldObject newDest, string newName)
@@ -373,12 +372,11 @@ namespace SpotLight.EditorDrawables
                 {
                     Vector3 sourceObjPoint = Vector3.Zero;
                     Vector3 destObjPoint = Vector3.Zero;
-                    Vector3 hoveredObjPoint = Vector3.Zero;
 
                     GL.LineWidth(1);
                     GL.Begin(PrimitiveType.Lines);
                     GL.VertexAttrib2(2, Vector2.Zero);
-                    foreach (I3dWorldObject _obj in scene.GetObjects())
+                    foreach (I3dWorldObject _obj in scene.Get3DWObjects())
                     {
                         Vector3 _objPoint = _obj.GetLinkingPoint(scene);
 
@@ -422,6 +420,8 @@ namespace SpotLight.EditorDrawables
 
                     if (scene.SelectedConnection != null)
                     {
+                        Vector3 hoveredObjPoint = -scene.GL_Control.GetPointUnderMouse();
+
                         Vector3 sourcePoint = (scene.linkDragMode == LinkDragMode.Source) ? hoveredObjPoint : sourceObjPoint;
                         Vector3 destPoint = (scene.linkDragMode == LinkDragMode.Dest) ? hoveredObjPoint : destObjPoint;
 
@@ -479,7 +479,7 @@ namespace SpotLight.EditorDrawables
                     GL.LineWidth(6);
                     GL.Begin(PrimitiveType.Lines);
                     GL.VertexAttrib2(2, Vector2.Zero);
-                    foreach (I3dWorldObject _obj in scene.GetObjects())
+                    foreach (I3dWorldObject _obj in scene.Get3DWObjects())
                     {
                         if (_obj.Links != null)
                         {
@@ -505,7 +505,7 @@ namespace SpotLight.EditorDrawables
                     return 0;
 
                 int span = 0;
-                foreach (I3dWorldObject _obj in scene.GetObjects())
+                foreach (I3dWorldObject _obj in scene.Get3DWObjects())
                 {
                     if (_obj.Links != null)
                     {
@@ -526,7 +526,7 @@ namespace SpotLight.EditorDrawables
             public override uint MouseEnter(int index, GL_ControlBase control)
             {
                 int part = 0;
-                foreach (I3dWorldObject _obj in scene.GetObjects())
+                foreach (I3dWorldObject _obj in scene.Get3DWObjects())
                 {
                     if (_obj.Links != null)
                     {

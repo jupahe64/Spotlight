@@ -429,8 +429,19 @@ Would you like to rebuild the database from your 3DW Files?",
 
                 documentTabControl1.AddTab(new DocumentTabControl.DocumentTab(scene.EditZone.LevelName, scene), true);
 
+                const string playerListName = SM3DWorldZone.MAP_PREFIX + "PlayerList";
+
+                if (scene.EditZone.ObjLists.ContainsKey(playerListName) && scene.EditZone.ObjLists[playerListName].Count > 0)
+                {
+                    scene.GL_Control.CamRotX = 0;
+                    scene.GL_Control.CamRotY = HALF_PI / 4;
+                    scene.FocusOn(scene.EditZone.ObjLists[playerListName][0]);
+                }
+
+                const string objectListName = SM3DWorldZone.MAP_PREFIX + "ObjectList";
+
                 MainSceneListView.Enabled = true;
-                MainSceneListView.SetRootList("ObjectList");
+                MainSceneListView.SetRootList(objectListName);
                 MainSceneListView.ListExited += MainSceneListView_ListExited;
                 MainSceneListView.Refresh();
                 SpotlightToolStripProgressBar.Value = 100;
