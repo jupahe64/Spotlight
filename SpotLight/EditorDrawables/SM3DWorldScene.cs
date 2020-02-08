@@ -188,7 +188,9 @@ namespace SpotLight.EditorDrawables
         }
 
         public delegate (I3dWorldObject obj, ObjectList objList)[] ObjectPlacementHandler(Vector3 position, SM3DWorldZone zone);
-
+        /// <summary>
+        /// Returns an Array of I3DWorldObject and a list to place them in
+        /// </summary>
         public ObjectPlacementHandler ObjectPlaceDelegate { get; set; }
 
         public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)

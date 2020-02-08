@@ -36,6 +36,7 @@ namespace SpotLight
                 ObjectSelectListView.Items.Add(LVI);
             }
         }
+        public int SelectedIndex => ObjectSelectListView.SelectedIndices[0];
         bool Loading = false;
         bool Edited = false;
         bool YesObjectIsChosen = false;
@@ -74,12 +75,10 @@ namespace SpotLight
             if (YesObjectIsChosen)
             {
                 DialogResult = DialogResult.OK;
-                SelectedObject = ((ObjectParameter)ObjectSelectListView.SelectedItems[0].Tag).ToGeneral3DWorldObject(ObjectSelectListView.SelectedItems[0].SubItems[0].Text);
             }
             else
                 DialogResult = DialogResult.Cancel;
         }
-        public General3dWorldObject SelectedObject;
         private void SelectObjectButton_Click(object sender, EventArgs e)
         {
             if (Loading || ObjectSelectListView.SelectedItems.Count == 0)

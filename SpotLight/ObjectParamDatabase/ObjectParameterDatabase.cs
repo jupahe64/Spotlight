@@ -1,9 +1,11 @@
 ﻿using SpotLight.EditorDrawables;
+using SpotLight.Level;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using static BYAML.ByamlFile;
 using static SpotLight.Level.LevelIO;
 
 /* File Format .sopd
@@ -206,8 +208,8 @@ namespace SpotLight.ObjectParamDatabase
                         {
                             if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
                             {
-                                Type type = propertyEntry.Value.GetType();
-                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                                ByamlNodeType type = propertyEntry.Value.NodeType;
+                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.ToString()));
                             }
                         }
 
@@ -227,8 +229,8 @@ namespace SpotLight.ObjectParamDatabase
 
                         foreach (var propertyEntry in Tmp.PropertyEntries)
                         {
-                            Type type = propertyEntry.Value.GetType();
-                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.Name));
+                            ByamlNodeType type = propertyEntry.Value.NodeType;
+                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.ToString()));
                         }
 
                         foreach (string key in Tmp.LinkEntries.Keys)
@@ -511,28 +513,27 @@ namespace SpotLight.ObjectParamDatabase
         /// <summary>
         /// Cast an Object Parameter to a new General 3DW Object with mostly empty values
         /// </summary>
-        /// <param name="ID">The ID to give the object. Default is "New_" + The name of the class.<para/>Can also use <see cref="SM3DWorldScene.NextObjID()"/></param>
+        /// <param name="ID">The ID to give the object.<para/>Can also use <see cref="SM3DWorldScene.NextObjID()"/></param>
         /// <param name="ObjectNameID">For Classes that have multiple Object Names. default is 0</param>
         /// <param name="ModelNameID">For Classes that have multiple Model Names. Default is -1 (No Model Name)</param>
         /// <returns>new General 3DW Object</returns>
-        public virtual General3dWorldObject ToGeneral3DWorldObject(string ID = "", int ObjectNameID = 0, int ModelNameID = -1)
+        public virtual General3dWorldObject ToGeneral3DWorldObject(string ID, OpenTK.Vector3 Position, int ObjectNameID = 0, int ModelNameID = -1)
         {
             Dictionary<string, dynamic> Params = new Dictionary<string, dynamic>();
             for (int i = 0; i < Properties.Count; i++)
             {
                 switch (Properties[i].Value)
                 {
-                    case "UInt32":
-                    case "Int32":
-                    case "Int16":
-                    case "UInt16":
-                    case "SByte":
-                    case "Byte":
+                    case "Integer":
                         Params.Add(Properties[i].Key, 0);
+                        break;
+                    case "Float":
+                        Params.Add(Properties[i].Key, 0.0f);
                         break;
                     case "Boolean":
                         Params.Add(Properties[i].Key, false);
                         break;
+                    case "Null":
                     case "String":
                         Params.Add(Properties[i].Key, "");
                         break;
@@ -544,7 +545,7 @@ namespace SpotLight.ObjectParamDatabase
                 Links.Add(LinkNames[i], new List<I3dWorldObject>());
 
 
-            return new General3dWorldObject(new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), $"New_{ClassName}", ObjectNames[ObjectNameID], ModelNameID == -1 ? "" : ModelNames[ModelNameID], ClassName, new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), Links, Params);
+            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectNames[ObjectNameID], ModelNameID == -1 ? "" : ModelNames[ModelNameID], ClassName, new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), Links, Params);
         }
 
         internal void InitLists()

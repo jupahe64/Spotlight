@@ -570,18 +570,34 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             AddObjectForm AOF = new AddObjectForm(ObjectDatabase);
             if (AOF.ShowDialog() == DialogResult.OK)
             {
-                currentScene.ObjectPlaceDelegate = (p, z) =>
+                currentScene.ObjectPlaceDelegate = (Position, Zone) =>
                 {
-                    var entry = ObjectDatabase.ObjectParameters[0];
-                    return new (I3dWorldObject, ObjectList)[] { (
-                        entry.ToGeneral3DWorldObject(z.NextObjID()), 
-                        z.ObjLists[SM3DWorldZone.MAP_PREFIX + "ObjectList"]
-                        )};
-                };
+                    Parameter entry = ObjectDatabase.ObjectParameters[AOF.SelectedIndex];
+                    Category category = (Category)entry.CategoryID;
 
-                //@Super Hackio, now it's your turn to make it so it puts it in the right object list and in the right position
-                //also make sure to actually USE the objID parameter in ToGeneral3DWorldObject()
+                    ObjectList objList;
+                    if (category == Category.Link)
+                        objList = Zone.LinkedObjects;
+                    else
+                        objList = Zone.ObjLists[SM3DWorldZone.MAP_PREFIX + category.ToString() + "List"];
+
+                    General3dWorldObject currentobject = entry.ToGeneral3DWorldObject(Zone.NextObjID(), -Position);
+                    currentobject.DoModelLoad(LevelGLControlModern);
+                    return new (I3dWorldObject, ObjectList)[] { (currentobject, objList) };
+                };
             }
+        }
+
+        enum Category : byte
+        {
+            Area,
+            CheckPoint,
+            Demo,
+            Goal,
+            Object,
+            Player,
+            Sky,
+            Link
         }
 
         private void BtnEditIndividual_Click(object sender, EventArgs e)
@@ -642,7 +658,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
 
             MainSceneListView.RootLists.Clear();
 
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
+            foreach (KeyValuePair<string, Level.ObjectList> keyValuePair in zone.ObjLists)
             {
                 MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
             }

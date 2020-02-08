@@ -353,28 +353,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="control">The GL_Control to draw to</param>
         public override void Prepare(GL_ControlModern control)
         {
-            string mdlName = ModelName == "" ? ObjectName : ModelName;
-            if (File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
-            {
-                SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
-
-                if (objArc.Files.ContainsKey(mdlName + ".bfres"))
-                {
-                    if (objArc.Files.ContainsKey("InitModel.byml"))
-                    {
-                        dynamic initModel = ByamlFile.FastLoadN(new MemoryStream(objArc.Files["InitModel.byml"]), false, Syroot.BinaryData.Endian.Big).RootNode;
-
-                        if (initModel is Dictionary<string, dynamic>)
-                        {
-                            BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control,
-                            initModel.TryGetValue("TextureArc", out dynamic texArc) ? texArc : null);
-                            base.Prepare(control);
-                            return;
-                        }
-                    }
-                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control, null);
-                }
-            }
+            DoModelLoad(control);
 
             base.Prepare(control);
         }
@@ -458,6 +437,32 @@ namespace SpotLight.EditorDrawables
                 boundingBox.Include(GlobalPosition + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
         }
 
+        public void DoModelLoad(GL_ControlModern control)
+        {
+            string mdlName = ModelName == "" ? ObjectName : ModelName;
+            if (BfresModelCache.Contains(mdlName))
+                return;
+            if (File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
+            {
+                SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
+
+                if (objArc.Files.ContainsKey(mdlName + ".bfres"))
+                {
+                    if (objArc.Files.ContainsKey("InitModel.byml"))
+                    {
+                        dynamic initModel = ByamlFile.FastLoadN(new MemoryStream(objArc.Files["InitModel.byml"]), false, Syroot.BinaryData.Endian.Big).RootNode;
+
+                        if (initModel is Dictionary<string, dynamic>)
+                        {
+                            BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control,
+                            initModel.TryGetValue("TextureArc", out dynamic texArc) ? texArc : null);
+                            return;
+                        }
+                    }
+                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control, null);
+                }
+            }
+        }
 
         public class BasicPropertyProvider : IObjectUIContainer
         {
@@ -530,27 +535,7 @@ namespace SpotLight.EditorDrawables
                 capture?.HandleUndo(scene);
                 capture = null;
 
-                string mdlName = obj.ModelName == "" ? obj.ObjectName : obj.ModelName;
-                if (File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
-                {
-                    SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
-
-                    if (objArc.Files.ContainsKey(mdlName + ".bfres"))
-                    {
-                        if (objArc.Files.ContainsKey("InitModel.byml"))
-                        {
-                            dynamic initModel = ByamlFile.FastLoadN(new MemoryStream(objArc.Files["InitModel.byml"]), false, Syroot.BinaryData.Endian.Big).RootNode;
-
-                            if (initModel is Dictionary<string, dynamic>)
-                            {
-                                BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), (GL_ControlModern)scene.GL_Control,
-                                initModel.TryGetValue("TextureArc", out dynamic texArc) ? texArc : null);
-                                return;
-                            }
-                        }
-                        BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), (GL_ControlModern)scene.GL_Control, null);
-                    }
-                }
+                obj.DoModelLoad((GL_ControlModern)scene.GL_Control);
 
                 scene.Refresh();
             }

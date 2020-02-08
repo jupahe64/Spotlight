@@ -49,6 +49,7 @@
             // 
             // ObjectSelectListView
             // 
+            this.ObjectSelectListView.AutoArrange = false;
             this.ObjectSelectListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.ClassNameColumnHeader});
             this.ObjectSelectListView.Dock = System.Windows.Forms.DockStyle.Fill;
