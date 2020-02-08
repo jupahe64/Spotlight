@@ -17,45 +17,6 @@ namespace SpotLight.Level
 {
     public class LevelIO
     {
-        public static bool TryOpenLevel(string fileName, LevelEditorForm levelEditorForm, out SM3DWorldScene scene)
-        {
-            scene = new SM3DWorldScene();
-
-            if (SM3DWorldZone.TryOpen(fileName, out SM3DWorldZone zone))
-            {
-                scene.EditZone = zone;
-
-                scene.EditZoneTransform = ZoneTransform.Identity;
-
-                foreach (var zonePlacement in zone.ZonePlacements)
-                {
-                    scene.ZonePlacements.Add(zonePlacement);
-                }
-
-                levelEditorForm.MainSceneListView.SelectedItems = scene.SelectedObjects;
-                levelEditorForm.MainSceneListView.Refresh();
-
-                levelEditorForm.LevelZoneTreeView.BeginUpdate();
-                levelEditorForm.LevelZoneTreeView.Nodes.Clear();
-                TreeNode toplevelZoneNode = levelEditorForm.LevelZoneTreeView.Nodes.Add(zone.LevelName);
-                toplevelZoneNode.Tag = zone;
-
-                foreach (var zonePlacement in zone.ZonePlacements)
-                {
-                    toplevelZoneNode.Nodes.Add(zonePlacement.Zone.LevelName).Tag = zonePlacement.Zone;
-                }
-
-                levelEditorForm.LevelZoneTreeView.EndUpdate();
-                levelEditorForm.LevelZoneTreeView.SelectedNode = toplevelZoneNode;
-
-                levelEditorForm.LevelZoneTreeView_AfterSelect(levelEditorForm.LevelZoneTreeView, new TreeViewEventArgs(toplevelZoneNode));
-
-                return true;
-            }
-            else
-                return false;
-        }
-
         /// <summary>
         /// Parses a 3d World from an ArrayEntry
         /// </summary>

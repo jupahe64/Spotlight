@@ -74,7 +74,7 @@ namespace SpotLight.EditorDrawables
                     foreach (DeleteInfo info in objListInfo.deleteInfos.Reverse())
                     {
                         //Insert obj into the list
-                        objListInfo.objList.Insert(info.index,info.obj);
+                        objListInfo.objList.Insert(info.index, info.obj);
                         newObjs[i_newObjs++] = info.obj;
 
                         //Insert obj into all links linking to it
@@ -124,7 +124,7 @@ namespace SpotLight.EditorDrawables
                 {
                     newObjListInfos[i_newObjListInfos].objList = objListInfo.objList;
 
-                    Revertable3DWorldObjDeletion.DeleteInfo[] newObjs = 
+                    Revertable3DWorldObjDeletion.DeleteInfo[] newObjs =
                         newObjListInfos[i_newObjListInfos++].deleteInfos = new Revertable3DWorldObjDeletion.DeleteInfo[objListInfo.objects.Length];
                     int i_newObjs = 0;
 
@@ -152,6 +152,15 @@ namespace SpotLight.EditorDrawables
         /// <summary>
         /// Creates a blank SM3DW Scene
         /// </summary>
+        public SM3DWorldScene(SM3DWorldZone zone)
+        {
+            mainZone = zone;
+
+            multiSelect = true;
+
+            StaticObjects.Add(new LinkRenderer(this));
+        }
+
         public SM3DWorldScene()
         {
             multiSelect = true;
@@ -161,12 +170,22 @@ namespace SpotLight.EditorDrawables
 
         public T ConvertToOtherSceneType<T>() where T : SM3DWorldScene, new() => new T
         {
-            EditZone = EditZone,
-            EditZoneTransform = EditZoneTransform,
-            ZonePlacements = ZonePlacements,
-            UndoStack = UndoStack,
-            RedoStack = RedoStack
+            editZone = editZone,
+            editZoneIndex = editZoneIndex,
+            editZoneTransform = editZoneTransform,
+            zonePlacements = zonePlacements,
+            undoStack = undoStack,
+            redoStack = redoStack
         };
+
+        public override void Draw(GL_ControlModern control, Pass pass)
+        {
+            base.Draw(control, pass);
+
+            if (editZoneIndex != 0) //zonePlacements can't be edited
+                foreach (var zonePlacement in zonePlacements)
+                    zonePlacement.Draw(control, pass, this);
+        }
 
         public delegate (I3dWorldObject obj, ObjectList objList)[] ObjectPlacementHandler(Vector3 position, SM3DWorldZone zone);
 
@@ -174,10 +193,10 @@ namespace SpotLight.EditorDrawables
 
         public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)
         {
-            if (ObjectPlaceDelegate != null && e.Button==MouseButtons.Left)
+            if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
             {
                 var placements = ObjectPlaceDelegate.Invoke(control.CoordFor(e.X, e.Y, control.PickingDepth), EditZone);
-                
+
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
 
 
@@ -211,21 +230,13 @@ namespace SpotLight.EditorDrawables
                 return base.MouseClick(e, control);
         }
 
-        public ZoneTransform EditZoneTransform;
+        private ZoneTransform editZoneTransform;
 
         public IEnumerable<I3dWorldObject> Objects => Get3DWObjects();
 
-        public Stack<IRevertable> UndoStack
-        {
-            get => undoStack;
-            set => undoStack = value;
-        }
+        public IReadOnlyCollection<IRevertable> UndoStack => undoStack;
 
-        public Stack<IRevertable> RedoStack
-        {
-            get => redoStack;
-            set => redoStack = value;
-        }
+        public IReadOnlyCollection<IRevertable> RedoStack => redoStack;
 
         public override string ToString()
         {
@@ -274,7 +285,7 @@ namespace SpotLight.EditorDrawables
 
             if (!EditZone.IsPrepared)
             {
-                SceneDrawState.ZoneTransform = EditZoneTransform;
+                SceneDrawState.ZoneTransform = editZoneTransform;
 
                 SceneObjectIterState.InLinks = false;
                 foreach (ObjectList objects in EditZone.ObjLists.Values)
@@ -386,15 +397,14 @@ namespace SpotLight.EditorDrawables
 
         public I3dWorldObject Hovered3dObject { get; protected set; } = null;
 
-        public List<ZonePlacement> ZonePlacements { get; set; } = new List<ZonePlacement>();
-
+        public IReadOnlyList<ZonePlacement> ZonePlacements => zonePlacements;
         public override uint MouseEnter(int inObjectIndex, GL_ControlBase control)
         {
             uint var = base.MouseEnter(inObjectIndex, control);
 
             if (Hovered is I3dWorldObject)
                 Hovered3dObject = (I3dWorldObject)Hovered;
-            else 
+            else
                 Hovered3dObject = null;
 
             return var;
@@ -402,9 +412,69 @@ namespace SpotLight.EditorDrawables
 
         //public List<(ZoneTransform transform, SM3DWorldZone zone)> Zones { get; set; }
 
-        public SM3DWorldZone EditZone;
+        private List<ZonePlacement> zonePlacements = new List<ZonePlacement>();
 
-        public int EditZoneIndex { get; private set; }
+        private SM3DWorldZone editZone;
+        public SM3DWorldZone EditZone => editZone;
+
+        private int editZoneIndex = -1;
+        public int EditZoneIndex
+        {
+            get => editZoneIndex;
+            set
+            {
+                if (editZoneIndex == value)
+                    return;
+
+                zonePlacements.Clear();
+
+                if (value == 0)
+                {
+                    editZone = mainZone;
+
+                    editZoneTransform = ZoneTransform.Identity;
+
+                    foreach (var zonePlacement in mainZone.ZonePlacements)
+                    {
+                        zonePlacements.Add(zonePlacement);
+                    }
+                }
+                else
+                {
+                    editZone = mainZone.ZonePlacements[value - 1].Zone;
+
+                    editZoneTransform = mainZone.ZonePlacements[value - 1].GetTransform();
+
+                    for (int i = 0; i < mainZone.ZonePlacements.Count; i++)
+                    {
+                        if (i == value - 1)
+                            continue;
+
+                        ZonePlacement zonePlacement = mainZone.ZonePlacements[i];
+                        zonePlacements.Add(zonePlacement);
+                    }
+
+                    zonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, mainZone));
+                }
+
+                undoStack = editZone.undoStack;
+                redoStack = editZone.redoStack;
+
+                editZoneIndex = value;
+            }
+        }
+
+        private SM3DWorldZone mainZone;
+
+        public IEnumerable<SM3DWorldZone> GetZones()
+        {
+            yield return mainZone;
+
+            foreach (ZonePlacement zonePlacement in mainZone.ZonePlacements)
+            {
+                yield return zonePlacement.Zone;
+            }
+        }
 
         /// <summary>
         /// Gets all the editable objects
@@ -417,13 +487,14 @@ namespace SpotLight.EditorDrawables
 
             SceneDrawState.ZoneTransform = ZoneTransform.Identity;
 
-            foreach (var zonePlacement in ZonePlacements)
-                yield return zonePlacement;
+            if(editZoneIndex==0) //zonePlacements can be edited
+                foreach (var zonePlacement in zonePlacements)
+                    yield return zonePlacement;
         }
 
         protected IEnumerable<I3dWorldObject> Get3DWObjects()
         {
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+            SceneDrawState.ZoneTransform = editZoneTransform;
 
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in EditZone.ObjLists.Values)
@@ -440,7 +511,7 @@ namespace SpotLight.EditorDrawables
 
         public void UpdateLinkDestinations()
         {
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+            SceneDrawState.ZoneTransform = editZoneTransform;
 
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in EditZone.ObjLists.Values)
@@ -452,8 +523,8 @@ namespace SpotLight.EditorDrawables
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
                 obj.ClearLinkDestinations();
 
-            
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            SceneDrawState.ZoneTransform = editZoneTransform;
 
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in EditZone.ObjLists.Values)
@@ -475,7 +546,7 @@ namespace SpotLight.EditorDrawables
         {
             DeletionManager manager = new DeletionManager();
 
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+            SceneDrawState.ZoneTransform = editZoneTransform;
 
             foreach (ObjectList objList in EditZone.ObjLists.Values)
             {
@@ -545,7 +616,7 @@ namespace SpotLight.EditorDrawables
 
             Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+            SceneDrawState.ZoneTransform = editZoneTransform;
 
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objList in EditZone.ObjLists.Values)
@@ -574,7 +645,7 @@ namespace SpotLight.EditorDrawables
             EditZone.LinkedObjects.AddRange(duplicates.Values);
 
 
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+            SceneDrawState.ZoneTransform = editZoneTransform;
 
             //Clear LinkDestinations
             SceneObjectIterState.InLinks = false;
@@ -687,7 +758,7 @@ namespace SpotLight.EditorDrawables
             I3dWorldObject prevDest;
             string prevName;
 
-            public RevertableConnectionChange(I3dWorldObject source, I3dWorldObject dest, string name, 
+            public RevertableConnectionChange(I3dWorldObject source, I3dWorldObject dest, string name,
                 I3dWorldObject prevSource, I3dWorldObject prevDest, string prevName)
             {
                 this.source = source;
@@ -782,18 +853,22 @@ namespace SpotLight.EditorDrawables
 
             foreach (var zonePlacement in ZonePlacements)
             {
-                if(!zonesToSave.Contains(zonePlacement.Zone))
+                if (!zonesToSave.Contains(zonePlacement.Zone))
                     zonesToSave.Add(zonePlacement.Zone);
             }
 
             foreach (SM3DWorldZone _zone in zonesToSave)
             {
-                SaveFileDialog sfd = new SaveFileDialog() { Filter =
+                SaveFileDialog sfd = new SaveFileDialog()
+                {
+                    Filter =
                     "Level Files (Map)|*Map1.szs|" +
                     "Level Files (Design)|*Design1.szs|" +
                     "Level Files (Sound)|*Sound1.szs|" +
                     "All Level Files|*Map1.szs;*Design1.szs;*Sound1.szs",
-                    InitialDirectory = currentDirectory, FileName = _zone.LevelFileName};
+                    InitialDirectory = currentDirectory,
+                    FileName = _zone.LevelFileName
+                };
 
                 sfd.FileOk += (s, e) =>
                 {
@@ -805,7 +880,7 @@ namespace SpotLight.EditorDrawables
                         //IntPtr fileDialogHandle = (IntPtr)info.GetValue(sfd);
 
                         //SetFileName(fileDialogHandle, zone.GetProperSaveName(sfd.FileName));
-                        
+
                         e.Cancel = true;
                     }
                 };
@@ -822,7 +897,7 @@ namespace SpotLight.EditorDrawables
 
         public void FocusOn(IEditableObject obj)
         {
-            if(obj is I3dWorldObject)
+            if (obj is I3dWorldObject)
             {
                 foreach (IEditableObject _obj in GetObjects())
                 {

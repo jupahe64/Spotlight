@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SZS;
 using static BYAML.ByamlIterator;
+using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 
 namespace SpotLight.Level
 {
@@ -22,6 +23,11 @@ namespace SpotLight.Level
     public class SM3DWorldZone
     {
         public static Dictionary<string, WeakReference<SM3DWorldZone>> loadedZones = new Dictionary<string, WeakReference<SM3DWorldZone>>();
+
+        public override string ToString() => LevelName;
+
+        public readonly Stack<IRevertable> undoStack;
+        public readonly Stack<IRevertable> redoStack;
 
         /// <summary>
         /// Name of the Level
@@ -172,6 +178,9 @@ namespace SpotLight.Level
 
         private SM3DWorldZone(string directory, string levelName, string categoryName, string levelFileName)
         {
+            undoStack = new Stack<IRevertable>();
+            redoStack = new Stack<IRevertable>();
+
             LevelName = levelName;
             Directory = directory;
             LevelFileName = levelFileName;

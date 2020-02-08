@@ -82,6 +82,15 @@ namespace SpotLight.EditorDrawables
             SceneDrawState.HighlightColorOverride = null;
         }
 
+        public ZoneTransform GetTransform()
+        {
+            Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
+
+            return new ZoneTransform(
+                new Matrix4(rotMat) * Matrix4.CreateTranslation(Position),
+                rotMat);
+        }
+
         public override int GetPickableSpan()
         {
             if (!Visible)

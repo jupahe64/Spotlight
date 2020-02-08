@@ -253,7 +253,7 @@ Would you like to rebuild the database from your 3DW Files?",
                     }
                     previousobject = currentobject;
                 }
-                SelectedObjects = multi > 1 ? SelectedObjects+"." : SelectedObjects.Remove(SelectedObjects.Length-2) + ".";
+                SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
                 SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
             }
             else if (currentScene.SelectedObjects.Count == 0)
@@ -279,7 +279,7 @@ Would you like to rebuild the database from your 3DW Files?",
 
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog() { Filter = 
+            OpenFileDialog ofd = new OpenFileDialog() { Filter =
                 "Level Files (Map)|*Map1.szs|" +
                 "Level Files (Design)|*Design1.szs|" +
                 "Level Files (Sound)|*Sound1.szs|" +
@@ -289,7 +289,7 @@ Would you like to rebuild the database from your 3DW Files?",
             SpotlightToolStripStatusLabel.Text = "Waiting...";
 
             if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
-                LoadLevel(ofd.FileName);
+                OpenLevel(ofd.FileName);
             else
                 SpotlightToolStripStatusLabel.Text = "Open Cancelled";
         }
@@ -355,7 +355,7 @@ Would you like to rebuild the database from your 3DW Files?",
             }
             else
             {
-                MessageBox.Show("StageList.szs is missing from "+Program.GamePath+"\\SystemData", "Missing File",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show("StageList.szs is missing from " + Program.GamePath + "\\SystemData", "Missing File", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -414,51 +414,65 @@ Would you like to rebuild the database from your 3DW Files?",
                 SpotlightToolStripStatusLabel.Text = "Open Cancelled";
                 return;
             }
-            LoadLevel($"{Program.GamePath}\\StageData\\{LPSF.levelname}Map1.szs");
+            OpenLevel($"{Program.GamePath}\\StageData\\{LPSF.levelname}Map1.szs");
         }
 
-        private void LoadLevel(string Filename)
+        private void OpenLevel(string Filename)
         {
             SpotlightToolStripProgressBar.Value = 0;
             SpotlightToolStripStatusLabel.Text = "Loading Level...";
-            if (LevelIO.TryOpenLevel(Filename, this, out SM3DWorldScene scene))
+            if (SM3DWorldZone.TryOpen(Filename, out SM3DWorldZone zone))
             {
-                currentScene = scene;
                 SpotlightToolStripProgressBar.Value = 50;
-                SetupScene(scene);
 
-                documentTabControl1.AddTab(new DocumentTabControl.DocumentTab(scene.EditZone.LevelName, scene), true);
+                OpenZone(zone);
 
-                const string playerListName = SM3DWorldZone.MAP_PREFIX + "PlayerList";
-
-                if (scene.EditZone.ObjLists.ContainsKey(playerListName) && scene.EditZone.ObjLists[playerListName].Count > 0)
-                {
-                    scene.GL_Control.CamRotX = 0;
-                    scene.GL_Control.CamRotY = HALF_PI / 4;
-                    scene.FocusOn(scene.EditZone.ObjLists[playerListName][0]);
-                }
-
-                const string objectListName = SM3DWorldZone.MAP_PREFIX + "ObjectList";
-
-                MainSceneListView.Enabled = true;
-                MainSceneListView.SetRootList(objectListName);
-                MainSceneListView.ListExited += MainSceneListView_ListExited;
-                MainSceneListView.Refresh();
                 SpotlightToolStripProgressBar.Value = 100;
 
-                SpotlightToolStripStatusLabel.Text = $"\"{scene.ToString()}\" has been Loaded successfully.";
+                SpotlightToolStripStatusLabel.Text = $"\"{zone.LevelName}\" has been Loaded successfully.";
             }
         }
 
-        private void SetupScene(SM3DWorldScene scene)
+        public void OpenZone(SM3DWorldZone zone)
+        {
+            SM3DWorldScene scene = new SM3DWorldScene(zone);
+
+            AssignSceneEvents(scene);
+
+            scene.EditZoneIndex = 0;
+
+            //indirectly calls DocumentTabControl1_SelectedTabChanged
+            //which already sets up a lot
+            documentTabControl1.AddTab(new DocumentTabControl.DocumentTab(zone.LevelName, scene), true);
+
+            #region focus on player if it exists
+            const string playerListName = SM3DWorldZone.MAP_PREFIX + "PlayerList";
+
+            if (zone.ObjLists.ContainsKey(playerListName) && zone.ObjLists[playerListName].Count > 0)
+            {
+                scene.GL_Control.CamRotX = 0;
+                scene.GL_Control.CamRotY = HALF_PI / 4;
+                scene.FocusOn(zone.ObjLists[playerListName][0]);
+            }
+            #endregion
+
+            #region setup UI
+            const string objectListName = SM3DWorldZone.MAP_PREFIX + "ObjectList";
+
+            MainSceneListView.Enabled = true;
+            MainSceneListView.SetRootList(objectListName);
+            MainSceneListView.ListExited += MainSceneListView_ListExited;
+            MainSceneListView.Refresh();
+
+            #endregion
+        }
+
+        private void AssignSceneEvents(SM3DWorldScene scene)
         {
             scene.SelectionChanged += Scene_SelectionChanged;
             scene.ListChanged += Scene_ListChanged;
             scene.ListEntered += Scene_ListEntered;
             scene.ObjectsMoved += Scene_ObjectsMoved;
-
-            ObjectUIControl.ClearObjectUIContainers();
-            ObjectUIControl.Refresh();
         }
 
         private void Scene_ListEntered(object sender, ListEventArgs e)
@@ -471,7 +485,7 @@ Would you like to rebuild the database from your 3DW Files?",
             if (currentScene.GetType() != typeof(SM3DWorldScene))
             {
                 currentScene = currentScene.ConvertToOtherSceneType<SM3DWorldScene>();
-                SetupScene(currentScene);
+                AssignSceneEvents(currentScene);
                 LevelGLControlModern.MainDrawable = currentScene;
                 LevelGLControlModern.Refresh();
             }
@@ -482,7 +496,7 @@ Would you like to rebuild the database from your 3DW Files?",
             if (currentScene.GetType() != typeof(LinkEdit3DWScene))
             {
                 currentScene = currentScene.ConvertToOtherSceneType<LinkEdit3DWScene>();
-                SetupScene(currentScene);
+                AssignSceneEvents(currentScene);
                 LevelGLControlModern.MainDrawable = currentScene;
                 LevelGLControlModern.Refresh();
             }
@@ -570,25 +584,9 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             }
         }
 
-        public void LevelZoneTreeView_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            SM3DWorldZone zone = (SM3DWorldZone)e.Node.Tag;
-
-            MainSceneListView.RootLists.Clear();
-
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
-            {
-                MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-
-            MainSceneListView.UpdateComboBoxItems();
-
-            MainSceneListView.SetRootList("ObjectList");
-        }
-
         private void BtnEditIndividual_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not implemented yet");
+            OpenZone((SM3DWorldZone)ZoneListBox.SelectedItem);
         }
 
         private void DocumentTabControl1_SelectedTabChanged(object sender, EventArgs e)
@@ -601,14 +599,59 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
 
             currentScene = (SM3DWorldScene)documentTabControl1.SelectedTab.Tag;
 
+            #region setup UI
+            ObjectUIControl.ClearObjectUIContainers();
+            ObjectUIControl.Refresh();
+
+            MainSceneListView.SelectedItems = currentScene.SelectedObjects;
+            MainSceneListView.Refresh();
+
+            ZoneListBox.BeginUpdate();
+            ZoneListBox.Items.Clear();
+
+            foreach (var item in currentScene.GetZones())
+            {
+                ZoneListBox.Items.Add(item);
+            }
+
+            int prevSel = ZoneListBox.SelectedIndex;
+
+            ZoneListBox.SelectedIndex = currentScene.EditZoneIndex;
+
+            if(prevSel== ZoneListBox.SelectedIndex)
+                ZoneListBox_SelectedIndexChanged(null, null);
+
+            ZoneListBox.EndUpdate();
+
             LevelGLControlModern.Visible = true;
 
             LevelGLControlModern.MainDrawable = currentScene;
+            #endregion
         }
 
         private void DocumentTabControl1_TabClosing(object sender, HandledEventArgs e)
         {
             //TODO: ask to save unsaved changes
+        }
+
+        private void ZoneListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SM3DWorldZone zone = (SM3DWorldZone)ZoneListBox.SelectedItem;
+
+            currentScene.EditZoneIndex = ZoneListBox.SelectedIndex;
+
+            MainSceneListView.RootLists.Clear();
+
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
+            {
+                MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+
+            MainSceneListView.UpdateComboBoxItems();
+
+            MainSceneListView.SetRootList("ObjectList");
+
+            btnEditIndividual.Enabled = ZoneListBox.SelectedIndex > 0;
         }
     }
 }

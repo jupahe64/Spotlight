@@ -33,8 +33,8 @@
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPageZones = new System.Windows.Forms.TabPage();
+            this.ZoneListBox = new System.Windows.Forms.ListBox();
             this.btnEditIndividual = new System.Windows.Forms.Button();
-            this.LevelZoneTreeView = new System.Windows.Forms.TreeView();
             this.tabPageObjects = new System.Windows.Forms.TabPage();
             this.MainSceneListView = new GL_EditorFramework.SceneListView();
             this.lblCurrentObject = new System.Windows.Forms.Label();
@@ -130,8 +130,8 @@
             // 
             // tabPageZones
             // 
+            this.tabPageZones.Controls.Add(this.ZoneListBox);
             this.tabPageZones.Controls.Add(this.btnEditIndividual);
-            this.tabPageZones.Controls.Add(this.LevelZoneTreeView);
             this.tabPageZones.Location = new System.Drawing.Point(4, 22);
             this.tabPageZones.Name = "tabPageZones";
             this.tabPageZones.Padding = new System.Windows.Forms.Padding(3);
@@ -140,10 +140,20 @@
             this.tabPageZones.Text = "Zones";
             this.tabPageZones.UseVisualStyleBackColor = true;
             // 
+            // ZoneListBox
+            // 
+            this.ZoneListBox.FormattingEnabled = true;
+            this.ZoneListBox.Location = new System.Drawing.Point(3, 3);
+            this.ZoneListBox.Name = "ZoneListBox";
+            this.ZoneListBox.Size = new System.Drawing.Size(246, 173);
+            this.ZoneListBox.TabIndex = 3;
+            this.ZoneListBox.SelectedIndexChanged += new System.EventHandler(this.ZoneListBox_SelectedIndexChanged);
+            // 
             // btnEditIndividual
             // 
             this.btnEditIndividual.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnEditIndividual.Enabled = false;
             this.btnEditIndividual.Location = new System.Drawing.Point(3, 190);
             this.btnEditIndividual.Name = "btnEditIndividual";
             this.btnEditIndividual.Size = new System.Drawing.Size(246, 23);
@@ -151,17 +161,6 @@
             this.btnEditIndividual.Text = "Edit Individual";
             this.btnEditIndividual.UseVisualStyleBackColor = true;
             this.btnEditIndividual.Click += new System.EventHandler(this.BtnEditIndividual_Click);
-            // 
-            // LevelZoneTreeView
-            // 
-            this.LevelZoneTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.LevelZoneTreeView.Location = new System.Drawing.Point(3, 3);
-            this.LevelZoneTreeView.Name = "LevelZoneTreeView";
-            this.LevelZoneTreeView.Size = new System.Drawing.Size(246, 184);
-            this.LevelZoneTreeView.TabIndex = 0;
-            this.LevelZoneTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.LevelZoneTreeView_AfterSelect);
             // 
             // tabPageObjects
             // 
@@ -506,9 +505,9 @@
         private System.Windows.Forms.Button btnEditIndividual;
         public GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         public GL_EditorFramework.ObjectUIControl ObjectUIControl;
-        public System.Windows.Forms.TreeView LevelZoneTreeView;
         public GL_EditorFramework.SceneListView MainSceneListView;
         private DocumentTabControl documentTabControl1;
+        private System.Windows.Forms.ListBox ZoneListBox;
     }
 }
 
