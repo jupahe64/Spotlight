@@ -89,9 +89,17 @@ Would you like to generate a new object Database from your 3DW Directory?",
                     switch (DR)
                     {
                         case DialogResult.Yes:
+                            Thread DatabaseGenThread = new Thread(() =>
+                            {
+                                LoadLevelForm LLF = new LoadLevelForm("GenDatabase", "GenDatabase");
+                                LLF.ShowDialog();
+                            });
+                            DatabaseGenThread.Start();
                             ObjectDatabase = new ObjectParameterDatabase();
                             ObjectDatabase.Create(Program.StageDataPath);
                             ObjectDatabase.Save(Program.SOPDPath);
+                            if (DatabaseGenThread.IsAlive)
+                                LoadLevelForm.DoClose = true;
                             Breakout = true;
                             break;
                         case DialogResult.No:
@@ -135,9 +143,17 @@ Would you like to rebuild the database from your 3DW Files?",
                         switch (DR)
                         {
                             case DialogResult.Yes:
+                                Thread DatabaseGenThread = new Thread(() =>
+                                {
+                                    LoadLevelForm LLF = new LoadLevelForm("GenDatabase", "GenDatabase");
+                                    LLF.ShowDialog();
+                                });
+                                DatabaseGenThread.Start();
                                 ObjectDatabase = new ObjectParameterDatabase();
                                 ObjectDatabase.Create(Program.StageDataPath);
                                 ObjectDatabase.Save(Program.SOPDPath);
+                                if (DatabaseGenThread.IsAlive)
+                                    LoadLevelForm.DoClose = true;
                                 Breakout = true;
                                 break;
                             case DialogResult.No:
@@ -425,12 +441,13 @@ Would you like to rebuild the database from your 3DW Files?",
             {
                 Thread LoadingThread = new Thread((n) =>
                 {
-                    LoadLevelForm LLF = new LoadLevelForm(n.ToString());
+                    LoadLevelForm LLF = new LoadLevelForm(n.ToString(), "LoadLevel");
                     LLF.ShowDialog();
                 });
                 LoadingThread.Start(zone.LevelName);
                 OpenZone(zone);
-                LoadingThread.Abort();
+                if (LoadingThread.IsAlive)
+                    LoadingThread.Abort();
                 SpotlightToolStripStatusLabel.Text = $"\"{zone.LevelName}\" has been Loaded successfully.";
 
                 SaveToolStripMenuItem.Enabled = true;
@@ -574,9 +591,17 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 DialogResult DR = MessageBox.Show("The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?","Invalid Database", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
                 if (DR == DialogResult.Yes)
                 {
+                    Thread DatabaseGenThread = new Thread(() =>
+                    {
+                        LoadLevelForm LLF = new LoadLevelForm("GenDatabase", "GenDatabase");
+                        LLF.ShowDialog();
+                    });
+                    DatabaseGenThread.Start();
                     ObjectDatabase = new ObjectParameterDatabase();
                     ObjectDatabase.Create(Program.StageDataPath);
                     ObjectDatabase.Save(Program.SOPDPath);
+                    if (DatabaseGenThread.IsAlive)
+                        LoadLevelForm.DoClose = true;
                 }
                 MessageBox.Show("Database Created", "Operation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;

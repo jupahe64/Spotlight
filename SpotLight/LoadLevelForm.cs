@@ -12,23 +12,38 @@ namespace SpotLight
 {
     public partial class LoadLevelForm : Form
     {
-        public LoadLevelForm(string levelname)
+        public LoadLevelForm(string levelname, string scenario)
         {
             InitializeComponent();
             CenterToParent();
             LevelName = levelname;
+            DoClose = false;
             LevelTimer.Start();
             TalkTimer.Start();
+            CloseTimer.Start();
             rand = new Random((int)StringToHash(LevelName));
+            Scenario = scenario;
+            if (Scenario.Equals("LoadLevel"))
+                Text = LoadLevelMessages[0];
+            else if (Scenario.Equals("GenDatabase"))
+                Text = GenerateDatabaseMessages[0];
         }
         string LevelName;
-        string[] Messages = new string[]
+        string Scenario;
+        string[] LoadLevelMessages = 
         {
             "Loading Level...",
             "Still Loading Level...",
             "Level is still Loading...",
             "The Worldmap takes a while to load don't worry.",
             "This level is taking it's sweet time..."
+        };
+        string[] GenerateDatabaseMessages = new string[]
+        {
+            "Generating Database...",
+            "Please be Patient!",
+            "There are a lot of objects to get through,",
+            "But i'll be done soon!",
         };
         int counter = 0;
         bool reset = false;
@@ -47,8 +62,11 @@ namespace SpotLight
             if (MainProgressBar.Value + MainProgressBar.Step > MainProgressBar.Maximum)
                 reset = true;
 
-            LevelTimer.Interval = rand.Next(1,3)*1000;
-            MainProgressBar.Step = rand.Next(1,10);
+            if (Scenario.Equals("LoadLevel"))
+            {
+                LevelTimer.Interval = rand.Next(1,3)*1000;
+                MainProgressBar.Step = rand.Next(1,10);
+            }
         }
 
         private void Converse(int count)
@@ -75,23 +93,37 @@ namespace SpotLight
                     break;
             }
         }
-
+        public static bool DoClose = false;
         private void TalkTimer_Tick(object sender, EventArgs e)
         {
-            if (counter == 5)
-                Text = Messages[1];
+            switch (Scenario)
+            {
+                case "LoadLevel":
+                    if (counter == 5)
+                        Text = LoadLevelMessages[1];
 
-            if (counter == 10)
-                Text = Messages[2];
+                    if (counter == 10)
+                        Text = LoadLevelMessages[2];
 
-            if (LevelName == "CourseSelectStage" && counter == 15)
-                Text = Messages[3];
-            else if (counter == 15)
-                Text = Messages[4];
+                    if (LevelName == "CourseSelectStage" && counter == 15)
+                        Text = LoadLevelMessages[3];
+                    else if (counter == 15)
+                        Text = LoadLevelMessages[4];
 
-            if (counter >= 20)
-                Converse(counter);
-
+                    if (counter >= 20)
+                        Converse(counter);
+                    break;
+                case "GenDatabase":
+                    if (counter == 5)
+                        Text = GenerateDatabaseMessages[1];
+                    if (counter == 10)
+                        Text = GenerateDatabaseMessages[2];
+                    if (counter == 15)
+                        Text = GenerateDatabaseMessages[3];
+                    if (counter == 30)
+                        Text = GenerateDatabaseMessages[0];
+                    break;
+            }
             counter++;
         }
 
@@ -109,6 +141,18 @@ namespace SpotLight
                 Output += ch;
             }
             return Output;
+        }
+
+        private void CloseTimer_Tick(object sender, EventArgs e)
+        {
+            if (DoClose)
+            {
+                LevelTimer.Stop();
+                TalkTimer.Stop();
+                Text = "Operation Complete!";
+                MainProgressBar.Value = MainProgressBar.Maximum;
+                Close();
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -38,7 +39,7 @@ namespace SpotLight
                 FS.Close();
             }
             DateTime date = File.GetLastWriteTime(Program.SOPDPath);
-            DatabaseInfoLabel.Text = DatabaseInfoLabel.Text.Replace("[DATABASEGENDATE]", date == new DateTime(504910944000000000) ? "N/A (File doesn't exist)" : date.ToLongDateString()).Replace("[VER]", ver);
+            DatabaseInfoLabel.Text = DatabaseInfoLabel.Text.Replace("[DATABASEGENDATE]", date.Year.CompareTo(new DateTime(2018,1,1).Year) < 0 ? "N/A (File doesn't exist)" : date.ToLongDateString()).Replace("[VER]", ver);
 
             ver = "Invalid";
             if (File.Exists(Program.SODDPath))
@@ -56,7 +57,7 @@ namespace SpotLight
             else
                 ClearDescriptionsButton.Enabled = false;
             date = File.GetLastWriteTime(Program.SODDPath);
-            DescriptionInfoLabel.Text = DescriptionInfoLabel.Text.Replace("[DATABASEGENDATE]", date == new DateTime(504910944000000000) ? "N/A (File doesn't exist)" : date.ToLongDateString()).Replace("[VER]", ver);
+            DescriptionInfoLabel.Text = DescriptionInfoLabel.Text.Replace("[DATABASEGENDATE]", date.Year.CompareTo(new DateTime(2018, 1, 1).Year) < 0 ? "N/A (File doesn't exist)" : date.ToLongDateString()).Replace("[VER]", ver);
 
             #endregion
 
@@ -112,9 +113,17 @@ namespace SpotLight
 
         private void RebuildDatabaseButton_Click(object sender, EventArgs e)
         {
+            Thread DatabaseGenThread = new Thread(() =>
+            {
+                LoadLevelForm LLF = new LoadLevelForm("GenDatabase", "GenDatabase");
+                LLF.ShowDialog();
+            });
+            DatabaseGenThread.Start();
             Home.ObjectDatabase = new ObjectParameterDatabase();
             Home.ObjectDatabase.Create(Program.StageDataPath);
             Home.ObjectDatabase.Save(Program.SOPDPath);
+            if (DatabaseGenThread.IsAlive)
+                LoadLevelForm.DoClose = true;
             DatabaseInfoLabel.Text = "Database Last Built on: [DATABASEGENDATE].    Version: [VER]".Replace("[DATABASEGENDATE]", File.GetLastWriteTime(Program.SOPDPath).ToLongDateString()).Replace("[VER]", Home.ObjectDatabase.Version.ToString());
             MessageBox.Show("Database has been rebuilt!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
