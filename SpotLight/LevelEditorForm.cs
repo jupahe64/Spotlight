@@ -447,7 +447,7 @@ Would you like to rebuild the database from your 3DW Files?",
                 LoadingThread.Start(zone.LevelName);
                 OpenZone(zone);
                 if (LoadingThread.IsAlive)
-                    LoadingThread.Abort();
+                    LoadLevelForm.DoClose = true;
                 SpotlightToolStripStatusLabel.Text = $"\"{zone.LevelName}\" has been Loaded successfully.";
 
                 SaveToolStripMenuItem.Enabled = true;
