@@ -368,6 +368,12 @@ namespace SpotLight.EditorDrawables
             if (!ObjectRenderState.ShouldBeDrawn(this))
                 return;
 
+            if(!SpotLight.Properties.Settings.Default.DrawAreas && ClassName.Contains("Area"))
+            {
+                control.SkipPickingColors(1);
+                return;
+            }
+
             bool hovered = editorScene.Hovered == this;
 
             Matrix3 rotMtx = GlobalRotation;
