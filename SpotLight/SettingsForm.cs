@@ -138,6 +138,12 @@ namespace SpotLight
             Properties.Settings.Default.Save();
         }
 
+        private void RenderSkyboxesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DrawSkyBoxes = RenderSkyboxesCheckBox.Checked;
+            Properties.Settings.Default.Save();
+        }
+
         private void PlayerComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.PlayerChoice = PlayerComboBox.SelectedItem.ToString();

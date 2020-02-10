@@ -368,7 +368,8 @@ namespace SpotLight.EditorDrawables
             if (!ObjectRenderState.ShouldBeDrawn(this))
                 return;
 
-            if(!SpotLight.Properties.Settings.Default.DrawAreas && ClassName.Contains("Area"))
+            if((!SpotLight.Properties.Settings.Default.DrawAreas && ClassName.Contains("Area"))||
+               (!SpotLight.Properties.Settings.Default.DrawSkyBoxes && ClassName=="SkyProjection"))
             {
                 control.SkipPickingColors(1);
                 return;

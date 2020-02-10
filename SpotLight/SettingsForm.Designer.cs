@@ -34,13 +34,14 @@
             this.GamePathButton = new System.Windows.Forms.Button();
             this.RebuildDatabaseButton = new System.Windows.Forms.Button();
             this.ObjectParameterGroupBox = new System.Windows.Forms.GroupBox();
-            this.DatabaseInfoLabel = new System.Windows.Forms.Label();
             this.DescriptionInfoLabel = new System.Windows.Forms.Label();
             this.ClearDescriptionsButton = new System.Windows.Forms.Button();
+            this.DatabaseInfoLabel = new System.Windows.Forms.Label();
             this.RenderingGroupBox = new System.Windows.Forms.GroupBox();
-            this.RenderAreaCheckBox = new System.Windows.Forms.CheckBox();
-            this.PlayerComboBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.PlayerComboBox = new System.Windows.Forms.ComboBox();
+            this.RenderAreaCheckBox = new System.Windows.Forms.CheckBox();
+            this.RenderSkyboxesCheckBox = new System.Windows.Forms.CheckBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.SuspendLayout();
@@ -96,15 +97,6 @@
             this.ObjectParameterGroupBox.TabStop = false;
             this.ObjectParameterGroupBox.Text = "Databases";
             // 
-            // DatabaseInfoLabel
-            // 
-            this.DatabaseInfoLabel.AutoSize = true;
-            this.DatabaseInfoLabel.Location = new System.Drawing.Point(120, 24);
-            this.DatabaseInfoLabel.Name = "DatabaseInfoLabel";
-            this.DatabaseInfoLabel.Size = new System.Drawing.Size(319, 13);
-            this.DatabaseInfoLabel.TabIndex = 4;
-            this.DatabaseInfoLabel.Text = "Database Last Built on: [DATABASEGENDATE].    Version: [VER]";
-            // 
             // DescriptionInfoLabel
             // 
             this.DescriptionInfoLabel.AutoSize = true;
@@ -124,8 +116,18 @@
             this.ClearDescriptionsButton.UseVisualStyleBackColor = true;
             this.ClearDescriptionsButton.Click += new System.EventHandler(this.ClearDescriptionsButton_Click);
             // 
+            // DatabaseInfoLabel
+            // 
+            this.DatabaseInfoLabel.AutoSize = true;
+            this.DatabaseInfoLabel.Location = new System.Drawing.Point(120, 24);
+            this.DatabaseInfoLabel.Name = "DatabaseInfoLabel";
+            this.DatabaseInfoLabel.Size = new System.Drawing.Size(319, 13);
+            this.DatabaseInfoLabel.TabIndex = 4;
+            this.DatabaseInfoLabel.Text = "Database Last Built on: [DATABASEGENDATE].    Version: [VER]";
+            // 
             // RenderingGroupBox
             // 
+            this.RenderingGroupBox.Controls.Add(this.RenderSkyboxesCheckBox);
             this.RenderingGroupBox.Controls.Add(this.label1);
             this.RenderingGroupBox.Controls.Add(this.PlayerComboBox);
             this.RenderingGroupBox.Controls.Add(this.RenderAreaCheckBox);
@@ -136,18 +138,14 @@
             this.RenderingGroupBox.TabStop = false;
             this.RenderingGroupBox.Text = "Rendering";
             // 
-            // RenderAreaCheckBox
+            // label1
             // 
-            this.RenderAreaCheckBox.AutoSize = true;
-            this.RenderAreaCheckBox.Checked = true;
-            this.RenderAreaCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.RenderAreaCheckBox.Location = new System.Drawing.Point(6, 19);
-            this.RenderAreaCheckBox.Name = "RenderAreaCheckBox";
-            this.RenderAreaCheckBox.Size = new System.Drawing.Size(91, 17);
-            this.RenderAreaCheckBox.TabIndex = 0;
-            this.RenderAreaCheckBox.Text = "Render Areas";
-            this.RenderAreaCheckBox.UseVisualStyleBackColor = true;
-            this.RenderAreaCheckBox.CheckedChanged += new System.EventHandler(this.RenderAreaCheckBox_CheckedChanged);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 45);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(39, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Player:";
             // 
             // PlayerComboBox
             // 
@@ -165,14 +163,31 @@
             this.PlayerComboBox.TabIndex = 1;
             this.PlayerComboBox.SelectedIndexChanged += new System.EventHandler(this.PlayerComboBox_SelectedIndexChanged);
             // 
-            // label1
+            // RenderAreaCheckBox
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 45);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(39, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Player:";
+            this.RenderAreaCheckBox.AutoSize = true;
+            this.RenderAreaCheckBox.Checked = true;
+            this.RenderAreaCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.RenderAreaCheckBox.Location = new System.Drawing.Point(6, 19);
+            this.RenderAreaCheckBox.Name = "RenderAreaCheckBox";
+            this.RenderAreaCheckBox.Size = new System.Drawing.Size(91, 17);
+            this.RenderAreaCheckBox.TabIndex = 0;
+            this.RenderAreaCheckBox.Text = "Render Areas";
+            this.RenderAreaCheckBox.UseVisualStyleBackColor = true;
+            this.RenderAreaCheckBox.CheckedChanged += new System.EventHandler(this.RenderAreaCheckBox_CheckedChanged);
+            // 
+            // RenderSkyboxesCheckBox
+            // 
+            this.RenderSkyboxesCheckBox.AutoSize = true;
+            this.RenderSkyboxesCheckBox.Checked = true;
+            this.RenderSkyboxesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.RenderSkyboxesCheckBox.Location = new System.Drawing.Point(103, 19);
+            this.RenderSkyboxesCheckBox.Name = "RenderSkyboxesCheckBox";
+            this.RenderSkyboxesCheckBox.Size = new System.Drawing.Size(110, 17);
+            this.RenderSkyboxesCheckBox.TabIndex = 3;
+            this.RenderSkyboxesCheckBox.Text = "Render Skyboxes";
+            this.RenderSkyboxesCheckBox.UseVisualStyleBackColor = true;
+            this.RenderSkyboxesCheckBox.CheckedChanged += new System.EventHandler(this.RenderSkyboxesCheckBox_CheckedChanged);
             // 
             // SettingsForm
             // 
@@ -214,5 +229,6 @@
         private System.Windows.Forms.CheckBox RenderAreaCheckBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox PlayerComboBox;
+        private System.Windows.Forms.CheckBox RenderSkyboxesCheckBox;
     }
 }
