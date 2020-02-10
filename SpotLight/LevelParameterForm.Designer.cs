@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelParameterForm));
             this.ParamMenuStrip = new System.Windows.Forms.MenuStrip();
             this.ChangeLevelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.StageTypeComboBox = new System.Windows.Forms.ComboBox();
             this.InfoLabel1 = new System.Windows.Forms.Label();
             this.StageNameTextBox = new System.Windows.Forms.TextBox();
@@ -57,7 +58,6 @@
             this.HelpToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.DividerBLabel = new System.Windows.Forms.Label();
             this.DividerALabel = new System.Windows.Forms.Label();
-            this.SaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ParamMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.WorldIDNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.LevelIDNumericUpDown)).BeginInit();
@@ -87,6 +87,15 @@
             this.ChangeLevelsToolStripMenuItem.Text = "Change Levels";
             this.ChangeLevelsToolStripMenuItem.ToolTipText = "Change the current Level";
             this.ChangeLevelsToolStripMenuItem.Click += new System.EventHandler(this.ChangeLevelsToolStripMenuItem_Click);
+            // 
+            // SaveToolStripMenuItem
+            // 
+            this.SaveToolStripMenuItem.Enabled = false;
+            this.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
+            this.SaveToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
+            this.SaveToolStripMenuItem.Text = "Save";
+            this.SaveToolStripMenuItem.ToolTipText = "Save Changes";
+            this.SaveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
             // 
             // StageTypeComboBox
             // 
@@ -392,15 +401,6 @@
             this.DividerALabel.Name = "DividerALabel";
             this.DividerALabel.Size = new System.Drawing.Size(280, 2);
             this.DividerALabel.TabIndex = 24;
-            // 
-            // SaveToolStripMenuItem
-            // 
-            this.SaveToolStripMenuItem.Enabled = false;
-            this.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
-            this.SaveToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
-            this.SaveToolStripMenuItem.Text = "Save";
-            this.SaveToolStripMenuItem.ToolTipText = "Save Changes";
-            this.SaveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
             // 
             // LevelParameterForm
             // 

@@ -65,6 +65,7 @@ namespace SpotLight
                 { 6, (StageTypes)14 },
                 { 7, (StageTypes)15 },
                 { 11, (StageTypes)16 },
+                { 17, (StageTypes)17 },
             };
 
         public bool Loading = false, Changed = false;
@@ -89,7 +90,8 @@ namespace SpotLight
             "隠しキノピオの家",
             "隠し土管",
             "通常",
-            "妖精の家"
+            "妖精の家",
+            "DRC専用"
         };
         public enum StageTypes
         {
@@ -109,7 +111,8 @@ namespace SpotLight
             ToadHouseHidden = 2,
             HiddenPipe = 7,
             Normal = 0,
-            FairyStampHouse = 3
+            FairyStampHouse = 3,
+            GamePadRequired = 17
         }
 
         private void ChangeLevelsToolStripMenuItem_Click(object sender, EventArgs e)
