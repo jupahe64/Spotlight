@@ -11,5 +11,8 @@
     <Setting Name="PlayerChoice" Type="System.String" Scope="User">
       <Value Profile="(Default)">Mario</Value>
     </Setting>
+    <Setting Name="DrawAreas" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

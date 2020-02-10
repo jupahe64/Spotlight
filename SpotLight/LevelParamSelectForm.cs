@@ -12,10 +12,14 @@ namespace SpotLight
 {
     public partial class LevelParamSelectForm : Form
     {
-        public LevelParamSelectForm(StageList stagelist)
+        public LevelParamSelectForm(StageList stagelist, bool ShowCourseSelect = false)
         {
             InitializeComponent();
             CenterToScreen();
+            if (ShowCourseSelect)
+            {
+                LevelsListView.Items.Add(new ListViewItem(new string[] { "0", "CourseSelectStage", "0" }));
+            }
             for (int i = 0; i < stagelist.Worlds.Count; i++)
                 for (int j = 0; j < stagelist.Worlds[i].Levels.Count; j++)
                     LevelsListView.Items.Add(new ListViewItem(new string[] { (i+1).ToString(), stagelist.Worlds[i].Levels[j].StageName, stagelist.Worlds[i].Levels[j].CourseID.ToString() }));

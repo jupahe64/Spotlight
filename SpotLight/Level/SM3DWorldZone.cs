@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using SZS;
 using static BYAML.ByamlIterator;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
@@ -41,10 +42,11 @@ namespace SpotLight.Level
         /// Name of the Level File
         /// </summary>
         public string LevelFileName { get; private set; }
+
         /// <summary>
         /// Any extra files that may be inside the map
         /// </summary>
-        Dictionary<string, dynamic>[] extraFiles = new Dictionary<string, dynamic>[]
+        readonly Dictionary<string, dynamic>[] extraFiles = new Dictionary<string, dynamic>[]
         {
             new Dictionary<string, dynamic>(),
             new Dictionary<string, dynamic>(),
@@ -175,7 +177,13 @@ namespace SpotLight.Level
 
             return name + GetPreferredSuffix();
         }
-
+        /// <summary>
+        /// Create a new Super Mario 3D World Zone
+        /// </summary>
+        /// <param name="directory">StageData folder path</param>
+        /// <param name="levelName">Internal name of the level</param>
+        /// <param name="categoryName">File Category. Should be MAP|DESIGN|SOUND</param>
+        /// <param name="levelFileName">Name of the level file (Excludes the path, includes extension)</param>
         private SM3DWorldZone(string directory, string levelName, string categoryName, string levelFileName)
         {
             undoStack = new Stack<IRevertable>();

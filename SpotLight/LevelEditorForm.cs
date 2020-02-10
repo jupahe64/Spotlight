@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
 using SpotLight.ObjectParamDatabase;
 using SpotLight.Level;
+using System.Threading;
 
 namespace SpotLight
 {
@@ -72,7 +73,7 @@ Please select the folder than contains these folders", "Introduction", MessageBo
                 }
             }
 
-            if (!File.Exists("ParameterDatabase.sopd"))
+            if (!File.Exists(Program.SOPDPath))
             {
                 bool Breakout = false;
                 while (!Breakout)
@@ -90,7 +91,7 @@ Would you like to generate a new object Database from your 3DW Directory?",
                         case DialogResult.Yes:
                             ObjectDatabase = new ObjectParameterDatabase();
                             ObjectDatabase.Create(Program.StageDataPath);
-                            ObjectDatabase.Save("ParameterDatabase.sopd");
+                            ObjectDatabase.Save(Program.SOPDPath);
                             Breakout = true;
                             break;
                         case DialogResult.No:
@@ -117,7 +118,7 @@ Would you like to generate a new object Database from your 3DW Directory?",
             }
             else
             {
-                ObjectDatabase = new ObjectParameterDatabase("ParameterDatabase.sopd");
+                ObjectDatabase = new ObjectParameterDatabase(Program.SOPDPath);
                 ObjectParameterDatabase Ver = new ObjectParameterDatabase();
 
                 if (Ver.Version > ObjectDatabase.Version)
@@ -136,7 +137,7 @@ Would you like to rebuild the database from your 3DW Files?",
                             case DialogResult.Yes:
                                 ObjectDatabase = new ObjectParameterDatabase();
                                 ObjectDatabase.Create(Program.StageDataPath);
-                                ObjectDatabase.Save("ParameterDatabase.sopd");
+                                ObjectDatabase.Save(Program.SOPDPath);
                                 Breakout = true;
                                 break;
                             case DialogResult.No:
@@ -321,7 +322,7 @@ Would you like to rebuild the database from your 3DW Files?",
 
         private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SettingsForm SF = new SettingsForm() { Home = this };
+            SettingsForm SF = new SettingsForm(this);
             SF.ShowDialog();
             SpotlightToolStripStatusLabel.Text = "Settings Saved.";
         }
@@ -407,7 +408,7 @@ Would you like to rebuild the database from your 3DW Files?",
         {
             SpotlightToolStripStatusLabel.Text = "Waiting...";
             StageList STGLST = new StageList(Program.GamePath + "\\SystemData\\StageList.szs");
-            LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST);
+            LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST,true);
             LPSF.ShowDialog();
             if (LPSF.levelname == "")
             {
@@ -419,17 +420,30 @@ Would you like to rebuild the database from your 3DW Files?",
 
         private void OpenLevel(string Filename)
         {
-            SpotlightToolStripProgressBar.Value = 0;
-            SpotlightToolStripStatusLabel.Text = "Loading Level...";
+
             if (SM3DWorldZone.TryOpen(Filename, out SM3DWorldZone zone))
             {
-                SpotlightToolStripProgressBar.Value = 50;
-
+                Thread LoadingThread = new Thread((n) =>
+                {
+                    LoadLevelForm LLF = new LoadLevelForm(n.ToString());
+                    LLF.ShowDialog();
+                });
+                LoadingThread.Start(zone.LevelName);
                 OpenZone(zone);
-
-                SpotlightToolStripProgressBar.Value = 100;
-
+                LoadingThread.Abort();
                 SpotlightToolStripStatusLabel.Text = $"\"{zone.LevelName}\" has been Loaded successfully.";
+
+                SaveToolStripMenuItem.Enabled = true;
+                SaveAsToolStripMenuItem.Enabled = true;
+                UndoToolStripMenuItem.Enabled = true;
+                RedoToolStripMenuItem.Enabled = true;
+                AddObjectToolStripMenuItem.Enabled = true;
+                DuplicateToolStripMenuItem.Enabled = true;
+                DeleteToolStripMenuItem.Enabled = true;
+                SelectAllToolStripMenuItem.Enabled = true;
+                DeselectAllToolStripMenuItem.Enabled = true;
+                EditObjectsToolStripMenuItem.Enabled = true;
+                EditLinksToolStripMenuItem.Enabled = true;
             }
         }
 
@@ -562,7 +576,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 {
                     ObjectDatabase = new ObjectParameterDatabase();
                     ObjectDatabase.Create(Program.StageDataPath);
-                    ObjectDatabase.Save("ParameterDatabase.sopd");
+                    ObjectDatabase.Save(Program.SOPDPath);
                 }
                 MessageBox.Show("Database Created", "Operation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;

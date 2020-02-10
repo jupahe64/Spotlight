@@ -384,8 +384,9 @@ namespace SpotLight
                             textures[shapeIndex] = -1;
                         }
                     }
-                    else
-                        textures[shapeIndex] = -2;
+                    //else
+                    //    textures[shapeIndex] = -2;
+                    //Apparently this is unreachable. I (Super Hackio) don't exactly know why...
 
                     switch (mdl.Materials[shape.MaterialIndex].RenderState.FlagsMode)
                     {

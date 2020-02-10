@@ -35,6 +35,8 @@ namespace SpotLight
                 ListViewItem LVI = new ListViewItem(new string[] { Database.ObjectParameters[i].ClassName }) { Group = LVG, Tag = Database.ObjectParameters[i] };
                 ObjectSelectListView.Items.Add(LVI);
             }
+            if (System.IO.File.Exists(Program.SODDPath))
+                ODD = new ObjectDescriptionDatabase(Program.SODDPath);
         }
         public int SelectedIndex => ObjectSelectListView.SelectedIndices[0];
         bool Loading = false;
@@ -67,7 +69,7 @@ namespace SpotLight
                 DialogResult DR = MessageBox.Show("You edited one or more object descriptions\nWould you like to save?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                 if (DR == DialogResult.Yes)
                 {
-                    //Save Database
+                    ODD.Save(Program.SODDPath);
                 }
                 else if (DR == DialogResult.Cancel)
                     e.Cancel = true;

@@ -45,5 +45,9 @@ namespace SpotLight
         /// Returns the StageData path
         /// </summary>
         public static string StageDataPath => Properties.Settings.Default.GamePath + "\\StageData\\";
+
+
+        public static string SOPDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ParameterDatabase.sopd");
+        public static string SODDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DescriptionDatabase.sodd");
     }
 }

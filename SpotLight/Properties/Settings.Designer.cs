@@ -58,5 +58,17 @@ namespace SpotLight.Properties {
                 this["PlayerChoice"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DrawAreas {
+            get {
+                return ((bool)(this["DrawAreas"]));
+            }
+            set {
+                this["DrawAreas"] = value;
+            }
+        }
     }
 }

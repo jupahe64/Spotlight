@@ -1,5 +1,6 @@
 ﻿using SpotLight.EditorDrawables;
 using SpotLight.Level;
+using SpotLight.ObjectParamDatabase;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,7 +54,7 @@ namespace SpotLight.ObjectParamDatabase
     {
         public Version Version = LatestVersion;
         public List<Parameter> ObjectParameters = new List<Parameter>();
-        public static Version LatestVersion { get; } = new Version(1, 4);
+        public static Version LatestVersion { get; } = new Version(1, 5);
 
         /// <summary>
         /// Create an empty Object Parameters File
@@ -693,13 +694,72 @@ namespace SpotLight.ObjectParamDatabase
     }
 }
 
+/* File Format .sodd
+ * ----------------------------------------------
+ * Header - Spotlight Object Description Database
+ * Magic - SODD (0x04)
+ * Version Major (0x01)
+ * Version Minor (0x01)
+ * Spotlight Version Major (0x01)
+ * Spotlight Version Minor (0x01)
+ * ---------------------------------------------- End of Header (0x08)
+ * Strings - Contains descriptions
+ * ==Pattern==
+ * Object Name
+ * Description
+ * repeat ^
+ */
 namespace Spotlight.ObjectDescDatabase
 {
     public class ObjectDescriptionDatabase
     {
         public Version Version = LatestVersion;
         private List<Description> ObjectDescriptions = new List<Description>();
-        public static Version LatestVersion { get; } = new Version(1, 4);
+        public static Version LatestVersion { get; } = new Version(1, 0);
+
+        public ObjectDescriptionDatabase()
+        {
+            //nothing lol
+        }
+        public ObjectDescriptionDatabase(string Filename)
+        {
+            FileStream FS = new FileStream(Filename, FileMode.Open);
+            byte[] Read = new byte[4];
+            FS.Read(Read, 0, 4);
+            if (Encoding.ASCII.GetString(Read) != "SODD")
+                throw new Exception("Invalid Database File");
+
+            Version Check = new Version(FS.ReadByte(), FS.ReadByte());
+
+            if (Check < Version)
+            {
+                FS.Close();
+                Version = Check;
+                return;
+            }
+            FS.ReadByte();
+            FS.ReadByte();
+
+            while (FS.Position < FS.Length)
+                ObjectDescriptions.Add(new Description() { ObjectName = FS.ReadString(), Text = FS.ReadString() });
+        }
+
+        public void Save(string Filename)
+        {
+            FileStream FS = new FileStream(Filename, FileMode.Create);
+            FS.Write(new byte[8] { (byte)'S', (byte)'O', (byte)'D', (byte)'D', (byte)Version.Major, (byte)Version.Minor, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Minor }, 0, 8);
+            for (int i = 0; i < ObjectDescriptions.Count; i++)
+            {
+                byte[] write = Encoding.GetEncoding(932).GetBytes(ObjectDescriptions[i].ObjectName);
+                FS.Write(write,0,write.Length);
+                FS.WriteByte(0x00);
+
+                write = Encoding.GetEncoding(932).GetBytes(ObjectDescriptions[i].Text);
+                FS.Write(write, 0, write.Length);
+                FS.WriteByte(0x00);
+            }
+            FS.Close();
+        }
 
         public Description GetDescription(string ObjectName)
         {
@@ -715,8 +775,17 @@ namespace Spotlight.ObjectDescDatabase
             if (found.Count == 0)
                 ObjectDescriptions.Add(new Description() { ObjectName = ObjectName, Text = Description });
             else
-                found[0].Text = Description;
+            {
+                if (Description.Length == 0)
+                    ObjectDescriptions.Remove(found[0]);
+                else
+                    found[0].Text = Description;
+            }
         }
+        /// <summary>
+        /// Clears all the Object descriptions from the database. Doesn't check to make sure the user actually wanted this though
+        /// </summary>
+        public void Clear() => ObjectDescriptions.Clear();
     }
 
     public class Description
