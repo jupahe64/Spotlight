@@ -29,7 +29,7 @@ namespace SpotLight
         public LevelEditorForm()
         {
             InitializeComponent();
-            tabControl1.SelectedTab = tabPageObjects;
+            MainTabControl.SelectedTab = ObjectsTabPage;
             LevelGLControlModern.CameraDistance = 20;
 
             MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
@@ -239,7 +239,7 @@ Would you like to rebuild the database from your 3DW Files?",
         {
             if (currentScene.SelectedObjects.Count > 1)
             {
-                lblCurrentObject.Text = "Multiple objects selected";
+                CurrentObjectLabel.Text = "Multiple objects selected";
                 string SelectedObjects = "";
                 string previousobject = "";
                 int multi = 1;
@@ -274,10 +274,10 @@ Would you like to rebuild the database from your 3DW Files?",
                 SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
             }
             else if (currentScene.SelectedObjects.Count == 0)
-                lblCurrentObject.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected.";
+                CurrentObjectLabel.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected.";
             else
             {
-                lblCurrentObject.Text = currentScene.SelectedObjects.First().ToString() + " selected";
+                CurrentObjectLabel.Text = currentScene.SelectedObjects.First().ToString() + " selected";
                 SpotlightToolStripStatusLabel.Text = $"Selected \"{currentScene.SelectedObjects.First().ToString()}\".";
             }
             MainSceneListView.Refresh();
@@ -287,6 +287,8 @@ Would you like to rebuild the database from your 3DW Files?",
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
+            if (currentScene == null || currentScene.SelectedObjects.Count == 0)
+                return;
             General3dWorldObject obj = (currentScene.SelectedObjects.First() as General3dWorldObject);
             Rail rail = (currentScene.SelectedObjects.First() as Rail);
             Debugger.Break();
@@ -450,17 +452,7 @@ Would you like to rebuild the database from your 3DW Files?",
                     LoadLevelForm.DoClose = true;
                 SpotlightToolStripStatusLabel.Text = $"\"{zone.LevelName}\" has been Loaded successfully.";
 
-                SaveToolStripMenuItem.Enabled = true;
-                SaveAsToolStripMenuItem.Enabled = true;
-                UndoToolStripMenuItem.Enabled = true;
-                RedoToolStripMenuItem.Enabled = true;
-                AddObjectToolStripMenuItem.Enabled = true;
-                DuplicateToolStripMenuItem.Enabled = true;
-                DeleteToolStripMenuItem.Enabled = true;
-                SelectAllToolStripMenuItem.Enabled = true;
-                DeselectAllToolStripMenuItem.Enabled = true;
-                EditObjectsToolStripMenuItem.Enabled = true;
-                EditLinksToolStripMenuItem.Enabled = true;
+                SetAppStatus(true);
             }
         }
 
@@ -474,7 +466,7 @@ Would you like to rebuild the database from your 3DW Files?",
 
             //indirectly calls DocumentTabControl1_SelectedTabChanged
             //which already sets up a lot
-            documentTabControl1.AddTab(new DocumentTabControl.DocumentTab(zone.LevelName, scene), true);
+            ZoneDocumentTabControl.AddTab(new DocumentTabControl.DocumentTab(zone.LevelName, scene), true);
 
             #region focus on player if it exists
             const string playerListName = SM3DWorldZone.MAP_PREFIX + "PlayerList";
@@ -639,20 +631,20 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             Link
         }
 
-        private void BtnEditIndividual_Click(object sender, EventArgs e)
+        private void EditIndividualButton_Click(object sender, EventArgs e)
         {
             OpenZone((SM3DWorldZone)ZoneListBox.SelectedItem);
         }
 
-        private void DocumentTabControl1_SelectedTabChanged(object sender, EventArgs e)
+        private void ZoneDocumentTabControl_SelectedTabChanged(object sender, EventArgs e)
         {
-            if (documentTabControl1.SelectedTab == null)
+            if (ZoneDocumentTabControl.SelectedTab == null)
             {
                 LevelGLControlModern.Visible = false;
                 return;
             }
 
-            currentScene = (SM3DWorldScene)documentTabControl1.SelectedTab.Tag;
+            currentScene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Tag;
 
             #region setup UI
             ObjectUIControl.ClearObjectUIContainers();
@@ -684,9 +676,19 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             #endregion
         }
 
-        private void DocumentTabControl1_TabClosing(object sender, HandledEventArgs e)
+        private void ZoneDocumentTabControl_TabClosing(object sender, HandledEventArgs e)
         {
             //TODO: ask to save unsaved changes
+            if (ZoneDocumentTabControl.Tabs.Count == 1)
+            {
+                ZoneListBox.Items.Clear();
+                MainSceneListView.CurrentList.Clear();
+                MainSceneListView.RootLists.Clear();
+                SetAppStatus(false);
+                string levelname = currentScene.EditZone.LevelName;
+                currentScene = null;
+                SpotlightToolStripStatusLabel.Text = $"{levelname} was closed.";
+            }
         }
 
         private void ZoneListBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -706,7 +708,29 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
 
             MainSceneListView.SetRootList("ObjectList");
 
-            btnEditIndividual.Enabled = ZoneListBox.SelectedIndex > 0;
+            EditIndividualButton.Enabled = ZoneListBox.SelectedIndex > 0;
+        }
+
+        /// <summary>
+        /// Sets the status of the application. This changes the Enabled property of controls that need it.
+        /// </summary>
+        /// <param name="Trigger">The state to set the Enabled property to</param>
+        private void SetAppStatus(bool Trigger)
+        {
+            SaveToolStripMenuItem.Enabled = Trigger;
+            SaveAsToolStripMenuItem.Enabled = Trigger;
+            UndoToolStripMenuItem.Enabled = Trigger;
+            RedoToolStripMenuItem.Enabled = Trigger;
+            AddObjectToolStripMenuItem.Enabled = Trigger;
+            DuplicateToolStripMenuItem.Enabled = Trigger;
+            DeleteToolStripMenuItem.Enabled = Trigger;
+            SelectAllToolStripMenuItem.Enabled = Trigger;
+            DeselectAllToolStripMenuItem.Enabled = Trigger;
+            ModeToolStripMenuItem.Enabled = Trigger;
+            EditObjectsToolStripMenuItem.Enabled = Trigger;
+            EditLinksToolStripMenuItem.Enabled = Trigger;
+            EditIndividualButton.Enabled = Trigger;
+            MainSceneListView.Enabled = Trigger;
         }
     }
 }

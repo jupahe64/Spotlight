@@ -31,15 +31,15 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelEditorForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPageZones = new System.Windows.Forms.TabPage();
+            this.MainTabControl = new System.Windows.Forms.TabControl();
+            this.ZonesTabPage = new System.Windows.Forms.TabPage();
             this.ZoneListBox = new System.Windows.Forms.ListBox();
-            this.btnEditIndividual = new System.Windows.Forms.Button();
-            this.tabPageObjects = new System.Windows.Forms.TabPage();
+            this.EditIndividualButton = new System.Windows.Forms.Button();
+            this.ObjectsTabPage = new System.Windows.Forms.TabPage();
             this.MainSceneListView = new GL_EditorFramework.SceneListView();
-            this.lblCurrentObject = new System.Windows.Forms.Label();
+            this.CurrentObjectLabel = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
-            this.documentTabControl1 = new SpotLight.DocumentTabControl();
+            this.ZoneDocumentTabControl = new SpotLight.DocumentTabControl();
             this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -71,10 +71,10 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.tabControl1.SuspendLayout();
-            this.tabPageZones.SuspendLayout();
-            this.tabPageObjects.SuspendLayout();
-            this.documentTabControl1.SuspendLayout();
+            this.MainTabControl.SuspendLayout();
+            this.ZonesTabPage.SuspendLayout();
+            this.ObjectsTabPage.SuspendLayout();
+            this.ZoneDocumentTabControl.SuspendLayout();
             this.SpotlightMenuStrip.SuspendLayout();
             this.SpotlightStatusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -91,7 +91,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.documentTabControl1);
+            this.splitContainer1.Panel2.Controls.Add(this.ZoneDocumentTabControl);
             this.splitContainer1.Size = new System.Drawing.Size(784, 515);
             this.splitContainer1.SplitterDistance = 260;
             this.splitContainer1.TabIndex = 2;
@@ -105,39 +105,39 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.tabControl1);
+            this.splitContainer2.Panel1.Controls.Add(this.MainTabControl);
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.lblCurrentObject);
+            this.splitContainer2.Panel2.Controls.Add(this.CurrentObjectLabel);
             this.splitContainer2.Panel2.Controls.Add(this.ObjectUIControl);
             this.splitContainer2.Panel2.Click += new System.EventHandler(this.SplitContainer2_Panel2_Click);
             this.splitContainer2.Size = new System.Drawing.Size(260, 515);
             this.splitContainer2.SplitterDistance = 245;
             this.splitContainer2.TabIndex = 1;
             // 
-            // tabControl1
+            // MainTabControl
             // 
-            this.tabControl1.Controls.Add(this.tabPageZones);
-            this.tabControl1.Controls.Add(this.tabPageObjects);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(260, 245);
-            this.tabControl1.TabIndex = 1;
+            this.MainTabControl.Controls.Add(this.ZonesTabPage);
+            this.MainTabControl.Controls.Add(this.ObjectsTabPage);
+            this.MainTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainTabControl.Location = new System.Drawing.Point(0, 0);
+            this.MainTabControl.Name = "MainTabControl";
+            this.MainTabControl.SelectedIndex = 0;
+            this.MainTabControl.Size = new System.Drawing.Size(260, 245);
+            this.MainTabControl.TabIndex = 1;
             // 
-            // tabPageZones
+            // ZonesTabPage
             // 
-            this.tabPageZones.Controls.Add(this.ZoneListBox);
-            this.tabPageZones.Controls.Add(this.btnEditIndividual);
-            this.tabPageZones.Location = new System.Drawing.Point(4, 22);
-            this.tabPageZones.Name = "tabPageZones";
-            this.tabPageZones.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageZones.Size = new System.Drawing.Size(252, 219);
-            this.tabPageZones.TabIndex = 0;
-            this.tabPageZones.Text = "Zones";
-            this.tabPageZones.UseVisualStyleBackColor = true;
+            this.ZonesTabPage.Controls.Add(this.ZoneListBox);
+            this.ZonesTabPage.Controls.Add(this.EditIndividualButton);
+            this.ZonesTabPage.Location = new System.Drawing.Point(4, 22);
+            this.ZonesTabPage.Name = "ZonesTabPage";
+            this.ZonesTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.ZonesTabPage.Size = new System.Drawing.Size(252, 219);
+            this.ZonesTabPage.TabIndex = 0;
+            this.ZonesTabPage.Text = "Zones";
+            this.ZonesTabPage.UseVisualStyleBackColor = true;
             // 
             // ZoneListBox
             // 
@@ -149,28 +149,28 @@
             this.ZoneListBox.TabIndex = 3;
             this.ZoneListBox.SelectedIndexChanged += new System.EventHandler(this.ZoneListBox_SelectedIndexChanged);
             // 
-            // btnEditIndividual
+            // EditIndividualButton
             // 
-            this.btnEditIndividual.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnEditIndividual.Enabled = false;
-            this.btnEditIndividual.Location = new System.Drawing.Point(3, 193);
-            this.btnEditIndividual.Name = "btnEditIndividual";
-            this.btnEditIndividual.Size = new System.Drawing.Size(246, 23);
-            this.btnEditIndividual.TabIndex = 1;
-            this.btnEditIndividual.Text = "Edit Individual";
-            this.btnEditIndividual.UseVisualStyleBackColor = true;
-            this.btnEditIndividual.Click += new System.EventHandler(this.BtnEditIndividual_Click);
+            this.EditIndividualButton.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.EditIndividualButton.Enabled = false;
+            this.EditIndividualButton.Location = new System.Drawing.Point(3, 193);
+            this.EditIndividualButton.Name = "EditIndividualButton";
+            this.EditIndividualButton.Size = new System.Drawing.Size(246, 23);
+            this.EditIndividualButton.TabIndex = 1;
+            this.EditIndividualButton.Text = "Edit Individual";
+            this.EditIndividualButton.UseVisualStyleBackColor = true;
+            this.EditIndividualButton.Click += new System.EventHandler(this.EditIndividualButton_Click);
             // 
-            // tabPageObjects
+            // ObjectsTabPage
             // 
-            this.tabPageObjects.Controls.Add(this.MainSceneListView);
-            this.tabPageObjects.Location = new System.Drawing.Point(4, 22);
-            this.tabPageObjects.Name = "tabPageObjects";
-            this.tabPageObjects.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageObjects.Size = new System.Drawing.Size(252, 219);
-            this.tabPageObjects.TabIndex = 1;
-            this.tabPageObjects.Text = "Objects";
-            this.tabPageObjects.UseVisualStyleBackColor = true;
+            this.ObjectsTabPage.Controls.Add(this.MainSceneListView);
+            this.ObjectsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.ObjectsTabPage.Name = "ObjectsTabPage";
+            this.ObjectsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.ObjectsTabPage.Size = new System.Drawing.Size(252, 219);
+            this.ObjectsTabPage.TabIndex = 1;
+            this.ObjectsTabPage.Text = "Objects";
+            this.ObjectsTabPage.UseVisualStyleBackColor = true;
             // 
             // MainSceneListView
             // 
@@ -183,14 +183,14 @@
             this.MainSceneListView.TabIndex = 1;
             this.MainSceneListView.ItemDoubleClicked += new GL_EditorFramework.ItemDoubleClickedEventHandler(this.MainSceneListView_ItemDoubleClicked);
             // 
-            // lblCurrentObject
+            // CurrentObjectLabel
             // 
-            this.lblCurrentObject.AutoSize = true;
-            this.lblCurrentObject.Location = new System.Drawing.Point(12, 0);
-            this.lblCurrentObject.Name = "lblCurrentObject";
-            this.lblCurrentObject.Size = new System.Drawing.Size(87, 13);
-            this.lblCurrentObject.TabIndex = 0;
-            this.lblCurrentObject.Text = "Nothing selected";
+            this.CurrentObjectLabel.AutoSize = true;
+            this.CurrentObjectLabel.Location = new System.Drawing.Point(12, 0);
+            this.CurrentObjectLabel.Name = "CurrentObjectLabel";
+            this.CurrentObjectLabel.Size = new System.Drawing.Size(87, 13);
+            this.CurrentObjectLabel.TabIndex = 0;
+            this.CurrentObjectLabel.Text = "Nothing selected";
             // 
             // ObjectUIControl
             // 
@@ -204,16 +204,16 @@
             this.ObjectUIControl.Size = new System.Drawing.Size(254, 245);
             this.ObjectUIControl.TabIndex = 1;
             // 
-            // documentTabControl1
+            // ZoneDocumentTabControl
             // 
-            this.documentTabControl1.Controls.Add(this.LevelGLControlModern);
-            this.documentTabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.documentTabControl1.Location = new System.Drawing.Point(0, 0);
-            this.documentTabControl1.Name = "documentTabControl1";
-            this.documentTabControl1.Size = new System.Drawing.Size(520, 515);
-            this.documentTabControl1.TabIndex = 1;
-            this.documentTabControl1.SelectedTabChanged += new System.EventHandler(this.DocumentTabControl1_SelectedTabChanged);
-            this.documentTabControl1.TabClosing += new System.ComponentModel.HandledEventHandler(this.DocumentTabControl1_TabClosing);
+            this.ZoneDocumentTabControl.Controls.Add(this.LevelGLControlModern);
+            this.ZoneDocumentTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ZoneDocumentTabControl.Location = new System.Drawing.Point(0, 0);
+            this.ZoneDocumentTabControl.Name = "ZoneDocumentTabControl";
+            this.ZoneDocumentTabControl.Size = new System.Drawing.Size(520, 515);
+            this.ZoneDocumentTabControl.TabIndex = 1;
+            this.ZoneDocumentTabControl.SelectedTabChanged += new System.EventHandler(this.ZoneDocumentTabControl_SelectedTabChanged);
+            this.ZoneDocumentTabControl.TabClosing += new System.ComponentModel.HandledEventHandler(this.ZoneDocumentTabControl_TabClosing);
             // 
             // LevelGLControlModern
             // 
@@ -463,10 +463,10 @@
             this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
-            this.tabControl1.ResumeLayout(false);
-            this.tabPageZones.ResumeLayout(false);
-            this.tabPageObjects.ResumeLayout(false);
-            this.documentTabControl1.ResumeLayout(false);
+            this.MainTabControl.ResumeLayout(false);
+            this.ZonesTabPage.ResumeLayout(false);
+            this.ObjectsTabPage.ResumeLayout(false);
+            this.ZoneDocumentTabControl.ResumeLayout(false);
             this.SpotlightMenuStrip.ResumeLayout(false);
             this.SpotlightMenuStrip.PerformLayout();
             this.SpotlightStatusStrip.ResumeLayout(false);
@@ -479,7 +479,7 @@
         #endregion
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.Label lblCurrentObject;
+        private System.Windows.Forms.Label CurrentObjectLabel;
         private System.Windows.Forms.MenuStrip SpotlightMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem FileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OpenToolStripMenuItem;
@@ -502,14 +502,14 @@
         private System.Windows.Forms.ToolStripMenuItem SelectAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DeselectAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AddObjectToolStripMenuItem;
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPageZones;
-        private System.Windows.Forms.TabPage tabPageObjects;
-        private System.Windows.Forms.Button btnEditIndividual;
+        private System.Windows.Forms.TabControl MainTabControl;
+        private System.Windows.Forms.TabPage ZonesTabPage;
+        private System.Windows.Forms.TabPage ObjectsTabPage;
+        private System.Windows.Forms.Button EditIndividualButton;
         public GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         public GL_EditorFramework.ObjectUIControl ObjectUIControl;
         public GL_EditorFramework.SceneListView MainSceneListView;
-        private DocumentTabControl documentTabControl1;
+        private DocumentTabControl ZoneDocumentTabControl;
         private System.Windows.Forms.ListBox ZoneListBox;
     }
 }
