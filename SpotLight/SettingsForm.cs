@@ -62,6 +62,7 @@ namespace SpotLight
             #endregion
 
             RenderAreaCheckBox.Checked = Properties.Settings.Default.DrawAreas;
+            RenderSkyboxesCheckBox.Checked = Properties.Settings.Default.DrawSkyBoxes;
             PlayerComboBox.SelectedIndex = PlayerComboBox.FindStringExact(Properties.Settings.Default.PlayerChoice);
         }
 
@@ -145,12 +146,14 @@ namespace SpotLight
         {
             Properties.Settings.Default.DrawAreas = RenderAreaCheckBox.Checked;
             Properties.Settings.Default.Save();
+            Home.LevelGLControlModern.Refresh();
         }
 
         private void RenderSkyboxesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.DrawSkyBoxes = RenderSkyboxesCheckBox.Checked;
             Properties.Settings.Default.Save();
+            Home.LevelGLControlModern.Refresh();
         }
 
         private void PlayerComboBox_SelectedIndexChanged(object sender, EventArgs e)
