@@ -27,7 +27,8 @@ namespace SpotLight.EditorDrawables
     public class General3dWorldObject : TransformableObject, I3dWorldObject
     {
         public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
-        public new static Vector4 hoverColor = new Vector4(1,1,1, 0.125f);
+        public new static Vector4 hoverSelectColor = new Vector4(EditableObject.hoverSelectColor.Xyz, 0.5f);
+        public new static Vector4 hoverColor = new Vector4(EditableObject.hoverColor.Xyz, 0.125f);
 
         protected static Vector4 LinkColor = new Vector4(0f, 1f, 1f, 1f);
         
@@ -383,6 +384,8 @@ namespace SpotLight.EditorDrawables
 
             if (SceneDrawState.HighlightColorOverride.HasValue)
                 highlightColor = SceneDrawState.HighlightColorOverride.Value;
+            else if (Selected && hovered)
+                highlightColor = hoverSelectColor;
             else if (Selected)
                 highlightColor = selectColor;
             else if (hovered)
