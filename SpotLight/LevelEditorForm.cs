@@ -34,6 +34,7 @@ namespace SpotLight
 
             MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
             MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
+            MainSceneListView.ListExited += MainSceneListView_ListExited;
 
             LevelGLControlModern.Visible = false;
 
@@ -456,6 +457,8 @@ Would you like to rebuild the database from your 3DW Files?",
             }
         }
 
+        const string objectListName = SM3DWorldZone.MAP_PREFIX + "ObjectList";
+
         public void OpenZone(SM3DWorldZone zone)
         {
             SM3DWorldScene scene = new SM3DWorldScene(zone);
@@ -480,11 +483,8 @@ Would you like to rebuild the database from your 3DW Files?",
             #endregion
 
             #region setup UI
-            const string objectListName = SM3DWorldZone.MAP_PREFIX + "ObjectList";
-
             MainSceneListView.Enabled = true;
             MainSceneListView.SetRootList(objectListName);
-            MainSceneListView.ListExited += MainSceneListView_ListExited;
             MainSceneListView.Refresh();
 
             #endregion
@@ -496,6 +496,20 @@ Would you like to rebuild the database from your 3DW Files?",
             scene.ListChanged += Scene_ListChanged;
             scene.ListEntered += Scene_ListEntered;
             scene.ObjectsMoved += Scene_ObjectsMoved;
+            scene.ZonePlacementsChanged += Scene_ZonePlacementsChanged;
+            scene.Reverted += Scene_Reverted;
+        }
+
+        private void Scene_Reverted(object sender, RevertedEventArgs e)
+        {
+            UpdateZoneList();
+            MainSceneListView.Refresh();
+            currentScene.SetupObjectUIControl(ObjectUIControl);
+        }
+
+        private void Scene_ZonePlacementsChanged(object sender, EventArgs e)
+        {
+            UpdateZoneList();
         }
 
         private void Scene_ListEntered(object sender, ListEventArgs e)
@@ -653,6 +667,16 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             MainSceneListView.SelectedItems = currentScene.SelectedObjects;
             MainSceneListView.Refresh();
 
+            UpdateZoneList();
+
+            LevelGLControlModern.Visible = true;
+
+            LevelGLControlModern.MainDrawable = currentScene;
+            #endregion
+        }
+
+        private void UpdateZoneList()
+        {
             ZoneListBox.BeginUpdate();
             ZoneListBox.Items.Clear();
 
@@ -669,11 +693,6 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 ZoneListBox_SelectedIndexChanged(null, null);
 
             ZoneListBox.EndUpdate();
-
-            LevelGLControlModern.Visible = true;
-
-            LevelGLControlModern.MainDrawable = currentScene;
-            #endregion
         }
 
         private void ZoneDocumentTabControl_TabClosing(object sender, HandledEventArgs e)
@@ -699,14 +718,20 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
 
             MainSceneListView.RootLists.Clear();
 
-            foreach (KeyValuePair<string, Level.ObjectList> keyValuePair in zone.ObjLists)
+            if (ZoneListBox.SelectedIndex == 0) //main zone selected
+                MainSceneListView.RootLists.Add("Zones", currentScene.ZonePlacements);
+
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
             {
                 MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
             }
 
             MainSceneListView.UpdateComboBoxItems();
+            currentScene.SetupObjectUIControl(ObjectUIControl);
+            LevelGLControlModern.Refresh();
 
-            MainSceneListView.SetRootList("ObjectList");
+            MainSceneListView.SetRootList(objectListName);
+            MainSceneListView.Refresh();
 
             EditIndividualButton.Enabled = ZoneListBox.SelectedIndex > 0;
         }

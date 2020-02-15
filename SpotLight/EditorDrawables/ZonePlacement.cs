@@ -54,10 +54,14 @@ namespace SpotLight.EditorDrawables
             if (!Visible)
                 return;
 
-            if (Selected)
+            if (Selected && editorScene.Hovered == this)
+                SceneDrawState.HighlightColorOverride = General3dWorldObject.hoverSelectColor;
+            else if (Selected)
                 SceneDrawState.HighlightColorOverride = General3dWorldObject.selectColor;
-            else if(editorScene.Hovered==this)
+            else if (editorScene.Hovered == this)
                 SceneDrawState.HighlightColorOverride = General3dWorldObject.hoverColor;
+            else
+                SceneDrawState.HighlightColorOverride = Vector4.Zero;
 
             Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
 

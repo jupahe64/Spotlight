@@ -46,6 +46,8 @@ namespace SpotLight.EditorDrawables
             }
             else if (SelectedConnection != null)
             {
+                SceneDrawState.ZoneTransform = EditZoneTransform;
+
                 //Check if mouse is on the Dest Point
                 Point linkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint(this));
                 Point nextToLinkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint(this) + control.InvertedRotationMatrix.Row0 * 0.25f);
@@ -425,6 +427,10 @@ namespace SpotLight.EditorDrawables
                         Vector3 sourcePoint = (scene.linkDragMode == LinkDragMode.Source) ? hoveredObjPoint : sourceObjPoint;
                         Vector3 destPoint = (scene.linkDragMode == LinkDragMode.Dest) ? hoveredObjPoint : destObjPoint;
 
+                        bool isInvalidConnection = (scene.linkDragMode != LinkDragMode.None) && (scene.Hovered3dObject == null || 
+                            (scene.linkDragMode == LinkDragMode.Source && scene.Hovered3dObject == scene.SelectedConnection.Dest) || 
+                            (scene.linkDragMode == LinkDragMode.Dest && scene.Hovered3dObject == scene.SelectedConnection.Source));
+
                         GL.DepthFunc(DepthFunction.Always);
 
                         GL.LineWidth(6);
@@ -436,15 +442,15 @@ namespace SpotLight.EditorDrawables
 
                         GL.LineWidth(3);
                         GL.Begin(PrimitiveType.Lines);
-                        GL.VertexAttrib4(1, new Vector4(0, 1, 0, 1));
+                        GL.VertexAttrib4(1, isInvalidConnection ? new Vector4(0.5f, 0.5f, 0.5f, 1) : new Vector4(0, 1, 0, 1));
                         GL.Vertex3(sourcePoint);
-                        GL.VertexAttrib4(1, new Vector4(1, 0, 0, 1));
+                        GL.VertexAttrib4(1, isInvalidConnection ? new Vector4(0.5f, 0.5f, 0.5f, 1) : new Vector4(1, 0, 0, 1));
                         GL.Vertex3(destPoint);
                         GL.End();
 
                         control.UpdateModelMatrix(new Matrix4(control.InvertedRotationMatrix) * Matrix4.CreateTranslation(sourcePoint));
                         GL.Begin(PrimitiveType.Quads);
-                        GL.VertexAttrib4(1, new Vector4(0, 1, 0, 1));
+                        GL.VertexAttrib4(1, isInvalidConnection ? new Vector4(0.5f, 0.5f, 0.5f, 1) : new Vector4(0, 1, 0, 1));
 
                         GL.VertexAttrib2(2, new Vector2(-1, -1));
                         GL.Vertex3(-0.25f, -0.25f, 0);
@@ -458,7 +464,7 @@ namespace SpotLight.EditorDrawables
 
                         control.UpdateModelMatrix(new Matrix4(control.InvertedRotationMatrix) * Matrix4.CreateTranslation(destPoint));
                         GL.Begin(PrimitiveType.Quads);
-                        GL.VertexAttrib4(1, new Vector4(1, 0, 0, 1));
+                        GL.VertexAttrib4(1, isInvalidConnection ? new Vector4(0.5f, 0.5f, 0.5f, 1) : new Vector4(1, 0, 0, 1));
 
                         GL.VertexAttrib2(2, new Vector2(-1, -1));
                         GL.Vertex3(-0.25f, -0.25f, 0);
