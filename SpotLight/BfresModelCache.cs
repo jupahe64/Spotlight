@@ -138,11 +138,11 @@ namespace SpotLight
             double delta = Math.PI * 2 / v;
 
             int i = 0;
-            
+
             for (int edgeIndex = 0; edgeIndex < v; edgeIndex++)
             {
-                float x  = (float)Math.Sin(Math.PI * 2 * edgeIndex / v) * r;
-                float z  = (float)Math.Cos(Math.PI * 2 * edgeIndex / v) * r;
+                float x = (float)Math.Sin(Math.PI * 2 * edgeIndex / v) * r;
+                float z = (float)Math.Cos(Math.PI * 2 * edgeIndex / v) * r;
 
                 //top
                 data[i++] = x;
@@ -155,18 +155,18 @@ namespace SpotLight
                 data[i++] = z;
 
                 //top
-                indices.Add( 2 * edgeIndex);
+                indices.Add(2 * edgeIndex);
                 indices.Add((2 * edgeIndex + 2) % (v * 2));
 
                 //bottom
-                indices.Add( 2 * edgeIndex + 1);
+                indices.Add(2 * edgeIndex + 1);
                 indices.Add((2 * edgeIndex + 1 + 2) % (v * 2));
 
                 //top to bottom
                 indices.Add(2 * edgeIndex);
                 indices.Add(2 * edgeIndex + 1);
             }
-            
+
             SubmitExtraModel(control, true, "AreaCylinder", indices, data, new Vector4(0, 0.5f, 1, 1));
             #endregion
 
@@ -252,8 +252,10 @@ namespace SpotLight
 
         public static void Submit(string modelName, Stream stream, GL_ControlModern control, string textureArc = null)
         {
-            if (!cache.ContainsKey(modelName))
-                cache[modelName] = new CachedModel(stream, textureArc, control);
+            ResFile bfres = new ResFile(stream);
+
+            if (!cache.ContainsKey(modelName) && bfres.Models.Count>0)
+                cache[modelName] = new CachedModel(bfres, textureArc, control);
         }
 
         public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass, Vector4 highlightColor)
@@ -306,7 +308,7 @@ namespace SpotLight
             readonly (int,int)[] wrapModes;
             readonly Pass[] passes;
 
-            public CachedModel(Stream stream, string textureArc, GL_ControlModern control)
+            public CachedModel(ResFile bfres, string textureArc, GL_ControlModern control)
             {
                 if (LoadTextures && textureArc != null && File.Exists(Program.ObjectDataPath + textureArc + ".szs"))
                 {
@@ -323,8 +325,6 @@ namespace SpotLight
                     }
                 }
 
-
-                ResFile bfres = new ResFile(stream);
                 Model mdl = bfres.Models[0];
 
                 vaos = new VertexArrayObject[mdl.Shapes.Count];
