@@ -213,7 +213,7 @@
             this.ZoneDocumentTabControl.Size = new System.Drawing.Size(520, 515);
             this.ZoneDocumentTabControl.TabIndex = 1;
             this.ZoneDocumentTabControl.SelectedTabChanged += new System.EventHandler(this.ZoneDocumentTabControl_SelectedTabChanged);
-            this.ZoneDocumentTabControl.TabClosing += new System.ComponentModel.HandledEventHandler(this.ZoneDocumentTabControl_TabClosing);
+            this.ZoneDocumentTabControl.TabClosing += new SpotLight.DocumentTabClosingEventHandler(this.ZoneDocumentTabControl_TabClosing);
             // 
             // LevelGLControlModern
             // 
@@ -438,6 +438,7 @@
             // 
             // toolStripTextBox1
             // 
+            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 
@@ -454,6 +455,7 @@
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "LevelEditorForm";
             this.Text = "SpotLight";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LevelEditorForm_FormClosing);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();

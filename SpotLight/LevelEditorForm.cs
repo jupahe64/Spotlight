@@ -665,7 +665,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 return;
             }
 
-            currentScene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Tag;
+            currentScene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Document;
 
             #region setup UI
             ObjectUIControl.ClearObjectUIContainers();
@@ -702,9 +702,9 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             ZoneListBox.EndUpdate();
         }
 
-        private void ZoneDocumentTabControl_TabClosing(object sender, HandledEventArgs e)
+        private void ZoneDocumentTabControl_TabClosing(object sender, DocumentTabClosingEventArgs e)
         {
-            SM3DWorldScene scene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Tag;
+            SM3DWorldScene scene = (SM3DWorldScene)e.Tab.Document;
 
             if (!scene.IsSaved)
             {
@@ -716,7 +716,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                     case DialogResult.No:
                         break;
                     case DialogResult.Cancel:
-                        e.Handled = true;
+                        e.Cancel = true;
                         return;
                 }
             }
@@ -782,6 +782,11 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             EditLinksToolStripMenuItem.Enabled = Trigger;
             EditIndividualButton.Enabled = Trigger;
             MainSceneListView.Enabled = Trigger;
+        }
+
+        private void LevelEditorForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = !ZoneDocumentTabControl.TryClearTabs();
         }
     }
 }

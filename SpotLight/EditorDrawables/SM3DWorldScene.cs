@@ -469,6 +469,11 @@ namespace SpotLight.EditorDrawables
                 undoStack = EditZone.undoStack;
                 redoStack = EditZone.redoStack;
 
+                if (undoStack.Count == 0)
+                    IsSaved = LastSavedUndo == null;
+                else
+                    IsSaved = LastSavedUndo == undoStack.Peek();
+
                 editZoneIndex = value;
             }
         }
