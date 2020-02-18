@@ -498,6 +498,13 @@ Would you like to rebuild the database from your 3DW Files?",
             scene.ObjectsMoved += Scene_ObjectsMoved;
             scene.ZonePlacementsChanged += Scene_ZonePlacementsChanged;
             scene.Reverted += Scene_Reverted;
+            scene.IsSavedChanged += Scene_IsSavedChanged;
+        }
+
+        private void Scene_IsSavedChanged(object sender, EventArgs e)
+        {
+            ZoneDocumentTabControl.SelectedTab.Name = currentScene.ToString() + (currentScene.IsSaved ? string.Empty : "*");
+            ZoneDocumentTabControl.Invalidate();
         }
 
         private void Scene_Reverted(object sender, RevertedEventArgs e)
@@ -697,12 +704,31 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
 
         private void ZoneDocumentTabControl_TabClosing(object sender, HandledEventArgs e)
         {
-            //TODO: ask to save unsaved changes
+            SM3DWorldScene scene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Tag;
+
+            if (!scene.IsSaved)
+            {
+                switch(MessageBox.Show("You have unsaved changes. Do you want to save them?", "Unsaved Changes!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                {
+                    case DialogResult.Yes:
+                        scene.Save();
+                        break;
+                    case DialogResult.No:
+                        break;
+                    case DialogResult.Cancel:
+                        e.Handled = true;
+                        return;
+                }
+            }
+
             if (ZoneDocumentTabControl.Tabs.Count == 1)
             {
                 ZoneListBox.Items.Clear();
-                MainSceneListView.CurrentList.Clear();
+                MainSceneListView.UnselectCurrentList();
                 MainSceneListView.RootLists.Clear();
+                ObjectUIControl.ClearObjectUIContainers();
+                ObjectUIControl.Refresh();
+
                 SetAppStatus(false);
                 string levelname = currentScene.EditZone.LevelName;
                 currentScene = null;

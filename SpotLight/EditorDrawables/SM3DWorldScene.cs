@@ -178,7 +178,8 @@ namespace SpotLight.EditorDrawables
             EditZoneTransform = EditZoneTransform,
             ZonePlacements = ZonePlacements,
             undoStack = undoStack,
-            redoStack = redoStack
+            redoStack = redoStack,
+            IsSaved = IsSaved,
         };
 
         public override void Draw(GL_ControlModern control, Pass pass)
@@ -239,7 +240,7 @@ namespace SpotLight.EditorDrawables
 
         public IReadOnlyCollection<IRevertable> UndoStack => undoStack;
 
-        public IReadOnlyCollection<IRevertable> RedoStack => redoStack;
+        public IReadOnlyCollection<RedoEntry> RedoStack => redoStack;
 
         public override string ToString()
         {
@@ -878,6 +879,8 @@ namespace SpotLight.EditorDrawables
                 zonePlacement.Zone.Save();
             }
 
+            IsSaved = true;
+
             return true;
         }
 
@@ -943,6 +946,8 @@ namespace SpotLight.EditorDrawables
                     currentDirectory = System.IO.Path.GetDirectoryName(sfd.FileName);
                 }
             }
+
+            IsSaved = true;
 
             return true;
         }

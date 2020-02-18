@@ -28,7 +28,7 @@ namespace SpotLight.Level
         public override string ToString() => LevelName;
 
         public readonly Stack<IRevertable> undoStack;
-        public readonly Stack<IRevertable> redoStack;
+        public readonly Stack<RedoEntry> redoStack;
 
         /// <summary>
         /// Name of the Level
@@ -187,7 +187,7 @@ namespace SpotLight.Level
         private SM3DWorldZone(string directory, string levelName, string categoryName, string levelFileName)
         {
             undoStack = new Stack<IRevertable>();
-            redoStack = new Stack<IRevertable>();
+            redoStack = new Stack<RedoEntry>();
 
             LevelName = levelName;
             Directory = directory;
