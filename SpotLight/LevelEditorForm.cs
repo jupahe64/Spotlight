@@ -467,7 +467,7 @@ Would you like to rebuild the database from your 3DW Files?",
 
             scene.EditZoneIndex = 0;
 
-            //indirectly calls DocumentTabControl1_SelectedTabChanged
+            //indirectly calls ZoneDocumentTabControl_SelectedTabChanged
             //which already sets up a lot
             ZoneDocumentTabControl.AddTab(new DocumentTabControl.DocumentTab(zone.LevelName, scene), true);
 
@@ -773,6 +773,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             UndoToolStripMenuItem.Enabled = Trigger;
             RedoToolStripMenuItem.Enabled = Trigger;
             AddObjectToolStripMenuItem.Enabled = Trigger;
+            AddZoneToolStripMenuItem.Enabled = Trigger;
             DuplicateToolStripMenuItem.Enabled = Trigger;
             DeleteToolStripMenuItem.Enabled = Trigger;
             SelectAllToolStripMenuItem.Enabled = Trigger;
@@ -787,6 +788,26 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
         private void LevelEditorForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = !ZoneDocumentTabControl.TryClearTabs();
+        }
+
+        private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentScene.EditZoneIndex != 0)
+                return;
+
+            AddZoneForm azf = new AddZoneForm();
+
+            if (azf.ShowDialog() == DialogResult.Cancel)
+                return;
+
+            if (azf.SelectedFileName == null)
+                return;
+
+            if (SM3DWorldZone.TryOpen(System.IO.Path.Combine(Program.StageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
+            {
+                currentScene.ZonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone));
+                ZoneDocumentTabControl_SelectedTabChanged(null, null);
+            }
         }
     }
 }

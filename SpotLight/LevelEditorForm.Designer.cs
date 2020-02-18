@@ -57,6 +57,7 @@
             this.SelectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DeselectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LevelParametersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AddZoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditObjectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditLinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -313,6 +314,7 @@
             this.UndoToolStripMenuItem,
             this.RedoToolStripMenuItem,
             this.AddObjectToolStripMenuItem,
+            this.AddZoneToolStripMenuItem,
             this.DuplicateToolStripMenuItem,
             this.DeleteToolStripMenuItem,
             this.SelectAllToolStripMenuItem,
@@ -390,6 +392,14 @@
             this.LevelParametersToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
             this.LevelParametersToolStripMenuItem.Text = "Level Parameters";
             this.LevelParametersToolStripMenuItem.Click += new System.EventHandler(this.LevelParametersToolStripMenuItem_Click);
+            // 
+            // AddZoneToolStripMenuItem
+            // 
+            this.AddZoneToolStripMenuItem.Enabled = false;
+            this.AddZoneToolStripMenuItem.Name = "AddZoneToolStripMenuItem";
+            this.AddZoneToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.AddZoneToolStripMenuItem.Text = "Add Zone";
+            this.AddZoneToolStripMenuItem.Click += new System.EventHandler(this.AddZoneToolStripMenuItem_Click);
             // 
             // ModeToolStripMenuItem
             // 
@@ -513,6 +523,7 @@
         public GL_EditorFramework.SceneListView MainSceneListView;
         private DocumentTabControl ZoneDocumentTabControl;
         private System.Windows.Forms.ListBox ZoneListBox;
+        private System.Windows.Forms.ToolStripMenuItem AddZoneToolStripMenuItem;
     }
 }
 
