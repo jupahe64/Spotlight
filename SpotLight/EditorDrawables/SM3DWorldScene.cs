@@ -244,7 +244,7 @@ namespace SpotLight.EditorDrawables
 
         public override string ToString()
         {
-            return EditZone.LevelName;
+            return mainZone.LevelName;
         }
 
         static bool Initialized = false;
@@ -468,11 +468,7 @@ namespace SpotLight.EditorDrawables
 
                 undoStack = EditZone.undoStack;
                 redoStack = EditZone.redoStack;
-
-                if (undoStack.Count == 0)
-                    IsSaved = LastSavedUndo == null;
-                else
-                    IsSaved = LastSavedUndo == undoStack.Peek();
+                LastSavedUndo = EditZone.LastSavedUndo;
 
                 editZoneIndex = value;
             }
@@ -489,6 +485,18 @@ namespace SpotLight.EditorDrawables
             foreach (ZonePlacement zonePlacement in mainZone.ZonePlacements)
             {
                 yield return zonePlacement.Zone;
+            }
+        }
+
+        [System.ComponentModel.ReadOnly(true)]
+        public override bool IsSaved
+        {
+            get => GetZones().All(x=>x.IsSaved);
+            protected set
+            {
+                EditZone.IsSaved = value;
+
+                base.IsSaved = value;
             }
         }
 
@@ -884,8 +892,6 @@ namespace SpotLight.EditorDrawables
                 zonePlacement.Zone.Save();
             }
 
-            IsSaved = true;
-
             return true;
         }
 
@@ -951,8 +957,6 @@ namespace SpotLight.EditorDrawables
                     currentDirectory = System.IO.Path.GetDirectoryName(sfd.FileName);
                 }
             }
-
-            IsSaved = true;
 
             return true;
         }

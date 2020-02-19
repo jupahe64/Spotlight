@@ -471,6 +471,8 @@ Would you like to rebuild the database from your 3DW Files?",
             //which already sets up a lot
             ZoneDocumentTabControl.AddTab(new DocumentTabControl.DocumentTab(zone.LevelName, scene), true);
 
+            Scene_IsSavedChanged(null, null);
+
             #region focus on player if it exists
             const string playerListName = SM3DWorldZone.MAP_PREFIX + "PlayerList";
 
@@ -503,7 +505,13 @@ Would you like to rebuild the database from your 3DW Files?",
 
         private void Scene_IsSavedChanged(object sender, EventArgs e)
         {
-            ZoneDocumentTabControl.SelectedTab.Name = currentScene.ToString() + (currentScene.IsSaved ? string.Empty : "*");
+            foreach (var tab in ZoneDocumentTabControl.Tabs)
+            {
+                SM3DWorldScene scene = (SM3DWorldScene)tab.Document;
+
+                tab.Name = scene.ToString() + (scene.IsSaved ? string.Empty : "*");
+            }
+
             ZoneDocumentTabControl.Invalidate();
         }
 
@@ -706,21 +714,71 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
         {
             SM3DWorldScene scene = (SM3DWorldScene)e.Tab.Document;
 
-            if (!scene.IsSaved)
+            #region find out which zones will remain after the zones in this scene gets unloaded
+            HashSet<SM3DWorldZone> remainingZones = new HashSet<SM3DWorldZone>();
+
+            foreach(var tab in ZoneDocumentTabControl.Tabs)
             {
-                switch(MessageBox.Show("You have unsaved changes. Do you want to save them?", "Unsaved Changes!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                if (tab == e.Tab)
+                    continue; //wont remain
+
+                foreach (var zone in ((SM3DWorldScene)tab.Document).GetZones())
+                    remainingZones.Add(zone);
+            }
+            #endregion
+
+            #region find out which zones need to get unloaded
+            HashSet<SM3DWorldZone> unsavedZones = new HashSet<SM3DWorldZone>();
+
+            HashSet<SM3DWorldZone> zonesToUnload = new HashSet<SM3DWorldZone>();
+
+            foreach (var zone in scene.GetZones())
+            {
+                if (!remainingZones.Contains(zone))
+                {
+                    zonesToUnload.Add(zone);
+
+                    if (!zone.IsSaved && !remainingZones.Contains(zone))
+                        unsavedZones.Add(zone);
+                }
+            }
+            #endregion
+
+            #region ask to save unsaved changes
+            if (unsavedZones.Count>0)
+            {
+                StringBuilder sb = new StringBuilder("You have unsaved changes in:\n");
+
+                foreach (var zone in unsavedZones)
+                    sb.AppendLine(zone.LevelFileName);
+
+                sb.AppendLine("Do you want to save them ? ");
+
+                switch (MessageBox.Show(sb.ToString(), "Unsaved Changes!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
                 {
                     case DialogResult.Yes:
-                        scene.Save();
+                        foreach (var zone in unsavedZones)
+                            zone.Save();
+
+                        Scene_IsSavedChanged(null, null);
                         break;
+
                     case DialogResult.No:
                         break;
+
                     case DialogResult.Cancel:
                         e.Cancel = true;
                         return;
                 }
             }
+            #endregion
 
+            //unload all zones that need to be unloaded
+            foreach (var zone in zonesToUnload)
+                zone.Unload();
+
+
+            #region disable all controls if this is the last tab
             if (ZoneDocumentTabControl.Tabs.Count == 1)
             {
                 ZoneListBox.Items.Clear();
@@ -734,6 +792,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 currentScene = null;
                 SpotlightToolStripStatusLabel.Text = $"{levelname} was closed.";
             }
+            #endregion
         }
 
         private void ZoneListBox_SelectedIndexChanged(object sender, EventArgs e)

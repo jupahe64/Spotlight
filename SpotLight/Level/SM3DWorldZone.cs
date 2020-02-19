@@ -30,6 +30,29 @@ namespace SpotLight.Level
         public readonly Stack<IRevertable> undoStack;
         public readonly Stack<RedoEntry> redoStack;
 
+        public virtual bool IsSaved
+        {
+            get => isSaved;
+            set
+            {
+                if (isSaved != value)
+                {
+                    isSaved = value;
+
+                    if (value)
+                    {
+                        if (undoStack.Count == 0)
+                            LastSavedUndo = null;
+                        else
+                            LastSavedUndo = undoStack.Peek();
+                    }
+                }
+            }
+        }
+        bool isSaved = true;
+
+        public IRevertable LastSavedUndo { get; private set; }
+
         /// <summary>
         /// Name of the Level
         /// </summary>
@@ -129,7 +152,7 @@ namespace SpotLight.Level
             
             zone = new SM3DWorldZone(Path.GetDirectoryName(fileName), levelName, categoryName, fileNameWithoutPath);
 
-            loadedZones.Add(fileName, new WeakReference<SM3DWorldZone>(zone));
+            loadedZones[fileName] = new WeakReference<SM3DWorldZone>(zone);
 
             return true;
         }
@@ -308,7 +331,7 @@ namespace SpotLight.Level
         }
         
         /// <summary>
-        /// Saves the level over the original file
+        /// Saves the level as a new file
         /// </summary>
         /// <param name="fileName">the file name to save the zone as</param>
         /// <returns>true if the save succeeded, false if it failed</returns>
@@ -348,6 +371,8 @@ namespace SpotLight.Level
                 return false;
             if (HasCategorySound && !SaveCategory(Directory, SOUND_PREFIX, "Sound", 2))
                 return false;
+
+            IsSaved = true;
 
             return true;
         }
@@ -469,6 +494,11 @@ namespace SpotLight.Level
             File.WriteAllBytes($"{directory}\\{LevelName}{categoryName}1.szs", YAZ0.Compress(SARC.PackN(sarcData).Item2));
 
             return true;
+        }
+
+        public void Unload()
+        {
+            loadedZones.Remove(Path.Combine(Directory, LevelFileName));
         }
     }
 
