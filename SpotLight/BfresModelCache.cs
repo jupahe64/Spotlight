@@ -23,10 +23,26 @@ namespace SpotLight
         private static bool initialized = false;
 
         public static ShaderProgram BfresShaderProgram;
-
+        private static ShaderProgram ExtraModelShaderProgram;
         static Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
 
-        static Dictionary<string, (Vector4, VertexArrayObject, int, bool)> extraModels = new Dictionary<string, (Vector4, VertexArrayObject, int, bool)>();
+        struct ExtraModel
+        {
+            public VertexArrayObject Vao { get; set; }
+            public int IndexCount { get; set; }
+            public PrimitiveType PrimitiveType { get; set; }
+            public Pass Pass { get; set; }
+
+            public ExtraModel(VertexArrayObject vao, int indexCount, PrimitiveType primitiveType, Pass pass)
+            {
+                Vao = vao;
+                IndexCount = indexCount;
+                PrimitiveType = primitiveType;
+                Pass = pass;
+            }
+        }
+
+        static Dictionary<string, ExtraModel> extraModels = new Dictionary<string, ExtraModel>();
 
         static Dictionary<string, Dictionary<string, int>> texArcCache = new Dictionary<string, Dictionary<string, int>>();
 
@@ -68,6 +84,30 @@ namespace SpotLight
                         fragColor = color;
                         gl_Position = mtxCam*mtxMdl*position;
                     }"), control);
+
+            ExtraModelShaderProgram = new ShaderProgram(
+                    new FragmentShader(
+                        @"#version 330
+                    uniform sampler2D tex;
+                    uniform vec4 highlight_color;
+                    in vec4 fragColor;
+                    void main(){
+                        float hc_a   = highlight_color.w;
+                        vec4 color = fragColor;
+                        gl_FragColor = vec4(color.rgb * (1-hc_a) + highlight_color.rgb * hc_a, color.a);
+                    }"),
+                    new VertexShader(
+                        @"#version 330
+                    layout(location = 0) in vec4 position;
+                    layout(location = 1) in vec4 color;
+                    uniform mat4 mtxMdl;
+                    uniform mat4 mtxCam;
+                    out vec4 fragColor;
+
+                    void main(){
+                        fragColor = color;
+                        gl_Position = mtxCam*mtxMdl*position;
+                    }"), control);
             #endregion
 
 
@@ -82,14 +122,15 @@ namespace SpotLight
 
             float[] data = new float[]
             {
-                -r, t, -r,
-                 r, t, -r,
-                -r, t,  r,
-                 r, t,  r,
-                -r, b, -r,
-                 r, b, -r,
-                -r, b,  r,
-                 r, b,  r,
+                -r, t, -r,  0, 0.5f, 1, 1,
+                 r, t, -r,  0, 0.5f, 1, 1,
+                -r, t,  r,  0, 0.5f, 1, 1,
+                 r, t,  r,  0, 0.5f, 1, 1,
+
+                -r, b, -r,  0, 0, 1, 1,
+                 r, b, -r,  0, 0, 1, 1,
+                -r, b,  r,  0, 0, 1, 1,
+                 r, b,  r,  0, 0, 1, 1,
             };
 
             //-x to x
@@ -122,7 +163,9 @@ namespace SpotLight
             indices.Add(0b011);
             indices.Add(0b111);
 
-            SubmitExtraModel(control, true, "AreaCubeBase", indices, data, new Vector4(0, 0.5f, 1, 1));
+            //new Vector4(0, 0.5f, 1, 1)
+
+            SubmitExtraModel(control, PrimitiveType.Lines, "AreaCubeBase", indices, data);
             #endregion
 
             #region AreaCylinder
@@ -133,9 +176,7 @@ namespace SpotLight
             b = 0;
             int v = 16;
 
-            data = new float[v * 2 * 3];
-
-            double delta = Math.PI * 2 / v;
+            data = new float[v * 2 * 7];
 
             int i = 0;
 
@@ -149,10 +190,20 @@ namespace SpotLight
                 data[i++] = t;
                 data[i++] = z;
 
+                data[i++] = 0;
+                data[i++] = 0.5f;
+                data[i++] = 1;
+                data[i++] = 1;
+
                 //bottom
                 data[i++] = x;
                 data[i++] = b;
                 data[i++] = z;
+
+                data[i++] = 0;
+                data[i++] = 0f;
+                data[i++] = 1;
+                data[i++] = 1;
 
                 //top
                 indices.Add(2 * edgeIndex);
@@ -167,7 +218,7 @@ namespace SpotLight
                 indices.Add(2 * edgeIndex + 1);
             }
 
-            SubmitExtraModel(control, true, "AreaCylinder", indices, data, new Vector4(0, 0.5f, 1, 1));
+            SubmitExtraModel(control, PrimitiveType.Lines, "AreaCylinder", indices, data);
             #endregion
 
             #region TransparentWall
@@ -177,10 +228,15 @@ namespace SpotLight
 
             data = new float[]
             {
-                -r,  r, 0,
-                 r,  r, 0,
-                -r, -r, 0,
-                 r, -r, 0,
+                -r,  r, 0,  0, 0, 0.75f, 0.5f,
+                 r,  r, 0,  0, 0, 0.75f, 0.5f,
+                -r, -r, 0,  0, 0, 0.75f, 0.5f,
+                 r, -r, 0,  0, 0, 0.75f, 0.5f,
+                            
+                -r,  r, 0,  0.75f, 0, 0.125f, 0.5f,
+                 r,  r, 0,  0.75f, 0, 0.125f, 0.5f,
+                -r, -r, 0,  0.75f, 0, 0.125f, 0.5f,
+                 r, -r, 0,  0.75f, 0, 0.125f, 0.5f,
             };
             //front
             indices.Add(0b00);
@@ -192,15 +248,15 @@ namespace SpotLight
             indices.Add(0b11);
 
             //back
-            indices.Add(0b01);
-            indices.Add(0b10);
-            indices.Add(0b00);
+            indices.Add(0b101);
+            indices.Add(0b110);
+            indices.Add(0b100);
 
-            indices.Add(0b11);
-            indices.Add(0b10);
-            indices.Add(0b01);
+            indices.Add(0b111);
+            indices.Add(0b110);
+            indices.Add(0b101);
 
-            SubmitExtraModel(control, false, "TransparentWall", indices, data, new Vector4(0, 0.5f, 1, 0.5f));
+            SubmitExtraModel(control, PrimitiveType.Triangles, "TransparentWall", indices, data, Pass.TRANSPARENT);
             #endregion
 
             #endregion
@@ -229,7 +285,7 @@ namespace SpotLight
             initialized = true;
         }
 
-        private static void SubmitExtraModel(GL_ControlModern control, bool isLines, string modelName, List<int> indices, float[] data, Vector4 color)
+        private static void SubmitExtraModel(GL_ControlModern control, PrimitiveType primitiveType, string modelName, List<int> indices, float[] data, Pass pass = Pass.OPAQUE)
         {
             int[] buffers = new int[2];
             GL.GenBuffers(2, buffers);
@@ -238,7 +294,8 @@ namespace SpotLight
             int vaoBuffer = buffers[1];
 
             VertexArrayObject vao = new VertexArrayObject(vaoBuffer, indexBuffer);
-            vao.AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 3, 0);
+            vao.AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 7, 0);
+            vao.AddAttribute(1, 4, VertexAttribPointerType.Float, false, sizeof(float) * 7, sizeof(float) * 3);
             vao.Initialize(control);
 
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
@@ -247,7 +304,7 @@ namespace SpotLight
             GL.BindBuffer(BufferTarget.ArrayBuffer, vaoBuffer);
             GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * data.Length, data, BufferUsageHint.StaticDraw);
 
-            extraModels.Add(Path.GetFileNameWithoutExtension(modelName), (color, vao, indices.Count, isLines));
+            extraModels.Add(Path.GetFileNameWithoutExtension(modelName), new ExtraModel(vao, indices.Count, primitiveType, pass));
         }
 
         public static void Submit(string modelName, Stream stream, GL_ControlModern control, string textureArc = null)
@@ -265,26 +322,33 @@ namespace SpotLight
                 cache[modelName].Draw(control, pass, highlightColor);
                 return true;
             }
-            else if (extraModels.TryGetValue(modelName, out (Vector4, VertexArrayObject, int, bool) entry))
+            else if (extraModels.TryGetValue(modelName, out ExtraModel extraModel) && (pass==Pass.PICKING || pass==extraModel.Pass))
             {
-                control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
-                
                 if (pass == Pass.PICKING)
                 {
+                    control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+
                     GL.LineWidth(5);
                     control.CurrentShader.SetVector4("color", control.NextPickingColor());
                 }
                 else
                 {
+                    control.CurrentShader = ExtraModelShaderProgram;
+
+                    if (pass == Pass.TRANSPARENT)
+                        GL.Enable(EnableCap.Blend);
+
                     GL.LineWidth(3);
-                    control.CurrentShader.SetVector4("color", entry.Item1 * (1-highlightColor.W) + highlightColor * highlightColor.W);
+                    control.CurrentShader.SetVector4("highlight_color", highlightColor);
                 }
 
-                entry.Item2.Use(control);
+                extraModel.Vao.Use(control);
                 
-                GL.DrawElements(entry.Item4?PrimitiveType.Lines:PrimitiveType.Triangles, entry.Item3, DrawElementsType.UnsignedInt, 0);
+                GL.DrawElements(extraModel.PrimitiveType, extraModel.IndexCount, DrawElementsType.UnsignedInt, 0);
 
                 GL.LineWidth(2);
+
+                GL.Disable(EnableCap.Blend);
 
                 return true;
             }
