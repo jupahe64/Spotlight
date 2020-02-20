@@ -71,6 +71,10 @@ namespace SpotLight.EditorDrawables
                 new Matrix4(rotMat) * Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position),
                 rotMat);
 
+            var actionBackup = editorScene.CurrentAction;
+
+            editorScene.CurrentAction = EditorSceneBase.NoAction;
+
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in Zone.ObjLists.Values)
             {
@@ -84,6 +88,8 @@ namespace SpotLight.EditorDrawables
             SceneDrawState.ZoneTransform = ZoneTransform.Identity;
 
             SceneDrawState.HighlightColorOverride = null;
+
+            editorScene.CurrentAction = actionBackup;
         }
 
         public ZoneTransform GetTransform()
