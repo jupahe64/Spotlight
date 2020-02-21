@@ -627,37 +627,7 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 MessageBox.Show("Database Created", "Operation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            AddObjectForm AOF = new AddObjectForm(ObjectDatabase);
-            if (AOF.ShowDialog() == DialogResult.OK)
-            {
-                currentScene.ObjectPlaceDelegate = (Position, Zone) =>
-                {
-                    Parameter entry = ObjectDatabase.ObjectParameters[AOF.SelectedIndex];
-                    Category category = (Category)entry.CategoryID;
-
-                    ObjectList objList;
-                    if (category == Category.Link)
-                        objList = Zone.LinkedObjects;
-                    else
-                        objList = Zone.ObjLists[SM3DWorldZone.MAP_PREFIX + category.ToString() + "List"];
-
-                    General3dWorldObject currentobject = entry.ToGeneral3DWorldObject(Zone.NextObjID(), -Position);
-                    currentobject.DoModelLoad(LevelGLControlModern);
-                    return new (I3dWorldObject, ObjectList)[] { (currentobject, objList) };
-                };
-            }
-        }
-
-        enum Category : byte
-        {
-            Area,
-            CheckPoint,
-            Demo,
-            Goal,
-            Object,
-            Player,
-            Sky,
-            Link
+            new AddObjectForm(ObjectDatabase, currentScene, LevelGLControlModern).ShowDialog(this);
         }
 
         private void EditIndividualButton_Click(object sender, EventArgs e)
