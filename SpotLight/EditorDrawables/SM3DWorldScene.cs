@@ -201,7 +201,7 @@ namespace SpotLight.EditorDrawables
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
             {
-                var placements = ObjectPlaceDelegate.Invoke(control.CoordFor(e.X, e.Y, control.PickingDepth), EditZone);
+                var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, control.PickingDepth), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
 
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
 

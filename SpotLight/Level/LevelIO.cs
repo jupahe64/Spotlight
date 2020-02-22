@@ -31,7 +31,7 @@ namespace SpotLight.Level
             I3dWorldObject obj;
             bool loadLinks;
 
-            if (info.ClassName == "Rail")
+            if (Enum.GetNames(typeof(Rail.RailObjType)).Contains(info.ClassName))
                 obj = new Rail(info, zone, out loadLinks);
             else
                 obj = new General3dWorldObject(info, zone, out loadLinks);

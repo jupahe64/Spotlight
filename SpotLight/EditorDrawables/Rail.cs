@@ -16,6 +16,13 @@ namespace SpotLight.EditorDrawables
 {
     public class Rail : Path, I3dWorldObject
     {
+        public enum RailObjType
+        {
+            Rail,
+            RailWithMoveParameter,
+            RailWithEffect
+        }
+
         public static Dictionary<string, dynamic> CreateUnitConfig(string className) => new Dictionary<string, dynamic>
         {
             ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
@@ -76,12 +83,24 @@ namespace SpotLight.EditorDrawables
         [Undoable]
         public bool IsLadder { get; set; }
 
+        [Undoable]
+        public bool IsReverseCoord { get; set; }
+
+        [Undoable]
+        public RailObjType ObjType { get; set; }
+
         public Rail(LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
             : base(PathPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]))
         {
             ID = info.ID;
             if (zone != null)
-            zone.SubmitRailID(ID);
+                zone.SubmitRailID(ID);
+
+            ObjType = (RailObjType)Enum.Parse(typeof(RailObjType), info.ClassName);
+
+            if(ObjType==RailObjType.RailWithMoveParameter)
+                IsReverseCoord = info.PropertyEntries["IsReverseCoord"].Parse();
+
 
             IsLadder = info.PropertyEntries["IsLadder"].Parse();
 
@@ -90,12 +109,14 @@ namespace SpotLight.EditorDrawables
             loadLinks = false; //We don't expect Rails to have Links
         }
 
-        public Rail(List<PathPoint> pathPoints, string iD, bool isClosed, bool isLadder)
+        public Rail(List<PathPoint> pathPoints, string iD, bool isClosed, bool isLadder, bool isReverseCoord, RailObjType railObjType)
             : base(pathPoints)
         {
             ID = iD;
             Closed = isClosed;
             IsLadder = isLadder;
+            IsReverseCoord = isReverseCoord;
+            ObjType = railObjType;
         }
 
         #region I3DWorldObject implementation
@@ -115,6 +136,10 @@ namespace SpotLight.EditorDrawables
             objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("IsClosed", Closed);
             objNode.AddDynamicValue("IsLadder", IsLadder);
+
+            if(ObjType==RailObjType.RailWithMoveParameter)
+                objNode.AddDynamicValue("IsReverseCoord", IsReverseCoord);
+
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
             objNode.AddDynamicValue("LayerConfigName", "Common");
 
@@ -170,9 +195,11 @@ namespace SpotLight.EditorDrawables
             objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
             objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(PathPoints[0].Position, 100f), true);
 
-            objNode.AddDynamicValue("UnitConfig", CreateUnitConfig("Rail"), true);
+            string objTypeName = Enum.GetName(typeof(RailObjType), ObjType);
 
-            objNode.AddDynamicValue("UnitConfigName", "Rail");
+            objNode.AddDynamicValue("UnitConfig", CreateUnitConfig(objTypeName), true);
+
+            objNode.AddDynamicValue("UnitConfigName", objTypeName);
         }
 
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
@@ -227,7 +254,7 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-            duplicates[this] = new Rail(newPoints, zone.NextRailID(), Closed, IsLadder);
+            duplicates[this] = new Rail(newPoints, zone.NextRailID(), Closed, IsLadder, IsReverseCoord, ObjType);
 
             var duplicate = duplicates[this];
 
@@ -322,9 +349,14 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
+                rail.ObjType = (RailObjType)control.ChoicePicker("Rail Type", rail.ObjType, Enum.GetValues(typeof(RailObjType)));
+
                 rail.IsLadder = control.CheckBox("Is Ladder", rail.IsLadder);
 
                 rail.Closed = control.CheckBox("Closed", rail.Closed);
+
+                if(rail.ObjType==RailObjType.RailWithMoveParameter)
+                    rail.IsReverseCoord = control.CheckBox("Reverse Coord", rail.IsReverseCoord);
 
                 if (scene.CurrentList != rail.pathPoints && control.Button("Edit Pathpoints"))
                     scene.EnterList(rail.pathPoints);

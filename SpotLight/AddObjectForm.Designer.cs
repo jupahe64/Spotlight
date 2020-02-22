@@ -44,7 +44,15 @@
             this.ObjectDescriptionTextBox = new System.Windows.Forms.TextBox();
             this.SelectObjectButton = new System.Windows.Forms.Button();
             this.ObjectNameGroupBox = new System.Windows.Forms.GroupBox();
+            this.ObjectTypeTabControl = new System.Windows.Forms.TabControl();
+            this.ObjectFromDBTab = new System.Windows.Forms.TabPage();
+            this.RailTab = new System.Windows.Forms.TabPage();
+            this.RailTypeLabel = new System.Windows.Forms.Label();
+            this.RailTypeComboBox = new System.Windows.Forms.ComboBox();
             this.ObjectNameGroupBox.SuspendLayout();
+            this.ObjectTypeTabControl.SuspendLayout();
+            this.ObjectFromDBTab.SuspendLayout();
+            this.RailTab.SuspendLayout();
             this.SuspendLayout();
             // 
             // ObjectSelectListView
@@ -87,10 +95,10 @@
             listViewGroup9,
             listViewGroup10});
             this.ObjectSelectListView.HideSelection = false;
-            this.ObjectSelectListView.Location = new System.Drawing.Point(0, 0);
+            this.ObjectSelectListView.Location = new System.Drawing.Point(3, 3);
             this.ObjectSelectListView.MultiSelect = false;
             this.ObjectSelectListView.Name = "ObjectSelectListView";
-            this.ObjectSelectListView.Size = new System.Drawing.Size(384, 334);
+            this.ObjectSelectListView.Size = new System.Drawing.Size(370, 302);
             this.ObjectSelectListView.TabIndex = 0;
             this.ObjectSelectListView.UseCompatibleStateImageBehavior = false;
             this.ObjectSelectListView.View = System.Windows.Forms.View.Details;
@@ -132,12 +140,68 @@
             this.ObjectNameGroupBox.TabIndex = 3;
             this.ObjectNameGroupBox.TabStop = false;
             // 
+            // ObjectTypeTabControl
+            // 
+            this.ObjectTypeTabControl.Controls.Add(this.ObjectFromDBTab);
+            this.ObjectTypeTabControl.Controls.Add(this.RailTab);
+            this.ObjectTypeTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ObjectTypeTabControl.Location = new System.Drawing.Point(0, 0);
+            this.ObjectTypeTabControl.Name = "ObjectTypeTabControl";
+            this.ObjectTypeTabControl.SelectedIndex = 0;
+            this.ObjectTypeTabControl.Size = new System.Drawing.Size(384, 334);
+            this.ObjectTypeTabControl.TabIndex = 4;
+            // 
+            // ObjectFromDBTab
+            // 
+            this.ObjectFromDBTab.Controls.Add(this.ObjectSelectListView);
+            this.ObjectFromDBTab.Location = new System.Drawing.Point(4, 22);
+            this.ObjectFromDBTab.Name = "ObjectFromDBTab";
+            this.ObjectFromDBTab.Padding = new System.Windows.Forms.Padding(3);
+            this.ObjectFromDBTab.Size = new System.Drawing.Size(376, 308);
+            this.ObjectFromDBTab.TabIndex = 0;
+            this.ObjectFromDBTab.Text = "Objects";
+            this.ObjectFromDBTab.UseVisualStyleBackColor = true;
+            // 
+            // RailTab
+            // 
+            this.RailTab.Controls.Add(this.RailTypeLabel);
+            this.RailTab.Controls.Add(this.RailTypeComboBox);
+            this.RailTab.Location = new System.Drawing.Point(4, 22);
+            this.RailTab.Name = "RailTab";
+            this.RailTab.Padding = new System.Windows.Forms.Padding(3);
+            this.RailTab.Size = new System.Drawing.Size(376, 308);
+            this.RailTab.TabIndex = 1;
+            this.RailTab.Text = "Rails";
+            this.RailTab.UseVisualStyleBackColor = true;
+            // 
+            // RailTypeLabel
+            // 
+            this.RailTypeLabel.AutoSize = true;
+            this.RailTypeLabel.Location = new System.Drawing.Point(8, 46);
+            this.RailTypeLabel.Name = "RailTypeLabel";
+            this.RailTypeLabel.Size = new System.Drawing.Size(52, 13);
+            this.RailTypeLabel.TabIndex = 1;
+            this.RailTypeLabel.Text = "Rail Type";
+            // 
+            // RailTypeComboBox
+            // 
+            this.RailTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.RailTypeComboBox.FormattingEnabled = true;
+            this.RailTypeComboBox.Items.AddRange(new object[] {
+            "Rail",
+            "RailWithMoveParameter",
+            "RailWithEffect"});
+            this.RailTypeComboBox.Location = new System.Drawing.Point(66, 43);
+            this.RailTypeComboBox.Name = "RailTypeComboBox";
+            this.RailTypeComboBox.Size = new System.Drawing.Size(145, 21);
+            this.RailTypeComboBox.TabIndex = 0;
+            // 
             // AddObjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(384, 511);
-            this.Controls.Add(this.ObjectSelectListView);
+            this.Controls.Add(this.ObjectTypeTabControl);
             this.Controls.Add(this.ObjectNameGroupBox);
             this.Controls.Add(this.SelectObjectButton);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -148,8 +212,13 @@
             this.ShowInTaskbar = false;
             this.Text = "Spotlight - Add Object";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AddObjectForm_FormClosing);
+            this.Load += new System.EventHandler(this.AddObjectForm_Load);
             this.ObjectNameGroupBox.ResumeLayout(false);
             this.ObjectNameGroupBox.PerformLayout();
+            this.ObjectTypeTabControl.ResumeLayout(false);
+            this.ObjectFromDBTab.ResumeLayout(false);
+            this.RailTab.ResumeLayout(false);
+            this.RailTab.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -161,5 +230,10 @@
         private System.Windows.Forms.TextBox ObjectDescriptionTextBox;
         private System.Windows.Forms.Button SelectObjectButton;
         private System.Windows.Forms.GroupBox ObjectNameGroupBox;
+        private System.Windows.Forms.TabControl ObjectTypeTabControl;
+        private System.Windows.Forms.TabPage ObjectFromDBTab;
+        private System.Windows.Forms.TabPage RailTab;
+        private System.Windows.Forms.Label RailTypeLabel;
+        private System.Windows.Forms.ComboBox RailTypeComboBox;
     }
 }

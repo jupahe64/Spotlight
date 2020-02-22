@@ -13,6 +13,7 @@ using SpotLight.EditorDrawables;
 using OpenTK;
 using SpotLight.Level;
 using GL_EditorFramework.GL_Core;
+using GL_EditorFramework.EditorDrawables;
 
 namespace SpotLight
 {
@@ -46,14 +47,13 @@ namespace SpotLight
             this.database = database;
         }
 
-        SM3DWorldScene scene;
-        GL_ControlModern control;
-        ObjectParameterDatabase database;
+        readonly SM3DWorldScene scene;
+        readonly GL_ControlModern control;
+        readonly ObjectParameterDatabase database;
 
         public int SelectedIndex => ObjectSelectListView.SelectedIndices[0];
         bool Loading = false;
         bool Edited = false;
-        bool YesObjectIsChosen = false;
         ObjectDescriptionDatabase ODD = new ObjectDescriptionDatabase();
         private void ObjectSelectListView_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -78,29 +78,40 @@ namespace SpotLight
         {
             if (Edited)
             {
-                DialogResult DR = MessageBox.Show("You edited one or more object descriptions\nWould you like to save?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-                if (DR == DialogResult.Yes)
+                DialogResult result = MessageBox.Show("You edited one or more object descriptions\nWould you like to save?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
                 {
                     ODD.Save(Program.SODDPath);
                 }
-                else if (DR == DialogResult.Cancel)
+                else if (result == DialogResult.Cancel)
                     e.Cancel = true;
             }
-            if (YesObjectIsChosen)
-            {
-                DialogResult = DialogResult.OK;
-            }
-            else
-                DialogResult = DialogResult.Cancel;
         }
         private void SelectObjectButton_Click(object sender, EventArgs e)
         {
-            if (Loading || ObjectSelectListView.SelectedItems.Count == 0)
+            if (ObjectTypeTabControl.SelectedTab == ObjectFromDBTab)
+            {
+                if (Loading || ObjectSelectListView.SelectedItems.Count == 0)
+                {
+                    MessageBox.Show("You need to select an object from the Database", "No object selected", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                scene.ObjectPlaceDelegate = PlaceObjectFromDB;
+                Close();
                 return;
 
-            YesObjectIsChosen = true;
+            }
 
-            scene.ObjectPlaceDelegate = PlaceObject;
+            if (ObjectTypeTabControl.SelectedTab == RailTab)
+            {
+                scene.ObjectPlaceDelegate = PlaceRail;
+                Close();
+                return;
+
+            }
+
+
 
             Close();
         }
@@ -117,22 +128,44 @@ namespace SpotLight
             Link
         }
 
-        private (I3dWorldObject, ObjectList)[] PlaceObject(Vector3 Position, SM3DWorldZone Zone)
+        private (I3dWorldObject, ObjectList)[] PlaceObjectFromDB(Vector3 pos, SM3DWorldZone zone)
         {
             Parameter entry = database.ObjectParameters[SelectedIndex];
             Category category = (Category)entry.CategoryID;
 
             ObjectList objList;
             if (category == Category.Link)
-                objList = Zone.LinkedObjects;
+                objList = zone.LinkedObjects;
             else
-                objList = Zone.ObjLists[SM3DWorldZone.MAP_PREFIX + category.ToString() + "List"];
+                objList = zone.ObjLists[SM3DWorldZone.MAP_PREFIX + category.ToString() + "List"];
 
-            General3dWorldObject currentobject = entry.ToGeneral3DWorldObject(Zone.NextObjID(), -Position);
-            currentobject.DoModelLoad(control);
+            General3dWorldObject obj = entry.ToGeneral3DWorldObject(zone.NextObjID(), pos);
+            obj.Prepare(control);
             return new (I3dWorldObject, ObjectList)[] { 
-                (currentobject, objList)
+                (obj, objList)
             };
+        }
+
+        private (I3dWorldObject, ObjectList)[] PlaceRail(Vector3 pos, SM3DWorldZone zone)
+        {
+            List<PathPoint> pathPoints = new List<PathPoint>()
+            {
+                new RailPoint(pos+new Vector3(-3,0,0), Vector3.Zero, Vector3.Zero),
+                new RailPoint(pos+new Vector3(3,0,0), Vector3.Zero, Vector3.Zero),
+            };
+
+            Rail rail = new Rail(pathPoints, zone.NextObjID(), false, false, false, (Rail.RailObjType)RailTypeComboBox.SelectedIndex);
+
+
+            rail.Prepare(control);
+            return new (I3dWorldObject, ObjectList)[] {
+                (rail, zone.ObjLists["Map_Rails"])
+            };
+        }
+
+        private void AddObjectForm_Load(object sender, EventArgs e)
+        {
+            RailTypeComboBox.SelectedIndex = 0;
         }
     }
 }
