@@ -776,6 +776,8 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             if (ZoneListBox.SelectedIndex == 0) //main zone selected
                 MainSceneListView.RootLists.Add("Zones", currentScene.ZonePlacements);
 
+            MainSceneListView.RootLists.Add("Linked", currentScene.EditZone.LinkedObjects);
+
             foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
             {
                 MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);

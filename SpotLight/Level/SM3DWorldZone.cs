@@ -216,26 +216,28 @@ namespace SpotLight.Level
             Directory = directory;
             LevelFileName = levelFileName;
 
+            Dictionary<string, I3dWorldObject> objectsByID = new Dictionary<string, I3dWorldObject>();
+
             if (categoryName == "Map")
             {
                 HasCategoryMap = true;
-                LoadCategory(MAP_PREFIX, "Map", 0);
-                HasCategoryDesign = LoadCategory(DESIGN_PREFIX, "Design", 1);
-                HasCategorySound = LoadCategory(SOUND_PREFIX, "Sound", 2);
+                LoadCategory(MAP_PREFIX, "Map", 0, objectsByID);
+                HasCategoryDesign = LoadCategory(DESIGN_PREFIX, "Design", 1, objectsByID);
+                HasCategorySound = LoadCategory(SOUND_PREFIX, "Sound", 2, objectsByID);
             }
             else if (categoryName == "Design")
             {
                 HasCategoryDesign = true;
-                LoadCategory(DESIGN_PREFIX, "Design", 1);
+                LoadCategory(DESIGN_PREFIX, "Design", 1, objectsByID);
             }
             else //if (categoryName == "Sound")
             {
                 HasCategorySound = true;
-                LoadCategory(SOUND_PREFIX, "Sound", 2);
+                LoadCategory(SOUND_PREFIX, "Sound", 2, objectsByID);
             }
         }
 
-        private bool LoadCategory(string prefix, string categoryName, int extraFilesIndex)
+        private bool LoadCategory(string prefix, string categoryName, int extraFilesIndex, Dictionary<string, I3dWorldObject> objectsByID)
         {
             string fileName = $"{Directory}\\{LevelName}{categoryName}1.szs";
 
@@ -299,9 +301,7 @@ namespace SpotLight.Level
                                     }
                                 }
 
-                                if (zone == null)
-                                    ObjLists[entry.Key].Add(LevelIO.ParseObject(obj, this, objectsByReference));
-                                else
+                                if (zone != null)
                                 {
                                     ZonePlacements.Add(new ZonePlacement(position, rotation, scale, zone));
                                 }
@@ -314,7 +314,9 @@ namespace SpotLight.Level
 
                         foreach (ArrayEntry obj in entry.IterArray())
                         {
-                            ObjLists[prefix + entry.Key].Add(LevelIO.ParseObject(obj, this, objectsByReference));
+                            I3dWorldObject _obj = LevelIO.ParseObject(obj, this, objectsByReference, out bool alreadyReferenced, Properties.Settings.Default.UniqueIDs ? objectsByID : null);
+                            if (!alreadyReferenced)
+                                ObjLists[prefix + entry.Key].Add(_obj);
                         }
                     }
                 }

@@ -38,12 +38,15 @@
             this.ClearDescriptionsButton = new System.Windows.Forms.Button();
             this.DatabaseInfoLabel = new System.Windows.Forms.Label();
             this.RenderingGroupBox = new System.Windows.Forms.GroupBox();
+            this.RenderSkyboxesCheckBox = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.PlayerComboBox = new System.Windows.Forms.ComboBox();
             this.RenderAreaCheckBox = new System.Windows.Forms.CheckBox();
-            this.RenderSkyboxesCheckBox = new System.Windows.Forms.CheckBox();
+            this.LoadingAndSavingGroupBox = new System.Windows.Forms.GroupBox();
+            this.UniqueIDsCheckBox = new System.Windows.Forms.CheckBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
+            this.LoadingAndSavingGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // GamePathLabel
@@ -138,6 +141,19 @@
             this.RenderingGroupBox.TabStop = false;
             this.RenderingGroupBox.Text = "Rendering";
             // 
+            // RenderSkyboxesCheckBox
+            // 
+            this.RenderSkyboxesCheckBox.AutoSize = true;
+            this.RenderSkyboxesCheckBox.Checked = true;
+            this.RenderSkyboxesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.RenderSkyboxesCheckBox.Location = new System.Drawing.Point(103, 19);
+            this.RenderSkyboxesCheckBox.Name = "RenderSkyboxesCheckBox";
+            this.RenderSkyboxesCheckBox.Size = new System.Drawing.Size(110, 17);
+            this.RenderSkyboxesCheckBox.TabIndex = 3;
+            this.RenderSkyboxesCheckBox.Text = "Render Skyboxes";
+            this.RenderSkyboxesCheckBox.UseVisualStyleBackColor = true;
+            this.RenderSkyboxesCheckBox.CheckedChanged += new System.EventHandler(this.RenderSkyboxesCheckBox_CheckedChanged);
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -176,24 +192,34 @@
             this.RenderAreaCheckBox.UseVisualStyleBackColor = true;
             this.RenderAreaCheckBox.CheckedChanged += new System.EventHandler(this.RenderAreaCheckBox_CheckedChanged);
             // 
-            // RenderSkyboxesCheckBox
+            // LoadingAndSavingGroupBox
             // 
-            this.RenderSkyboxesCheckBox.AutoSize = true;
-            this.RenderSkyboxesCheckBox.Checked = true;
-            this.RenderSkyboxesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.RenderSkyboxesCheckBox.Location = new System.Drawing.Point(103, 19);
-            this.RenderSkyboxesCheckBox.Name = "RenderSkyboxesCheckBox";
-            this.RenderSkyboxesCheckBox.Size = new System.Drawing.Size(110, 17);
-            this.RenderSkyboxesCheckBox.TabIndex = 3;
-            this.RenderSkyboxesCheckBox.Text = "Render Skyboxes";
-            this.RenderSkyboxesCheckBox.UseVisualStyleBackColor = true;
-            this.RenderSkyboxesCheckBox.CheckedChanged += new System.EventHandler(this.RenderSkyboxesCheckBox_CheckedChanged);
+            this.LoadingAndSavingGroupBox.Controls.Add(this.UniqueIDsCheckBox);
+            this.LoadingAndSavingGroupBox.Location = new System.Drawing.Point(12, 203);
+            this.LoadingAndSavingGroupBox.Name = "LoadingAndSavingGroupBox";
+            this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(466, 100);
+            this.LoadingAndSavingGroupBox.TabIndex = 6;
+            this.LoadingAndSavingGroupBox.TabStop = false;
+            this.LoadingAndSavingGroupBox.Text = "Loading and Saving";
+            // 
+            // UniqueIDsCheckBox
+            // 
+            this.UniqueIDsCheckBox.AutoSize = true;
+            this.UniqueIDsCheckBox.Location = new System.Drawing.Point(9, 19);
+            this.UniqueIDsCheckBox.Name = "UniqueIDsCheckBox";
+            this.UniqueIDsCheckBox.Size = new System.Drawing.Size(428, 17);
+            this.UniqueIDsCheckBox.TabIndex = 0;
+            this.UniqueIDsCheckBox.Text = "Only load unique ObjectIDs (disable if objects disappear when loading a custom le" +
+    "vel)";
+            this.UniqueIDsCheckBox.UseVisualStyleBackColor = true;
+            this.UniqueIDsCheckBox.CheckedChanged += new System.EventHandler(this.UniqueIDsCheckBox_CheckedChanged);
             // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(490, 209);
+            this.ClientSize = new System.Drawing.Size(490, 413);
+            this.Controls.Add(this.LoadingAndSavingGroupBox);
             this.Controls.Add(this.RenderingGroupBox);
             this.Controls.Add(this.ObjectParameterGroupBox);
             this.Controls.Add(this.GamePathButton);
@@ -210,6 +236,8 @@
             this.ObjectParameterGroupBox.PerformLayout();
             this.RenderingGroupBox.ResumeLayout(false);
             this.RenderingGroupBox.PerformLayout();
+            this.LoadingAndSavingGroupBox.ResumeLayout(false);
+            this.LoadingAndSavingGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -230,5 +258,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox PlayerComboBox;
         private System.Windows.Forms.CheckBox RenderSkyboxesCheckBox;
+        private System.Windows.Forms.GroupBox LoadingAndSavingGroupBox;
+        private System.Windows.Forms.CheckBox UniqueIDsCheckBox;
     }
 }

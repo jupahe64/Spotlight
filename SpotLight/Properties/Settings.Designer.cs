@@ -82,5 +82,17 @@ namespace SpotLight.Properties {
                 this["DrawSkyBoxes"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UniqueIDs {
+            get {
+                return ((bool)(this["UniqueIDs"]));
+            }
+            set {
+                this["UniqueIDs"] = value;
+            }
+        }
     }
 }

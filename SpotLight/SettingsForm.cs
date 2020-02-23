@@ -64,6 +64,7 @@ namespace SpotLight
             RenderAreaCheckBox.Checked = Properties.Settings.Default.DrawAreas;
             RenderSkyboxesCheckBox.Checked = Properties.Settings.Default.DrawSkyBoxes;
             PlayerComboBox.SelectedIndex = PlayerComboBox.FindStringExact(Properties.Settings.Default.PlayerChoice);
+            UniqueIDsCheckBox.Checked = Properties.Settings.Default.UniqueIDs;
         }
 
         private LevelEditorForm Home;
@@ -159,6 +160,12 @@ namespace SpotLight
         private void PlayerComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.PlayerChoice = PlayerComboBox.SelectedItem.ToString();
+            Properties.Settings.Default.Save();
+        }
+
+        private void UniqueIDsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.UniqueIDs = UniqueIDsCheckBox.Checked;
             Properties.Settings.Default.Save();
         }
     }
