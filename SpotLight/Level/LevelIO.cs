@@ -24,7 +24,7 @@ namespace SpotLight.Level
         /// <param name="zone"></param>
         /// <param name="objectsByReference"></param>
         /// <returns></returns>
-        public static I3dWorldObject ParseObject(ArrayEntry objectEntry, SM3DWorldZone zone, Dictionary<long, I3dWorldObject> objectsByReference, out bool alreadyReferenced, Dictionary<string, I3dWorldObject> objectsByID = null)
+        public static I3dWorldObject ParseObject(ArrayEntry objectEntry, SM3DWorldZone zone, Dictionary<long, I3dWorldObject> objectsByReference, out bool alreadyInLinks, Dictionary<string, I3dWorldObject> objectsByID, bool isLinked = false)
         {
             ObjectInfo info = GetObjectInfo(ref objectEntry, zone);
 
@@ -42,9 +42,12 @@ namespace SpotLight.Level
                     objectsByID.Add(info.ID, obj);
                 else
                 {
-                    alreadyReferenced = true;
+                    alreadyInLinks = true;
 
                     obj = objectsByID[info.ID];
+
+                    if (!isLinked)
+                        alreadyInLinks = !zone.LinkedObjects.Remove(obj);
 
                     //in case this object was already read in another file
                     if (!objectsByReference.ContainsKey(objectEntry.Position))
@@ -56,8 +59,10 @@ namespace SpotLight.Level
 
             if (!objectsByReference.ContainsKey(objectEntry.Position))
                 objectsByReference.Add(objectEntry.Position, obj);
+            else if (!isLinked)
+                zone.LinkedObjects.Remove(obj);
 
-            alreadyReferenced = false;
+            alreadyInLinks = false;
 
             if (loadLinks)
             {
@@ -74,7 +79,7 @@ namespace SpotLight.Level
                         }
                         else
                         {
-                            I3dWorldObject _obj = ParseObject(linked, zone, objectsByReference, out bool linkedAlreadyReferenced, objectsByID);
+                            I3dWorldObject _obj = ParseObject(linked, zone, objectsByReference, out bool linkedAlreadyReferenced, objectsByID, true);
                             _obj.AddLinkDestination(link.Key, obj);
                             obj.Links[link.Key].Add(_obj);
                             if (zone != null && !linkedAlreadyReferenced)
