@@ -460,8 +460,6 @@ Would you like to rebuild the database from your 3DW Files?",
             }
         }
 
-        const string objectListName = SM3DWorldZone.MAP_PREFIX + "ObjectList";
-
         public void OpenZone(SM3DWorldZone zone)
         {
             SM3DWorldScene scene = new SM3DWorldScene(zone);
@@ -485,13 +483,6 @@ Would you like to rebuild the database from your 3DW Files?",
                 scene.GL_Control.CamRotY = HALF_PI / 4;
                 scene.FocusOn(zone.ObjLists[playerListName][0]);
             }
-            #endregion
-
-            #region setup UI
-            MainSceneListView.Enabled = true;
-            MainSceneListView.SetRootList(objectListName);
-            MainSceneListView.Refresh();
-
             #endregion
         }
 
@@ -776,10 +767,10 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
 
             MainSceneListView.RootLists.Clear();
 
-            if (ZoneListBox.SelectedIndex == 0) //main zone selected
-                MainSceneListView.RootLists.Add("Zones", currentScene.ZonePlacements);
+            MainSceneListView.RootLists.Add("Common_Linked", currentScene.EditZone.LinkedObjects);
 
-            MainSceneListView.RootLists.Add("Linked", currentScene.EditZone.LinkedObjects);
+            if (ZoneListBox.SelectedIndex == 0) //main zone selected
+                MainSceneListView.RootLists.Add("Common_ZoneList", currentScene.ZonePlacements);
 
             foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
             {
@@ -790,7 +781,13 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
             currentScene.SetupObjectUIControl(ObjectUIControl);
             LevelGLControlModern.Refresh();
 
-            MainSceneListView.SetRootList(objectListName);
+            if(zone.HasCategoryMap)
+                MainSceneListView.SetRootList(SM3DWorldZone.MAP_PREFIX+"ObjectList");
+            else if(zone.HasCategoryDesign)
+                MainSceneListView.SetRootList(SM3DWorldZone.DESIGN_PREFIX + "ObjectList");
+            else
+                MainSceneListView.SetRootList(SM3DWorldZone.SOUND_PREFIX + "ObjectList");
+
             MainSceneListView.Refresh();
 
             EditIndividualButton.Enabled = ZoneListBox.SelectedIndex > 0;
