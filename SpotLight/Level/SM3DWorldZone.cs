@@ -237,7 +237,7 @@ namespace SpotLight.Level
             }
         }
 
-        private bool LoadCategory(string prefix, string categoryName, int extraFilesIndex, Dictionary<string, I3dWorldObject> objectsByID)
+        private bool LoadCategory(string prefix, string categoryName, int extraFilesIndex, Dictionary<string, I3dWorldObject> linkedObjsByID)
         {
             string fileName = $"{Directory}\\{LevelName}{categoryName}1.szs";
 
@@ -314,7 +314,7 @@ namespace SpotLight.Level
 
                         foreach (ArrayEntry obj in entry.IterArray())
                         {
-                            I3dWorldObject _obj = LevelIO.ParseObject(obj, this, objectsByReference, out bool alreadyReferenced, Properties.Settings.Default.UniqueIDs ? objectsByID : null);
+                            I3dWorldObject _obj = LevelIO.ParseObject(obj, this, objectsByReference, out bool alreadyReferenced, Properties.Settings.Default.UniqueIDs ? linkedObjsByID : null);
                             if (!alreadyReferenced)
                                 ObjLists[prefix + entry.Key].Add(_obj);
                         }

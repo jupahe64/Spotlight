@@ -24,7 +24,7 @@ namespace SpotLight.Level
         /// <param name="zone"></param>
         /// <param name="objectsByReference"></param>
         /// <returns></returns>
-        public static I3dWorldObject ParseObject(ArrayEntry objectEntry, SM3DWorldZone zone, Dictionary<long, I3dWorldObject> objectsByReference, out bool alreadyInLinks, Dictionary<string, I3dWorldObject> objectsByID, bool isLinked = false)
+        public static I3dWorldObject ParseObject(ArrayEntry objectEntry, SM3DWorldZone zone, Dictionary<long, I3dWorldObject> objectsByReference, out bool alreadyInLinks, Dictionary<string, I3dWorldObject> linkedObjsByID, bool isLinked = false)
         {
             ObjectInfo info = GetObjectInfo(ref objectEntry, zone);
 
@@ -36,15 +36,15 @@ namespace SpotLight.Level
             else
                 obj = new General3dWorldObject(info, zone, out loadLinks);
 
-            if (objectsByID != null)
+            if (linkedObjsByID != null && isLinked)
             {
-                if (!objectsByID.ContainsKey(info.ID))
-                    objectsByID.Add(info.ID, obj);
+                if (!linkedObjsByID.ContainsKey(info.ID))
+                    linkedObjsByID.Add(info.ID, obj);
                 else
                 {
                     alreadyInLinks = true;
 
-                    obj = objectsByID[info.ID];
+                    obj = linkedObjsByID[info.ID];
 
                     if (!isLinked)
                         alreadyInLinks = !zone.LinkedObjects.Remove(obj);
@@ -57,12 +57,16 @@ namespace SpotLight.Level
                 }
             }
 
+            alreadyInLinks = false;
+
             if (!objectsByReference.ContainsKey(objectEntry.Position))
                 objectsByReference.Add(objectEntry.Position, obj);
             else if (!isLinked)
+            {
+                obj = objectsByReference[objectEntry.Position];
                 zone.LinkedObjects.Remove(obj);
-
-            alreadyInLinks = false;
+                return obj;
+            }
 
             if (loadLinks)
             {
@@ -79,7 +83,7 @@ namespace SpotLight.Level
                         }
                         else
                         {
-                            I3dWorldObject _obj = ParseObject(linked, zone, objectsByReference, out bool linkedAlreadyReferenced, objectsByID, true);
+                            I3dWorldObject _obj = ParseObject(linked, zone, objectsByReference, out bool linkedAlreadyReferenced, linkedObjsByID, true);
                             _obj.AddLinkDestination(link.Key, obj);
                             obj.Links[link.Key].Add(_obj);
                             if (zone != null && !linkedAlreadyReferenced)
