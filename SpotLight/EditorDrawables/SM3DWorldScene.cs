@@ -892,7 +892,7 @@ namespace SpotLight.EditorDrawables
                 zonePlacement.Zone.Save();
             }
 
-            return true;
+            return IsSaved = IsSaved; //seems dumb but it's the only way to make sure the IsSavedChanged event is triggered
         }
 
         //[DllImport("User32")]
@@ -958,7 +958,7 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-            return true;
+            return IsSaved = IsSaved; //seems dumb but it's the only way to make sure the IsSavedChanged event is triggered
         }
 
         public void FocusOn(IEditableObject obj)

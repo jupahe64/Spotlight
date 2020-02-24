@@ -334,7 +334,10 @@ Would you like to rebuild the database from your 3DW Files?",
                 return;
 
             if (currentScene.SaveAs())
+            {
                 SpotlightToolStripStatusLabel.Text = "Level saved!";
+                ZoneDocumentTabControl.SelectedTab.Name = currentScene.ToString(); //level name might have changed
+            }
             else
                 SpotlightToolStripStatusLabel.Text = "Save Cancelled or Failed.";
         }
