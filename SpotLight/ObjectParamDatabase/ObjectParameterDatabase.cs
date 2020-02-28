@@ -757,7 +757,10 @@ namespace Spotlight.ObjectInformationDatabase
                 FS.Read(Read, 0, 2);
                 ushort PropCount = BitConverter.ToUInt16(Read, 0);
                 for (int i = 0; i < PropCount; i++)
-                    NewInfo.PropertyNotes.Add(new KeyValuePair<string, string>(FS.ReadString(), FS.ReadString()));
+                {
+                    NewInfo.PropertyNames.Add(FS.ReadString());
+                    NewInfo.PropertyDescriptions.Add(FS.ReadString());
+                }
                 ObjectInformations.Add(NewInfo);
             }
             FS.Close();
@@ -777,14 +780,14 @@ namespace Spotlight.ObjectInformationDatabase
                 FS.Write(write, 0, write.Length);
                 FS.WriteByte(0x00);
 
-                FS.Write(BitConverter.GetBytes((ushort)ObjectInformations[i].PropertyNotes.Count), 0, 2);
-                for (int j = 0; j < ObjectInformations[i].PropertyNotes.Count; j++)
+                FS.Write(BitConverter.GetBytes((ushort)ObjectInformations[i].PropertyNames.Count), 0, 2);
+                for (int j = 0; j < ObjectInformations[i].PropertyNames.Count; j++)
                 {
-                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyNotes[j].Key);
+                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyNames[j]);
                     FS.Write(write, 0, write.Length);
                     FS.WriteByte(0x00);
 
-                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyNotes[j].Value);
+                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyDescriptions[j]);
                     FS.Write(write, 0, write.Length);
                     FS.WriteByte(0x00);
                 }
@@ -796,7 +799,7 @@ namespace Spotlight.ObjectInformationDatabase
         {
             List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
             if (found.Count == 0)
-                return new Information() { ClassName = ObjectName, Description = "No Description Found", PropertyNotes = new List<KeyValuePair<string, string>>() };
+                return new Information() { ClassName = ObjectName, Description = "No Description Found" };
             return found[0];
         }
 
@@ -813,17 +816,38 @@ namespace Spotlight.ObjectInformationDatabase
                     found[0].Description = Description;
             }
         }
-        public void SetInformation(string ObjectName, Information Info)
+        public void SetProperty(string ObjectName, string Proprty, string Description)
         {
             List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
             if (found.Count == 0)
-                ObjectInformations.Add(Info);
+                ObjectInformations.Add(new Information() { ClassName = ObjectName, Description = "No Description Found", PropertyNames = new List<string>() { Proprty }, PropertyDescriptions = new List<string>() { Description } });
             else
             {
-                if (Info == null)
-                    ObjectInformations.Remove(found[0]);
+                if (Description.Length == 0)
+                {
+                    for (int j = 0; j < found[0].PropertyNames.Count; j++)
+                    {
+                        if (found[0].PropertyNames[j].Equals(Proprty))
+                        {
+                            found[0].PropertyNames.RemoveAt(j);
+                            found[0].PropertyDescriptions.RemoveAt(j);
+                            break;
+                        }
+                    }
+                }
                 else
-                    found[0] = Info;
+                { 
+                    for (int j = 0; j < found[0].PropertyNames.Count; j++)
+                    {
+                        if (found[0].PropertyNames[j].Equals(Proprty))
+                        {
+                            found[0].PropertyDescriptions[j] = Description;
+                            return;
+                        }
+                    }
+                    found[0].PropertyNames.Add(Proprty);
+                    found[0].PropertyDescriptions.Add(Description);
+                }
             }
         }
         /// <summary>
@@ -836,38 +860,15 @@ namespace Spotlight.ObjectInformationDatabase
     {
         public string ClassName;
         public string Description;
-        /// <summary>
-        /// Key = Name | Value = Description
-        /// </summary>
-        public List<KeyValuePair<string, string>> PropertyNotes = new List<KeyValuePair<string, string>>();
+        public List<string> PropertyNames = new List<string>();
+        public List<string> PropertyDescriptions = new List<string>();
 
         public string GetNoteForProperty(string PropertyName)
         {
-            for (int i = 0; i < PropertyNotes.Count; i++)
-                if (PropertyNotes[i].Key.Equals(PropertyName))
-                    return PropertyNotes[i].Value;
+            for (int i = 0; i < PropertyNames.Count; i++)
+                if (PropertyNames[i].Equals(PropertyName))
+                    return PropertyDescriptions[i];
             return "No Description Found";
-        }
-
-        public void SetNoteForProperty(string PropertyName, string Note)
-        {
-            for (int i = 0; i < PropertyNotes.Count; i++)
-            {
-                if (PropertyNotes[i].Key.Equals(PropertyName))
-                {
-                    if (Note.Length == 0)
-                    {
-                        PropertyNotes.RemoveAt(i);
-                        return;
-                    }
-                    else
-                    { 
-                        PropertyNotes[i] = new KeyValuePair<string, string>(PropertyNotes[0].Key, Note);
-                        return;
-                    }
-                }
-            }
-            PropertyNotes.Add(new KeyValuePair<string, string>(PropertyName, Note));
         }
     }
 }

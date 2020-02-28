@@ -245,8 +245,7 @@ namespace SpotLight
             if (Loading || ObjectSelectListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
                 return;
             Information temp = ODD.GetInformation(ObjectSelectListView.SelectedItems[0].SubItems[0].Text);
-            temp.SetNoteForProperty(PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
-            ODD.SetInformation(ObjectSelectListView.SelectedItems[0].SubItems[0].Text, temp);
+            ODD.SetProperty(ObjectSelectListView.SelectedItems[0].SubItems[0].Text, PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
             PropertyNotesListView.SelectedItems[0].SubItems[2].Text = PropertyHintTextBox.Text;
             Edited = true;
         }
