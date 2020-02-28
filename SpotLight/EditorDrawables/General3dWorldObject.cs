@@ -174,6 +174,9 @@ namespace SpotLight.EditorDrawables
 
                 foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
                 {
+                    if (keyValuePair.Value.Count == 0)
+                        continue;
+
                     ArrayNode linkNode = writer.CreateArrayNode(keyValuePair.Value);
 
                     foreach (I3dWorldObject obj in keyValuePair.Value)
