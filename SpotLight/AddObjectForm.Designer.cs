@@ -40,44 +40,44 @@
             System.Windows.Forms.ListViewGroup listViewGroup10 = new System.Windows.Forms.ListViewGroup("Uncategorized", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewGroup listViewGroup11 = new System.Windows.Forms.ListViewGroup("Search Results: {RESULT}", System.Windows.Forms.HorizontalAlignment.Left);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddObjectForm));
-            this.ObjectSelectListView = new System.Windows.Forms.ListView();
+            this.DBEntryListView = new System.Windows.Forms.ListView();
             this.ClassNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ObjectCountColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ModelCountColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ObjectDescriptionTextBox = new System.Windows.Forms.TextBox();
             this.SelectObjectButton = new System.Windows.Forms.Button();
             this.ObjectTypeTabControl = new System.Windows.Forms.TabControl();
             this.ObjectFromDBTab = new System.Windows.Forms.TabPage();
-            this.SearchLabel = new System.Windows.Forms.Label();
+            this.SearchPanel = new System.Windows.Forms.Panel();
             this.SearchTextBox = new System.Windows.Forms.TextBox();
+            this.SearchLabel = new System.Windows.Forms.Label();
             this.RailTab = new System.Windows.Forms.TabPage();
             this.RailTypeLabel = new System.Windows.Forms.Label();
             this.RailTypeComboBox = new System.Windows.Forms.ComboBox();
-            this.ObjectCountColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
-            this.SearchPanel = new System.Windows.Forms.Panel();
-            this.ModelCountColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.ClassNameLabel = new System.Windows.Forms.Label();
-            this.AddSettingsPanel = new System.Windows.Forms.Panel();
             this.PropertyNotesListView = new System.Windows.Forms.ListView();
-            this.SelectObjectLabel = new System.Windows.Forms.Label();
-            this.AddSettingsSplitContainer = new System.Windows.Forms.SplitContainer();
-            this.SelectObjectListView = new System.Windows.Forms.ListView();
-            this.PropertyLabel = new System.Windows.Forms.Label();
             this.NameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TypeColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.DescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.PropertyHintTextBox = new System.Windows.Forms.TextBox();
-            this.SelectModelListView = new System.Windows.Forms.ListView();
-            this.SelectModelLabel = new System.Windows.Forms.Label();
+            this.PropertyLabel = new System.Windows.Forms.Label();
+            this.AddSettingsPanel = new System.Windows.Forms.Panel();
+            this.AddSettingsSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.SelectObjectListView = new System.Windows.Forms.ListView();
             this.ObjectNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SelectObjectLabel = new System.Windows.Forms.Label();
+            this.SelectModelListView = new System.Windows.Forms.ListView();
             this.ModelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SelectModelLabel = new System.Windows.Forms.Label();
+            this.ClassNameLabel = new System.Windows.Forms.Label();
             this.ObjectTypeTabControl.SuspendLayout();
             this.ObjectFromDBTab.SuspendLayout();
+            this.SearchPanel.SuspendLayout();
             this.RailTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
-            this.SearchPanel.SuspendLayout();
             this.AddSettingsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AddSettingsSplitContainer)).BeginInit();
             this.AddSettingsSplitContainer.Panel1.SuspendLayout();
@@ -85,16 +85,16 @@
             this.AddSettingsSplitContainer.SuspendLayout();
             this.SuspendLayout();
             // 
-            // ObjectSelectListView
+            // DBEntryListView
             // 
-            this.ObjectSelectListView.AutoArrange = false;
-            this.ObjectSelectListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.DBEntryListView.AutoArrange = false;
+            this.DBEntryListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.ClassNameColumnHeader,
             this.ObjectCountColumnHeader,
             this.ModelCountColumnHeader});
-            this.ObjectSelectListView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ObjectSelectListView.FullRowSelect = true;
-            this.ObjectSelectListView.GridLines = true;
+            this.DBEntryListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.DBEntryListView.FullRowSelect = true;
+            this.DBEntryListView.GridLines = true;
             listViewGroup1.Header = "Areas";
             listViewGroup1.Name = "AreaListViewGroup";
             listViewGroup2.Header = "Checkpoints";
@@ -117,7 +117,7 @@
             listViewGroup10.Name = "UncategorizedListViewGroup";
             listViewGroup11.Header = "Search Results: {RESULT}";
             listViewGroup11.Name = "SearchResultListViewGroup";
-            this.ObjectSelectListView.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            this.DBEntryListView.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
             listViewGroup1,
             listViewGroup2,
             listViewGroup3,
@@ -129,20 +129,30 @@
             listViewGroup9,
             listViewGroup10,
             listViewGroup11});
-            this.ObjectSelectListView.HideSelection = false;
-            this.ObjectSelectListView.Location = new System.Drawing.Point(3, 25);
-            this.ObjectSelectListView.MultiSelect = false;
-            this.ObjectSelectListView.Name = "ObjectSelectListView";
-            this.ObjectSelectListView.Size = new System.Drawing.Size(264, 434);
-            this.ObjectSelectListView.TabIndex = 0;
-            this.ObjectSelectListView.UseCompatibleStateImageBehavior = false;
-            this.ObjectSelectListView.View = System.Windows.Forms.View.Details;
-            this.ObjectSelectListView.SelectedIndexChanged += new System.EventHandler(this.ObjectSelectListView_SelectedIndexChanged);
+            this.DBEntryListView.HideSelection = false;
+            this.DBEntryListView.Location = new System.Drawing.Point(3, 25);
+            this.DBEntryListView.MultiSelect = false;
+            this.DBEntryListView.Name = "DBEntryListView";
+            this.DBEntryListView.Size = new System.Drawing.Size(264, 434);
+            this.DBEntryListView.TabIndex = 0;
+            this.DBEntryListView.UseCompatibleStateImageBehavior = false;
+            this.DBEntryListView.View = System.Windows.Forms.View.Details;
+            this.DBEntryListView.SelectedIndexChanged += new System.EventHandler(this.ObjectSelectListView_SelectedIndexChanged);
             // 
             // ClassNameColumnHeader
             // 
             this.ClassNameColumnHeader.Text = "Class Name";
             this.ClassNameColumnHeader.Width = 143;
+            // 
+            // ObjectCountColumnHeader
+            // 
+            this.ObjectCountColumnHeader.Text = "Objects";
+            this.ObjectCountColumnHeader.Width = 48;
+            // 
+            // ModelCountColumnHeader
+            // 
+            this.ModelCountColumnHeader.Text = "Models";
+            this.ModelCountColumnHeader.Width = 47;
             // 
             // ObjectDescriptionTextBox
             // 
@@ -178,7 +188,7 @@
             // 
             // ObjectFromDBTab
             // 
-            this.ObjectFromDBTab.Controls.Add(this.ObjectSelectListView);
+            this.ObjectFromDBTab.Controls.Add(this.DBEntryListView);
             this.ObjectFromDBTab.Controls.Add(this.SearchPanel);
             this.ObjectFromDBTab.Location = new System.Drawing.Point(4, 22);
             this.ObjectFromDBTab.Name = "ObjectFromDBTab";
@@ -187,6 +197,25 @@
             this.ObjectFromDBTab.TabIndex = 0;
             this.ObjectFromDBTab.Text = "Objects";
             this.ObjectFromDBTab.UseVisualStyleBackColor = true;
+            // 
+            // SearchPanel
+            // 
+            this.SearchPanel.Controls.Add(this.SearchTextBox);
+            this.SearchPanel.Controls.Add(this.SearchLabel);
+            this.SearchPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.SearchPanel.Location = new System.Drawing.Point(3, 3);
+            this.SearchPanel.Name = "SearchPanel";
+            this.SearchPanel.Size = new System.Drawing.Size(264, 22);
+            this.SearchPanel.TabIndex = 3;
+            // 
+            // SearchTextBox
+            // 
+            this.SearchTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SearchTextBox.Location = new System.Drawing.Point(44, 0);
+            this.SearchTextBox.Name = "SearchTextBox";
+            this.SearchTextBox.Size = new System.Drawing.Size(220, 20);
+            this.SearchTextBox.TabIndex = 1;
+            this.SearchTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.SearchTextBox_KeyUp);
             // 
             // SearchLabel
             // 
@@ -198,15 +227,6 @@
             this.SearchLabel.TabIndex = 2;
             this.SearchLabel.Text = "Search:";
             // 
-            // SearchTextBox
-            // 
-            this.SearchTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SearchTextBox.Location = new System.Drawing.Point(44, 0);
-            this.SearchTextBox.Name = "SearchTextBox";
-            this.SearchTextBox.Size = new System.Drawing.Size(220, 20);
-            this.SearchTextBox.TabIndex = 1;
-            this.SearchTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.SearchTextBox_KeyUp);
-            // 
             // RailTab
             // 
             this.RailTab.Controls.Add(this.RailTypeLabel);
@@ -214,7 +234,7 @@
             this.RailTab.Location = new System.Drawing.Point(4, 22);
             this.RailTab.Name = "RailTab";
             this.RailTab.Padding = new System.Windows.Forms.Padding(3);
-            this.RailTab.Size = new System.Drawing.Size(257, 462);
+            this.RailTab.Size = new System.Drawing.Size(270, 462);
             this.RailTab.TabIndex = 1;
             this.RailTab.Text = "Rails";
             this.RailTab.UseVisualStyleBackColor = true;
@@ -241,11 +261,6 @@
             this.RailTypeComboBox.Size = new System.Drawing.Size(145, 21);
             this.RailTypeComboBox.TabIndex = 0;
             // 
-            // ObjectCountColumnHeader
-            // 
-            this.ObjectCountColumnHeader.Text = "Objects";
-            this.ObjectCountColumnHeader.Width = 48;
-            // 
             // MainSplitContainer
             // 
             this.MainSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -268,41 +283,6 @@
             this.MainSplitContainer.SplitterDistance = 278;
             this.MainSplitContainer.TabIndex = 5;
             // 
-            // SearchPanel
-            // 
-            this.SearchPanel.Controls.Add(this.SearchTextBox);
-            this.SearchPanel.Controls.Add(this.SearchLabel);
-            this.SearchPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.SearchPanel.Location = new System.Drawing.Point(3, 3);
-            this.SearchPanel.Name = "SearchPanel";
-            this.SearchPanel.Size = new System.Drawing.Size(264, 22);
-            this.SearchPanel.TabIndex = 3;
-            // 
-            // ModelCountColumnHeader
-            // 
-            this.ModelCountColumnHeader.Text = "Models";
-            this.ModelCountColumnHeader.Width = 47;
-            // 
-            // ClassNameLabel
-            // 
-            this.ClassNameLabel.AutoSize = true;
-            this.ClassNameLabel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ClassNameLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ClassNameLabel.Location = new System.Drawing.Point(0, 0);
-            this.ClassNameLabel.Name = "ClassNameLabel";
-            this.ClassNameLabel.Size = new System.Drawing.Size(163, 23);
-            this.ClassNameLabel.TabIndex = 2;
-            this.ClassNameLabel.Text = "Nothing Selected";
-            // 
-            // AddSettingsPanel
-            // 
-            this.AddSettingsPanel.Controls.Add(this.AddSettingsSplitContainer);
-            this.AddSettingsPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.AddSettingsPanel.Location = new System.Drawing.Point(0, 111);
-            this.AddSettingsPanel.Name = "AddSettingsPanel";
-            this.AddSettingsPanel.Size = new System.Drawing.Size(502, 116);
-            this.AddSettingsPanel.TabIndex = 3;
-            // 
             // PropertyNotesListView
             // 
             this.PropertyNotesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -321,16 +301,50 @@
             this.PropertyNotesListView.View = System.Windows.Forms.View.Details;
             this.PropertyNotesListView.SelectedIndexChanged += new System.EventHandler(this.PropertyNotesListView_SelectedIndexChanged);
             // 
-            // SelectObjectLabel
+            // NameColumnHeader
             // 
-            this.SelectObjectLabel.AutoSize = true;
-            this.SelectObjectLabel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.SelectObjectLabel.Font = new System.Drawing.Font("Arial Black", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SelectObjectLabel.Location = new System.Drawing.Point(0, 0);
-            this.SelectObjectLabel.Name = "SelectObjectLabel";
-            this.SelectObjectLabel.Size = new System.Drawing.Size(101, 17);
-            this.SelectObjectLabel.TabIndex = 3;
-            this.SelectObjectLabel.Text = "Select Object:";
+            this.NameColumnHeader.Text = "Property Name";
+            this.NameColumnHeader.Width = 102;
+            // 
+            // TypeColumnHeader
+            // 
+            this.TypeColumnHeader.Text = "Type";
+            this.TypeColumnHeader.Width = 58;
+            // 
+            // DescriptionColumnHeader
+            // 
+            this.DescriptionColumnHeader.Text = "Description";
+            this.DescriptionColumnHeader.Width = 337;
+            // 
+            // PropertyHintTextBox
+            // 
+            this.PropertyHintTextBox.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.PropertyHintTextBox.Location = new System.Drawing.Point(0, 433);
+            this.PropertyHintTextBox.Multiline = true;
+            this.PropertyHintTextBox.Name = "PropertyHintTextBox";
+            this.PropertyHintTextBox.Size = new System.Drawing.Size(502, 55);
+            this.PropertyHintTextBox.TabIndex = 6;
+            this.PropertyHintTextBox.TextChanged += new System.EventHandler(this.PropertyHintTextBox_TextChanged);
+            // 
+            // PropertyLabel
+            // 
+            this.PropertyLabel.AutoSize = true;
+            this.PropertyLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.PropertyLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PropertyLabel.Location = new System.Drawing.Point(0, 227);
+            this.PropertyLabel.Name = "PropertyLabel";
+            this.PropertyLabel.Size = new System.Drawing.Size(132, 23);
+            this.PropertyLabel.TabIndex = 5;
+            this.PropertyLabel.Text = "No Properties";
+            // 
+            // AddSettingsPanel
+            // 
+            this.AddSettingsPanel.Controls.Add(this.AddSettingsSplitContainer);
+            this.AddSettingsPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.AddSettingsPanel.Location = new System.Drawing.Point(0, 111);
+            this.AddSettingsPanel.Name = "AddSettingsPanel";
+            this.AddSettingsPanel.Size = new System.Drawing.Size(502, 116);
+            this.AddSettingsPanel.TabIndex = 3;
             // 
             // AddSettingsSplitContainer
             // 
@@ -365,41 +379,21 @@
             this.SelectObjectListView.UseCompatibleStateImageBehavior = false;
             this.SelectObjectListView.View = System.Windows.Forms.View.Details;
             // 
-            // PropertyLabel
+            // ObjectNameColumnHeader
             // 
-            this.PropertyLabel.AutoSize = true;
-            this.PropertyLabel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.PropertyLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PropertyLabel.Location = new System.Drawing.Point(0, 227);
-            this.PropertyLabel.Name = "PropertyLabel";
-            this.PropertyLabel.Size = new System.Drawing.Size(132, 23);
-            this.PropertyLabel.TabIndex = 5;
-            this.PropertyLabel.Text = "No Properties";
+            this.ObjectNameColumnHeader.Text = "Name";
+            this.ObjectNameColumnHeader.Width = 217;
             // 
-            // NameColumnHeader
+            // SelectObjectLabel
             // 
-            this.NameColumnHeader.Text = "Property Name";
-            this.NameColumnHeader.Width = 102;
-            // 
-            // TypeColumnHeader
-            // 
-            this.TypeColumnHeader.Text = "Type";
-            this.TypeColumnHeader.Width = 58;
-            // 
-            // DescriptionColumnHeader
-            // 
-            this.DescriptionColumnHeader.Text = "Description";
-            this.DescriptionColumnHeader.Width = 337;
-            // 
-            // PropertyHintTextBox
-            // 
-            this.PropertyHintTextBox.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.PropertyHintTextBox.Location = new System.Drawing.Point(0, 433);
-            this.PropertyHintTextBox.Multiline = true;
-            this.PropertyHintTextBox.Name = "PropertyHintTextBox";
-            this.PropertyHintTextBox.Size = new System.Drawing.Size(502, 55);
-            this.PropertyHintTextBox.TabIndex = 6;
-            this.PropertyHintTextBox.TextChanged += new System.EventHandler(this.PropertyHintTextBox_TextChanged);
+            this.SelectObjectLabel.AutoSize = true;
+            this.SelectObjectLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.SelectObjectLabel.Font = new System.Drawing.Font("Arial Black", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SelectObjectLabel.Location = new System.Drawing.Point(0, 0);
+            this.SelectObjectLabel.Name = "SelectObjectLabel";
+            this.SelectObjectLabel.Size = new System.Drawing.Size(101, 17);
+            this.SelectObjectLabel.TabIndex = 3;
+            this.SelectObjectLabel.Text = "Select Object:";
             // 
             // SelectModelListView
             // 
@@ -415,6 +409,11 @@
             this.SelectModelListView.UseCompatibleStateImageBehavior = false;
             this.SelectModelListView.View = System.Windows.Forms.View.Details;
             // 
+            // ModelNameColumnHeader
+            // 
+            this.ModelNameColumnHeader.Text = "Name";
+            this.ModelNameColumnHeader.Width = 235;
+            // 
             // SelectModelLabel
             // 
             this.SelectModelLabel.AutoSize = true;
@@ -426,15 +425,16 @@
             this.SelectModelLabel.TabIndex = 5;
             this.SelectModelLabel.Text = "Select Model:";
             // 
-            // ObjectNameColumnHeader
+            // ClassNameLabel
             // 
-            this.ObjectNameColumnHeader.Text = "Name";
-            this.ObjectNameColumnHeader.Width = 217;
-            // 
-            // ModelNameColumnHeader
-            // 
-            this.ModelNameColumnHeader.Text = "Name";
-            this.ModelNameColumnHeader.Width = 235;
+            this.ClassNameLabel.AutoSize = true;
+            this.ClassNameLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ClassNameLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ClassNameLabel.Location = new System.Drawing.Point(0, 0);
+            this.ClassNameLabel.Name = "ClassNameLabel";
+            this.ClassNameLabel.Size = new System.Drawing.Size(163, 23);
+            this.ClassNameLabel.TabIndex = 2;
+            this.ClassNameLabel.Text = "Nothing Selected";
             // 
             // AddObjectForm
             // 
@@ -453,6 +453,8 @@
             this.Load += new System.EventHandler(this.AddObjectForm_Load);
             this.ObjectTypeTabControl.ResumeLayout(false);
             this.ObjectFromDBTab.ResumeLayout(false);
+            this.SearchPanel.ResumeLayout(false);
+            this.SearchPanel.PerformLayout();
             this.RailTab.ResumeLayout(false);
             this.RailTab.PerformLayout();
             this.MainSplitContainer.Panel1.ResumeLayout(false);
@@ -460,8 +462,6 @@
             this.MainSplitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).EndInit();
             this.MainSplitContainer.ResumeLayout(false);
-            this.SearchPanel.ResumeLayout(false);
-            this.SearchPanel.PerformLayout();
             this.AddSettingsPanel.ResumeLayout(false);
             this.AddSettingsSplitContainer.Panel1.ResumeLayout(false);
             this.AddSettingsSplitContainer.Panel1.PerformLayout();
@@ -475,7 +475,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ListView ObjectSelectListView;
+        private System.Windows.Forms.ListView DBEntryListView;
         private System.Windows.Forms.ColumnHeader ClassNameColumnHeader;
         private System.Windows.Forms.TextBox ObjectDescriptionTextBox;
         private System.Windows.Forms.Button SelectObjectButton;

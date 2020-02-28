@@ -24,15 +24,15 @@ namespace SpotLight
         {
             InitializeComponent();
             CenterToParent();
-            ObjectSelectListView.ShowGroups = true;
-            ObjectSelectListView.DoubleBuffering(true);
+            DBEntryListView.ShowGroups = true;
+            DBEntryListView.DoubleBuffering(true);
             FullItems = new ListViewItem[database.ObjectParameters.Count];
             for (int i = 0; i < database.ObjectParameters.Count; i++)
             {
                 ListViewGroup LVG = null;
                 if (database.ObjectParameters[i].CategoryID >= 0 && database.ObjectParameters[i].CategoryID <= 7)
                 {
-                    LVG = ObjectSelectListView.Groups[database.ObjectParameters[i].CategoryID];
+                    LVG = DBEntryListView.Groups[database.ObjectParameters[i].CategoryID];
                 }
                 else if (database.ObjectParameters[i].CategoryID == 8)
                 {
@@ -42,42 +42,43 @@ namespace SpotLight
                 ListViewItem LVI = new ListViewItem(new string[] { database.ObjectParameters[i].ClassName, database.ObjectParameters[i].ObjectNames.Count.ToString().PadLeft(3, '0'), database.ObjectParameters[i].ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = LVG, Tag = database.ObjectParameters[i] };
                 FullItems[i] = LVI;
             }
-            ObjectSelectListView.Items.AddRange(FullItems);
+            DBEntryListView.Items.AddRange(FullItems);
             if (System.IO.File.Exists(Program.SODDPath))
-                ODD = new ObjectInformationDatabase(Program.SODDPath);
+                OID = new ObjectInformationDatabase(Program.SODDPath);
 
             this.scene = scene;
             this.control = control;
-            this.database = database;
+            OPD = database;
         }
 
         readonly SM3DWorldScene scene;
         readonly GL_ControlModern control;
-        readonly ObjectParameterDatabase database;
-        ListViewItem[] FullItems;
+        readonly ObjectParameterDatabase OPD;
+        readonly ListViewItem[] FullItems;
 
-        public int SelectedIndex => ObjectSelectListView.SelectedIndices[0];
+        public string SelectedClassName => DBEntryListView.SelectedItems[0].SubItems[0].Text;
         bool Loading = false;
         bool Edited = false;
-        ObjectInformationDatabase ODD = new ObjectInformationDatabase();
+        readonly ObjectInformationDatabase OID = new ObjectInformationDatabase();
         private void ObjectSelectListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ObjectSelectListView.SelectedItems.Count == 0)
+            SelectObjectListView.Items.Clear();
+            SelectModelListView.Items.Clear();
+            PropertyNotesListView.Items.Clear();
+
+            if (DBEntryListView.SelectedItems.Count == 0)
             {
                 ClassNameLabel.Text = "Nothing Selected";
-                SelectObjectListView.Items.Clear();
-                SelectModelListView.Items.Clear();
-                PropertyNotesListView.Items.Clear();
                 SelectObjectListView.Enabled = false;
                 SelectModelListView.Enabled = false;
                 PropertyNotesListView.Enabled = false;
                 return;
             }
             Loading = true;
-            Information tmp = ODD.GetInformation(ObjectSelectListView.SelectedItems[0].SubItems[0].Text);
+            Information tmp = OID.GetInformation(SelectedClassName);
             ClassNameLabel.Text = tmp.ClassName;
             ObjectDescriptionTextBox.Text = tmp.Description;
-            Parameter Param = (Parameter)ObjectSelectListView.SelectedItems[0].Tag;
+            Parameter Param = (Parameter)DBEntryListView.SelectedItems[0].Tag;
             for (int i = 0; i < Param.ObjectNames.Count; i++)
             {
                 SelectObjectListView.Items.Add(new ListViewItem(new string[] { Param.ObjectNames[i] }));
@@ -103,9 +104,9 @@ namespace SpotLight
 
         private void ObjectDescriptionTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading || ObjectSelectListView.SelectedItems.Count == 0)
+            if (Loading || DBEntryListView.SelectedItems.Count == 0)
                 return;
-            ODD.SetDescription(ObjectSelectListView.SelectedItems[0].SubItems[0].Text, ObjectDescriptionTextBox.Text);
+            OID.SetDescription(DBEntryListView.SelectedItems[0].SubItems[0].Text, ObjectDescriptionTextBox.Text);
             Edited = true;
         }
 
@@ -116,7 +117,7 @@ namespace SpotLight
                 DialogResult result = MessageBox.Show("You edited one or more object descriptions\nWould you like to save?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
-                    ODD.Save(Program.SODDPath);
+                    OID.Save(Program.SODDPath);
                 }
                 else if (result == DialogResult.Cancel)
                     e.Cancel = true;
@@ -126,13 +127,16 @@ namespace SpotLight
         {
             if (ObjectTypeTabControl.SelectedTab == ObjectFromDBTab)
             {
-                if (Loading || ObjectSelectListView.SelectedItems.Count == 0)
+                if (Loading || DBEntryListView.SelectedItems.Count == 0)
                 {
                     MessageBox.Show("You need to select an object from the Database", "No object selected", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 scene.ObjectPlaceDelegate = PlaceObjectFromDB;
+
+                selectedParameter = OPD.ObjectParameters.First(x => x.ClassName == SelectedClassName);
+
                 Close();
                 return;
 
@@ -163,18 +167,21 @@ namespace SpotLight
             Link
         }
 
+        Parameter selectedParameter;
+
         private (I3dWorldObject, ObjectList)[] PlaceObjectFromDB(Vector3 pos, SM3DWorldZone zone)
         {
-            Parameter entry = database.ObjectParameters[SelectedIndex];
-            Category category = (Category)entry.CategoryID;
+            Category category = (Category)selectedParameter.CategoryID;
 
             ObjectList objList;
             if (category == Category.Link)
                 objList = zone.LinkedObjects;
             else
-                objList = zone.ObjLists[SM3DWorldZone.MAP_PREFIX + category.ToString() + "List"];
+                objList = zone.ObjLists[selectedParameter.CategoryPrefix + category.ToString() + "List"];
 
-            General3dWorldObject obj = entry.ToGeneral3DWorldObject(zone.NextObjID(), pos);
+            General3dWorldObject obj = selectedParameter.ToGeneral3DWorldObject(zone.NextObjID(), pos,
+                SelectObjectListView.SelectedIndices.Count==1?SelectObjectListView.SelectedIndices[0]:-1,
+                SelectModelListView.SelectedIndices.Count == 1 ? SelectModelListView.SelectedIndices[0] : -1);
             obj.Prepare(control);
             return new (I3dWorldObject, ObjectList)[] { 
                 (obj, objList)
@@ -206,16 +213,16 @@ namespace SpotLight
         private void SearchTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             string Search = SearchTextBox.Text.ToLower();
-            ObjectSelectListView.Groups[10].Header = "Search Results: {RESULT}".Replace("{RESULT}", SearchTextBox.Text);
+            DBEntryListView.Groups[10].Header = "Search Results: {RESULT}".Replace("{RESULT}", SearchTextBox.Text);
             if (Search.Equals(""))
             {
-                ObjectSelectListView.Items.Clear();
-                ObjectSelectListView.Items.AddRange(FullItems);
+                DBEntryListView.Items.Clear();
+                DBEntryListView.Items.AddRange(FullItems);
             }
             else
             {
-                ObjectSelectListView.Items.Clear();
-                for (int i = 0; i < database.ObjectParameters.Count; i++)
+                DBEntryListView.Items.Clear();
+                for (int i = 0; i < OPD.ObjectParameters.Count; i++)
                 {
                     Parameter Param = (Parameter)FullItems[i].Tag;
                     if (!Param.ClassName.ToLower().Contains(Search))
@@ -223,16 +230,16 @@ namespace SpotLight
 
 
 
-                    ObjectSelectListView.Items.Add(new ListViewItem(new string[] { Param.ClassName, Param.ObjectNames.Count.ToString().PadLeft(3,'0'), Param.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = ObjectSelectListView.Groups[10], Tag = Param });
+                    DBEntryListView.Items.Add(new ListViewItem(new string[] { Param.ClassName, Param.ObjectNames.Count.ToString().PadLeft(3,'0'), Param.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = DBEntryListView.Groups[10], Tag = Param });
                 }
-                if (ObjectSelectListView.Items.Count == 0)
-                    ObjectSelectListView.Items.Add(new ListViewItem(new string[] { "No Results for "+SearchTextBox.Text, "---", "---" }) { Group = ObjectSelectListView.Groups[10] });
+                if (DBEntryListView.Items.Count == 0)
+                    DBEntryListView.Items.Add(new ListViewItem(new string[] { "No Results for "+SearchTextBox.Text, "---", "---" }) { Group = DBEntryListView.Groups[10] });
             }
         }
 
         private void PropertyNotesListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (Loading || ObjectSelectListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
+            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
                 return;
 
             Loading = true;
@@ -242,10 +249,10 @@ namespace SpotLight
 
         private void PropertyHintTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading || ObjectSelectListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
+            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
                 return;
-            Information temp = ODD.GetInformation(ObjectSelectListView.SelectedItems[0].SubItems[0].Text);
-            ODD.SetProperty(ObjectSelectListView.SelectedItems[0].SubItems[0].Text, PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
+            Information temp = OID.GetInformation(DBEntryListView.SelectedItems[0].SubItems[0].Text);
+            OID.SetProperty(DBEntryListView.SelectedItems[0].SubItems[0].Text, PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
             PropertyNotesListView.SelectedItems[0].SubItems[2].Text = PropertyHintTextBox.Text;
             Edited = true;
         }

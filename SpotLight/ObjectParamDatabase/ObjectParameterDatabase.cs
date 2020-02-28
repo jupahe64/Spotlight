@@ -400,6 +400,9 @@ namespace SpotLight.ObjectParamDatabase
     public abstract class Parameter
     {
         abstract internal string Identifier { get; set; }
+
+        abstract public string CategoryPrefix { get; }
+
         public virtual string ClassName { get; set; }
         public virtual byte CategoryID { get; set; }
         public virtual List<string> ObjectNames { get; set; }
@@ -600,6 +603,8 @@ namespace SpotLight.ObjectParamDatabase
     {
         internal override string Identifier { get => "OBJ"; set { } }
 
+        public override string CategoryPrefix => SM3DWorldZone.MAP_PREFIX;
+
         public override string ToString() => $"Map Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
     }
     /// <summary>
@@ -609,6 +614,8 @@ namespace SpotLight.ObjectParamDatabase
     {
         internal override string Identifier { get => "DSN"; set { } }
 
+        public override string CategoryPrefix => SM3DWorldZone.DESIGN_PREFIX;
+
         public override string ToString() => $"Design Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
     }
     /// <summary>
@@ -617,6 +624,8 @@ namespace SpotLight.ObjectParamDatabase
     public class SoundFXParameter : Parameter
     {
         internal override string Identifier { get => "SND"; set { } }
+
+        public override string CategoryPrefix => SM3DWorldZone.SOUND_PREFIX;
 
         public override string ToString() => $"Sound Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
     }
