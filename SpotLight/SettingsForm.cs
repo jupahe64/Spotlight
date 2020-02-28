@@ -51,7 +51,7 @@ namespace SpotLight
                     throw new Exception("Invalid Description File");
 
                 Version Check = new Version(FS.ReadByte(), FS.ReadByte());
-                ver = Check.Equals(Spotlight.ObjectDescDatabase.ObjectDescriptionDatabase.LatestVersion) ? Spotlight.ObjectDescDatabase.ObjectDescriptionDatabase.LatestVersion.ToString() : Check.ToString() + " (Outdated)";
+                ver = Check.Equals(Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion) ? Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + " (Outdated)";
                 FS.Close();
             }
             else

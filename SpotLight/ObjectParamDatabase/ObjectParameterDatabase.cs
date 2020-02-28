@@ -707,21 +707,27 @@ namespace SpotLight.ObjectParamDatabase
  * ==Pattern==
  * Object Name
  * Description
+ * <Properties>
  * repeat ^
+ * -----------
+ * PropertyCount - 0x02 (ushort)
+ * Property Name
+ * Property Description
+ * -----------
  */
-namespace Spotlight.ObjectDescDatabase
+namespace Spotlight.ObjectInformationDatabase
 {
-    public class ObjectDescriptionDatabase
+    public class ObjectInformationDatabase
     {
         public Version Version = LatestVersion;
-        private List<Description> ObjectDescriptions = new List<Description>();
-        public static Version LatestVersion { get; } = new Version(1, 0);
+        private List<Information> ObjectInformations = new List<Information>();
+        public static Version LatestVersion { get; } = new Version(1, 1);
 
-        public ObjectDescriptionDatabase()
+        public ObjectInformationDatabase()
         {
             //nothing lol
         }
-        public ObjectDescriptionDatabase(string Filename)
+        public ObjectInformationDatabase(string Filename)
         {
             FileStream FS = new FileStream(Filename, FileMode.Open);
             byte[] Read = new byte[4];
@@ -731,66 +737,137 @@ namespace Spotlight.ObjectDescDatabase
 
             Version Check = new Version(FS.ReadByte(), FS.ReadByte());
 
-            if (Check < Version)
-            {
-                FS.Close();
-                Version = Check;
-                return;
-            }
             FS.ReadByte();
             FS.ReadByte();
 
+            if (Check < Version)
+            {
+                //Version 1.0 backwards compatability
+                if (Check.Equals(new Version(1, 0)))
+                {
+                    while (FS.Position < FS.Length)
+                        ObjectInformations.Add(new Information() { ClassName = FS.ReadString(), Description = FS.ReadString() });
+                }
+                return;
+            }
             while (FS.Position < FS.Length)
-                ObjectDescriptions.Add(new Description() { ObjectName = FS.ReadString(), Text = FS.ReadString() });
+            {
+                Information NewInfo = new Information() { ClassName = FS.ReadString(), Description = FS.ReadString() };
+                Read = new byte[2];
+                FS.Read(Read, 0, 2);
+                ushort PropCount = BitConverter.ToUInt16(Read, 0);
+                for (int i = 0; i < PropCount; i++)
+                    NewInfo.PropertyNotes.Add(new KeyValuePair<string, string>(FS.ReadString(), FS.ReadString()));
+                ObjectInformations.Add(NewInfo);
+            }
+            FS.Close();
         }
 
         public void Save(string Filename)
         {
             FileStream FS = new FileStream(Filename, FileMode.Create);
             FS.Write(new byte[8] { (byte)'S', (byte)'O', (byte)'D', (byte)'D', (byte)Version.Major, (byte)Version.Minor, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Minor }, 0, 8);
-            for (int i = 0; i < ObjectDescriptions.Count; i++)
+            for (int i = 0; i < ObjectInformations.Count; i++)
             {
-                byte[] write = Encoding.GetEncoding(932).GetBytes(ObjectDescriptions[i].ObjectName);
+                byte[] write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].ClassName);
                 FS.Write(write,0,write.Length);
                 FS.WriteByte(0x00);
 
-                write = Encoding.GetEncoding(932).GetBytes(ObjectDescriptions[i].Text);
+                write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].Description);
                 FS.Write(write, 0, write.Length);
                 FS.WriteByte(0x00);
+
+                FS.Write(BitConverter.GetBytes((ushort)ObjectInformations[i].PropertyNotes.Count), 0, 2);
+                for (int j = 0; j < ObjectInformations[i].PropertyNotes.Count; j++)
+                {
+                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyNotes[j].Key);
+                    FS.Write(write, 0, write.Length);
+                    FS.WriteByte(0x00);
+
+                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyNotes[j].Value);
+                    FS.Write(write, 0, write.Length);
+                    FS.WriteByte(0x00);
+                }
             }
             FS.Close();
         }
 
-        public Description GetDescription(string ObjectName)
+        public Information GetInformation(string ObjectName)
         {
-            List<Description> found = ObjectDescriptions.Where(p => string.Equals(p.ObjectName, ObjectName)).ToList();
+            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
             if (found.Count == 0)
-                return new Description() { ObjectName = ObjectName, Text = "No Description Found" };
+                return new Information() { ClassName = ObjectName, Description = "No Description Found", PropertyNotes = new List<KeyValuePair<string, string>>() };
             return found[0];
         }
 
         public void SetDescription(string ObjectName, string Description)
         {
-            List<Description> found = ObjectDescriptions.Where(p => string.Equals(p.ObjectName, ObjectName)).ToList();
+            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
             if (found.Count == 0)
-                ObjectDescriptions.Add(new Description() { ObjectName = ObjectName, Text = Description });
+                ObjectInformations.Add(new Information() { ClassName = ObjectName, Description = Description });
             else
             {
                 if (Description.Length == 0)
-                    ObjectDescriptions.Remove(found[0]);
+                    ObjectInformations.Remove(found[0]);
                 else
-                    found[0].Text = Description;
+                    found[0].Description = Description;
+            }
+        }
+        public void SetInformation(string ObjectName, Information Info)
+        {
+            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
+            if (found.Count == 0)
+                ObjectInformations.Add(Info);
+            else
+            {
+                if (Info == null)
+                    ObjectInformations.Remove(found[0]);
+                else
+                    found[0] = Info;
             }
         }
         /// <summary>
         /// Clears all the Object descriptions from the database. Doesn't check to make sure the user actually wanted this though
         /// </summary>
-        public void Clear() => ObjectDescriptions.Clear();
+        public void Clear() => ObjectInformations.Clear();
     }
 
-    public class Description
+    public class Information
     {
-        public string ObjectName;
-        public string Text;
+        public string ClassName;
+        public string Description;
+        /// <summary>
+        /// Key = Name | Value = Description
+        /// </summary>
+        public List<KeyValuePair<string, string>> PropertyNotes = new List<KeyValuePair<string, string>>();
+
+        public string GetNoteForProperty(string PropertyName)
+        {
+            for (int i = 0; i < PropertyNotes.Count; i++)
+                if (PropertyNotes[i].Key.Equals(PropertyName))
+                    return PropertyNotes[i].Value;
+            return "No Description Found";
+        }
+
+        public void SetNoteForProperty(string PropertyName, string Note)
+        {
+            for (int i = 0; i < PropertyNotes.Count; i++)
+            {
+                if (PropertyNotes[i].Key.Equals(PropertyName))
+                {
+                    if (Note.Length == 0)
+                    {
+                        PropertyNotes.RemoveAt(i);
+                        return;
+                    }
+                    else
+                    { 
+                        PropertyNotes[i] = new KeyValuePair<string, string>(PropertyNotes[0].Key, Note);
+                        return;
+                    }
+                }
+            }
+            PropertyNotes.Add(new KeyValuePair<string, string>(PropertyName, Note));
+        }
     }
 }
