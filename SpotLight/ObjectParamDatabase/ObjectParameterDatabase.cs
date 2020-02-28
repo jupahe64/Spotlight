@@ -54,7 +54,7 @@ namespace SpotLight.ObjectParamDatabase
     {
         public Version Version = LatestVersion;
         public List<Parameter> ObjectParameters = new List<Parameter>();
-        public static Version LatestVersion { get; } = new Version(1, 5);
+        public static Version LatestVersion { get; } = new Version(1, 6);
 
         /// <summary>
         /// Create an empty Object Parameters File
@@ -210,7 +210,7 @@ namespace SpotLight.ObjectParamDatabase
                             if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
                             {
                                 ByamlNodeType type = propertyEntry.Value.NodeType;
-                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.ToString()));
+                                    ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                             }
                         }
 
@@ -231,7 +231,7 @@ namespace SpotLight.ObjectParamDatabase
                         foreach (var propertyEntry in Tmp.PropertyEntries)
                         {
                             ByamlNodeType type = propertyEntry.Value.NodeType;
-                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type.ToString()));
+                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                         }
 
                         foreach (string key in Tmp.LinkEntries.Keys)

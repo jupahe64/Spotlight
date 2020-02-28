@@ -390,7 +390,7 @@ namespace SpotLight.EditorDrawables
 
     public class RailPoint : PathPoint
     {
-        public override Vector3 GlobalPosition
+        public override Vector3 GlobalPos
         {
             get => Vector4.Transform(new Vector4(Position, 1), SceneDrawState.ZoneTransform.PositionTransform).Xyz;
             set => Position = Vector4.Transform(new Vector4(value, 1), SceneDrawState.ZoneTransform.PositionTransform.Inverted()).Xyz;
@@ -416,7 +416,7 @@ namespace SpotLight.EditorDrawables
 
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
         {
-            return Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition;
+            return Selected ? editorScene.CurrentAction.NewPos(GlobalPos) : GlobalPos;
         }
     }
 }
