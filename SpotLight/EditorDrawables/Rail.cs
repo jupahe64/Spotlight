@@ -108,7 +108,15 @@ namespace SpotLight.EditorDrawables
 
             loadLinks = false; //We don't expect Rails to have Links
         }
-
+        /// <summary>
+        /// Creates a new rail for 3DW
+        /// </summary>
+        /// <param name="pathPoints">List of Path Points to use in this rail</param>
+        /// <param name="iD">ID Of the rail</param>
+        /// <param name="isClosed">Is the path closed?</param>
+        /// <param name="isLadder">Unknown</param>
+        /// <param name="isReverseCoord">Reverses the order the rails are in</param>
+        /// <param name="railObjType"><see cref="RailObjType"/></param>
         public Rail(List<PathPoint> pathPoints, string iD, bool isClosed, bool isLadder, bool isReverseCoord, RailObjType railObjType)
             : base(pathPoints)
         {

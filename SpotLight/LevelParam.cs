@@ -146,7 +146,7 @@ namespace SpotLight
             for (int i = 0; i < temp.Count; i++)
                 Worlds.Add(new World(temp[i]));
 
-            File.WriteAllBytes("Original.byml",Data.Files["StageList.byml"]);
+            //File.WriteAllBytes("Original.byml",Data.Files["StageList.byml"]);
         }
 
         public void Save()
