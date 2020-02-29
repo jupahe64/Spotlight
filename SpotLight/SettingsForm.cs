@@ -168,5 +168,18 @@ namespace SpotLight
             Properties.Settings.Default.UniqueIDs = UniqueIDsCheckBox.Checked;
             Properties.Settings.Default.Save();
         }
+
+        private void ResetSpotlightButton_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("This will reset all your customizations, delete your Object Database and Description Database, and quit spotlight without saving.\nAre you sure you want to continue?","Warning",MessageBoxButtons.YesNo,MessageBoxIcon.Warning) == DialogResult.Yes)
+            {
+                if (File.Exists(Program.SOPDPath))
+                    File.Delete(Program.SOPDPath);
+                if (File.Exists(Program.SODDPath))
+                    File.Delete(Program.SODDPath);
+                Properties.Settings.Default.Reset();
+                Environment.FailFast("It was nice knowing you...");
+            }
+        }
     }
 }

@@ -42,7 +42,7 @@ namespace SpotLight
 
             if (Program.GamePath == "")
             {
-                MessageBox.Show(
+                DialogResult DR = MessageBox.Show(
 @"Welcome to Spotlight!
 
 In order to use this program, you will need the folders ""StageData"" and ""ObjectData"" from Super Mario 3D World

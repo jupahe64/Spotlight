@@ -44,6 +44,7 @@
             this.RenderAreaCheckBox = new System.Windows.Forms.CheckBox();
             this.LoadingAndSavingGroupBox = new System.Windows.Forms.GroupBox();
             this.UniqueIDsCheckBox = new System.Windows.Forms.CheckBox();
+            this.ResetSpotlightButton = new System.Windows.Forms.Button();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
@@ -214,11 +215,24 @@
             this.UniqueIDsCheckBox.UseVisualStyleBackColor = true;
             this.UniqueIDsCheckBox.CheckedChanged += new System.EventHandler(this.UniqueIDsCheckBox_CheckedChanged);
             // 
+            // ResetSpotlightButton
+            // 
+            this.ResetSpotlightButton.BackColor = System.Drawing.Color.DarkRed;
+            this.ResetSpotlightButton.ForeColor = System.Drawing.Color.Silver;
+            this.ResetSpotlightButton.Location = new System.Drawing.Point(387, 378);
+            this.ResetSpotlightButton.Name = "ResetSpotlightButton";
+            this.ResetSpotlightButton.Size = new System.Drawing.Size(91, 23);
+            this.ResetSpotlightButton.TabIndex = 7;
+            this.ResetSpotlightButton.Text = "Reset Spotlight";
+            this.ResetSpotlightButton.UseVisualStyleBackColor = false;
+            this.ResetSpotlightButton.Click += new System.EventHandler(this.ResetSpotlightButton_Click);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(490, 413);
+            this.Controls.Add(this.ResetSpotlightButton);
             this.Controls.Add(this.LoadingAndSavingGroupBox);
             this.Controls.Add(this.RenderingGroupBox);
             this.Controls.Add(this.ObjectParameterGroupBox);
@@ -260,5 +274,6 @@
         private System.Windows.Forms.CheckBox RenderSkyboxesCheckBox;
         private System.Windows.Forms.GroupBox LoadingAndSavingGroupBox;
         private System.Windows.Forms.CheckBox UniqueIDsCheckBox;
+        private System.Windows.Forms.Button ResetSpotlightButton;
     }
 }
