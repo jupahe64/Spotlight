@@ -45,9 +45,12 @@
             this.LoadingAndSavingGroupBox = new System.Windows.Forms.GroupBox();
             this.UniqueIDsCheckBox = new System.Windows.Forms.CheckBox();
             this.ResetSpotlightButton = new System.Windows.Forms.Button();
+            this.IDEditingCheckBox = new System.Windows.Forms.CheckBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // GamePathLabel
@@ -198,7 +201,7 @@
             this.LoadingAndSavingGroupBox.Controls.Add(this.UniqueIDsCheckBox);
             this.LoadingAndSavingGroupBox.Location = new System.Drawing.Point(12, 203);
             this.LoadingAndSavingGroupBox.Name = "LoadingAndSavingGroupBox";
-            this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(466, 100);
+            this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(466, 57);
             this.LoadingAndSavingGroupBox.TabIndex = 6;
             this.LoadingAndSavingGroupBox.TabStop = false;
             this.LoadingAndSavingGroupBox.Text = "Loading and Saving";
@@ -219,7 +222,7 @@
             // 
             this.ResetSpotlightButton.BackColor = System.Drawing.Color.DarkRed;
             this.ResetSpotlightButton.ForeColor = System.Drawing.Color.Silver;
-            this.ResetSpotlightButton.Location = new System.Drawing.Point(387, 378);
+            this.ResetSpotlightButton.Location = new System.Drawing.Point(369, 34);
             this.ResetSpotlightButton.Name = "ResetSpotlightButton";
             this.ResetSpotlightButton.Size = new System.Drawing.Size(91, 23);
             this.ResetSpotlightButton.TabIndex = 7;
@@ -227,12 +230,34 @@
             this.ResetSpotlightButton.UseVisualStyleBackColor = false;
             this.ResetSpotlightButton.Click += new System.EventHandler(this.ResetSpotlightButton_Click);
             // 
+            // IDEditingCheckBox
+            // 
+            this.IDEditingCheckBox.AutoSize = true;
+            this.IDEditingCheckBox.Location = new System.Drawing.Point(9, 19);
+            this.IDEditingCheckBox.Name = "IDEditingCheckBox";
+            this.IDEditingCheckBox.Size = new System.Drawing.Size(108, 17);
+            this.IDEditingCheckBox.TabIndex = 8;
+            this.IDEditingCheckBox.Text = "Enable ID Editing";
+            this.IDEditingCheckBox.UseVisualStyleBackColor = true;
+            this.IDEditingCheckBox.CheckedChanged += new System.EventHandler(this.IDEditingCheckBox_CheckedChanged);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.IDEditingCheckBox);
+            this.groupBox1.Controls.Add(this.ResetSpotlightButton);
+            this.groupBox1.Location = new System.Drawing.Point(12, 344);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(466, 57);
+            this.groupBox1.TabIndex = 9;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Miscellaneous";
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(490, 413);
-            this.Controls.Add(this.ResetSpotlightButton);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.LoadingAndSavingGroupBox);
             this.Controls.Add(this.RenderingGroupBox);
             this.Controls.Add(this.ObjectParameterGroupBox);
@@ -252,6 +277,8 @@
             this.RenderingGroupBox.PerformLayout();
             this.LoadingAndSavingGroupBox.ResumeLayout(false);
             this.LoadingAndSavingGroupBox.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -275,5 +302,7 @@
         private System.Windows.Forms.GroupBox LoadingAndSavingGroupBox;
         private System.Windows.Forms.CheckBox UniqueIDsCheckBox;
         private System.Windows.Forms.Button ResetSpotlightButton;
+        private System.Windows.Forms.CheckBox IDEditingCheckBox;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }

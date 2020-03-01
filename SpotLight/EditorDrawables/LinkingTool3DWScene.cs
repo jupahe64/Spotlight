@@ -242,7 +242,7 @@ namespace SpotLight.EditorDrawables
             public void OnValueSet()
             {
                 scene.ChangeSelectedConnection(scene.SelectedConnection.Source, scene.SelectedConnection.Dest, connectionName);
-                scene.GL_Control.Refresh();
+                //scene.GL_Control.Refresh();
             }
 
             public void UpdateProperties()

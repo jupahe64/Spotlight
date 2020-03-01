@@ -88,6 +88,10 @@ namespace SpotLight.Level
         {
             if (id.StartsWith("obj") && ulong.TryParse(id.Substring(3), out ulong objID))
             {
+                if (objID == 1861)
+                {
+
+                }
                 if (objID > highestObjID)
                     highestObjID = objID;
             }

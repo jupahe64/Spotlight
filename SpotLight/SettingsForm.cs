@@ -181,5 +181,11 @@ namespace SpotLight
                 Environment.FailFast("It was nice knowing you...");
             }
         }
+
+        private void IDEditingCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.AllowIDEdits = IDEditingCheckBox.Checked;
+            Properties.Settings.Default.Save();
+        }
     }
 }

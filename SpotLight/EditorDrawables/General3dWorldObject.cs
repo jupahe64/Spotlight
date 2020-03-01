@@ -58,7 +58,7 @@ namespace SpotLight.EditorDrawables
         /// <summary>
         /// Id of this object
         /// </summary>
-        public string ID { get; }
+        public string ID { get; set; }
         /// <summary>
         /// Base Object name. Can be used as the Model Name, if the ModelName is not overriding this.
         /// </summary>
@@ -492,7 +492,10 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
-                control.TextInput(obj.ID, "Object ID");
+                if (SpotLight.Properties.Settings.Default.AllowIDEdits)
+                    obj.ID = control.TextInput(obj.ID, "Object ID");
+                else
+                    control.TextInput(obj.ID, "Object ID");
 
                 obj.ObjectName = control.TextInput(obj.ObjectName, "Object Name");
                 obj.ClassName = control.TextInput(obj.ClassName, "Class Name");
