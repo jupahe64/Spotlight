@@ -14,6 +14,7 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -26,7 +27,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -237,6 +237,7 @@
     <ProjectReference Include="..\..\GL_EditorFramework\Gl_EditorFramework\Gl_EditorFramework.csproj">
       <Project>{d593a72d-554d-40fb-9967-503cb15a744f}</Project>
       <Name>Gl_EditorFramework</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\FileFormats3DW\FileFormats3DW.csproj">
       <Project>{e13388ea-de3f-447a-80f8-03427e1e52af}</Project>
@@ -266,5 +267,6 @@
     <ItemGroup>
       <MoveToLibFolder Include="$(OutputPath)*.dll ; $(OutputPath)*.pdb ; $(OutputPath)*.xml" />
     </ItemGroup>
+    <Move SourceFiles="@(MoveToLibFolder)" DestinationFolder="$(OutputPath)lib" OverwriteReadOnlyFiles="true" />
   </Target>
 </Project>
