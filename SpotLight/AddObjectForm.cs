@@ -189,7 +189,7 @@ namespace SpotLight
             else
                 objList = zone.ObjLists[selectedParameter.CategoryPrefix + category.ToString() + "List"];
 
-            General3dWorldObject obj = selectedParameter.ToGeneral3DWorldObject(zone.NextObjID(), pos,
+            General3dWorldObject obj = selectedParameter.ToGeneral3DWorldObject(zone.NextObjID(), zone, pos,
                 SelectObjectListView.SelectedIndices.Count==1?SelectObjectListView.SelectedIndices[0]:-1,
                 SelectModelListView.SelectedIndices.Count == 1 ? SelectModelListView.SelectedIndices[0] : -1);
             obj.Prepare(control);
@@ -207,7 +207,7 @@ namespace SpotLight
         {
             List<PathPoint> pathPoints = PathPointFormations.GetPathFormation(pos, (List<PathPoint>)RailFormationListView.SelectedItems[0].Tag, ReverseRailCheckBox.Checked);
 
-            Rail rail = new Rail(pathPoints, zone.NextObjID(), ClosePathCheckBox.Checked, LadderRailCheckBox.Checked, false, (Rail.RailObjType)RailTypeComboBox.SelectedIndex);
+            Rail rail = new Rail(pathPoints, zone.NextObjID(), ClosePathCheckBox.Checked, LadderRailCheckBox.Checked, false, (Rail.RailObjType)RailTypeComboBox.SelectedIndex, zone);
 
 
             rail.Prepare(control);

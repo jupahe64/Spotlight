@@ -188,7 +188,6 @@ namespace SpotLight.Level
                         break; //ignore these
                     case "Id":
                         info.ID = entry.Parse();
-                        zone?.SubmitID(info.ID);
                         break;
                     case "Links":
                         foreach (DictionaryEntry linkEntry in entry.IterDictionary())

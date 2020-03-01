@@ -106,6 +106,8 @@ namespace SpotLight.EditorDrawables
 
             Closed = info.PropertyEntries["IsClosed"].Parse();
 
+            zone?.SubmitRailID(ID);
+
             loadLinks = false; //We don't expect Rails to have Links
         }
         /// <summary>
@@ -117,7 +119,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="isLadder">Unknown</param>
         /// <param name="isReverseCoord">Reverses the order the rails are in</param>
         /// <param name="railObjType"><see cref="RailObjType"/></param>
-        public Rail(List<PathPoint> pathPoints, string iD, bool isClosed, bool isLadder, bool isReverseCoord, RailObjType railObjType)
+        public Rail(List<PathPoint> pathPoints, string iD, bool isClosed, bool isLadder, bool isReverseCoord, RailObjType railObjType, SM3DWorldZone zone)
             : base(pathPoints)
         {
             ID = iD;
@@ -125,6 +127,7 @@ namespace SpotLight.EditorDrawables
             IsLadder = isLadder;
             IsReverseCoord = isReverseCoord;
             ObjType = railObjType;
+            zone?.SubmitRailID(ID);
         }
 
         #region I3DWorldObject implementation
@@ -262,7 +265,7 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-            duplicates[this] = new Rail(newPoints, zone.NextRailID(), Closed, IsLadder, IsReverseCoord, ObjType);
+            duplicates[this] = new Rail(newPoints, zone.NextRailID(), Closed, IsLadder, IsReverseCoord, ObjType, zone);
 
             var duplicate = duplicates[this];
 

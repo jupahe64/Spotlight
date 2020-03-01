@@ -521,7 +521,7 @@ namespace SpotLight.ObjectParamDatabase
         /// <param name="ObjectNameID">For Classes that have multiple Object Names. default is 0</param>
         /// <param name="ModelNameID">For Classes that have multiple Model Names. Default is -1 (No Model Name)</param>
         /// <returns>new General 3DW Object</returns>
-        public virtual General3dWorldObject ToGeneral3DWorldObject(string ID, OpenTK.Vector3 Position, int ObjectNameID = 0, int ModelNameID = -1)
+        public virtual General3dWorldObject ToGeneral3DWorldObject(string ID, SM3DWorldZone zone, OpenTK.Vector3 Position, int ObjectNameID = 0, int ModelNameID = -1)
         {
             Dictionary<string, dynamic> Params = new Dictionary<string, dynamic>();
             for (int i = 0; i < Properties.Count; i++)
@@ -549,7 +549,7 @@ namespace SpotLight.ObjectParamDatabase
                 Links.Add(LinkNames[i], new List<I3dWorldObject>());
 
 
-            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectNames[ObjectNameID], ModelNameID == -1 ? "" : ModelNames[ModelNameID], ClassName, new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), Links, Params);
+            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectNames[ObjectNameID], ModelNameID == -1 ? "" : ModelNames[ModelNameID], ClassName, new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), Links, Params, zone);
         }
 
         internal void InitLists()

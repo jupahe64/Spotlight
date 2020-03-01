@@ -126,6 +126,8 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
+            zone?.SubmitID(ID);
+
             loadLinks = true;
         }
 
@@ -133,7 +135,7 @@ namespace SpotLight.EditorDrawables
             Vector3 pos, Vector3 rot, Vector3 scale, 
             string iD, string objectName, string modelName, string className, 
             Vector3 displayTranslation, Vector3 displayRotation, Vector3 displayScale, 
-            Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties)
+            Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
             : base(pos,rot,scale)
         {
             ID = iD;
@@ -145,6 +147,8 @@ namespace SpotLight.EditorDrawables
             DisplayScale = displayScale;
             Links = links;
             Properties = properties;
+
+            zone?.SubmitID(ID);
         }
 
         /// <summary>
@@ -307,7 +311,7 @@ namespace SpotLight.EditorDrawables
                 newProperties = null;
             
             duplicates[this] = new General3dWorldObject(Position, Rotation, Scale, zone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
-                newLinks, newProperties);
+                newLinks, newProperties, zone);
 
             duplicates[this].SelectDefault(scene.GL_Control);
         }
