@@ -73,7 +73,7 @@ namespace SpotLight.EditorDrawables
                 linkDragMode = LinkDragMode.None;
             }
 
-            return base.MouseDown(e, control);
+            return 0;
         }
 
         public override uint MouseMove(MouseEventArgs e, Point lastMousePos, GL_ControlBase control)
@@ -307,7 +307,7 @@ namespace SpotLight.EditorDrawables
                 set
                 {
                     source = value;
-                    PossibleNames = source.Links.Keys.ToArray();
+                    PossibleNames = source.Links?.Keys.ToArray();
                 }
             }
 
