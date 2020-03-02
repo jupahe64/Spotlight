@@ -395,6 +395,8 @@ namespace SpotLight.EditorDrawables
 
                 if (pass == Pass.OPAQUE)
                 {
+                    SceneDrawState.ZoneTransform = scene.EditZoneTransform;
+
                     Vector3 sourceObjPoint = Vector3.Zero;
                     Vector3 destObjPoint = Vector3.Zero;
 
@@ -408,11 +410,11 @@ namespace SpotLight.EditorDrawables
                         if (_obj == scene.SelectedConnection?.Dest)
                             destObjPoint = _objPoint;
 
+                        if (_obj == scene.SelectedConnection?.Source)
+                            sourceObjPoint = _objPoint;
+
                         if (_obj.Links != null)
                         {
-                            if (_obj == scene.SelectedConnection?.Source)
-                                sourceObjPoint = _objPoint;
-
                             foreach (KeyValuePair<string, List<I3dWorldObject>> link in _obj.Links)
                             {
                                 foreach (I3dWorldObject obj in link.Value)
