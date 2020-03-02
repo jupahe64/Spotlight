@@ -217,7 +217,9 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
-                connectionName = control.TextInput(connectionName, "Connection Name");
+                control.PlainText(scene.SelectedConnection.Source + " to " + scene.SelectedConnection.Dest);
+
+                connectionName = control.DropDownTextInput("Connection Name", connectionName, scene.SelectedConnection.PossibleNames);
                 if(control.Button("Reverse Connection"))
                 {
                     scene.ChangeSelectedConnection(
@@ -294,9 +296,20 @@ namespace SpotLight.EditorDrawables
 
         public class LinkConnection
         {
-            public I3dWorldObject Source;
-            public I3dWorldObject Dest;
+            private I3dWorldObject source;
+            public I3dWorldObject Dest { get; set; }
             public string Name;
+            public string[] PossibleNames;
+
+            public I3dWorldObject Source
+            {
+                get => source;
+                set
+                {
+                    source = value;
+                    PossibleNames = source.Links.Keys.ToArray();
+                }
+            }
 
             public LinkConnection(I3dWorldObject source, I3dWorldObject dest, string name)
             {
