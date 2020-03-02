@@ -41,7 +41,7 @@ namespace SpotLight.EditorDrawables
         {
             if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
             {
-                SelectedConnection = new LinkConnection(Hovered3dObject, Hovered3dObject, "UnnamedConnection");
+                SelectedConnection = new LinkConnection(Hovered3dObject, Hovered3dObject, Hovered3dObject.Links?.Keys.First()??"UnnamedConnection");
                 linkDragMode = LinkDragMode.Dest;
             }
             else if (SelectedConnection != null)

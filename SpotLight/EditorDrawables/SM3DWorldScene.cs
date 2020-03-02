@@ -851,12 +851,6 @@ namespace SpotLight.EditorDrawables
         {
             source.Links[name].Remove(dest);
 
-            if (source.Links[name].Count == 0)
-                source.Links.Remove(name);
-
-            if (source.Links.Count == 0)
-                source.Links = null;
-
             if (this is LinkEdit3DWScene les)
             {
                 if (les.SelectedConnection?.Source == source && les.SelectedConnection?.Dest == dest && les.SelectedConnection?.Name == name)
