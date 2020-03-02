@@ -16,6 +16,8 @@ namespace SpotLight.EditorDrawables
     /// </summary>
     public interface I3dWorldObject : IEditableObject
     {
+        bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList);
+
         IReadOnlyList<(string, I3dWorldObject)> LinkDestinations { get; }
         void ClearLinkDestinations();
         void AddLinkDestinations();

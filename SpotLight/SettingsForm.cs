@@ -35,7 +35,7 @@ namespace SpotLight
                     throw new Exception("Invalid Database File");
 
                 Version Check = new Version(FS.ReadByte(), FS.ReadByte());
-                ver = Home.ObjectDatabase != null ? Home.ObjectDatabase.Version.ToString() : Check.ToString() + " (Outdated)";
+                ver = Program.ParameterDB != null ? Program.ParameterDB.Version.ToString() : Check.ToString() + " (Outdated)";
                 FS.Close();
             }
             DateTime date = File.GetLastWriteTime(Program.SOPDPath);
@@ -122,12 +122,12 @@ namespace SpotLight
                 LLF.ShowDialog();
             });
             DatabaseGenThread.Start();
-            Home.ObjectDatabase = new ObjectParameterDatabase();
-            Home.ObjectDatabase.Create(Program.StageDataPath);
-            Home.ObjectDatabase.Save(Program.SOPDPath);
+            Program.ParameterDB = new ObjectParameterDatabase();
+            Program.ParameterDB.Create(Program.StageDataPath);
+            Program.ParameterDB.Save(Program.SOPDPath);
             if (DatabaseGenThread.IsAlive)
                 LoadLevelForm.DoClose = true;
-            DatabaseInfoLabel.Text = "Database Last Built on: [DATABASEGENDATE].    Version: [VER]".Replace("[DATABASEGENDATE]", File.GetLastWriteTime(Program.SOPDPath).ToLongDateString()).Replace("[VER]", Home.ObjectDatabase.Version.ToString());
+            DatabaseInfoLabel.Text = "Database Last Built on: [DATABASEGENDATE].    Version: [VER]".Replace("[DATABASEGENDATE]", File.GetLastWriteTime(Program.SOPDPath).ToLongDateString()).Replace("[VER]", Program.ParameterDB.Version.ToString());
             MessageBox.Show("Database has been rebuilt!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 

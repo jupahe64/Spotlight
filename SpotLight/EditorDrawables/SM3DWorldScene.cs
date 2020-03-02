@@ -632,7 +632,7 @@ namespace SpotLight.EditorDrawables
             //A little hack: Delete objects by reverting their creation
             AddToUndo(new Revertable3DWorldObjAddition(objsToDelete.ToArray()).Revert(this));
 
-            _ExecuteDeletion(manager);
+            ExecuteDeletion(manager);
             if (manager.Dictionary.ContainsKey(ZonePlacements))
                 ZonePlacementsChanged?.Invoke(this, null);
 

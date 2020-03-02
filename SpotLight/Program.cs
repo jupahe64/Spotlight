@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Spotlight.ObjectInformationDatabase;
+using SpotLight.ObjectParamDatabase;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,6 +49,7 @@ namespace SpotLight
         /// </summary>
         public static string StageDataPath => Properties.Settings.Default.GamePath + "\\StageData\\";
 
+        public static ObjectParameterDatabase ParameterDB;
 
         public static string SOPDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ParameterDatabase.sopd");
         public static string SODDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DescriptionDatabase.sodd");

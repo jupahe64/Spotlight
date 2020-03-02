@@ -18,6 +18,7 @@ using static GL_EditorFramework.Framework;
 using SpotLight.ObjectParamDatabase;
 using SpotLight.Level;
 using System.Threading;
+using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 
 namespace SpotLight
 {
@@ -25,7 +26,6 @@ namespace SpotLight
     {
         LevelParameterForm LPF;
         SM3DWorldScene currentScene;
-        public ObjectParameterDatabase ObjectDatabase = null;
         public LevelEditorForm()
         {
             InitializeComponent();
@@ -96,9 +96,9 @@ Would you like to generate a new object Database from your 3DW Directory?",
                                 LLF.ShowDialog();
                             });
                             DatabaseGenThread.Start();
-                            ObjectDatabase = new ObjectParameterDatabase();
-                            ObjectDatabase.Create(Program.StageDataPath);
-                            ObjectDatabase.Save(Program.SOPDPath);
+                            Program.ParameterDB = new ObjectParameterDatabase();
+                            Program.ParameterDB.Create(Program.StageDataPath);
+                            Program.ParameterDB.Save(Program.SOPDPath);
                             if (DatabaseGenThread.IsAlive)
                                 LoadLevelForm.DoClose = true;
                             Breakout = true;
@@ -109,7 +109,7 @@ Would you like to generate a new object Database from your 3DW Directory?",
                             {
                                 case DialogResult.None:
                                 case DialogResult.Yes:
-                                    ObjectDatabase = null;
+                                    Program.ParameterDB = null;
                                     Breakout = true;
                                     break;
                                 case DialogResult.No:
@@ -127,16 +127,16 @@ Would you like to generate a new object Database from your 3DW Directory?",
             }
             else
             {
-                ObjectDatabase = new ObjectParameterDatabase(Program.SOPDPath);
+                Program.ParameterDB = new ObjectParameterDatabase(Program.SOPDPath);
                 ObjectParameterDatabase Ver = new ObjectParameterDatabase();
 
-                if (Ver.Version > ObjectDatabase.Version)
+                if (Ver.Version > Program.ParameterDB.Version)
                 {
                     bool Breakout = false;
                     while (!Breakout)
                     {
                         DialogResult DR = MessageBox.Show(
-$@"The Loaded Database is outdated ({ObjectDatabase.Version.ToString()}).
+$@"The Loaded Database is outdated ({Program.ParameterDB.Version.ToString()}).
 The latest Database version is {ObjectParameterDatabase.LatestVersion}.
 Would you like to rebuild the database from your 3DW Files?",
     "Database Outdated", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Error);
@@ -150,9 +150,9 @@ Would you like to rebuild the database from your 3DW Files?",
                                     LLF.ShowDialog();
                                 });
                                 DatabaseGenThread.Start();
-                                ObjectDatabase = new ObjectParameterDatabase();
-                                ObjectDatabase.Create(Program.StageDataPath);
-                                ObjectDatabase.Save(Program.SOPDPath);
+                                Program.ParameterDB = new ObjectParameterDatabase();
+                                Program.ParameterDB.Create(Program.StageDataPath);
+                                Program.ParameterDB.Save(Program.SOPDPath);
                                 if (DatabaseGenThread.IsAlive)
                                     LoadLevelForm.DoClose = true;
                                 Breakout = true;
@@ -163,7 +163,7 @@ Would you like to rebuild the database from your 3DW Files?",
                                 {
                                     case DialogResult.None:
                                     case DialogResult.Yes:
-                                        ObjectDatabase = null;
+                                        Program.ParameterDB = null;
                                         Breakout = true;
                                         break;
                                     case DialogResult.No:
@@ -596,7 +596,7 @@ Would you like to rebuild the database from your 3DW Files?",
 
         private void AddObjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (ObjectDatabase == null)
+            if (Program.ParameterDB == null)
             {
                 MessageBox.Show(
 @"Y o u  c h o s e  n o t  t o  g e n e r a t e
@@ -612,16 +612,16 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                         LLF.ShowDialog();
                     });
                     DatabaseGenThread.Start();
-                    ObjectDatabase = new ObjectParameterDatabase();
-                    ObjectDatabase.Create(Program.StageDataPath);
-                    ObjectDatabase.Save(Program.SOPDPath);
+                    Program.ParameterDB = new ObjectParameterDatabase();
+                    Program.ParameterDB.Create(Program.StageDataPath);
+                    Program.ParameterDB.Save(Program.SOPDPath);
                     if (DatabaseGenThread.IsAlive)
                         LoadLevelForm.DoClose = true;
                 }
                 MessageBox.Show("Database Created", "Operation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            new AddObjectForm(ObjectDatabase, currentScene, LevelGLControlModern).ShowDialog(this);
+            new AddObjectForm(currentScene, LevelGLControlModern).ShowDialog(this);
         }
 
         private void EditIndividualButton_Click(object sender, EventArgs e)
@@ -839,6 +839,85 @@ a  v a l i d  d a t a b a s e  r e m e m b e r ?
                 currentScene.ZonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone));
                 ZoneDocumentTabControl_SelectedTabChanged(null, null);
             }
+        }
+
+        private void MoveToLinkedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AdditionManager additionManager = new AdditionManager();
+            DeletionManager deletionManager = new DeletionManager();
+
+            var linkedObjs = currentScene.EditZone.LinkedObjects;
+            
+            foreach (var objList in currentScene.EditZone.ObjLists.Values)
+            {
+                var selected = objList.Where(x => x.IsSelectedAll()).ToArray();
+
+                if (selected.Length == 0)
+                    continue;
+
+                additionManager.Add(linkedObjs, selected);
+                deletionManager.Add(objList, selected);
+            }
+            currentScene.BeginUndoCollection();
+            currentScene.ExecuteAddition(additionManager);
+            currentScene.ExecuteDeletion(deletionManager);
+            currentScene.EndUndoCollection();
+        }
+
+        private void MoveToAppropriateListsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AdditionManager additionManager = new AdditionManager();
+            DeletionManager deletionManager = new DeletionManager();
+
+            var linkedObjs = currentScene.EditZone.LinkedObjects;
+
+            foreach (var objList in currentScene.EditZone.ObjLists.Values)
+            {
+                var selected = objList.Where(x => x.IsSelectedAll()).ToArray();
+
+                if (selected.Length == 0)
+                    continue;
+
+                for (int i = 0; i < selected.Length; i++)
+                {
+                    if(!selected[i].TryGetObjectList(currentScene.EditZone, out ObjectList _objList))
+                        _objList = linkedObjs;
+
+
+                    if (objList != _objList)
+                    {
+                        additionManager.Add(_objList, selected[i]);
+                        deletionManager.Add(objList, selected[i]);
+                    }
+                }
+            }
+
+            {
+                var objList = linkedObjs;
+
+                var selected = objList.Where(x => x.IsSelectedAll()).ToArray();
+
+                if (selected.Length != 0)
+                {
+                    for (int i = 0; i < selected.Length; i++)
+                    {
+                        if (!selected[i].TryGetObjectList(currentScene.EditZone, out ObjectList _objList))
+                            _objList = linkedObjs;
+
+
+                        if (objList != _objList)
+                        {
+                            additionManager.Add(_objList, selected[i]);
+                            deletionManager.Add(objList, selected[i]);
+                        }
+                    }
+                }
+            }
+
+            currentScene.BeginUndoCollection();
+            currentScene.ExecuteAddition(additionManager);
+            currentScene.ExecuteDeletion(deletionManager);
+            currentScene.EndUndoCollection();
         }
     }
 }

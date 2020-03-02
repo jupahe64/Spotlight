@@ -16,7 +16,7 @@ namespace SpotLight
 {
     public partial class AddObjectForm : Form
     {
-        public AddObjectForm(ObjectParameterDatabase database, SM3DWorldScene scene, GL_ControlModern control)
+        public AddObjectForm(SM3DWorldScene scene, GL_ControlModern control)
         {
             InitializeComponent();
             CenterToParent();
@@ -24,27 +24,28 @@ namespace SpotLight
             DBEntryListView.DoubleBuffering(true);
             if (System.IO.File.Exists(Program.SODDPath))
                 OID = new ObjectInformationDatabase(Program.SODDPath);
-            FullItems = new ListViewItem[database.ObjectParameters.Count];
-            for (int i = 0; i < database.ObjectParameters.Count; i++)
+            FullItems = new ListViewItem[Program.ParameterDB.ObjectParameters.Count];
+            int i = 0;
+            foreach(var parameter in Program.ParameterDB.ObjectParameters.Values)
             {
                 ListViewGroup LVG = null;
-                if (database.ObjectParameters[i].CategoryID >= 0 && database.ObjectParameters[i].CategoryID <= 7)
+                if (parameter.ObjList >= 0 && parameter.ObjList <= ObjList.Linked)
                 {
-                    LVG = DBEntryListView.Groups[database.ObjectParameters[i].CategoryID];
-                }
-                else if (database.ObjectParameters[i].CategoryID == 8)
-                {
-
+                    LVG = DBEntryListView.Groups[(byte)parameter.ObjList];
                 }
 
-                ListViewItem LVI = new ListViewItem(new string[] { database.ObjectParameters[i].ClassName, OID.GetInformation(database.ObjectParameters[i].ClassName).EnglishName ?? database.ObjectParameters[i].ClassName, database.ObjectParameters[i].ObjectNames.Count.ToString().PadLeft(3, '0'), database.ObjectParameters[i].ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = LVG, Tag = database.ObjectParameters[i] };
-                FullItems[i] = LVI;
+                ListViewItem LVI = new ListViewItem(new string[] 
+                { 
+                    parameter.ClassName, 
+                    OID.GetInformation(parameter.ClassName).EnglishName ?? parameter.ClassName, 
+                    parameter.ObjectNames.Count.ToString().PadLeft(3, '0'),
+                    parameter.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = LVG, Tag = parameter };
+                FullItems[i++] = LVI;
             }
             DBEntryListView.Items.AddRange(FullItems);
 
             this.scene = scene;
             this.control = control;
-            OPD = database;
         }
 
         private void AddObjectForm_Load(object sender, EventArgs e)
@@ -61,7 +62,6 @@ namespace SpotLight
 
         readonly SM3DWorldScene scene;
         readonly GL_ControlModern control;
-        readonly ObjectParameterDatabase OPD;
         readonly ListViewItem[] FullItems;
         private Information ObjectInformation;
 
@@ -134,7 +134,7 @@ namespace SpotLight
             else
             {
                 DBEntryListView.Items.Clear();
-                for (int i = 0; i < OPD.ObjectParameters.Count; i++)
+                for (int i = 0; i < Program.ParameterDB.ObjectParameters.Count; i++)
                 {
                     Parameter Param = (Parameter)FullItems[i].Tag;
                     Information tmp = OID.GetInformation(Param.ClassName);
@@ -220,7 +220,7 @@ namespace SpotLight
 
                 scene.ObjectPlaceDelegate = PlaceObjectFromDB;
 
-                selectedParameter = OPD.ObjectParameters.First(x => x.ClassName.Equals(SelectedClassName));
+                selectedParameter = Program.ParameterDB.ObjectParameters[SelectedClassName];
 
                 Close();
                 return;
@@ -236,18 +236,6 @@ namespace SpotLight
             Close();
         }
 
-        enum Category : byte
-        {
-            Area,
-            CheckPoint,
-            Demo,
-            Goal,
-            Object,
-            Player,
-            Sky,
-            Link
-        }
-
         Parameter selectedParameter;
         /// <summary>
         /// Place an object from the Object Database with this.
@@ -257,21 +245,23 @@ namespace SpotLight
         /// <returns></returns>
         private (I3dWorldObject, ObjectList)[] PlaceObjectFromDB(Vector3 pos, SM3DWorldZone zone)
         {
-            Category category = (Category)selectedParameter.CategoryID;
-
-            ObjectList objList;
-            if (category == Category.Link)
-                objList = zone.LinkedObjects;
-            else
-                objList = zone.ObjLists[selectedParameter.CategoryPrefix + category.ToString() + "List"];
-
             General3dWorldObject obj = selectedParameter.ToGeneral3DWorldObject(zone.NextObjID(), zone, pos,
-                SelectObjectListView.SelectedIndices.Count==1?SelectObjectListView.SelectedIndices[0]:-1,
+                SelectObjectListView.SelectedIndices.Count == 1 ? SelectObjectListView.SelectedIndices[0] : -1,
                 SelectModelListView.SelectedIndices.Count == 1 ? SelectModelListView.SelectedIndices[0] : -1);
             obj.Prepare(control);
-            return new (I3dWorldObject, ObjectList)[] { 
+
+            if (selectedParameter.TryGetObjectList(zone, out ObjectList objList))
+            {
+                return new (I3dWorldObject, ObjectList)[] {
                 (obj, objList)
-            };
+                };
+            }
+            else
+            {
+                return new (I3dWorldObject, ObjectList)[] {
+                (obj, zone.LinkedObjects)
+                };
+            }
         }
         /// <summary>
         /// Place a rail with this.
@@ -287,9 +277,19 @@ namespace SpotLight
 
 
             rail.Prepare(control);
-            return new (I3dWorldObject, ObjectList)[] {
-                (rail, zone.ObjLists["Map_Rails"])
-            };
+
+            if (zone.ObjLists.ContainsKey("Map_Rails"))
+            {
+                return new (I3dWorldObject, ObjectList)[] {
+                    (rail, zone.ObjLists["Map_Rails"])
+                };
+            }
+            else
+            {
+                return new (I3dWorldObject, ObjectList)[] {
+                (rail, zone.LinkedObjects)
+                };
+            }
         }
     }
     public static class ControlExtensions

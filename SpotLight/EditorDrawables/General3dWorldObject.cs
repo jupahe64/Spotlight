@@ -481,6 +481,11 @@ namespace SpotLight.EditorDrawables
             }
         }
 
+        public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
+        {
+            return Program.ParameterDB.ObjectParameters[ClassName].TryGetObjectList(zone, out objList);
+        }
+
         public class BasicPropertyProvider : IObjectUIContainer
         {
             PropertyCapture? capture = null;

@@ -53,7 +53,7 @@ namespace SpotLight.ObjectParamDatabase
     public class ObjectParameterDatabase
     {
         public Version Version = LatestVersion;
-        public List<Parameter> ObjectParameters = new List<Parameter>();
+        public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
         public static Version LatestVersion { get; } = new Version(1, 7);
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace SpotLight.ObjectParamDatabase
                     param = new ObjectParameter();
 
                 param.Read(FS);
-                ObjectParameters.Add(param);
+                ObjectParameters.Add(param.ClassName, param);
             }
 
             FS.Close();
@@ -123,8 +123,8 @@ namespace SpotLight.ObjectParamDatabase
             FS.Write(new byte[8] { (byte)'S', (byte)'O', (byte)'P', (byte)'D', (byte)Version.Major, (byte)Version.Minor, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Minor }, 0, 8);
             FS.Write(new byte[4] { (byte)'D', (byte)'I', (byte)'C', (byte)'T' }, 0, 4);
             FS.Write(BitConverter.GetBytes(ObjectParameters.Count), 0, 4);
-            for (int i = 0; i < ObjectParameters.Count; i++)
-                ObjectParameters[i].Write(FS); 
+            foreach (var parameter in ObjectParameters.Values)
+                parameter.Write(FS); 
             FS.Close();
         }
         /// <summary>
@@ -177,230 +177,75 @@ namespace SpotLight.ObjectParamDatabase
             for (int i = 0; i < Sounds.Length; i++)
                 GetObjectInfos(Sounds[i], SOUNDinfosByListName);
 
-            byte ListID = 0;
-            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in MAPinfosByListName)
-            {
-                for (int j = 0; j < keyValuePair.Value.Count; j++)
-                {
-                    if (keyValuePair.Value[j].ClassName == "Rail")
-                    {
-                        continue;
-                    }
 
-                    ObjectInfo Tmp = keyValuePair.Value[j];
-                    if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
+            void GetParameters<T>(Dictionary<string, List<ObjectInfo>> infosByListName) where T : Parameter, new()
+            {
+                byte ListID = 0;
+                foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in infosByListName)
+                {
+                    for (int j = 0; j < keyValuePair.Value.Count; j++)
                     {
-                        int ParamID = 0;
-                        for (int y = 0; y < ObjectParameters.Count; y++)
+                        if (keyValuePair.Value[j].ClassName == "Rail")
                         {
-                            if (ObjectParameters[y].ClassName == Tmp.ClassName)
+                            continue;
+                        }
+
+                        ObjectInfo Tmp = keyValuePair.Value[j];
+                        if (ObjectParameters.ContainsKey(Tmp.ClassName))
+                        {
+                            if (Tmp.ObjectName != "" && !ObjectParameters[Tmp.ClassName].ObjectNames.Any(O => O == Tmp.ObjectName))
+                                ObjectParameters[Tmp.ClassName].ObjectNames.Add(Tmp.ObjectName);
+
+                            if (Tmp.ModelName != "" && !ObjectParameters[Tmp.ClassName].ModelNames.Any(O => O == Tmp.ModelName))
+                                ObjectParameters[Tmp.ClassName].ModelNames.Add(Tmp.ModelName);
+
+                            foreach (var propertyEntry in Tmp.PropertyEntries)
                             {
-                                ParamID = y;
-                                break;
+                                if (!ObjectParameters[Tmp.ClassName].Properties.Any(O => O.Key == propertyEntry.Key))
+                                {
+                                    ByamlNodeType type = propertyEntry.Value.NodeType;
+                                    if (type == ByamlNodeType.Null)
+                                        type = ByamlNodeType.StringIndex;
+                                    ObjectParameters[Tmp.ClassName].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
+                                }
+                            }
+
+                            foreach (string key in Tmp.LinkEntries.Keys)
+                            {
+                                if (!ObjectParameters[Tmp.ClassName].LinkNames.Any(O => O == key))
+                                    ObjectParameters[Tmp.ClassName].LinkNames.Add(key);
                             }
                         }
-                        if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
-                            ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
-
-                        if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
-                            ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
-
-                        foreach (var propertyEntry in Tmp.PropertyEntries)
+                        else
                         {
-                            if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
+                            T OP = new T() { ClassName = Tmp.ClassName };
+                            if (Tmp.ObjectName != "")
+                                OP.ObjectNames.Add(Tmp.ObjectName);
+                            if (Tmp.ModelName != "" && Tmp.ModelName != null)
+                                OP.ModelNames.Add(Tmp.ModelName);
+
+                            foreach (var propertyEntry in Tmp.PropertyEntries)
                             {
                                 ByamlNodeType type = propertyEntry.Value.NodeType;
                                 if (type == ByamlNodeType.Null)
                                     type = ByamlNodeType.StringIndex;
-                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
+                                OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                             }
-                        }
 
-                        foreach (string key in Tmp.LinkEntries.Keys)
-                        {
-                            if (!ObjectParameters[ParamID].LinkNames.Any(O => O == key))
-                                ObjectParameters[ParamID].LinkNames.Add(key);
+                            foreach (string key in Tmp.LinkEntries.Keys)
+                                OP.LinkNames.Add(key);
+
+                            OP.ObjList = (ObjList)ListID;
+                            ObjectParameters.Add(Tmp.ClassName,OP);
                         }
                     }
-                    else
-                    {
-                        ObjectParameter OP = new ObjectParameter() { ClassName = Tmp.ClassName };
-                        if (Tmp.ObjectName != "")
-                            OP.ObjectNames.Add(Tmp.ObjectName);
-                        if (Tmp.ModelName != "" && Tmp.ModelName != null)
-                            OP.ModelNames.Add(Tmp.ModelName);
-
-                        foreach (var propertyEntry in Tmp.PropertyEntries)
-                        {
-                            ByamlNodeType type = propertyEntry.Value.NodeType;
-                            if (type == ByamlNodeType.Null)
-                                type = ByamlNodeType.StringIndex;
-                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
-                        }
-
-                        foreach (string key in Tmp.LinkEntries.Keys)
-                            OP.LinkNames.Add(key);
-
-                        OP.CategoryID = ListID;
-                        ObjectParameters.Add(OP);
-                    }
+                    ListID++;
                 }
-                ListID++;
             }
-            ListID = 0;
-            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in DESIGNinfosByListName)
-            {
-                for (int j = 0; j < keyValuePair.Value.Count; j++)
-                {
-                    if (keyValuePair.Value[j].ClassName == "Rail")
-                    {
-                        continue;
-                    }
 
-                    ObjectInfo Tmp = keyValuePair.Value[j];
-                    if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
-                    {
-                        int ParamID = 0;
-                        for (int y = 0; y < ObjectParameters.Count; y++)
-                        {
-                            if (ObjectParameters[y].ClassName == Tmp.ClassName)
-                            {
-                                ParamID = y;
-                                break;
-                            }
-                        }
-                        if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
-                            ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
-
-                        if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
-                            ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
-
-                        foreach (var propertyEntry in Tmp.PropertyEntries)
-                        {
-                            if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
-                            {
-                                ByamlNodeType type = propertyEntry.Value.NodeType;
-                                if (type == ByamlNodeType.Null)
-                                    type = ByamlNodeType.StringIndex;
-                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
-                            }
-                        }
-
-                        foreach (string key in Tmp.LinkEntries.Keys)
-                        {
-                            if (!ObjectParameters[ParamID].LinkNames.Any(O => O == key))
-                                ObjectParameters[ParamID].LinkNames.Add(key);
-                        }
-                    }
-                    else
-                    {
-                        DesignParameter OP = new DesignParameter() { ClassName = Tmp.ClassName };
-                        if (Tmp.ObjectName != "")
-                            OP.ObjectNames.Add(Tmp.ObjectName);
-                        if (Tmp.ModelName != "" && Tmp.ModelName != null)
-                            OP.ModelNames.Add(Tmp.ModelName);
-
-                        foreach (var propertyEntry in Tmp.PropertyEntries)
-                        {
-                            ByamlNodeType type = propertyEntry.Value.NodeType;
-                            if (type == ByamlNodeType.Null)
-                                type = ByamlNodeType.StringIndex;
-                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
-                        }
-
-                        foreach (string key in Tmp.LinkEntries.Keys)
-                            OP.LinkNames.Add(key);
-
-                        OP.CategoryID = ListID;
-                        ObjectParameters.Add(OP);
-                    }
-                }
-                ListID++;
-            }
-            ListID = 0;
-            foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in SOUNDinfosByListName)
-            {
-                for (int j = 0; j < keyValuePair.Value.Count; j++)
-                {
-                    if (keyValuePair.Value[j].ClassName == "Rail")
-                    {
-                        continue;
-                    }
-
-                    ObjectInfo Tmp = keyValuePair.Value[j];
-                    if (ObjectParameters.Any(O => O.ClassName == Tmp.ClassName))
-                    {
-                        int ParamID = 0;
-                        for (int y = 0; y < ObjectParameters.Count; y++)
-                        {
-                            if (ObjectParameters[y].ClassName == Tmp.ClassName)
-                            {
-                                ParamID = y;
-                                break;
-                            }
-                        }
-                        if (Tmp.ObjectName != "" && !ObjectParameters[ParamID].ObjectNames.Any(O => O == Tmp.ObjectName))
-                            ObjectParameters[ParamID].ObjectNames.Add(Tmp.ObjectName);
-
-                        if (Tmp.ModelName != "" && !ObjectParameters[ParamID].ModelNames.Any(O => O == Tmp.ModelName))
-                            ObjectParameters[ParamID].ModelNames.Add(Tmp.ModelName);
-
-                        foreach (var propertyEntry in Tmp.PropertyEntries)
-                        {
-                            if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
-                            {
-                                ByamlNodeType type = propertyEntry.Value.NodeType;
-                                if (type == ByamlNodeType.Null)
-                                    type = ByamlNodeType.StringIndex;
-                                ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
-                            }
-                        }
-
-                        foreach (string key in Tmp.LinkEntries.Keys)
-                        {
-                            if (!ObjectParameters[ParamID].LinkNames.Any(O => O == key))
-                                ObjectParameters[ParamID].LinkNames.Add(key);
-                        }
-                    }
-                    else
-                    {
-                        SoundFXParameter OP = new SoundFXParameter() { ClassName = Tmp.ClassName };
-                        if (Tmp.ObjectName != "")
-                            OP.ObjectNames.Add(Tmp.ObjectName);
-                        if (Tmp.ModelName != "" && Tmp.ModelName != null)
-                            OP.ModelNames.Add(Tmp.ModelName);
-
-                        foreach (var propertyEntry in Tmp.PropertyEntries)
-                        {
-                            ByamlNodeType type = propertyEntry.Value.NodeType;
-                            if (type == ByamlNodeType.Null)
-                                type = ByamlNodeType.StringIndex;
-                            OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
-                        }
-
-                        foreach (string key in Tmp.LinkEntries.Keys)
-                            OP.LinkNames.Add(key);
-
-                        OP.CategoryID = ListID;
-                        ObjectParameters.Add(OP);
-                    }
-                }
-                ListID++;
-            }
-        }
-        /// <summary>
-        /// Finds an Object Parameter based on a string. This will return the ID of the first instance found.
-        /// </summary>
-        /// <param name="Target">The string to look for based on the <paramref name="Mode"/></param>
-        /// <param name="Mode">Value Details =><para/>0x00 = Look for a Class<para/>0x01 - Look for an Object Name<para/>0x02 - Look for a Model Name<para/>0x03 - Look for a Parameter<para/>0x04 - Look for a Link Name<para/>0x05+ returns -1</param>
-        /// <returns>ID of the Item. -1 if the Item is not found</returns>
-        public int FindByID(string Target, byte Mode)
-        {
-            for (int i = 0; i < ObjectParameters.Count; i++)
-                if (Mode == 0x00 ? (Target == ObjectParameters[i].ClassName) : (Mode == 0x01 ? ObjectParameters[i].ObjectNames.Any(O => O == Target) : (Mode == 0x02 ? ObjectParameters[i].ModelNames.Any(O => O == Target) : (Mode == 0x03 ? ObjectParameters[i].Properties.Any(O => O.Key == Target) : (Mode == 0x04 ? ObjectParameters[i].LinkNames.Any(O => O == Target) : false)))))
-                    return i;
-
-            return -1;
+            GetParameters<ObjectParameter>(MAPinfosByListName);
+            GetParameters<DesignParameter>(DESIGNinfosByListName);
+            GetParameters<SoundFXParameter>(SOUNDinfosByListName);
         }
 
         public override string ToString() => $"Object Database Version {Version.Major}.{Version.Minor} [{ObjectParameters.Count} Parameters]";
@@ -413,10 +258,12 @@ namespace SpotLight.ObjectParamDatabase
     {
         abstract internal string Identifier { get; set; }
 
-        abstract public string CategoryPrefix { get; }
+        //abstract public string ListName { get; }
+
+        public abstract bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList);
 
         public virtual string ClassName { get; set; }
-        public virtual byte CategoryID { get; set; }
+        public virtual ObjList ObjList { get; set; }
         public virtual List<string> ObjectNames { get; set; }
         public virtual List<string> ModelNames { get; set; }
         public virtual List<KeyValuePair<string, string>> Properties { get; set; }
@@ -438,7 +285,7 @@ namespace SpotLight.ObjectParamDatabase
 //Database Read Exception => File Offset 0x{FS.Position.ToString("X2").PadLeft(8, '0')}
 //Got {Encoding.ASCII.GetString(Read)}, Expected {Identifier}");
             Identifier = Encoding.ASCII.GetString(Read);
-            CategoryID = (byte)FS.ReadByte();
+            ObjList = (ObjList)FS.ReadByte();
             ClassName = FS.ReadString();
 
             FS.Read(Read, 0, 2);
@@ -481,7 +328,7 @@ namespace SpotLight.ObjectParamDatabase
         public virtual void Write(FileStream FS)
         {
             List<byte> ByteList = new List<byte>() { (byte)Identifier[0], (byte)Identifier[1], (byte)Identifier[2] };
-            ByteList.Add(CategoryID);
+            ByteList.Add((byte)ObjList);
             ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(ClassName));
             ByteList.Add(0x00);
 
@@ -580,34 +427,42 @@ namespace SpotLight.ObjectParamDatabase
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            if (!(obj is RailParameter))
-            {
-                if (ClassName != ((ObjectParameter)obj).ClassName || ObjectNames.Count != ((ObjectParameter)obj).ObjectNames.Count || ModelNames.Count != ((ObjectParameter)obj).ModelNames.Count || Properties.Count != ((ObjectParameter)obj).Properties.Count || LinkNames.Count != ((ObjectParameter)obj).LinkNames.Count)
+            if (ClassName != ((ObjectParameter)obj).ClassName || ObjectNames.Count != ((ObjectParameter)obj).ObjectNames.Count || ModelNames.Count != ((ObjectParameter)obj).ModelNames.Count || Properties.Count != ((ObjectParameter)obj).Properties.Count || LinkNames.Count != ((ObjectParameter)obj).LinkNames.Count)
+                return false;
+
+            for (int i = 0; i < ObjectNames.Count; i++)
+                if (ObjectNames[i] != ((ObjectParameter)obj).ObjectNames[i])
                     return false;
 
-                for (int i = 0; i < ObjectNames.Count; i++)
-                    if (ObjectNames[i] != ((ObjectParameter)obj).ObjectNames[i])
-                        return false;
+            for (int i = 0; i < ModelNames.Count; i++)
+                if (ModelNames[i] != ((ObjectParameter)obj).ModelNames[i])
+                    return false;
 
-                for (int i = 0; i < ModelNames.Count; i++)
-                    if (ModelNames[i] != ((ObjectParameter)obj).ModelNames[i])
-                        return false;
+            for (int i = 0; i < Properties.Count; i++)
+                if (Properties[i].Key != ((ObjectParameter)obj).Properties[i].Key || Properties[i].Value != ((ObjectParameter)obj).Properties[i].Value)
+                    return false;
 
-                for (int i = 0; i < Properties.Count; i++)
-                    if (Properties[i].Key != ((ObjectParameter)obj).Properties[i].Key || Properties[i].Value != ((ObjectParameter)obj).Properties[i].Value)
-                        return false;
+            for (int i = 0; i < LinkNames.Count; i++)
+                if (LinkNames[i] != ((ObjectParameter)obj).LinkNames[i])
+                    return false;
 
-                for (int i = 0; i < LinkNames.Count; i++)
-                    if (LinkNames[i] != ((ObjectParameter)obj).LinkNames[i])
-                        return false;
-
-                return true;
-            }
-            else
-                return base.Equals(obj);
+            return true;
         }
         public override int GetHashCode() => base.GetHashCode();
     }
+
+    public enum ObjList : byte
+    {
+        AreaList,
+        CheckPointList,
+        DemoList,
+        GoalList,
+        ObjectList,
+        PlayerList,
+        SkyList,
+        Linked
+    }
+
     /// <summary>
     /// Object Parameter for objects that go in the MAP Archive
     /// </summary>
@@ -615,7 +470,29 @@ namespace SpotLight.ObjectParamDatabase
     {
         internal override string Identifier { get => "OBJ"; set { } }
 
-        public override string CategoryPrefix => SM3DWorldZone.MAP_PREFIX;
+        public override bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
+        {
+            if (ObjList == ObjList.Linked)
+            {
+                objList = zone.LinkedObjects;
+                return true;
+            }
+            else
+            {
+                string listName = SM3DWorldZone.MAP_PREFIX + ObjList.ToString();
+
+                if (zone.ObjLists.ContainsKey(listName))
+                {
+                    objList = zone.ObjLists[listName];
+                    return true;
+                }
+                else
+                {
+                    objList = null;
+                    return false;
+                }
+            }
+        }
 
         public override string ToString() => $"Map Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
     }
@@ -626,7 +503,29 @@ namespace SpotLight.ObjectParamDatabase
     {
         internal override string Identifier { get => "DSN"; set { } }
 
-        public override string CategoryPrefix => SM3DWorldZone.DESIGN_PREFIX;
+        public override bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
+        {
+            if (ObjList == ObjList.Linked)
+            {
+                objList = zone.LinkedObjects;
+                return true;
+            }
+            else
+            {
+                string listName = SM3DWorldZone.DESIGN_PREFIX + ObjList.ToString();
+
+                if (zone.ObjLists.ContainsKey(listName))
+                {
+                    objList = zone.ObjLists[listName];
+                    return true;
+                }
+                else
+                {
+                    objList = null;
+                    return false;
+                }
+            }
+        }
 
         public override string ToString() => $"Design Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
     }
@@ -637,17 +536,31 @@ namespace SpotLight.ObjectParamDatabase
     {
         internal override string Identifier { get => "SND"; set { } }
 
-        public override string CategoryPrefix => SM3DWorldZone.SOUND_PREFIX;
+        public override bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
+        {
+            if (ObjList == ObjList.Linked)
+            {
+                objList = zone.LinkedObjects;
+                return true;
+            }
+            else
+            {
+                string listName = SM3DWorldZone.SOUND_PREFIX + ObjList.ToString();
+
+                if (zone.ObjLists.ContainsKey(listName))
+                {
+                    objList = zone.ObjLists[listName];
+                    return true;
+                }
+                else
+                {
+                    objList = null;
+                    return false;
+                }
+            }
+        }
 
         public override string ToString() => $"Sound Object:{ClassName} | {ObjectNames.Count} Object Names | {ModelNames.Count} Model Names | {Properties.Count} Properties | {LinkNames.Count} Link Names";
-    }
-
-    /// <summary>
-    /// Base class for Rails
-    /// </summary>
-    public abstract class RailParameter
-    {
-
     }
 
     /// <summary>

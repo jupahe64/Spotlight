@@ -343,6 +343,11 @@ namespace SpotLight.EditorDrawables
             return true;
         }
 
+        public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
+        {
+            return zone.ObjLists.TryGetValue("Map_Rails", out objList);
+        }
+
         public class RailUIContainer : IObjectUIContainer
         {
             PropertyCapture? pathCapture = null;
