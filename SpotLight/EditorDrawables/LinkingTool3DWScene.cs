@@ -88,10 +88,13 @@ namespace SpotLight.EditorDrawables
             return var;
         }
 
+        bool shiftAlreadyPressed = false;
+
         public override uint KeyDown(KeyEventArgs e, GL_ControlBase control)
         {
-            if (e.KeyCode == Keys.ShiftKey)
+            if (!shiftAlreadyPressed && e.KeyCode == Keys.ShiftKey)
             {
+                shiftAlreadyPressed = true;
                 return base.KeyDown(e, control) | REDRAW_PICKING | FORCE_REENTER;
             }
             else
@@ -102,6 +105,7 @@ namespace SpotLight.EditorDrawables
         {
             if (e.KeyCode == Keys.ShiftKey)
             {
+                shiftAlreadyPressed = false;
                 return base.KeyUp(e, control) | REDRAW_PICKING | FORCE_REENTER;
             }
             else
