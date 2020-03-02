@@ -39,7 +39,13 @@ namespace SpotLight.EditorDrawables
 
         public override uint MouseDown(MouseEventArgs e, GL_ControlBase control)
         {
-            if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
+            if (e.Button != MouseButtons.Left)
+            {
+                linkDragMode = LinkDragMode.None;
+                return 0;
+            }
+
+            if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftCtrl))
             {
                 SelectedConnection = new LinkConnection(Hovered3dObject, Hovered3dObject, Hovered3dObject.Links?.Keys.First()??"UnnamedConnection");
                 linkDragMode = LinkDragMode.Dest;
@@ -88,13 +94,13 @@ namespace SpotLight.EditorDrawables
             return var;
         }
 
-        bool shiftAlreadyPressed = false;
+        bool ctrlAlreadyPressed = false;
 
         public override uint KeyDown(KeyEventArgs e, GL_ControlBase control)
         {
-            if (!shiftAlreadyPressed && e.KeyCode == Keys.ShiftKey)
+            if (!ctrlAlreadyPressed && e.KeyCode == Keys.ControlKey)
             {
-                shiftAlreadyPressed = true;
+                ctrlAlreadyPressed = true;
                 return base.KeyDown(e, control) | REDRAW_PICKING | FORCE_REENTER;
             }
             else
@@ -103,9 +109,9 @@ namespace SpotLight.EditorDrawables
 
         public override uint KeyUp(KeyEventArgs e, GL_ControlBase control)
         {
-            if (e.KeyCode == Keys.ShiftKey)
+            if (e.KeyCode == Keys.ControlKey)
             {
-                shiftAlreadyPressed = false;
+                ctrlAlreadyPressed = false;
                 return base.KeyUp(e, control) | REDRAW_PICKING | FORCE_REENTER;
             }
             else
@@ -272,7 +278,7 @@ namespace SpotLight.EditorDrawables
         {
             uint var = base.MouseEnter(inObjectIndex, control);
 
-            if(linkDragMode==LinkDragMode.None && WinInput.Keyboard.IsKeyUp(WinInput.Key.LeftShift))
+            if(linkDragMode==LinkDragMode.None && WinInput.Keyboard.IsKeyUp(WinInput.Key.LeftCtrl))
                 Hovered = null;
 
             return var;
