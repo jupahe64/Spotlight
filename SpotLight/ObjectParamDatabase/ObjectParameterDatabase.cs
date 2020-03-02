@@ -210,6 +210,8 @@ namespace SpotLight.ObjectParamDatabase
                             if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
                             {
                                 ByamlNodeType type = propertyEntry.Value.NodeType;
+                                if (type == ByamlNodeType.Null)
+                                    type = ByamlNodeType.StringIndex;
                                 ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                             }
                         }
@@ -231,6 +233,8 @@ namespace SpotLight.ObjectParamDatabase
                         foreach (var propertyEntry in Tmp.PropertyEntries)
                         {
                             ByamlNodeType type = propertyEntry.Value.NodeType;
+                            if (type == ByamlNodeType.Null)
+                                type = ByamlNodeType.StringIndex;
                             OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                         }
 
@@ -276,6 +280,8 @@ namespace SpotLight.ObjectParamDatabase
                             if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
                             {
                                 ByamlNodeType type = propertyEntry.Value.NodeType;
+                                if (type == ByamlNodeType.Null)
+                                    type = ByamlNodeType.StringIndex;
                                 ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                             }
                         }
@@ -297,6 +303,8 @@ namespace SpotLight.ObjectParamDatabase
                         foreach (var propertyEntry in Tmp.PropertyEntries)
                         {
                             ByamlNodeType type = propertyEntry.Value.NodeType;
+                            if (type == ByamlNodeType.Null)
+                                type = ByamlNodeType.StringIndex;
                             OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                         }
 
@@ -342,6 +350,8 @@ namespace SpotLight.ObjectParamDatabase
                             if (!ObjectParameters[ParamID].Properties.Any(O => O.Key == propertyEntry.Key))
                             {
                                 ByamlNodeType type = propertyEntry.Value.NodeType;
+                                if (type == ByamlNodeType.Null)
+                                    type = ByamlNodeType.StringIndex;
                                 ObjectParameters[ParamID].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                             }
                         }
@@ -363,6 +373,8 @@ namespace SpotLight.ObjectParamDatabase
                         foreach (var propertyEntry in Tmp.PropertyEntries)
                         {
                             ByamlNodeType type = propertyEntry.Value.NodeType;
+                            if (type == ByamlNodeType.Null)
+                                type = ByamlNodeType.StringIndex;
                             OP.Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
                         }
 
@@ -730,7 +742,7 @@ namespace Spotlight.ObjectInformationDatabase
     {
         public Version Version = LatestVersion;
         private List<Information> ObjectInformations = new List<Information>();
-        public static Version LatestVersion { get; } = new Version(1, 1);
+        public static Version LatestVersion { get; } = new Version(1, 2);
 
         public ObjectInformationDatabase()
         {
@@ -757,19 +769,30 @@ namespace Spotlight.ObjectInformationDatabase
                     while (FS.Position < FS.Length)
                         ObjectInformations.Add(new Information() { ClassName = FS.ReadString(), Description = FS.ReadString() });
                 }
+                //Version 1.1 backwards compatability
+                if (Check.Equals(new Version(1, 1)))
+                {
+                    while (FS.Position < FS.Length)
+                    {
+                        Information NewInfo = new Information() { ClassName = FS.ReadString(), Description = FS.ReadString() };
+                        Read = new byte[2];
+                        FS.Read(Read, 0, 2);
+                        ushort PropCount = BitConverter.ToUInt16(Read, 0);
+                        for (int i = 0; i < PropCount; i++)
+                            NewInfo.Properties.Add(FS.ReadString(), FS.ReadString());
+                        ObjectInformations.Add(NewInfo);
+                    }
+                }
                 return;
             }
             while (FS.Position < FS.Length)
             {
-                Information NewInfo = new Information() { ClassName = FS.ReadString(), Description = FS.ReadString() };
+                Information NewInfo = new Information() { ClassName = FS.ReadString(), EnglishName = FS.ReadString(), Description = FS.ReadString() };
                 Read = new byte[2];
                 FS.Read(Read, 0, 2);
                 ushort PropCount = BitConverter.ToUInt16(Read, 0);
                 for (int i = 0; i < PropCount; i++)
-                {
-                    NewInfo.PropertyNames.Add(FS.ReadString());
-                    NewInfo.PropertyDescriptions.Add(FS.ReadString());
-                }
+                    NewInfo.Properties.Add(FS.ReadString(), FS.ReadString());
                 ObjectInformations.Add(NewInfo);
             }
             FS.Close();
@@ -785,18 +808,22 @@ namespace Spotlight.ObjectInformationDatabase
                 FS.Write(write,0,write.Length);
                 FS.WriteByte(0x00);
 
+                write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].EnglishName ?? ObjectInformations[i].ClassName);
+                FS.Write(write, 0, write.Length);
+                FS.WriteByte(0x00);
+
                 write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].Description);
                 FS.Write(write, 0, write.Length);
                 FS.WriteByte(0x00);
 
-                FS.Write(BitConverter.GetBytes((ushort)ObjectInformations[i].PropertyNames.Count), 0, 2);
-                for (int j = 0; j < ObjectInformations[i].PropertyNames.Count; j++)
+                FS.Write(BitConverter.GetBytes((ushort)ObjectInformations[i].Properties.Count), 0, 2);
+                for (int j = 0; j < ObjectInformations[i].Properties.Count; j++)
                 {
-                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyNames[j]);
+                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].Properties.ElementAt(j).Key);
                     FS.Write(write, 0, write.Length);
                     FS.WriteByte(0x00);
 
-                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].PropertyDescriptions[j]);
+                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].Properties.ElementAt(j).Value);
                     FS.Write(write, 0, write.Length);
                     FS.WriteByte(0x00);
                 }
@@ -804,61 +831,27 @@ namespace Spotlight.ObjectInformationDatabase
             FS.Close();
         }
 
-        public Information GetInformation(string ObjectName)
+        public Information GetInformation(string TargetClassName)
         {
-            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
-            if (found.Count == 0)
-                return new Information() { ClassName = ObjectName, Description = "No Description Found" };
+            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, TargetClassName)).ToList();
+            if (found.Count == 0)//An area that when entered activates a camera
+                return new Information() { ClassName = TargetClassName, Description = "", EnglishName = TargetClassName };
             return found[0];
         }
+        public void SetInformation(Information Info)
+        {
+            if (Info.EnglishName == null)
+                Info.EnglishName = Info.ClassName;
 
-        public void SetDescription(string ObjectName, string Description)
-        {
-            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
-            if (found.Count == 0)
-                ObjectInformations.Add(new Information() { ClassName = ObjectName, Description = Description });
-            else
+            if (ObjectInformations.Any(p => p.Equals(Info)))
             {
-                if (Description.Length == 0)
-                    ObjectInformations.Remove(found[0]);
-                else
-                    found[0].Description = Description;
+                if (Info.Properties.Count == 0 && Info.Description.Length == 0 && (Info.EnglishName.Equals(Info.ClassName) || Info.EnglishName.Length == 0))
+                    ObjectInformations.Remove(Info);
             }
-        }
-        public void SetProperty(string ObjectName, string Proprty, string Description)
-        {
-            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, ObjectName)).ToList();
-            if (found.Count == 0)
-                ObjectInformations.Add(new Information() { ClassName = ObjectName, Description = "No Description Found", PropertyNames = new List<string>() { Proprty }, PropertyDescriptions = new List<string>() { Description } });
             else
-            {
-                if (Description.Length == 0)
-                {
-                    for (int j = 0; j < found[0].PropertyNames.Count; j++)
-                    {
-                        if (found[0].PropertyNames[j].Equals(Proprty))
-                        {
-                            found[0].PropertyNames.RemoveAt(j);
-                            found[0].PropertyDescriptions.RemoveAt(j);
-                            break;
-                        }
-                    }
-                }
-                else
-                { 
-                    for (int j = 0; j < found[0].PropertyNames.Count; j++)
-                    {
-                        if (found[0].PropertyNames[j].Equals(Proprty))
-                        {
-                            found[0].PropertyDescriptions[j] = Description;
-                            return;
-                        }
-                    }
-                    found[0].PropertyNames.Add(Proprty);
-                    found[0].PropertyDescriptions.Add(Description);
-                }
-            }
+                ObjectInformations.Add(Info);
         }
+       
         /// <summary>
         /// Clears all the Object descriptions from the database. Doesn't check to make sure the user actually wanted this though
         /// </summary>
@@ -867,17 +860,28 @@ namespace Spotlight.ObjectInformationDatabase
 
     public class Information
     {
+        public string EnglishName;
         public string ClassName;
         public string Description;
-        public List<string> PropertyNames = new List<string>();
-        public List<string> PropertyDescriptions = new List<string>();
+        public Dictionary<string, string> Properties = new Dictionary<string, string>();
 
         public string GetNoteForProperty(string PropertyName)
         {
-            for (int i = 0; i < PropertyNames.Count; i++)
-                if (PropertyNames[i].Equals(PropertyName))
-                    return PropertyDescriptions[i];
+            if (Properties.ContainsKey(PropertyName))
+                return Properties[PropertyName];
             return "No Description Found";
+        }
+        public void SetNoteForProperty(string PropertyName, string PropertyDescription)
+        {
+            if (Properties.ContainsKey(PropertyName))
+            {
+                if (PropertyDescription.Length == 0)
+                    Properties.Remove(PropertyName);
+                else
+                    Properties[PropertyName] = PropertyDescription;
+            }
+            else
+                Properties.Add(PropertyName, PropertyDescription);
         }
     }
 }

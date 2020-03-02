@@ -22,6 +22,8 @@ namespace SpotLight
             CenterToParent();
             DBEntryListView.ShowGroups = true;
             DBEntryListView.DoubleBuffering(true);
+            if (System.IO.File.Exists(Program.SODDPath))
+                OID = new ObjectInformationDatabase(Program.SODDPath);
             FullItems = new ListViewItem[database.ObjectParameters.Count];
             for (int i = 0; i < database.ObjectParameters.Count; i++)
             {
@@ -35,12 +37,10 @@ namespace SpotLight
 
                 }
 
-                ListViewItem LVI = new ListViewItem(new string[] { database.ObjectParameters[i].ClassName, database.ObjectParameters[i].ObjectNames.Count.ToString().PadLeft(3, '0'), database.ObjectParameters[i].ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = LVG, Tag = database.ObjectParameters[i] };
+                ListViewItem LVI = new ListViewItem(new string[] { database.ObjectParameters[i].ClassName, OID.GetInformation(database.ObjectParameters[i].ClassName).EnglishName ?? database.ObjectParameters[i].ClassName, database.ObjectParameters[i].ObjectNames.Count.ToString().PadLeft(3, '0'), database.ObjectParameters[i].ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = LVG, Tag = database.ObjectParameters[i] };
                 FullItems[i] = LVI;
             }
             DBEntryListView.Items.AddRange(FullItems);
-            if (System.IO.File.Exists(Program.SODDPath))
-                OID = new ObjectInformationDatabase(Program.SODDPath);
 
             this.scene = scene;
             this.control = control;
@@ -63,6 +63,7 @@ namespace SpotLight
         readonly GL_ControlModern control;
         readonly ObjectParameterDatabase OPD;
         readonly ListViewItem[] FullItems;
+        private Information ObjectInformation;
 
         public string SelectedClassName => DBEntryListView.SelectedItems[0].SubItems[0].Text;
         bool Loading = false;
@@ -74,7 +75,7 @@ namespace SpotLight
             SelectModelListView.Items.Clear();
             PropertyNotesListView.Items.Clear();
 
-            if (DBEntryListView.SelectedItems.Count == 0)
+            if (DBEntryListView.SelectedItems.Count == 0 || DBEntryListView.SelectedItems[0].Tag == null)
             {
                 ClassNameLabel.Text = "Nothing Selected";
                 SelectObjectListView.Enabled = false;
@@ -83,9 +84,10 @@ namespace SpotLight
                 return;
             }
             Loading = true;
-            Information tmp = OID.GetInformation(SelectedClassName);
-            ClassNameLabel.Text = tmp.ClassName;
-            ObjectDescriptionTextBox.Text = tmp.Description;
+            ObjectInformation = OID.GetInformation(SelectedClassName);
+            ClassNameLabel.Text = ObjectInformation.ClassName;
+            EnglishNameTextBox.Text = (ObjectInformation.EnglishName == null || ObjectInformation.EnglishName.Length == 0) ? ObjectInformation.ClassName : ObjectInformation.EnglishName;
+            ObjectDescriptionTextBox.Text = ObjectInformation.Description.Length == 0 ? "No Description Found": ObjectInformation.Description ;
             Parameter Param = (Parameter)DBEntryListView.SelectedItems[0].Tag;
             for (int i = 0; i < Param.ObjectNames.Count; i++)
             {
@@ -101,7 +103,7 @@ namespace SpotLight
             }
             for (int i = 0; i < Param.Properties.Count; i++)
             {
-                PropertyNotesListView.Items.Add(new ListViewItem(new string[] { Param.Properties[i].Key, Param.Properties[i].Value, tmp.GetNoteForProperty(Param.Properties[i].Key) }));
+                PropertyNotesListView.Items.Add(new ListViewItem(new string[] { Param.Properties[i].Key, Param.Properties[i].Value, ObjectInformation.GetNoteForProperty(Param.Properties[i].Key) }));
                 PropertyNotesListView.Items[0].Selected = true;
                 PropertyNotesListView.Enabled = true;
                 PropertyHintTextBox.Text = PropertyNotesListView.SelectedItems[0].SubItems[2].Text;
@@ -115,7 +117,81 @@ namespace SpotLight
         {
             if (Loading || DBEntryListView.SelectedItems.Count == 0)
                 return;
-            OID.SetDescription(DBEntryListView.SelectedItems[0].SubItems[0].Text, ObjectDescriptionTextBox.Text);
+            ObjectInformation.Description = ObjectDescriptionTextBox.Text;
+            OID.SetInformation(ObjectInformation);
+            Edited = true;
+        }
+
+        private void SearchTextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            string Search = SearchTextBox.Text.ToLower();
+            DBEntryListView.Groups[10].Header = "Search Results: {RESULT}".Replace("{RESULT}", SearchTextBox.Text);
+            if (Search.Equals(""))
+            {
+                DBEntryListView.Items.Clear();
+                DBEntryListView.Items.AddRange(FullItems);
+            }
+            else
+            {
+                DBEntryListView.Items.Clear();
+                for (int i = 0; i < OPD.ObjectParameters.Count; i++)
+                {
+                    Parameter Param = (Parameter)FullItems[i].Tag;
+                    Information tmp = OID.GetInformation(Param.ClassName);
+                    bool a = !Param.ClassName.ToLower().Contains(Search), b = !(tmp.EnglishName ?? Param.ClassName).ToLower().Contains(Search);
+                    if (a && b)
+                        continue;
+
+                    DBEntryListView.Items.Add(new ListViewItem(new string[] { Param.ClassName, OID.GetInformation(Param.ClassName).EnglishName ?? Param.ClassName, Param.ObjectNames.Count.ToString().PadLeft(3, '0'), Param.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = DBEntryListView.Groups[10], Tag = Param });
+                }
+                if (DBEntryListView.Items.Count == 0)
+                    DBEntryListView.Items.Add(new ListViewItem(new string[] { "No Results for " + SearchTextBox.Text, "----------", "---", "---" }) { Group = DBEntryListView.Groups[10] });
+            }
+        }
+
+        private void PropertyNotesListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
+                return;
+
+            Loading = true;
+            PropertyHintTextBox.Text = PropertyNotesListView.SelectedItems[0].SubItems[2].Text;
+            Loading = false;
+        }
+
+        private void PropertyHintTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
+                return;
+            ObjectInformation.SetNoteForProperty(PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
+            PropertyNotesListView.SelectedItems[0].SubItems[2].Text = PropertyHintTextBox.Text;
+            OID.SetInformation(ObjectInformation);
+            Edited = true;
+        }
+
+        private void ObjectTypeTabControl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            bool trig = ObjectTypeTabControl.SelectedIndex == 0;
+
+            ClassNameLabel.Enabled = trig;
+            ObjectDescriptionTextBox.Enabled = trig;
+            SelectObjectLabel.Enabled = trig;
+            SelectObjectListView.Enabled = trig;
+            SelectModelLabel.Enabled = trig;
+            SelectModelListView.Enabled = trig;
+            PropertyLabel.Enabled = trig;
+            PropertyNotesListView.Enabled = trig;
+            PropertyHintTextBox.Enabled = trig;
+            EnglishNameTextBox.Enabled = trig;
+        }
+
+        private void EnglishNameTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (Loading || DBEntryListView.SelectedItems.Count == 0)
+                return;
+            ObjectInformation.EnglishName = EnglishNameTextBox.Text;
+            OID.SetInformation(ObjectInformation);
+            DBEntryListView.SelectedItems[0].SubItems[1].Text = EnglishNameTextBox.Text;
             Edited = true;
         }
 
@@ -214,68 +290,6 @@ namespace SpotLight
             return new (I3dWorldObject, ObjectList)[] {
                 (rail, zone.ObjLists["Map_Rails"])
             };
-        }
-
-        private void SearchTextBox_KeyUp(object sender, KeyEventArgs e)
-        {
-            string Search = SearchTextBox.Text.ToLower();
-            DBEntryListView.Groups[10].Header = "Search Results: {RESULT}".Replace("{RESULT}", SearchTextBox.Text);
-            if (Search.Equals(""))
-            {
-                DBEntryListView.Items.Clear();
-                DBEntryListView.Items.AddRange(FullItems);
-            }
-            else
-            {
-                DBEntryListView.Items.Clear();
-                for (int i = 0; i < OPD.ObjectParameters.Count; i++)
-                {
-                    Parameter Param = (Parameter)FullItems[i].Tag;
-                    if (!Param.ClassName.ToLower().Contains(Search))
-                        continue;
-
-
-
-                    DBEntryListView.Items.Add(new ListViewItem(new string[] { Param.ClassName, Param.ObjectNames.Count.ToString().PadLeft(3,'0'), Param.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = DBEntryListView.Groups[10], Tag = Param });
-                }
-                if (DBEntryListView.Items.Count == 0)
-                    DBEntryListView.Items.Add(new ListViewItem(new string[] { "No Results for "+SearchTextBox.Text, "---", "---" }) { Group = DBEntryListView.Groups[10] });
-            }
-        }
-
-        private void PropertyNotesListView_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
-                return;
-
-            Loading = true;
-            PropertyHintTextBox.Text = PropertyNotesListView.SelectedItems[0].SubItems[2].Text;
-            Loading = false;
-        }
-
-        private void PropertyHintTextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
-                return;
-            Information temp = OID.GetInformation(DBEntryListView.SelectedItems[0].SubItems[0].Text);
-            OID.SetProperty(DBEntryListView.SelectedItems[0].SubItems[0].Text, PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
-            PropertyNotesListView.SelectedItems[0].SubItems[2].Text = PropertyHintTextBox.Text;
-            Edited = true;
-        }
-
-        private void ObjectTypeTabControl_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            bool trig = ObjectTypeTabControl.SelectedIndex == 0;
-
-            ClassNameLabel.Enabled = trig;
-            ObjectDescriptionTextBox.Enabled = trig;
-            SelectObjectLabel.Enabled = trig;
-            SelectObjectListView.Enabled = trig;
-            SelectModelLabel.Enabled = trig;
-            SelectModelListView.Enabled = trig;
-            PropertyLabel.Enabled = trig;
-            PropertyNotesListView.Enabled = trig;
-            PropertyHintTextBox.Enabled = trig;
         }
     }
     public static class ControlExtensions

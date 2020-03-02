@@ -78,6 +78,8 @@
             this.ModelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SelectModelLabel = new System.Windows.Forms.Label();
             this.ClassNameLabel = new System.Windows.Forms.Label();
+            this.EnglishNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.EnglishNameTextBox = new System.Windows.Forms.TextBox();
             this.ObjectTypeTabControl.SuspendLayout();
             this.ObjectFromDBTab.SuspendLayout();
             this.SearchPanel.SuspendLayout();
@@ -100,6 +102,7 @@
             this.DBEntryListView.AutoArrange = false;
             this.DBEntryListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.ClassNameColumnHeader,
+            this.EnglishNameColumnHeader,
             this.ObjectCountColumnHeader,
             this.ModelCountColumnHeader});
             this.DBEntryListView.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -152,7 +155,7 @@
             // ClassNameColumnHeader
             // 
             this.ClassNameColumnHeader.Text = "Class Name";
-            this.ClassNameColumnHeader.Width = 143;
+            this.ClassNameColumnHeader.Width = 134;
             // 
             // ObjectCountColumnHeader
             // 
@@ -167,10 +170,10 @@
             // ObjectDescriptionTextBox
             // 
             this.ObjectDescriptionTextBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ObjectDescriptionTextBox.Location = new System.Drawing.Point(0, 23);
+            this.ObjectDescriptionTextBox.Location = new System.Drawing.Point(0, 53);
             this.ObjectDescriptionTextBox.Multiline = true;
             this.ObjectDescriptionTextBox.Name = "ObjectDescriptionTextBox";
-            this.ObjectDescriptionTextBox.Size = new System.Drawing.Size(502, 88);
+            this.ObjectDescriptionTextBox.Size = new System.Drawing.Size(502, 86);
             this.ObjectDescriptionTextBox.TabIndex = 1;
             this.ObjectDescriptionTextBox.TextChanged += new System.EventHandler(this.ObjectDescriptionTextBox_TextChanged);
             // 
@@ -373,6 +376,7 @@
             this.MainSplitContainer.Panel2.Controls.Add(this.PropertyLabel);
             this.MainSplitContainer.Panel2.Controls.Add(this.AddSettingsPanel);
             this.MainSplitContainer.Panel2.Controls.Add(this.ObjectDescriptionTextBox);
+            this.MainSplitContainer.Panel2.Controls.Add(this.EnglishNameTextBox);
             this.MainSplitContainer.Panel2.Controls.Add(this.ClassNameLabel);
             this.MainSplitContainer.Size = new System.Drawing.Size(784, 488);
             this.MainSplitContainer.SplitterDistance = 278;
@@ -388,10 +392,10 @@
             this.PropertyNotesListView.FullRowSelect = true;
             this.PropertyNotesListView.GridLines = true;
             this.PropertyNotesListView.HideSelection = false;
-            this.PropertyNotesListView.Location = new System.Drawing.Point(0, 250);
+            this.PropertyNotesListView.Location = new System.Drawing.Point(0, 278);
             this.PropertyNotesListView.MultiSelect = false;
             this.PropertyNotesListView.Name = "PropertyNotesListView";
-            this.PropertyNotesListView.Size = new System.Drawing.Size(502, 183);
+            this.PropertyNotesListView.Size = new System.Drawing.Size(502, 155);
             this.PropertyNotesListView.TabIndex = 4;
             this.PropertyNotesListView.UseCompatibleStateImageBehavior = false;
             this.PropertyNotesListView.View = System.Windows.Forms.View.Details;
@@ -427,7 +431,7 @@
             this.PropertyLabel.AutoSize = true;
             this.PropertyLabel.Dock = System.Windows.Forms.DockStyle.Top;
             this.PropertyLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PropertyLabel.Location = new System.Drawing.Point(0, 227);
+            this.PropertyLabel.Location = new System.Drawing.Point(0, 255);
             this.PropertyLabel.Name = "PropertyLabel";
             this.PropertyLabel.Size = new System.Drawing.Size(132, 23);
             this.PropertyLabel.TabIndex = 5;
@@ -437,7 +441,7 @@
             // 
             this.AddSettingsPanel.Controls.Add(this.AddSettingsSplitContainer);
             this.AddSettingsPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.AddSettingsPanel.Location = new System.Drawing.Point(0, 111);
+            this.AddSettingsPanel.Location = new System.Drawing.Point(0, 139);
             this.AddSettingsPanel.Name = "AddSettingsPanel";
             this.AddSettingsPanel.Size = new System.Drawing.Size(502, 116);
             this.AddSettingsPanel.TabIndex = 3;
@@ -534,6 +538,22 @@
             this.ClassNameLabel.TabIndex = 2;
             this.ClassNameLabel.Text = "Nothing Selected";
             // 
+            // EnglishNameColumnHeader
+            // 
+            this.EnglishNameColumnHeader.Text = "Name";
+            this.EnglishNameColumnHeader.Width = 120;
+            // 
+            // EnglishNameTextBox
+            // 
+            this.EnglishNameTextBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.EnglishNameTextBox.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.EnglishNameTextBox.Location = new System.Drawing.Point(0, 23);
+            this.EnglishNameTextBox.Name = "EnglishNameTextBox";
+            this.EnglishNameTextBox.Size = new System.Drawing.Size(502, 30);
+            this.EnglishNameTextBox.TabIndex = 7;
+            this.EnglishNameTextBox.Text = "Nothing Selected";
+            this.EnglishNameTextBox.TextChanged += new System.EventHandler(this.EnglishNameTextBox_TextChanged);
+            // 
             // AddObjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -614,5 +634,7 @@
         private System.Windows.Forms.ColumnHeader RailNameColumnHeader;
         private System.Windows.Forms.ColumnHeader RailDescriptionColumnHeader;
         private System.Windows.Forms.CheckBox LadderRailCheckBox;
+        private System.Windows.Forms.ColumnHeader EnglishNameColumnHeader;
+        private System.Windows.Forms.TextBox EnglishNameTextBox;
     }
 }
