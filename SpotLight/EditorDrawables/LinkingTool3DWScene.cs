@@ -421,12 +421,20 @@ namespace SpotLight.EditorDrawables
                                             obj      == hoveredConnection?.Dest &&
                                             link.Key == hoveredConnection?.Name)
                                         {
-                                            GL.VertexAttrib4(1, EditableObject.selectColor);
+                                            GL.End();
+                                            GL.LineWidth(2);
+                                            GL.Begin(PrimitiveType.Lines);
+                                            GL.VertexAttrib4(1, new Vector4(0.75f, 1, 0.75f, 1));
                                             GL.Vertex3(_objPoint);
+                                            GL.VertexAttrib4(1, new Vector4(1, 0.75f, 0.75f, 1));
                                             GL.Vertex3(objPoint);
+                                            GL.End();
+                                            GL.LineWidth(1);
+                                            GL.Begin(PrimitiveType.Lines);
                                         }
-                                        else{
-                                            GL.VertexAttrib4(1, new Vector4(1, 1, 1, 1));
+                                        else if(!_obj.IsSelectedAll() && !obj.IsSelectedAll()) //other wise the connection is drawn by the LinkRenderer
+                                        {
+                                            GL.VertexAttrib4(1, new Vector4(0.75f, 0.75f, 0.75f, 1));
                                             GL.Vertex3(_objPoint);
                                             GL.Vertex3(objPoint);
                                         }
