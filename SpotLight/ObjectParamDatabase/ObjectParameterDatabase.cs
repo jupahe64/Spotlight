@@ -52,8 +52,17 @@ namespace SpotLight.ObjectParamDatabase
     /// </summary>
     public class ObjectParameterDatabase
     {
+        /// <summary>
+        /// The version of this Object Parameter Database
+        /// </summary>
         public Version Version = LatestVersion;
+        /// <summary>
+        /// Listing of all the object parameters inside this database
+        /// </summary>
         public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
+        /// <summary>
+        /// The Latest version of this database
+        /// </summary>
         public static Version LatestVersion { get; } = new Version(1, 7);
 
         /// <summary>
@@ -123,7 +132,7 @@ namespace SpotLight.ObjectParamDatabase
             FS.Write(new byte[8] { (byte)'S', (byte)'O', (byte)'P', (byte)'D', (byte)Version.Major, (byte)Version.Minor, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Minor }, 0, 8);
             FS.Write(new byte[4] { (byte)'D', (byte)'I', (byte)'C', (byte)'T' }, 0, 4);
             FS.Write(BitConverter.GetBytes(ObjectParameters.Count), 0, 4);
-            foreach (var parameter in ObjectParameters.Values)
+            foreach (Parameter parameter in ObjectParameters.Values)
                 parameter.Write(FS); 
             FS.Close();
         }
@@ -450,16 +459,42 @@ namespace SpotLight.ObjectParamDatabase
         }
         public override int GetHashCode() => base.GetHashCode();
     }
-
+    /// <summary>
+    /// Enum of the object Lists in SM3DW
+    /// </summary>
     public enum ObjList : byte
     {
+        /// <summary>
+        /// Areas
+        /// </summary>
         AreaList,
+        /// <summary>
+        /// Checkpoints
+        /// </summary>
         CheckPointList,
+        /// <summary>
+        /// Cutscenes
+        /// </summary>
         DemoList,
+        /// <summary>
+        /// Goals (End of Level)
+        /// </summary>
         GoalList,
+        /// <summary>
+        /// Objects
+        /// </summary>
         ObjectList,
+        /// <summary>
+        /// Starting points
+        /// </summary>
         PlayerList,
+        /// <summary>
+        /// Skyboxes
+        /// </summary>
         SkyList,
+        /// <summary>
+        /// Objects that are connected to other objects
+        /// </summary>
         Linked
     }
 
@@ -653,14 +688,29 @@ namespace Spotlight.ObjectInformationDatabase
 {
     public class ObjectInformationDatabase
     {
+        /// <summary>
+        /// The version of this Object Description Database
+        /// </summary>
         public Version Version = LatestVersion;
+        /// <summary>
+        /// List of Informations on certain objects
+        /// </summary>
         private List<Information> ObjectInformations = new List<Information>();
+        /// <summary>
+        /// The Latest version of this database
+        /// </summary>
         public static Version LatestVersion { get; } = new Version(1, 2);
-
+        /// <summary>
+        /// Create an Empry Database
+        /// </summary>
         public ObjectInformationDatabase()
         {
             //nothing lol
         }
+        /// <summary>
+        /// Load a database from a file
+        /// </summary>
+        /// <param name="Filename"></param>
         public ObjectInformationDatabase(string Filename)
         {
             FileStream FS = new FileStream(Filename, FileMode.Open);
@@ -710,7 +760,10 @@ namespace Spotlight.ObjectInformationDatabase
             }
             FS.Close();
         }
-
+        /// <summary>
+        /// Save the database to a file
+        /// </summary>
+        /// <param name="Filename"></param>
         public void Save(string Filename)
         {
             FileStream FS = new FileStream(Filename, FileMode.Create);
@@ -743,7 +796,11 @@ namespace Spotlight.ObjectInformationDatabase
             }
             FS.Close();
         }
-
+        /// <summary>
+        /// Get a piece of information
+        /// </summary>
+        /// <param name="TargetClassName">the Class to get information on</param>
+        /// <returns></returns>
         public Information GetInformation(string TargetClassName)
         {
             List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, TargetClassName)).ToList();
@@ -751,6 +808,10 @@ namespace Spotlight.ObjectInformationDatabase
                 return new Information() { ClassName = TargetClassName, Description = "", EnglishName = TargetClassName };
             return found[0];
         }
+        /// <summary>
+        /// Set a piece of Information. If it already exists, and the input is not an empty piece of information, the data will be saved. If it's empty, the entry will be deleted.
+        /// </summary>
+        /// <param name="Info">Information to set</param>
         public void SetInformation(Information Info)
         {
             if (Info.EnglishName == null)
@@ -769,6 +830,8 @@ namespace Spotlight.ObjectInformationDatabase
         /// Clears all the Object descriptions from the database. Doesn't check to make sure the user actually wanted this though
         /// </summary>
         public void Clear() => ObjectInformations.Clear();
+
+        public override string ToString() => $"Description Database Version {Version.Major}.{Version.Minor} [{ObjectInformations.Count} Objects Documented]";
     }
 
     public class Information
@@ -796,5 +859,6 @@ namespace Spotlight.ObjectInformationDatabase
             else
                 Properties.Add(PropertyName, PropertyDescription);
         }
+        public override string ToString() => $"{ClassName} | {EnglishName}{(Properties.Count > 0 ? $" | {Properties.Count} Propert{(Properties.Count > 1 ? "ies" : "y")}" : "")}";
     }
 }
