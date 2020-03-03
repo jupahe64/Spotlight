@@ -160,8 +160,16 @@ namespace SpotLight
 
         private void PlayerComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (PlayerComboBox.SelectedItem.ToString().Equals(Properties.Settings.Default.PlayerChoice))
+                return;
+
             Properties.Settings.Default.PlayerChoice = PlayerComboBox.SelectedItem.ToString();
             Properties.Settings.Default.Save();
+            if (BfresModelCache.Contains("CheckpointFlag"))
+            {
+                BfresModelCache.ReloadModel("CheckpointFlag", Home.LevelGLControlModern);
+                Home.LevelGLControlModern.Refresh();
+            }
         }
 
         private void UniqueIDsCheckBox_CheckedChanged(object sender, EventArgs e)

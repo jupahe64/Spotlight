@@ -362,6 +362,15 @@ namespace SpotLight
 
         public const bool LoadTextures = true;
 
+        public static void ReloadModel(string ModelName, GL_ControlModern control)
+        {
+            if (cache.ContainsKey(ModelName))
+            {
+                cache.Remove(ModelName);
+                Submit(ModelName, new MemoryStream(SARC.UnpackRamN(new MemoryStream(YAZ0.Decompress(Program.ObjectDataPath+ModelName+".szs"))).Files[ModelName+".bfres"]), control);
+            }
+        }
+
         public struct CachedModel
         {
             static readonly float white = BitConverter.ToSingle(new byte[] {255, 255, 255, 255},0);
@@ -410,7 +419,37 @@ namespace SpotLight
                             int Target = 0;
                             for (int i = 0; i < mdl.Materials[shape.MaterialIndex].TextureRefs.Count; i++)
                             {
-                                if (mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains("_alb"))
+                                if (mdl.Name.Equals("CheckpointFlag") && mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains(".0"))
+                                {
+                                    switch (Properties.Settings.Default.PlayerChoice)
+                                    {
+                                        case "Mario":
+                                            if (bfres.Textures.ContainsKey("CheckpointFlagMark_alb.1"))
+                                                mdl.Materials[shape.MaterialIndex].TextureRefs[i].Texture = bfres.Textures["CheckpointFlagMark_alb.1"];
+                                            break;
+                                        case "Luigi":
+                                            if (bfres.Textures.ContainsKey("CheckpointFlagMark_alb.2"))
+                                                mdl.Materials[shape.MaterialIndex].TextureRefs[i].Texture = bfres.Textures["CheckpointFlagMark_alb.2"];
+                                            break;
+                                        case "Peach":
+                                            if (bfres.Textures.ContainsKey("CheckpointFlagMark_alb.3"))
+                                                mdl.Materials[shape.MaterialIndex].TextureRefs[i].Texture = bfres.Textures["CheckpointFlagMark_alb.3"];
+                                            break;
+                                        case "Toad":
+                                            if (bfres.Textures.ContainsKey("CheckpointFlagMark_alb.4"))
+                                                mdl.Materials[shape.MaterialIndex].TextureRefs[i].Texture = bfres.Textures["CheckpointFlagMark_alb.4"];
+                                            break;
+                                        case "Rosalina":
+                                            if (bfres.Textures.ContainsKey("CheckpointFlagMark_alb.5"))
+                                                mdl.Materials[shape.MaterialIndex].TextureRefs[i].Texture = bfres.Textures["CheckpointFlagMark_alb.5"];
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    Target = i;
+                                    break;
+                                }
+                                else if (mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains("_alb"))
                                 {
                                     Target = i;
                                     break;

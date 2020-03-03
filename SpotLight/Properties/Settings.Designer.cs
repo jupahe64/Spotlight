@@ -49,7 +49,7 @@ namespace SpotLight.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Mario")]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
         public string PlayerChoice {
             get {
                 return ((string)(this["PlayerChoice"]));

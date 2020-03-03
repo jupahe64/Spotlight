@@ -9,7 +9,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="PlayerChoice" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Mario</Value>
+      <Value Profile="(Default)">None</Value>
     </Setting>
     <Setting Name="DrawAreas" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

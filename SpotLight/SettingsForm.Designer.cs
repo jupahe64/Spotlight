@@ -39,7 +39,7 @@
             this.DatabaseInfoLabel = new System.Windows.Forms.Label();
             this.RenderingGroupBox = new System.Windows.Forms.GroupBox();
             this.RenderSkyboxesCheckBox = new System.Windows.Forms.CheckBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.PlayerLabel = new System.Windows.Forms.Label();
             this.PlayerComboBox = new System.Windows.Forms.ComboBox();
             this.RenderAreaCheckBox = new System.Windows.Forms.CheckBox();
             this.LoadingAndSavingGroupBox = new System.Windows.Forms.GroupBox();
@@ -135,7 +135,7 @@
             // RenderingGroupBox
             // 
             this.RenderingGroupBox.Controls.Add(this.RenderSkyboxesCheckBox);
-            this.RenderingGroupBox.Controls.Add(this.label1);
+            this.RenderingGroupBox.Controls.Add(this.PlayerLabel);
             this.RenderingGroupBox.Controls.Add(this.PlayerComboBox);
             this.RenderingGroupBox.Controls.Add(this.RenderAreaCheckBox);
             this.RenderingGroupBox.Location = new System.Drawing.Point(12, 122);
@@ -158,20 +158,21 @@
             this.RenderSkyboxesCheckBox.UseVisualStyleBackColor = true;
             this.RenderSkyboxesCheckBox.CheckedChanged += new System.EventHandler(this.RenderSkyboxesCheckBox_CheckedChanged);
             // 
-            // label1
+            // PlayerLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 45);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(39, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Player:";
+            this.PlayerLabel.AutoSize = true;
+            this.PlayerLabel.Location = new System.Drawing.Point(6, 45);
+            this.PlayerLabel.Name = "PlayerLabel";
+            this.PlayerLabel.Size = new System.Drawing.Size(39, 13);
+            this.PlayerLabel.TabIndex = 2;
+            this.PlayerLabel.Text = "Player:";
             // 
             // PlayerComboBox
             // 
             this.PlayerComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PlayerComboBox.FormattingEnabled = true;
             this.PlayerComboBox.Items.AddRange(new object[] {
+            "None",
             "Mario",
             "Luigi",
             "Peach",
@@ -296,7 +297,7 @@
         private System.Windows.Forms.Button ClearDescriptionsButton;
         private System.Windows.Forms.GroupBox RenderingGroupBox;
         private System.Windows.Forms.CheckBox RenderAreaCheckBox;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label PlayerLabel;
         private System.Windows.Forms.ComboBox PlayerComboBox;
         private System.Windows.Forms.CheckBox RenderSkyboxesCheckBox;
         private System.Windows.Forms.GroupBox LoadingAndSavingGroupBox;

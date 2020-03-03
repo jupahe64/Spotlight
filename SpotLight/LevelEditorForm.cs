@@ -598,10 +598,10 @@ Would you like to rebuild the database from your 3DW Files?",
         {
             if (Program.ParameterDB == null)
             {
-                MessageBox.Show(
-@"Y o u  c h o s e  n o t  t o  g e n e r a t e
-a  v a l i d  d a t a b a s e  r e m e m b e r ?
-= )");
+//                MessageBox.Show(
+//@"Y o u  c h o s e  n o t  t o  g e n e r a t e
+//a  v a l i d  d a t a b a s e  r e m e m b e r ?
+//= )"); //As much as I wish we could keep this, we can't.
 
                 DialogResult DR = MessageBox.Show("The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?","Invalid Database", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
                 if (DR == DialogResult.Yes)
