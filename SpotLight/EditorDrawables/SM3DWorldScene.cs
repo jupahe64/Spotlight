@@ -772,9 +772,9 @@ namespace SpotLight.EditorDrawables
 
         public struct RevertableConnectionAddition : IRevertable
         {
-            I3dWorldObject source;
-            I3dWorldObject dest;
-            string name;
+            readonly I3dWorldObject source;
+            readonly I3dWorldObject dest;
+            readonly string name;
 
             public RevertableConnectionAddition(I3dWorldObject source, I3dWorldObject dest, string name)
             {
@@ -794,9 +794,9 @@ namespace SpotLight.EditorDrawables
 
         public struct RevertableConnectionDeletion : IRevertable
         {
-            I3dWorldObject source;
-            I3dWorldObject dest;
-            string name;
+            readonly I3dWorldObject source;
+            readonly I3dWorldObject dest;
+            readonly string name;
 
             public RevertableConnectionDeletion(I3dWorldObject source, I3dWorldObject dest, string name)
             {
@@ -816,13 +816,12 @@ namespace SpotLight.EditorDrawables
 
         public struct RevertableConnectionChange : IRevertable
         {
-            I3dWorldObject source;
-            I3dWorldObject dest;
-            string name;
-
-            I3dWorldObject prevSource;
-            I3dWorldObject prevDest;
-            string prevName;
+            readonly I3dWorldObject source;
+            readonly I3dWorldObject dest;
+            readonly string name;
+            readonly I3dWorldObject prevSource;
+            readonly I3dWorldObject prevDest;
+            readonly string prevName;
 
             public RevertableConnectionChange(I3dWorldObject source, I3dWorldObject dest, string name,
                 I3dWorldObject prevSource, I3dWorldObject prevDest, string prevName)
@@ -907,9 +906,7 @@ namespace SpotLight.EditorDrawables
         {
             string currentDirectory = EditZone.Directory;
 
-            HashSet<SM3DWorldZone> zonesToSave = new HashSet<SM3DWorldZone>();
-
-            zonesToSave.Add(EditZone);
+            HashSet<SM3DWorldZone> zonesToSave = new HashSet<SM3DWorldZone> { EditZone };
 
             foreach (var zonePlacement in ZonePlacements)
             {

@@ -880,7 +880,7 @@ namespace SpotLight
         private static int UploadTexture(Texture texture)
         {
             #region Deswizzle
-            uint bpp = GX2.surfaceGetBitsPerPixel((uint)texture.Format) >> 3;
+            uint bpp = GX2.SurfaceGetBitsPerPixel((uint)texture.Format) >> 3;
 
             GX2.GX2Surface surf = new GX2.GX2Surface
             {

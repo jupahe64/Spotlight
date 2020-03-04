@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
@@ -660,9 +659,7 @@ namespace FileFormats3DW
 
                 using (var comp = scratchImage.Compress((DXGI_FORMAT)format, compFlags, 0.5f))
                 {
-                    long outRowPitch;
-                    long outSlicePitch;
-                    TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out outRowPitch, out outSlicePitch, CP_FLAGS.NONE);
+                    TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out long outRowPitch, out long outSlicePitch, CP_FLAGS.NONE);
 
                     byte[] result = new byte[outSlicePitch];
                     Marshal.Copy(comp.GetImage(0).Pixels, result, 0, result.Length);
@@ -681,10 +678,7 @@ namespace FileFormats3DW
             Console.WriteLine(format);
             Console.WriteLine(width);
             Console.WriteLine(height);
-
-            long inputRowPitch;
-            long inputSlicePitch;
-            TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out inputRowPitch, out inputSlicePitch, CP_FLAGS.NONE);
+            TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out long inputRowPitch, out long inputSlicePitch, CP_FLAGS.NONE);
 
             DXGI_FORMAT FormatDecompressed;
 
@@ -738,9 +732,7 @@ namespace FileFormats3DW
         }
         public static unsafe byte[] Convert(Byte[] data, int width, int height, DXGI_FORMAT inputFormat, DXGI_FORMAT outputFormat)
         {
-            long inputRowPitch;
-            long inputSlicePitch;
-            TexHelper.Instance.ComputePitch(inputFormat, width, height, out inputRowPitch, out inputSlicePitch, CP_FLAGS.NONE);
+            TexHelper.Instance.ComputePitch(inputFormat, width, height, out long inputRowPitch, out long inputSlicePitch, CP_FLAGS.NONE);
 
             if (data.Length == inputSlicePitch)
             {
@@ -769,9 +761,7 @@ namespace FileFormats3DW
 
                 using (var decomp = scratchImage.Convert(0, outputFormat, convFlags, 0.5f))
                 {
-                    long outRowPitch;
-                    long outSlicePitch;
-                    TexHelper.Instance.ComputePitch(outputFormat, width, height, out outRowPitch, out outSlicePitch, CP_FLAGS.NONE);
+                    TexHelper.Instance.ComputePitch(outputFormat, width, height, out long outRowPitch, out long outSlicePitch, CP_FLAGS.NONE);
 
                     byte[] result = new byte[outSlicePitch];
                     Marshal.Copy(decomp.GetImage(0).Pixels, result, 0, result.Length);

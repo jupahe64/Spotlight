@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FileFormats3DW
 {
@@ -209,7 +209,7 @@ namespace FileFormats3DW
         public static uint expHeight = 0;
         public static uint expNumSlices = 0;
 
-        public class surfaceIn
+        public class SurfaceIn
         {
             public uint size = 0;
             public uint tileMode = 0;
@@ -227,7 +227,7 @@ namespace FileFormats3DW
             public TileInfo pTileInfo = new TileInfo();
             public int tileIndex = 0;
         }
-        public class surfaceOut
+        public class SurfaceOut
         {
             public uint size = 0;
             public uint pitch = 0;
@@ -267,8 +267,8 @@ namespace FileFormats3DW
             public int pipeConfig = 0;
         }
 
-        static surfaceIn pIn = new surfaceIn();
-        static surfaceOut pOut = new surfaceOut();
+        static SurfaceIn pIn = new SurfaceIn();
+        static SurfaceOut pOut = new SurfaceOut();
 
         public enum GX2SurfaceDimension
         {
@@ -559,10 +559,10 @@ namespace FileFormats3DW
             ADDR_FMT_RESERVED_63 = 0x3F,
         };
 
-        public static void Debug(surfaceOut surf)
+        public static void Debug(SurfaceOut surf)
         {
             if (surf == null)
-                surf = getSurfaceInfo((GX2SurfaceFormat)0x33, 701, 77, 1, 0, 13, 1, 0);
+                surf = GetSurfaceInfo((GX2SurfaceFormat)0x33, 701, 77, 1, 0, 13, 1, 0);
 
             Console.WriteLine($"size          {surf.size}");
             Console.WriteLine($"pitch         {surf.pitch}");
@@ -585,12 +585,12 @@ namespace FileFormats3DW
             Console.WriteLine($"tileType      {surf.tileType}");
             Console.WriteLine($"tileIndex     {surf.tileIndex}");
         }
-        static bool DebugSurface = false;
+        static readonly bool DebugSurface = false;
 
         public static GX2Surface CreateGx2Texture(byte[] imageData, string Name, uint TileMode, uint AAMode,
                uint Width, uint Height, uint Depth, uint Format, uint swizzle, uint SurfaceDim, uint MipCount)
         {
-            var surfOut = getSurfaceInfo((GX2SurfaceFormat)Format, Width, Height, Depth, SurfaceDim, TileMode, AAMode, 0);
+            var surfOut = GetSurfaceInfo((GX2SurfaceFormat)Format, Width, Height, Depth, SurfaceDim, TileMode, AAMode, 0);
             Console.WriteLine("Imported surfSize" + surfOut.surfSize);
             Console.WriteLine("Imported data block" + imageData.Length);
             Console.WriteLine("GX2SurfaceFormat " + (GX2SurfaceFormat)Format);
@@ -600,8 +600,8 @@ namespace FileFormats3DW
             uint pitch = surfOut.pitch;
             uint mipSize = 0;
             uint dataSize = (uint)imageData.Length;
-            uint bpp = GX2.surfaceGetBitsPerPixel((uint)Format) >> 3;
-            int DepthLevel = 1;
+            uint bpp = GX2.SurfaceGetBitsPerPixel((uint)Format) >> 3;
+            //int DepthLevel = 1;
 
             if (dataSize <= 0)
                 throw new Exception($"Image is empty!!");
@@ -632,7 +632,7 @@ namespace FileFormats3DW
             }
 
             if (TileMode == 0)
-                TileMode = GX2.getDefaultGX2TileMode((uint)SurfaceDim, Width, Height, 1, (uint)Format, 0, 1);
+                TileMode = GX2.GetDefaultGX2TileMode((uint)SurfaceDim, Width, Height, 1, (uint)Format, 0, 1);
 
             uint tilingDepth = surfOut.depth;
 
@@ -668,7 +668,7 @@ namespace FileFormats3DW
 
                 if (mipLevel != 0)
                 {
-                    surfOut = GX2.getSurfaceInfo((GX2SurfaceFormat)Format, Width, Height, 1, 1, TileMode, 0, mipLevel);
+                    surfOut = GX2.GetSurfaceInfo((GX2SurfaceFormat)Format, Width, Height, 1, 1, TileMode, 0, mipLevel);
 
                     if (mipLevel == 1)
                         mipOffsets.Add(imageSize);
@@ -682,7 +682,7 @@ namespace FileFormats3DW
                 if (mipLevel != 0)
                     mipSize += (uint)(surfOut.surfSize + dataAlignBytes.Length);
 
-                byte[] SwizzledData = GX2.swizzle(width_, height_, surfOut.depth, surfOut.height, (uint)Format, 0, 1, surfOut.tileMode, s,
+                byte[] SwizzledData = GX2.Swizzle(width_, height_, surfOut.depth, surfOut.height, (uint)Format, 0, 1, surfOut.tileMode, s,
                         surfOut.pitch, surfOut.bpp, Splice, 0, data_);
 
                 Swizzled.Add(dataAlignBytes.Concat(SwizzledData).ToArray());
@@ -704,27 +704,29 @@ namespace FileFormats3DW
 
             Console.WriteLine("swizzle " + s);
 
-            GX2.GX2Surface surf = new GX2.GX2Surface();
-            surf.depth = Depth;
-            surf.width = Width;
-            surf.height = Height;
-            surf.use = 1;
-            surf.dim = (uint)SurfaceDim;
-            surf.tileMode = TileMode;
-            surf.swizzle = s;
-            surf.resourceFlags = 0;
-            surf.pitch = pitch;
-            surf.bpp = bpp;
-            surf.format = (uint)Format;
-            surf.numMips = MipCount;
-            surf.imageCount = MipCount;
-            surf.firstSlice = 0;
-            surf.firstMip = 0;
-            surf.aa = AAMode;
-            surf.mipOffset = mipOffsets.ToArray();
-            surf.alignment = alignment;
-            surf.imageSize = imageSize;
-            surf.data = Swizzled[0];
+            GX2.GX2Surface surf = new GX2Surface
+            {
+                depth = Depth,
+                width = Width,
+                height = Height,
+                use = 1,
+                dim = (uint)SurfaceDim,
+                tileMode = TileMode,
+                swizzle = s,
+                resourceFlags = 0,
+                pitch = pitch,
+                bpp = bpp,
+                format = (uint)Format,
+                numMips = MipCount,
+                imageCount = MipCount,
+                firstSlice = 0,
+                firstMip = 0,
+                aa = AAMode,
+                mipOffset = mipOffsets.ToArray(),
+                alignment = alignment,
+                imageSize = imageSize,
+                data = Swizzled[0]
+            };
             surf.texRegs = CreateRegisters(surf);
 
             List<byte[]> mips = new List<byte[]>();
@@ -786,7 +788,7 @@ namespace FileFormats3DW
 
         public static uint[] GenerateMipOffsets(GX2Surface tex)
         {
-            var surfOut = GX2.getSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, 1, 1, tex.tileMode, 0, 0);
+            var surfOut = GX2.GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, 1, 1, tex.tileMode, 0, 0);
             uint imageSize = (uint)surfOut.surfSize;
             uint mipSize = 0;
 
@@ -795,7 +797,7 @@ namespace FileFormats3DW
             {
                 if (mipLevel != 0)
                 {
-                    surfOut = GX2.getSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, 1, 1, tex.tileMode, 0, mipLevel);
+                    surfOut = GX2.GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, 1, 1, tex.tileMode, 0, mipLevel);
 
                     if (mipLevel == 1)
                         mipOffsets.Add(imageSize);
@@ -826,7 +828,7 @@ namespace FileFormats3DW
             if (tex.mipOffset == null || tex.mipOffset.Length == 0)
                 tex.mipOffset = GenerateMipOffsets(tex);
 
-            var ImageSurfInfo = getSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, 0);
+            var ImageSurfInfo = GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, 0);
             uint bpp = DIV_ROUND_UP(ImageSurfInfo.bpp, 8);
 
             if (tex.numArray == 0)
@@ -855,7 +857,7 @@ namespace FileFormats3DW
 
                 for (int mipLevel = 0; mipLevel < mipCount; mipLevel++)
                 {
-                    var MipSurfInfo = getSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, mipLevel);
+                    var MipSurfInfo = GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, mipLevel);
 
                     bool GetLevel = (arrayLevel == ArrayIndex && mipLevel == MipIndex);
 
@@ -895,7 +897,7 @@ namespace FileFormats3DW
 
                     if (GetLevel)
                     {
-                        byte[] deswizzled = deswizzle(width_, height_, MipSurfInfo.depth, MipSurfInfo.height, (uint)tex.format, 0, tex.use,
+                        byte[] deswizzled = Deswizzle(width_, height_, MipSurfInfo.depth, MipSurfInfo.height, (uint)tex.format, 0, tex.use,
                         MipSurfInfo.tileMode, (uint)swizzle, MipSurfInfo.pitch, MipSurfInfo.bpp, (uint)arrayLevel, 0, data);
                         //Create a copy and use that to remove uneeded data
                         byte[] result_ = new byte[size];
@@ -917,7 +919,7 @@ namespace FileFormats3DW
 
             Console.WriteLine("DECODING TEX " + DebugTextureName);
 
-            var surfdEBUG = getSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, 0);
+            var surfdEBUG = GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, 0);
             Debug(surfdEBUG);
             /*     Console.WriteLine("");
                  Console.WriteLine("// ----- GX2Surface Decode Info ----- ");
@@ -957,7 +959,7 @@ namespace FileFormats3DW
 
             byte[] data = tex.data;
 
-            var surfInfo = getSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, 0);
+            var surfInfo = GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, 0);
             uint bpp = DIV_ROUND_UP(surfInfo.bpp, 8);
 
             if (surfInfo.depth != 1)
@@ -973,7 +975,7 @@ namespace FileFormats3DW
             if (tex.mipData == null || tex.mipData.Length <= 0)
                 mipCount = 1;
 
-            int ArrayImageize = 0;
+            //int ArrayImageize = 0;
             int ArrayMipImageize = 0;
 
             if (tex.mipData != null)
@@ -1006,14 +1008,14 @@ namespace FileFormats3DW
                         if (mipLevel == 1)
                             mipOffset -= (uint)surfInfo.sliceSize;
 
-                        surfInfo = getSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, mipLevel);
+                        surfInfo = GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, mipLevel);
                         data = new byte[surfInfo.sliceSize];
                         Array.Copy(tex.mipData, (uint)mipDataOffset + mipOffset, data, 0, surfInfo.sliceSize);
                     }
                     else
                         Array.Copy(tex.data, (uint)dataOffset, data, 0, size);
 
-                    byte[] deswizzled = deswizzle(width_, height_, surfInfo.depth, surfInfo.height, (uint)tex.format, 0, tex.use,
+                    byte[] deswizzled = Deswizzle(width_, height_, surfInfo.depth, surfInfo.height, (uint)tex.format, 0, tex.use,
                     surfInfo.tileMode, (uint)swizzle, surfInfo.pitch, surfInfo.bpp, (uint)arrayLevel, 0, data);
                     //Create a copy and use that to remove uneeded data
                     byte[] result_ = new byte[size];
@@ -1070,18 +1072,18 @@ namespace FileFormats3DW
             }
         }
 
-        public static byte[] deswizzle(uint width, uint height, uint depth, uint height_, uint format_, uint aa, uint use, uint tileMode, uint swizzle_,
+        public static byte[] Deswizzle(uint width, uint height, uint depth, uint height_, uint format_, uint aa, uint use, uint tileMode, uint swizzle_,
              uint pitch, uint bpp, uint slice, uint sample, byte[] data)
         {
-            return swizzleSurf(width, height, depth, format_, aa, use, tileMode, swizzle_, pitch, bpp, slice, sample, data, 0);
+            return SwizzleSurf(width, height, depth, format_, aa, use, tileMode, swizzle_, pitch, bpp, slice, sample, data, 0);
         }
-        public static byte[] swizzle(uint width, uint height, uint depth, uint height_, uint format_, uint aa, uint use, uint tileMode, uint swizzle_,
+        public static byte[] Swizzle(uint width, uint height, uint depth, uint height_, uint format_, uint aa, uint use, uint tileMode, uint swizzle_,
      uint pitch, uint bpp, uint slice, uint sample, byte[] data)
         {
-            return swizzleSurf(width, height, depth, format_, aa, use, tileMode, swizzle_, pitch, bpp, slice, sample, data, 1);
+            return SwizzleSurf(width, height, depth, format_, aa, use, tileMode, swizzle_, pitch, bpp, slice, sample, data, 1);
         }
 
-        private static byte[] swizzleSurf(uint width, uint height, uint depth, uint format, uint aa, uint use, uint tileMode, uint swizzle_,
+        private static byte[] SwizzleSurf(uint width, uint height, uint depth, uint format, uint aa, uint use, uint tileMode, uint swizzle_,
                 uint pitch, uint bitsPerPixel, uint slice, uint sample, byte[] data, int swizzle)
         {
             uint bytesPerPixel = bitsPerPixel / 8;
@@ -1115,15 +1117,15 @@ namespace FileFormats3DW
                 {
                     if (tileMode == 0 || tileMode == 1)
                     {
-                        pos = computeSurfaceAddrFromCoordLinear((uint)x, (uint)y, slice, sample, bytesPerPixel, pitch, height, depth);
+                        pos = ComputeSurfaceAddrFromCoordLinear((uint)x, (uint)y, slice, sample, bytesPerPixel, pitch, height, depth);
                     }
                     else if (tileMode == 2 || tileMode == 3)
                     {
-                        pos = computeSurfaceAddrFromCoordMicroTiled((uint)x, (uint)y, slice, bitsPerPixel, pitch, height, (AddrTileMode)tileMode, IsDepth);
+                        pos = ComputeSurfaceAddrFromCoordMicroTiled((uint)x, (uint)y, slice, bitsPerPixel, pitch, height, (AddrTileMode)tileMode, IsDepth);
                     }
                     else
                     {
-                        pos = computeSurfaceAddrFromCoordMacroTiled((uint)x, (uint)y, slice, sample, bitsPerPixel, pitch, height, numSamples, (AddrTileMode)tileMode, IsDepth, pipeSwizzle, bankSwizzle);
+                        pos = ComputeSurfaceAddrFromCoordMacroTiled((uint)x, (uint)y, slice, sample, bitsPerPixel, pitch, height, numSamples, (AddrTileMode)tileMode, IsDepth, pipeSwizzle, bankSwizzle);
                     }
 
 
@@ -1147,7 +1149,7 @@ namespace FileFormats3DW
             return result;
         }
 
-        private static byte[] formatHwInfo = {
+        private static readonly byte[] formatHwInfo = {
     0x00, 0x00, 0x00, 0x01, 0x08, 0x03, 0x00, 0x01, 0x08, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
     0x00, 0x00, 0x00, 0x01, 0x10, 0x07, 0x00, 0x00, 0x10, 0x03, 0x00, 0x01, 0x10, 0x03, 0x00, 0x01,
     0x10, 0x0B, 0x00, 0x01, 0x10, 0x01, 0x00, 0x01, 0x10, 0x03, 0x00, 0x01, 0x10, 0x03, 0x00, 0x01,
@@ -1166,7 +1168,7 @@ namespace FileFormats3DW
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         };
 
-        private static byte[] formatExInfo = {
+        private static readonly byte[] formatExInfo = {
    0x00, 0x01, 0x01, 0x03, 0x08, 0x01, 0x01, 0x03, 0x08, 0x01, 0x01, 0x03, 0x08, 0x01, 0x01, 0x03,
     0x00, 0x01, 0x01, 0x03, 0x10, 0x01, 0x01, 0x03, 0x10, 0x01, 0x01, 0x03, 0x10, 0x01, 0x01, 0x03,
     0x10, 0x01, 0x01, 0x03, 0x10, 0x01, 0x01, 0x03, 0x10, 0x01, 0x01, 0x03, 0x10, 0x01, 0x01, 0x03,
@@ -1185,12 +1187,12 @@ namespace FileFormats3DW
     0x00, 0x01, 0x01, 0x03, 0x00, 0x01, 0x01, 0x03, 0x40, 0x01, 0x01, 0x03, 0x00, 0x01, 0x01, 0x03,
         };
 
-        public static uint surfaceGetBitsPerPixel(uint surfaceFormat)
+        public static uint SurfaceGetBitsPerPixel(uint surfaceFormat)
         {
             return formatHwInfo[(surfaceFormat & 0x3F) * 4];
         }
 
-        public static uint nextPow2(uint dim)
+        public static uint NextPow2(uint dim)
         {
             uint newDim = 1;
             if (dim < 0x7FFFFFFF)
@@ -1204,7 +1206,7 @@ namespace FileFormats3DW
             return newDim;
         }
 
-        public static uint getDefaultGX2TileMode(uint dim, uint width, uint height, uint depth, uint format_, uint aa, uint use)
+        public static uint GetDefaultGX2TileMode(uint dim, uint width, uint height, uint depth, uint format_, uint aa, uint use)
         {
             uint tileMode = 1;
             bool IsDepthBuffer = (use & 4) != 0;
@@ -1217,7 +1219,7 @@ namespace FileFormats3DW
                 else
                     tileMode = 7;
 
-                var surfOut = getSurfaceInfo((GX2SurfaceFormat)format_, width, height, depth, dim, tileMode, aa, 0);
+                var surfOut = GetSurfaceInfo((GX2SurfaceFormat)format_, width, height, depth, dim, tileMode, aa, 0);
                 if (width < surfOut.pitchAlign && height < surfOut.heightAlign)
                 {
                     if (tileMode == 7)
@@ -1240,7 +1242,7 @@ namespace FileFormats3DW
             return tileMode;
         }
 
-        private static uint computeSurfaceThickness(AddrTileMode tileMode)
+        private static uint ComputeSurfaceThickness(AddrTileMode tileMode)
         {
             switch (tileMode)
             {
@@ -1260,7 +1262,7 @@ namespace FileFormats3DW
             }
         }
 
-        private static uint computePixelIndexWithinMicroTile(uint x, uint y, uint z, uint bpp, AddrTileMode tileMode, bool IsDepth)
+        private static uint ComputePixelIndexWithinMicroTile(uint x, uint y, uint z, uint bpp, AddrTileMode tileMode, bool IsDepth)
         {
             uint pixelBit0 = 0;
             uint pixelBit1 = 0;
@@ -1272,7 +1274,7 @@ namespace FileFormats3DW
             uint pixelBit7 = 0;
             uint pixelBit8 = 0;
 
-            uint thickness = computeSurfaceThickness(tileMode);
+            uint thickness = ComputeSurfaceThickness(tileMode);
 
             if (IsDepth)
             {
@@ -1351,18 +1353,18 @@ namespace FileFormats3DW
             return (pixelBit8 << 8) | (pixelBit7 << 7) | (pixelBit6 << 6) | 32 * pixelBit5 | 16 * pixelBit4 | 8 * pixelBit3 | 4 * pixelBit2 | pixelBit0 | 2 * pixelBit1;
         }
 
-        private static uint computePipeFromCoordWoRotation(uint x, uint y)
+        private static uint ComputePipeFromCoordWoRotation(uint x, uint y)
         {
             return ((y >> 3) ^ (x >> 3)) & 1;
         }
 
 
-        private static uint computeBankFromCoordWoRotation(uint x, uint y)
+        private static uint ComputeBankFromCoordWoRotation(uint x, uint y)
         {
             return ((y >> 5) ^ (x >> 3)) & 1 | 2 * (((y >> 4) ^ (x >> 4)) & 1);
         }
 
-        private static uint computeSurfaceRotationFromTileMode(AddrTileMode tileMode)
+        private static uint ComputeSurfaceRotationFromTileMode(AddrTileMode tileMode)
         {
             switch (tileMode)
             {
@@ -1385,7 +1387,7 @@ namespace FileFormats3DW
             }
         }
 
-        private static uint isThickMacroTiled(AddrTileMode tileMode)
+        private static uint IsThickMacroTiled(AddrTileMode tileMode)
         {
             switch (tileMode)
             {
@@ -1400,7 +1402,7 @@ namespace FileFormats3DW
             }
         }
 
-        private static uint isBankSwappedTileMode(AddrTileMode tileMode)
+        private static uint IsBankSwappedTileMode(AddrTileMode tileMode)
         {
             switch (tileMode)
             {
@@ -1417,7 +1419,7 @@ namespace FileFormats3DW
             }
         }
 
-        private static uint computeMacroTileAspectRatio(AddrTileMode tileMode)
+        private static uint ComputeMacroTileAspectRatio(AddrTileMode tileMode)
         {
             switch (tileMode)
             {
@@ -1434,9 +1436,9 @@ namespace FileFormats3DW
             }
         }
 
-        private static uint computeSurfaceBankSwappedWidth(AddrTileMode tileMode, uint bpp, uint numSamples, uint pitch)
+        private static uint ComputeSurfaceBankSwappedWidth(AddrTileMode tileMode, uint bpp, uint numSamples, uint pitch)
         {
-            if (isBankSwappedTileMode(tileMode) == 0)
+            if (IsBankSwappedTileMode(tileMode) == 0)
                 return 0;
 
             uint bytesPerSample = 8 * bpp;
@@ -1451,12 +1453,12 @@ namespace FileFormats3DW
             else
                 slicesPerTile = 1;
 
-            if (isThickMacroTiled(tileMode) != 0)
+            if (IsThickMacroTiled(tileMode) != 0)
                 numSamples = 4;
 
             uint bytesPerTileSlice = numSamples * bytesPerSample / slicesPerTile;
 
-            uint factor = computeMacroTileAspectRatio(tileMode);
+            uint factor = ComputeMacroTileAspectRatio(tileMode);
             uint swapTiles = Math.Max(1, 128 / bpp);
 
             uint swapWidth = swapTiles * 32;
@@ -1472,13 +1474,13 @@ namespace FileFormats3DW
             return bankSwapWidth;
         }
 
-        private static ulong computeSurfaceAddrFromCoordLinear(uint x, uint y, uint slice, uint sample, uint bpp, uint pitch, uint height, uint numSlices)
+        private static ulong ComputeSurfaceAddrFromCoordLinear(uint x, uint y, uint slice, uint sample, uint bpp, uint pitch, uint height, uint numSlices)
         {
             uint sliceOffset = pitch * height * (slice + sample * numSlices);
             return (y * pitch + x + sliceOffset) * bpp;
         }
 
-        private static ulong computeSurfaceAddrFromCoordMicroTiled(uint x, uint y, uint slice, uint bpp, uint pitch, uint height, AddrTileMode tileMode, bool IsDepth)
+        private static ulong ComputeSurfaceAddrFromCoordMicroTiled(uint x, uint y, uint slice, uint bpp, uint pitch, uint height, AddrTileMode tileMode, bool IsDepth)
         {
             int microTileThickness = 1;
             if (tileMode == AddrTileMode.ADDR_TM_1D_TILED_THICK)
@@ -1494,23 +1496,23 @@ namespace FileFormats3DW
             ulong sliceBytes = (ulong)(pitch * height * microTileThickness * bpp + 7) / 8;
             ulong sliceOffset = microTileIndexZ * sliceBytes;
 
-            uint pixelIndex = computePixelIndexWithinMicroTile(x, y, slice, bpp, tileMode, IsDepth);
+            uint pixelIndex = ComputePixelIndexWithinMicroTile(x, y, slice, bpp, tileMode, IsDepth);
             ulong pixelOffset = (bpp * pixelIndex) >> 3;
 
             return pixelOffset + microTileOffset + sliceOffset;
         }
 
-        private static byte[] bankSwapOrder = { 0, 1, 3, 2, 6, 7, 5, 4, 0, 0 };
+        private static readonly byte[] bankSwapOrder = { 0, 1, 3, 2, 6, 7, 5, 4, 0, 0 };
 
-        private static ulong computeSurfaceAddrFromCoordMacroTiled(uint x, uint y, uint slice, uint sample, uint bpp, uint pitch, uint height,
+        private static ulong ComputeSurfaceAddrFromCoordMacroTiled(uint x, uint y, uint slice, uint sample, uint bpp, uint pitch, uint height,
                                                           uint numSamples, AddrTileMode tileMode, bool IsDepth, uint pipeSwizzle, uint bankSwizzle)
         {
-            uint microTileThickness = computeSurfaceThickness(tileMode);
+            uint microTileThickness = ComputeSurfaceThickness(tileMode);
 
             uint microTileBits = numSamples * bpp * (microTileThickness * 64);
             uint microTileBytes = (microTileBits + 7) / 8;
 
-            uint pixelIndex = computePixelIndexWithinMicroTile(x, y, slice, bpp, tileMode, IsDepth);
+            uint pixelIndex = ComputePixelIndexWithinMicroTile(x, y, slice, bpp, tileMode, IsDepth);
             uint bytesPerSample = microTileBytes / numSamples;
             uint sampleOffset = 0;
             uint pixelOffset = 0;
@@ -1550,15 +1552,15 @@ namespace FileFormats3DW
 
             elemOffset = (elemOffset + 7) / 8;
 
-            uint pipe = computePipeFromCoordWoRotation(x, y);
-            uint bank = computeBankFromCoordWoRotation(x, y);
+            uint pipe = ComputePipeFromCoordWoRotation(x, y);
+            uint bank = ComputeBankFromCoordWoRotation(x, y);
 
             uint swizzle_ = pipeSwizzle + 2 * bankSwizzle;
             uint bankPipe = pipe + 2 * bank;
-            uint rotation = computeSurfaceRotationFromTileMode(tileMode);
+            uint rotation = ComputeSurfaceRotationFromTileMode(tileMode);
             uint sliceIn = slice;
 
-            if (isThickMacroTiled(tileMode) != 0)
+            if (IsThickMacroTiled(tileMode) != 0)
                 sliceIn >>= 2;
 
             bankPipe ^= 2 * sampleSlice * 3 ^ (swizzle_ + sliceIn * rotation);
@@ -1599,9 +1601,9 @@ namespace FileFormats3DW
             uint macroTileIndexY = y / macroTileHeight;
             ulong macroTileOffset = (macroTileIndexX + macroTilesPerRow * macroTileIndexY) * macroTileBytes;
 
-            if (isBankSwappedTileMode(tileMode) != 0)
+            if (IsBankSwappedTileMode(tileMode) != 0)
             {
-                uint bankSwapWidth = computeSurfaceBankSwappedWidth(tileMode, bpp, 1, pitch);
+                uint bankSwapWidth = ComputeSurfaceBankSwappedWidth(tileMode, bpp, 1, pitch);
                 uint swapIndex = macroTilePitch * macroTileIndexX / bankSwapWidth;
                 bank ^= bankSwapOrder[swapIndex & 3];
             }
@@ -1610,13 +1612,13 @@ namespace FileFormats3DW
             return bank << 9 | pipe << 8 | totalOffset & 255 | (ulong)((int)totalOffset & -256) << 3;
         }
 
-        public static uint computeSurfaceMipLevelTileMode(uint baseTileMode, uint bpp, uint level, uint width, uint height,
+        public static uint ComputeSurfaceMipLevelTileMode(uint baseTileMode, uint bpp, uint level, uint width, uint height,
             uint numSlices, uint numSamples, uint isDepth, uint noRecursive)
         {
             uint widthAlignFactor = 1;
             uint macroTileWidth = 32;
             uint macroTileHeight = 16;
-            uint tileSlices = computeSurfaceTileSlices(baseTileMode, bpp, numSamples);
+            uint tileSlices = ComputeSurfaceTileSlices(baseTileMode, bpp, numSamples);
             uint expTileMode = baseTileMode;
 
             uint widtha, heighta, numSlicesa, thickness, microTileBytes;
@@ -1667,12 +1669,12 @@ namespace FileFormats3DW
                     break;
             }
 
-            widtha = nextPow2(width);
-            heighta = nextPow2(height);
-            numSlicesa = nextPow2(numSlices);
+            widtha = NextPow2(width);
+            heighta = NextPow2(height);
+            numSlicesa = NextPow2(numSlices);
 
-            expTileMode = convertToNonBankSwappedMode((AddrTileMode)expTileMode);
-            thickness = computeSurfaceThickness((AddrTileMode)expTileMode);
+            expTileMode = ConvertToNonBankSwappedMode((AddrTileMode)expTileMode);
+            thickness = ComputeSurfaceThickness((AddrTileMode)expTileMode);
             microTileBytes = (numSamples * bpp * (thickness << 6) + 7) >> 3;
 
             if (microTileBytes < 256)
@@ -1716,7 +1718,7 @@ namespace FileFormats3DW
                     expTileMode = 12;
             }
 
-            return computeSurfaceMipLevelTileMode(
+            return ComputeSurfaceMipLevelTileMode(
             expTileMode,
             bpp,
             level,
@@ -1728,13 +1730,13 @@ namespace FileFormats3DW
             1);
         }
 
-        private static uint computeSurfaceTileSlices(uint tileMode, uint bpp, uint numSamples)
+        private static uint ComputeSurfaceTileSlices(uint tileMode, uint bpp, uint numSamples)
         {
             uint bytePerSample = ((bpp << 6) + 7) >> 3;
             uint tileSlices = 1;
             uint samplePerTile;
 
-            if (computeSurfaceThickness((AddrTileMode)tileMode) > 1)
+            if (ComputeSurfaceThickness((AddrTileMode)tileMode) > 1)
                 numSamples = 4;
 
             if (bytePerSample != 0)
@@ -1808,13 +1810,13 @@ namespace FileFormats3DW
             Console.WriteLine("padDims " + padDims);
 
             if (((flags.value >> 6) & 1) != 0)
-                tileMode = convertToNonBankSwappedMode((AddrTileMode)tileMode);
+                tileMode = ConvertToNonBankSwappedMode((AddrTileMode)tileMode);
             else
             {
                 if (DebugSurface)
                     Console.WriteLine(tileMode);
 
-                tileMode = computeSurfaceMipLevelTileMode(
+                tileMode = ComputeSurfaceMipLevelTileMode(
                 tileMode,
                 bpp,
                 mipLevel,
@@ -1837,7 +1839,7 @@ namespace FileFormats3DW
             {
                 case 0:
                 case 1:
-                    var compSurfInfoLinear = computeSurfaceInfoLinear(
+                    var compSurfInfoLinear = ComputeSurfaceInfoLinear(
                 tileMode,
                 bpp,
                 numSamples,
@@ -1862,7 +1864,7 @@ namespace FileFormats3DW
                     break;
                 case 2:
                 case 3:
-                    var compSurfInfoMicroTile = computeSurfaceInfoMicroTiled(
+                    var compSurfInfoMicroTile = ComputeSurfaceInfoMicroTiled(
                 tileMode,
                 bpp,
                 numSamples,
@@ -1897,7 +1899,7 @@ namespace FileFormats3DW
                 case 13:
                 case 14:
                 case 15:
-                    var compSurfInfoMacoTile = computeSurfaceInfoMacroTiled(
+                    var compSurfInfoMacoTile = ComputeSurfaceInfoMacroTiled(
                 tileMode,
                 baseTileMode,
                 bpp,
@@ -1951,7 +1953,7 @@ namespace FileFormats3DW
 
             return 0;
         }
-        private static uint[] computeSurfaceInfoLinear(uint tileMode, uint bpp, uint numSamples, uint pitch, uint height,
+        private static uint[] ComputeSurfaceInfoLinear(uint tileMode, uint bpp, uint numSamples, uint pitch, uint height,
             uint numSlices, uint mipLevel, uint padDims, Flags flags)
         {
             expPitch = pitch;
@@ -1959,12 +1961,12 @@ namespace FileFormats3DW
             expNumSlices = numSlices;
 
             uint valid = 1;
-            uint microTileThickness = computeSurfaceThickness((AddrTileMode)tileMode);
+            uint microTileThickness = ComputeSurfaceThickness((AddrTileMode)tileMode);
 
             uint baseAlign, pitchAlign, heightAlign, slices;
             uint pPitchOut, pHeightOut, pNumSlicesOut, pSurfSize, pBaseAlign, pPitchAlign, pHeightAlign, pDepthAlign;
 
-            var compAllignLinear = computeSurfaceAlignmentsLinear(tileMode, bpp, flags);
+            var compAllignLinear = ComputeSurfaceAlignmentsLinear(tileMode, bpp, flags);
             baseAlign = compAllignLinear.Item1;
             pitchAlign = compAllignLinear.Item2;
             heightAlign = compAllignLinear.Item3;
@@ -1972,12 +1974,12 @@ namespace FileFormats3DW
             if ((((flags.value >> 9) & 1) != 0) && (mipLevel == 0))
             {
                 expPitch /= 3;
-                expPitch = nextPow2(expPitch);
+                expPitch = NextPow2(expPitch);
             }
             if (mipLevel != 0)
             {
-                expPitch = nextPow2(expPitch);
-                expHeight = nextPow2(expHeight);
+                expPitch = NextPow2(expPitch);
+                expHeight = NextPow2(expHeight);
 
                 if (((flags.value >> 4) & 1) != 0)
                 {
@@ -1989,10 +1991,10 @@ namespace FileFormats3DW
                         padDims = 0;
                 }
                 else
-                    expNumSlices = nextPow2(numSlices);
+                    expNumSlices = NextPow2(numSlices);
             }
 
-            var padimens = padDimensions(
+            var padimens = PadDimensions(
             tileMode,
             padDims,
             (flags.value >> 4) & 1,
@@ -2019,7 +2021,7 @@ namespace FileFormats3DW
 
             return new uint[] { valid, pPitchOut, pHeightOut, pNumSlicesOut, pSurfSize, pBaseAlign, pPitchAlign, pHeightAlign, pDepthAlign };
         }
-        private static Tuple<uint, uint, uint> computeSurfaceAlignmentsLinear(uint tileMode, uint bpp, Flags flags)
+        private static Tuple<uint, uint, uint> ComputeSurfaceAlignmentsLinear(uint tileMode, uint bpp, Flags flags)
         {
             uint pixelsPerPipeInterleave;
             uint baseAlign, pitchAlign, heightAlign;
@@ -2043,11 +2045,11 @@ namespace FileFormats3DW
                 pitchAlign = 1;
                 heightAlign = 1;
             }
-            pitchAlign = adjustPitchAlignment(flags, pitchAlign);
+            pitchAlign = AdjustPitchAlignment(flags, pitchAlign);
 
             return new Tuple<uint, uint, uint>(baseAlign, pitchAlign, heightAlign);
         }
-        private static uint convertToNonBankSwappedMode(AddrTileMode tileMode)
+        private static uint ConvertToNonBankSwappedMode(AddrTileMode tileMode)
         {
             switch ((uint)tileMode)
             {
@@ -2067,7 +2069,7 @@ namespace FileFormats3DW
             return (uint)tileMode;
         }
 
-        private static void computeSurfaceInfo(surfaceIn aSurfIn, surfaceOut pSurfOut)
+        private static void ComputeSurfaceInfo(SurfaceIn aSurfIn, SurfaceOut pSurfOut)
         {
             if (DebugSurface)
             {
@@ -2101,7 +2103,7 @@ namespace FileFormats3DW
                     Console.WriteLine(" pIn.numSlices " + pIn.numSlices);
                 }
 
-                computeMipLevel();
+                ComputeMipLevel();
 
                 width = pIn.width;
                 height = pIn.height;
@@ -2138,7 +2140,7 @@ namespace FileFormats3DW
                     if (elemMode == 4 && expandX == 3 && pIn.tileMode == 1)
                         pIn.flags.value |= 0x200;
 
-                    bpp = adjustSurfaceInfo(elemMode, expandX, expandY, bpp, width, height);
+                    bpp = AdjustSurfaceInfo(elemMode, expandX, expandY, bpp, width, height);
 
                     if (DebugSurface)
                     {
@@ -2165,7 +2167,7 @@ namespace FileFormats3DW
                     pOut.pixelHeight = pOut.height;
 
                     if (pIn.format != 0 && (((pIn.flags.value >> 9) & 1) == 0 || pIn.mipLevel == 0))
-                        bpp = restoreSurfaceInfo(elemMode, expandX, expandY, bpp);
+                        bpp = RestoreSurfaceInfo(elemMode, expandX, expandY, bpp);
 
                     if (((pIn.flags.value >> 5) & 1) != 0)
                         pOut.sliceSize = (uint)pOut.surfSize;
@@ -2184,7 +2186,7 @@ namespace FileFormats3DW
                 }
             }
         }
-        private static uint[] computeSurfaceInfoMicroTiled(uint tileMode, uint bpp, uint numSamples, uint pitch, uint height, uint numSlices, uint mipLevel, uint padDims, Flags flags)
+        private static uint[] ComputeSurfaceInfoMicroTiled(uint tileMode, uint bpp, uint numSamples, uint pitch, uint height, uint numSlices, uint mipLevel, uint padDims, Flags flags)
         {
             expPitch = pitch;
             expHeight = height;
@@ -2192,13 +2194,13 @@ namespace FileFormats3DW
 
             uint valid = 1;
             uint expTileMode = tileMode;
-            uint microTileThickness = computeSurfaceThickness((AddrTileMode)tileMode);
+            uint microTileThickness = ComputeSurfaceThickness((AddrTileMode)tileMode);
             uint pPitchOut, pHeightOut, pNumSlicesOut, pSurfSize, pTileModeOut, pBaseAlign, pPitchAlign, pHeightAlign, pDepthAlign;
 
             if (mipLevel != 0)
             {
-                expPitch = nextPow2(pitch);
-                expHeight = nextPow2(height);
+                expPitch = NextPow2(pitch);
+                expHeight = NextPow2(height);
                 if (((flags.value >> 4) & 1) != 0)
                 {
                     expNumSlices = numSlices;
@@ -2211,7 +2213,7 @@ namespace FileFormats3DW
                 }
 
                 else
-                    expNumSlices = nextPow2(numSlices);
+                    expNumSlices = NextPow2(numSlices);
 
                 if (expTileMode == 3 && expNumSlices < 4)
                 {
@@ -2220,7 +2222,7 @@ namespace FileFormats3DW
                 }
             }
 
-            var surfMicroAlign = computeSurfaceAlignmentsMicroTiled(
+            var surfMicroAlign = ComputeSurfaceAlignmentsMicroTiled(
                 expTileMode,
                 bpp,
                 flags,
@@ -2230,7 +2232,7 @@ namespace FileFormats3DW
             uint pitchAlign = surfMicroAlign.Item2;
             uint heightAlign = surfMicroAlign.Item3;
 
-            var padDimens = padDimensions(
+            var padDimens = PadDimensions(
                 expTileMode,
                 padDims,
                 (flags.value >> 4) & 1,
@@ -2261,14 +2263,14 @@ namespace FileFormats3DW
 
             return new uint[] { valid, pPitchOut, pHeightOut, pNumSlicesOut, pSurfSize, pTileModeOut, pBaseAlign, pPitchAlign, pHeightAlign, pDepthAlign };
         }
-        private static Tuple<uint, uint, uint> padDimensions(uint tileMode, uint padDims, uint isCube, uint pitchAlign, uint heightAlign, uint sliceAlign)
+        private static Tuple<uint, uint, uint> PadDimensions(uint tileMode, uint padDims, uint isCube, uint pitchAlign, uint heightAlign, uint sliceAlign)
         {
-            uint thickness = computeSurfaceThickness((AddrTileMode)tileMode);
+            uint thickness = ComputeSurfaceThickness((AddrTileMode)tileMode);
             if (padDims == 0)
                 padDims = 3;
 
             if ((pitchAlign & (pitchAlign - 1)) == 0)
-                expPitch = powTwoAlign(expPitch, pitchAlign);
+                expPitch = PowTwoAlign(expPitch, pitchAlign);
             else
             {
                 expPitch += pitchAlign - 1;
@@ -2277,21 +2279,21 @@ namespace FileFormats3DW
             }
 
             if (padDims > 1)
-                expHeight = powTwoAlign(expHeight, heightAlign);
+                expHeight = PowTwoAlign(expHeight, heightAlign);
 
             if (padDims > 2 || thickness > 1)
             {
                 if (isCube != 0)
-                    expNumSlices = nextPow2(expNumSlices);
+                    expNumSlices = NextPow2(expNumSlices);
 
                 if (thickness > 1)
-                    expNumSlices = powTwoAlign(expNumSlices, sliceAlign);
+                    expNumSlices = PowTwoAlign(expNumSlices, sliceAlign);
             }
             return new Tuple<uint, uint, uint>(expPitch, expHeight, expNumSlices);
         }
 
 
-        private static uint[] computeSurfaceInfoMacroTiled(uint tileMode, uint baseTileMode, uint bpp, uint numSamples,
+        private static uint[] ComputeSurfaceInfoMacroTiled(uint tileMode, uint baseTileMode, uint bpp, uint numSamples,
             uint pitch, uint height, uint numSlices, uint mipLevel, uint padDims, Flags flags)
         {
             expPitch = pitch;
@@ -2300,7 +2302,7 @@ namespace FileFormats3DW
 
             uint valid = 1;
             uint expTileMode = tileMode;
-            uint microTileThickness = computeSurfaceThickness((AddrTileMode)tileMode);
+            uint microTileThickness = ComputeSurfaceThickness((AddrTileMode)tileMode);
 
             uint baseAlign, pitchAlign, heightAlign, macroWidth, macroHeight;
             uint bankSwappedWidth, pitchAlignFactor;
@@ -2308,8 +2310,8 @@ namespace FileFormats3DW
 
             if (mipLevel != 0)
             {
-                expPitch = nextPow2(pitch);
-                expHeight = nextPow2(height);
+                expPitch = NextPow2(pitch);
+                expHeight = NextPow2(height);
 
                 if (((flags.value >> 4) & 1) != 0)
                 {
@@ -2321,7 +2323,7 @@ namespace FileFormats3DW
                         padDims = 0;
                 }
                 else
-                    expNumSlices = nextPow2(numSlices);
+                    expNumSlices = NextPow2(numSlices);
 
                 if (expTileMode == 7 && expNumSlices < 4)
                 {
@@ -2331,10 +2333,10 @@ namespace FileFormats3DW
             }
             if (tileMode == baseTileMode
                 || mipLevel == 0
-                || isThickMacroTiled((AddrTileMode)baseTileMode) == 0
-                || isThickMacroTiled((AddrTileMode)tileMode) != 0)
+                || IsThickMacroTiled((AddrTileMode)baseTileMode) == 0
+                || IsThickMacroTiled((AddrTileMode)tileMode) != 0)
             {
-                var tup = computeSurfaceAlignmentsMacroTiled(
+                var tup = ComputeSurfaceAlignmentsMacroTiled(
                     tileMode,
                     bpp,
                     flags,
@@ -2346,12 +2348,12 @@ namespace FileFormats3DW
                 macroWidth = tup.Item4;
                 macroHeight = tup.Item5;
 
-                bankSwappedWidth = computeSurfaceBankSwappedWidth((AddrTileMode)tileMode, bpp, numSamples, pitch);
+                bankSwappedWidth = ComputeSurfaceBankSwappedWidth((AddrTileMode)tileMode, bpp, numSamples, pitch);
 
                 if (bankSwappedWidth > pitchAlign)
                     pitchAlign = bankSwappedWidth;
 
-                var padDimens = padDimensions(
+                var padDimens = PadDimensions(
                      tileMode,
                      padDims,
                      (flags.value >> 4) & 1,
@@ -2377,7 +2379,7 @@ namespace FileFormats3DW
 
             else
             {
-                var tup = computeSurfaceAlignmentsMacroTiled(
+                var tup = ComputeSurfaceAlignmentsMacroTiled(
                     baseTileMode,
                     bpp,
                     flags,
@@ -2395,7 +2397,7 @@ namespace FileFormats3DW
                 {
                     expTileMode = 2;
 
-                    var microTileInfo = computeSurfaceInfoMicroTiled(
+                    var microTileInfo = ComputeSurfaceInfoMicroTiled(
                         2,
                         bpp,
                         numSamples,
@@ -2420,7 +2422,7 @@ namespace FileFormats3DW
 
                 else
                 {
-                    tup = computeSurfaceAlignmentsMacroTiled(
+                    tup = ComputeSurfaceAlignmentsMacroTiled(
                         tileMode,
                         bpp,
                         flags,
@@ -2432,11 +2434,11 @@ namespace FileFormats3DW
                     macroWidth = tup.Item4;
                     macroHeight = tup.Item5;
 
-                    bankSwappedWidth = computeSurfaceBankSwappedWidth((AddrTileMode)tileMode, bpp, numSamples, pitch);
+                    bankSwappedWidth = ComputeSurfaceBankSwappedWidth((AddrTileMode)tileMode, bpp, numSamples, pitch);
                     if (bankSwappedWidth > pitchAlign)
                         pitchAlign = bankSwappedWidth;
 
-                    var padDimens = padDimensions(
+                    var padDimens = PadDimensions(
                         tileMode,
                         padDims,
                         (flags.value >> 4) & 1,
@@ -2465,7 +2467,7 @@ namespace FileFormats3DW
             return new uint[] { result, pPitchOut, pHeightOut,
                 pNumSlicesOut, pSurfSize, pTileModeOut, pBaseAlign, pitchAlign, heightAlign, pDepthAlign};
         }
-        private static Tuple<uint, uint, uint> computeSurfaceAlignmentsMicroTiled(uint tileMode, uint bpp, Flags flags, uint numSamples)
+        private static Tuple<uint, uint, uint> ComputeSurfaceAlignmentsMicroTiled(uint tileMode, uint bpp, Flags flags, uint numSamples)
         {
             switch (bpp)
             {
@@ -2475,20 +2477,20 @@ namespace FileFormats3DW
                     bpp /= 3;
                     break;
             }
-            uint thickness = computeSurfaceThickness((AddrTileMode)tileMode);
+            uint thickness = ComputeSurfaceThickness((AddrTileMode)tileMode);
             uint baseAlign = 256;
             uint pitchAlign = Math.Max(8, 256 / bpp / numSamples / thickness);
             uint heightAlign = 8;
 
-            pitchAlign = adjustPitchAlignment(flags, pitchAlign);
+            pitchAlign = AdjustPitchAlignment(flags, pitchAlign);
 
             return new Tuple<uint, uint, uint>(baseAlign, pitchAlign, heightAlign);
 
         }
-        private static Tuple<uint, uint, uint, uint, uint> computeSurfaceAlignmentsMacroTiled(uint tileMode, uint bpp, Flags flags, uint numSamples)
+        private static Tuple<uint, uint, uint, uint, uint> ComputeSurfaceAlignmentsMacroTiled(uint tileMode, uint bpp, Flags flags, uint numSamples)
         {
-            uint aspectRatio = computeMacroTileAspectRatio((AddrTileMode)tileMode);
-            uint thickness = computeSurfaceThickness((AddrTileMode)tileMode);
+            uint aspectRatio = ComputeMacroTileAspectRatio((AddrTileMode)tileMode);
+            uint thickness = ComputeSurfaceThickness((AddrTileMode)tileMode);
 
             switch (bpp)
             {
@@ -2505,7 +2507,7 @@ namespace FileFormats3DW
             uint macroTileHeight = aspectRatio * 16;
 
             uint pitchAlign = Math.Max(macroTileWidth, macroTileWidth * (256 / bpp / (8 * thickness) / numSamples));
-            pitchAlign = adjustPitchAlignment(flags, pitchAlign);
+            pitchAlign = AdjustPitchAlignment(flags, pitchAlign);
 
             uint heightAlign = macroTileHeight;
             uint macroTileBytes = numSamples * ((bpp * macroTileHeight * macroTileWidth + 7) >> 3);
@@ -2524,14 +2526,14 @@ namespace FileFormats3DW
 
             return new Tuple<uint, uint, uint, uint, uint>(baseAlign, pitchAlign, heightAlign, macroTileWidth, macroTileHeight);
         }
-        private static uint adjustPitchAlignment(Flags flags, uint pitchAlign)
+        private static uint AdjustPitchAlignment(Flags flags, uint pitchAlign)
         {
             if (((flags.value >> 13) & 1) != 0)
-                pitchAlign = powTwoAlign(pitchAlign, 0x20);
+                pitchAlign = PowTwoAlign(pitchAlign, 0x20);
 
             return pitchAlign;
         }
-        private static uint adjustSurfaceInfo(uint elemMode, uint expandX, uint expandY, uint bpp, uint width, uint height)
+        private static uint AdjustSurfaceInfo(uint elemMode, uint expandX, uint expandY, uint bpp, uint width, uint height)
         {
             uint bBCnFormat = 0;
             uint widtha, heighta;
@@ -2608,7 +2610,7 @@ namespace FileFormats3DW
 
             return 0;
         }
-        private static void computeMipLevel()
+        private static void ComputeMipLevel()
         {
             uint slices = 0;
             uint height = 0;
@@ -2617,8 +2619,8 @@ namespace FileFormats3DW
 
             if (49 <= pIn.format && pIn.format <= 55 && (pIn.mipLevel == 0 || ((pIn.flags.value >> 12) & 1) != 0))
             {
-                pIn.width = powTwoAlign(pIn.width, 4);
-                pIn.height = powTwoAlign(pIn.height, 4);
+                pIn.width = PowTwoAlign(pIn.width, 4);
+                pIn.height = PowTwoAlign(pIn.height, 4);
             }
 
 
@@ -2632,7 +2634,7 @@ namespace FileFormats3DW
                 Console.WriteLine(" pIn.numSlices " + pIn.numSlices);
             }
 
-            hwlHandled = hwlComputeMipLevel();
+            hwlHandled = HwlComputeMipLevel();
             if (DebugSurface)
             {
                 Console.WriteLine(" Output:");
@@ -2653,9 +2655,9 @@ namespace FileFormats3DW
 
                 if (pIn.format != 47 && pIn.format != 48)
                 {
-                    width = nextPow2(width);
-                    height = nextPow2(height);
-                    slices = nextPow2(slices);
+                    width = NextPow2(width);
+                    height = NextPow2(height);
+                    slices = NextPow2(slices);
                 }
                 pIn.width = width;
                 pIn.height = height;
@@ -2663,7 +2665,7 @@ namespace FileFormats3DW
             }
         }
 
-        private static uint restoreSurfaceInfo(uint elemMode, uint expandX, uint expandY, uint bpp)
+        private static uint RestoreSurfaceInfo(uint elemMode, uint expandX, uint expandY, uint bpp)
         {
             uint width, height;
 
@@ -2718,7 +2720,7 @@ namespace FileFormats3DW
             return 0;
         }
 
-        private static uint hwlComputeMipLevel()
+        private static uint HwlComputeMipLevel()
         {
             uint handled = 0;
 
@@ -2743,8 +2745,8 @@ namespace FileFormats3DW
                         slices = Math.Max(1, slices);
                     }
 
-                    pIn.width = nextPow2(width);
-                    pIn.height = nextPow2(height);
+                    pIn.width = NextPow2(width);
+                    pIn.height = NextPow2(height);
                     pIn.numSlices = slices;
                 }
 
@@ -2752,7 +2754,7 @@ namespace FileFormats3DW
             }
             return handled;
         }
-        private static uint powTwoAlign(uint x, uint align)
+        private static uint PowTwoAlign(uint x, uint align)
         {
             return ~(align - 1) & (x + align - 1);
         }
@@ -2768,7 +2770,7 @@ namespace FileFormats3DW
         /// <param name="surfaceTileMode">The <see cref="GX2TileMode"/ of the surface.</param>
         /// <param name="surfaceAA">The <see cref="GX2AAMode"/ of the surface.</param>
         /// <param name="level">The mip level of which the info will be calculated for (first mipmap corresponds to value 1</param>
-        public static surfaceOut getSurfaceInfo(GX2SurfaceFormat surfaceFormat, uint surfaceWidth, uint surfaceHeight, uint surfaceDepth, uint surfaceDim, uint surfaceTileMode, uint surfaceAA, int level)
+        public static SurfaceOut GetSurfaceInfo(GX2SurfaceFormat surfaceFormat, uint surfaceWidth, uint surfaceHeight, uint surfaceDepth, uint surfaceDim, uint surfaceTileMode, uint surfaceAA, int level)
         {
             uint dim = 0;
             uint width = 0;
@@ -2776,8 +2778,8 @@ namespace FileFormats3DW
             uint numSamples = 0;
             uint hwFormat = 0;
 
-            var aSurfIn = new surfaceIn();
-            var pSurfOut = new surfaceOut();
+            var aSurfIn = new SurfaceIn();
+            var pSurfOut = new SurfaceOut();
 
             hwFormat = (uint)((int)surfaceFormat & 0x3F);
 
@@ -2903,7 +2905,7 @@ namespace FileFormats3DW
                     aSurfIn.flags.value = aSurfIn.flags.value & 0xFFFFEFFF;
 
                 pSurfOut.size = 96;
-                computeSurfaceInfo(aSurfIn, pSurfOut);
+                ComputeSurfaceInfo(aSurfIn, pSurfOut);
 
                 pSurfOut = pOut;
             }

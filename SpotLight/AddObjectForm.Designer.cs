@@ -42,6 +42,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddObjectForm));
             this.DBEntryListView = new System.Windows.Forms.ListView();
             this.ClassNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.EnglishNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ObjectCountColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ModelCountColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ObjectDescriptionTextBox = new System.Windows.Forms.TextBox();
@@ -77,9 +78,8 @@
             this.SelectModelListView = new System.Windows.Forms.ListView();
             this.ModelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SelectModelLabel = new System.Windows.Forms.Label();
-            this.ClassNameLabel = new System.Windows.Forms.Label();
-            this.EnglishNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.EnglishNameTextBox = new System.Windows.Forms.TextBox();
+            this.ClassNameLabel = new System.Windows.Forms.Label();
             this.ObjectTypeTabControl.SuspendLayout();
             this.ObjectFromDBTab.SuspendLayout();
             this.SearchPanel.SuspendLayout();
@@ -156,6 +156,11 @@
             // 
             this.ClassNameColumnHeader.Text = "Class Name";
             this.ClassNameColumnHeader.Width = 134;
+            // 
+            // EnglishNameColumnHeader
+            // 
+            this.EnglishNameColumnHeader.Text = "Name";
+            this.EnglishNameColumnHeader.Width = 120;
             // 
             // ObjectCountColumnHeader
             // 
@@ -527,22 +532,6 @@
             this.SelectModelLabel.TabIndex = 5;
             this.SelectModelLabel.Text = "Select Model:";
             // 
-            // ClassNameLabel
-            // 
-            this.ClassNameLabel.AutoSize = true;
-            this.ClassNameLabel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ClassNameLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ClassNameLabel.Location = new System.Drawing.Point(0, 0);
-            this.ClassNameLabel.Name = "ClassNameLabel";
-            this.ClassNameLabel.Size = new System.Drawing.Size(163, 23);
-            this.ClassNameLabel.TabIndex = 2;
-            this.ClassNameLabel.Text = "Nothing Selected";
-            // 
-            // EnglishNameColumnHeader
-            // 
-            this.EnglishNameColumnHeader.Text = "Name";
-            this.EnglishNameColumnHeader.Width = 120;
-            // 
             // EnglishNameTextBox
             // 
             this.EnglishNameTextBox.Dock = System.Windows.Forms.DockStyle.Top;
@@ -553,6 +542,17 @@
             this.EnglishNameTextBox.TabIndex = 7;
             this.EnglishNameTextBox.Text = "Nothing Selected";
             this.EnglishNameTextBox.TextChanged += new System.EventHandler(this.EnglishNameTextBox_TextChanged);
+            // 
+            // ClassNameLabel
+            // 
+            this.ClassNameLabel.AutoSize = true;
+            this.ClassNameLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ClassNameLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ClassNameLabel.Location = new System.Drawing.Point(0, 0);
+            this.ClassNameLabel.Name = "ClassNameLabel";
+            this.ClassNameLabel.Size = new System.Drawing.Size(163, 23);
+            this.ClassNameLabel.TabIndex = 2;
+            this.ClassNameLabel.Text = "Nothing Selected";
             // 
             // AddObjectForm
             // 

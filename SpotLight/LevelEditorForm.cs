@@ -5,14 +5,11 @@ using OpenTK;
 using SpotLight.EditorDrawables;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
 using SpotLight.ObjectParamDatabase;
@@ -38,7 +35,7 @@ namespace SpotLight
 
             LevelGLControlModern.Visible = false;
 
-            //Properties.Settings.Default.Reset();
+            //Properties.Settings.Default.Reset(); //Used when testing to make sure the below part works
 
             if (Program.GamePath == "")
             {
@@ -284,6 +281,7 @@ Would you like to rebuild the database from your 3DW Files?",
             MainSceneListView.Refresh();
 
             currentScene.SetupObjectUIControl(ObjectUIControl);
+            ObjectUIControl.Refresh();
         }
 
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
@@ -421,6 +419,9 @@ Would you like to rebuild the database from your 3DW Files?",
                 SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
 
                 currentScene.DuplicateSelectedObjects();
+                currentScene.SetupObjectUIControl(ObjectUIControl);
+                MainSceneListView.Refresh();
+                ObjectUIControl.Invalidate();
 
                 SpotlightToolStripStatusLabel.Text = $"Duplicated {SelectedObjects}";
             }
@@ -622,6 +623,7 @@ Would you like to rebuild the database from your 3DW Files?",
                 return;
             }
             new AddObjectForm(currentScene, LevelGLControlModern).ShowDialog(this);
+            AddObjectTimer.Start();
         }
 
         private void EditIndividualButton_Click(object sender, EventArgs e)
@@ -862,6 +864,7 @@ Would you like to rebuild the database from your 3DW Files?",
             currentScene.ExecuteAddition(additionManager);
             currentScene.ExecuteDeletion(deletionManager);
             currentScene.EndUndoCollection();
+            SpotlightToolStripStatusLabel.Text = "Moved to the Link List";
         }
 
         private void MoveToAppropriateListsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -918,6 +921,14 @@ Would you like to rebuild the database from your 3DW Files?",
             currentScene.ExecuteAddition(additionManager);
             currentScene.ExecuteDeletion(deletionManager);
             currentScene.EndUndoCollection();
+            SpotlightToolStripStatusLabel.Text = "Moved to the Appropriate List";
+        }
+
+        private void AddObjectTimer_Tick(object sender, EventArgs e)
+        {
+            MainSceneListView.Refresh();
+            if (currentScene.ObjectPlaceDelegate == null)
+                AddObjectTimer.Stop();
         }
     }
 }
