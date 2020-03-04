@@ -680,25 +680,36 @@ namespace SpotLight
             static Matrix4[] GetTransforms(Bone[] bones)
             {
                 Matrix4[] ret = new Matrix4[bones.Count()];
-                
-                for(int i = 0; i<bones.Length; i++)
-                {
-                    Bone bone = bones[i];
-                    ret[i] = Matrix4.CreateScale(new Vector3(bone.Scale.X, bone.Scale.Y, bone.Scale.Z));
-                    
-                    while(true)
-                    {
-                        ret[i] = ret[i] * 
-                              Matrix4.CreateFromQuaternion(Quaternion.FromEulerAngles(bone.Rotation.X, bone.Rotation.Y, bone.Rotation.Z)) *
-                              Matrix4.CreateTranslation(new Vector3(bone.Position.X, bone.Position.Y, bone.Position.Z));
-
-                        if (bone.ParentIndex == 0xFFFF)
-                            break;
-                        bone = bones[bone.ParentIndex];
-                    }
-                }
+                for (int i = 0; i < bones.Length; i++)
+                    ret[i] = GetBoneWorldMatrix(bones, bones[i]);
 
                 return ret;
+            }
+
+            static Matrix4 GetBoneWorldMatrix(Bone[] bones, Bone bone)
+            {
+                if (bone.ParentIndex == ushort.MaxValue)
+                    return GetBoneMatrix(bone);
+                else
+                    return GetBoneMatrix(bone) * GetBoneWorldMatrix(bones, bones[bone.ParentIndex]);
+            }
+
+            static Matrix4 GetBoneMatrix(Bone bone)
+            {
+                Quaternion rotation = Quaternion.Identity;
+                if (bone.FlagsRotation.HasFlag(BoneFlagsRotation.EulerXYZ))
+                {
+                    Quaternion xRotation = Quaternion.FromAxisAngle(Vector3.UnitX, bone.Rotation.X);
+                    Quaternion yRotation = Quaternion.FromAxisAngle(Vector3.UnitY, bone.Rotation.Y);
+                    Quaternion zRotation = Quaternion.FromAxisAngle(Vector3.UnitZ, bone.Rotation.Z);
+                    rotation = (zRotation * yRotation * xRotation);
+                }
+                else
+                    rotation = new Quaternion(bone.Rotation.X, bone.Rotation.Y, bone.Rotation.Z, bone.Rotation.W);
+
+                return Matrix4.CreateScale(new Vector3(bone.Scale.X, bone.Scale.Y, bone.Scale.Z)) *
+                       Matrix4.CreateFromQuaternion(rotation) *
+                       Matrix4.CreateTranslation(new Vector3(bone.Position.X, bone.Position.Y, bone.Position.Z));
             }
 
             public void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor)
