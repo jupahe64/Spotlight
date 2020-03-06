@@ -20,6 +20,7 @@ namespace SpotLight
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            Properties.Settings.Default.Upgrade();
             Application.Run(new LevelEditorForm());
         }
 

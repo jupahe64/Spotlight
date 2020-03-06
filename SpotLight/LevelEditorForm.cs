@@ -948,12 +948,13 @@ Would you like to rebuild the database from your 3DW Files?",
             Latest = null;
             try
             {
-                Client.DownloadFile("https://raw.githubusercontent.com/jupahe64/Spotlight/master/Spotlight/LatestVersion.txt", @AppDomain.CurrentDomain.BaseDirectory + "VersionCheck.txt");
+                Client.DownloadFile("https://raw.githubusercontent.com/jupahe64/Spotlight/master/SpotLight/LatestVersion.txt", @AppDomain.CurrentDomain.BaseDirectory + "VersionCheck.txt");
             }
             catch (Exception e)
             {
                 if (ShowError)
                     MessageBox.Show($"Failed to retrieve update information.\n{e.Message}", "Connection Failure", MessageBoxButtons.OK, MessageBoxIcon.Warning); //No internet lol
+                Latest = new Version(0, 0, 0, 0);
                 return false;
             }
             if (File.Exists(@AppDomain.CurrentDomain.BaseDirectory + "VersionCheck.txt"))
@@ -966,23 +967,26 @@ Would you like to rebuild the database from your 3DW Files?",
                     Latest = Internet;
                     return true;
                 }
-            else
-                return false;
+                else
+                {
+                    Latest = Local;
+                    return false;
+                }
             }
             else return false;
         }
 
-        private void SpotlightWikiToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void SpotlightWikiToolStripMenuItem_Click(object sender, EventArgs e) => Process.Start("https://github.com/jupahe64/Spotlight/wiki");
 
         private void CheckForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (CheckForUpdates(out Version Latest, true))
-                MessageBox.Show($"Spotlight Version {Latest.ToString()}","Update Ready!",MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("", "No Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            {
+                if (MessageBox.Show($"Spotlight Version {Latest.ToString()} is currently available for download! Would you like to visit the Download Page?", "Update Ready!", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    Process.Start("https://github.com/jupahe64/Spotlight/releases");
+            }
+            else if (!Latest.Equals(new Version(0, 0, 0, 0)))
+                MessageBox.Show($"You are using the Latest version of Spotlight ({new Version(Application.ProductVersion).ToString()})", "No Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
