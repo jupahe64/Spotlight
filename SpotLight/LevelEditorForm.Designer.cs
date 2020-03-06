@@ -69,6 +69,9 @@
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.AddObjectTimer = new System.Windows.Forms.Timer(this.components);
+            this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SpotlightWikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CheckForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -250,7 +253,8 @@
             this.SpotlightMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FileToolStripMenuItem,
             this.EditToolStripMenuItem,
-            this.ModeToolStripMenuItem});
+            this.ModeToolStripMenuItem,
+            this.AboutToolStripMenuItem});
             this.SpotlightMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.SpotlightMenuStrip.Name = "SpotlightMenuStrip";
             this.SpotlightMenuStrip.Size = new System.Drawing.Size(784, 24);
@@ -474,7 +478,7 @@
             // 
             this.SpotlightToolStripStatusLabel.Name = "SpotlightToolStripStatusLabel";
             this.SpotlightToolStripStatusLabel.Size = new System.Drawing.Size(91, 17);
-            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.1.5.0";
+            this.SpotlightToolStripStatusLabel.Text = "Spotlight 0.7.0.0";
             // 
             // toolStripTextBox1
             // 
@@ -484,6 +488,29 @@
             // AddObjectTimer
             // 
             this.AddObjectTimer.Tick += new System.EventHandler(this.AddObjectTimer_Tick);
+            // 
+            // AboutToolStripMenuItem
+            // 
+            this.AboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SpotlightWikiToolStripMenuItem,
+            this.CheckForUpdatesToolStripMenuItem});
+            this.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
+            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
+            this.AboutToolStripMenuItem.Text = "About";
+            // 
+            // SpotlightWikiToolStripMenuItem
+            // 
+            this.SpotlightWikiToolStripMenuItem.Name = "SpotlightWikiToolStripMenuItem";
+            this.SpotlightWikiToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.SpotlightWikiToolStripMenuItem.Text = "Spotlight Wiki";
+            this.SpotlightWikiToolStripMenuItem.Click += new System.EventHandler(this.SpotlightWikiToolStripMenuItem_Click);
+            // 
+            // CheckForUpdatesToolStripMenuItem
+            // 
+            this.CheckForUpdatesToolStripMenuItem.Name = "CheckForUpdatesToolStripMenuItem";
+            this.CheckForUpdatesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.CheckForUpdatesToolStripMenuItem.Text = "Check for Updates";
+            this.CheckForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.CheckForUpdatesToolStripMenuItem_Click);
             // 
             // LevelEditorForm
             // 
@@ -561,6 +588,9 @@
         private System.Windows.Forms.ToolStripMenuItem MoveToLinkedToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MoveToAppropriateListsToolStripMenuItem;
         private System.Windows.Forms.Timer AddObjectTimer;
+        private System.Windows.Forms.ToolStripMenuItem AboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem SpotlightWikiToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem CheckForUpdatesToolStripMenuItem;
     }
 }
 

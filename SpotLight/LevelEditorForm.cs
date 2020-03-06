@@ -177,6 +177,12 @@ Would you like to rebuild the database from your 3DW Files?",
                     }
                 }
             }
+
+            if (CheckForUpdates(out Version useless, false))
+            {
+                AboutToolStripMenuItem.BackColor = System.Drawing.Color.LawnGreen;
+                CheckForUpdatesToolStripMenuItem.BackColor = System.Drawing.Color.LawnGreen;
+            }
         }
 
 
@@ -929,6 +935,54 @@ Would you like to rebuild the database from your 3DW Files?",
             MainSceneListView.Refresh();
             if (currentScene.ObjectPlaceDelegate == null)
                 AddObjectTimer.Stop();
+        }
+
+
+        /// <summary>
+        /// Checks for Updates
+        /// </summary>
+        /// <returns></returns>
+        public static bool CheckForUpdates(out Version Latest, bool ShowError = false)
+        {
+            System.Net.WebClient Client = new System.Net.WebClient();
+            Latest = null;
+            try
+            {
+                Client.DownloadFile("https://raw.githubusercontent.com/jupahe64/Spotlight/master/Spotlight/LatestVersion.txt", @AppDomain.CurrentDomain.BaseDirectory + "VersionCheck.txt");
+            }
+            catch (Exception e)
+            {
+                if (ShowError)
+                    MessageBox.Show($"Failed to retrieve update information.\n{e.Message}", "Connection Failure", MessageBoxButtons.OK, MessageBoxIcon.Warning); //No internet lol
+                return false;
+            }
+            if (File.Exists(@AppDomain.CurrentDomain.BaseDirectory + "VersionCheck.txt"))
+            {
+                Version Internet = new Version(File.ReadAllText(@AppDomain.CurrentDomain.BaseDirectory + "VersionCheck.txt"));
+                File.Delete(@AppDomain.CurrentDomain.BaseDirectory + "VersionCheck.txt");
+                Version Local = new Version(Application.ProductVersion);
+                if (Local.CompareTo(Internet) < 0)
+                {
+                    Latest = Internet;
+                    return true;
+                }
+            else
+                return false;
+            }
+            else return false;
+        }
+
+        private void SpotlightWikiToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void CheckForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (CheckForUpdates(out Version Latest, true))
+                MessageBox.Show($"Spotlight Version {Latest.ToString()}","Update Ready!",MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            else
+                MessageBox.Show("", "No Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

@@ -260,6 +260,7 @@
     <Resource Include="Resources\DefaultTexture.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="LatestVersion.txt" />
     <Content Include="SpotLightIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
