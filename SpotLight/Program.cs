@@ -1,6 +1,7 @@
 ﻿using Spotlight.ObjectInformationDatabase;
 using SpotLight.ObjectParamDatabase;
 using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +21,15 @@ namespace SpotLight
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            string FullfilePath = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
+            string VersionDirectoryfilePath = Path.GetFullPath(Path.Combine(FullfilePath, @"..\..\"+Application.ProductVersion));
+            string BasePath = Path.GetFullPath(Path.Combine(FullfilePath, @"..\..\"));
             Properties.Settings.Default.Upgrade();
+            DirectoryInfo DirInfo = new DirectoryInfo(BasePath);
+            DirectoryInfo[] Dirs = DirInfo.GetDirectories();
+            for (int i = 0; i < Dirs.Length; i++)
+                if (!Dirs[i].FullName.Equals(VersionDirectoryfilePath))
+                    Directory.Delete(Dirs[i].FullName, true);
             Application.Run(new LevelEditorForm());
         }
 
