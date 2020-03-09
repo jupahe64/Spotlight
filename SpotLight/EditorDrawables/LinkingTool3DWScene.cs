@@ -94,24 +94,20 @@ namespace SpotLight.EditorDrawables
             return var;
         }
 
-        bool ctrlAlreadyPressed = false;
-
-        public override uint KeyDown(KeyEventArgs e, GL_ControlBase control)
+        public override uint KeyDown(KeyEventArgs e, GL_ControlBase control, bool isRepeat)
         {
-            if (!ctrlAlreadyPressed && e.KeyCode == Keys.ControlKey)
+            if (e.KeyCode == Keys.ControlKey && !isRepeat)
             {
-                ctrlAlreadyPressed = true;
-                return base.KeyDown(e, control) | REDRAW_PICKING | FORCE_REENTER;
+                return base.KeyDown(e, control, isRepeat) | REDRAW_PICKING | FORCE_REENTER;
             }
             else
-                return base.KeyDown(e, control);
+                return base.KeyDown(e, control, isRepeat);
         }
 
         public override uint KeyUp(KeyEventArgs e, GL_ControlBase control)
         {
             if (e.KeyCode == Keys.ControlKey)
             {
-                ctrlAlreadyPressed = false;
                 return base.KeyUp(e, control) | REDRAW_PICKING | FORCE_REENTER;
             }
             else

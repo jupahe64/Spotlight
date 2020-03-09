@@ -432,7 +432,7 @@ namespace SpotLight.EditorDrawables
 
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
         {
-            return Selected ? editorScene.CurrentAction.NewPos(GlobalPos) : GlobalPos;
+            return Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPos) : GlobalPos;
         }
     }
 }

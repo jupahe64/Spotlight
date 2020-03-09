@@ -65,15 +65,15 @@ namespace SpotLight.EditorDrawables
 
             Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
 
-            rotMat = Selected ? editorScene.CurrentAction.NewRot(rotMat) : rotMat;
+            rotMat = Selected ? editorScene.SelectionTransformAction.NewRot(rotMat) : rotMat;
 
             SceneDrawState.ZoneTransform = new ZoneTransform(
-                new Matrix4(rotMat) * Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(Position) : Position),
+                new Matrix4(rotMat) * Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(Position) : Position),
                 rotMat);
 
-            var actionBackup = editorScene.CurrentAction;
+            var actionBackup = editorScene.SelectionTransformAction;
 
-            editorScene.CurrentAction = EditorSceneBase.NoAction;
+            editorScene.SelectionTransformAction = EditorSceneBase.NoAction;
 
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in Zone.ObjLists.Values)
@@ -89,7 +89,7 @@ namespace SpotLight.EditorDrawables
 
             SceneDrawState.HighlightColorOverride = null;
 
-            editorScene.CurrentAction = actionBackup;
+            editorScene.SelectionTransformAction = actionBackup;
         }
 
         public ZoneTransform GetTransform()

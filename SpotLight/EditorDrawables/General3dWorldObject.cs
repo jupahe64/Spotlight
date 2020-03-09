@@ -233,7 +233,7 @@ namespace SpotLight.EditorDrawables
         
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
         {
-            return Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition + Vector3.Transform(GlobalRotation, DisplayTranslation);
+            return Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition + Vector3.Transform(GlobalRotation, DisplayTranslation);
         }
 
         public override bool TrySetupObjectUIControl(EditorSceneBase scene, ObjectUIControl objectUIControl)
@@ -411,9 +411,9 @@ namespace SpotLight.EditorDrawables
                     Matrix4.CreateScale(DisplayScale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
-                    new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
-                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition));
+                    Matrix4.CreateScale((Selected ? editorScene.SelectionTransformAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
+                    new Matrix4(Selected ? editorScene.SelectionTransformAction.NewRot(rotMtx) : rotMtx) *
+                    Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition));
 
                 BfresModelCache.TryDraw(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, control, pass, highlightColor);
             }
@@ -428,9 +428,9 @@ namespace SpotLight.EditorDrawables
                     Matrix4.CreateScale(DisplayScale * 0.5f) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.CurrentAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
-                    new Matrix4(Selected ? editorScene.CurrentAction.NewRot(rotMtx) : rotMtx) *
-                    Matrix4.CreateTranslation(Selected ? editorScene.CurrentAction.NewPos(GlobalPosition) : GlobalPosition));
+                    Matrix4.CreateScale((Selected ? editorScene.SelectionTransformAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
+                    new Matrix4(Selected ? editorScene.SelectionTransformAction.NewRot(rotMtx) : rotMtx) *
+                    Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition));
 
                 Vector4 blockColor;
                 Vector4 lineColor;
