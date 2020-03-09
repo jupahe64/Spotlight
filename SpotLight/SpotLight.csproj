@@ -133,6 +133,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="BfresModelCache.cs" />
+    <Compile Include="Language.cs" />
     <Compile Include="LoadLevelForm.cs">
       <SubType>Form</SubType>
     </Compile>

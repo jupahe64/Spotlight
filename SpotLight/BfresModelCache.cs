@@ -367,7 +367,7 @@ namespace SpotLight
             if (cache.ContainsKey(ModelName))
             {
                 cache.Remove(ModelName);
-                Submit(ModelName, new MemoryStream(SARC.UnpackRamN(new MemoryStream(YAZ0.Decompress(Program.ObjectDataPath+ModelName+".szs"))).Files[ModelName+".bfres"]), control);
+                Submit(ModelName, new MemoryStream(SARC.UnpackRamN(new MemoryStream(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", ModelName+".szs")))).Files[ModelName+".bfres"]), control);
             }
         }
 
@@ -383,9 +383,9 @@ namespace SpotLight
 
             public CachedModel(ResFile bfres, string textureArc, GL_ControlModern control)
             {
-                if (LoadTextures && textureArc != null && File.Exists(Program.ObjectDataPath + textureArc + ".szs"))
+                if (LoadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
                 {
-                    SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + textureArc + ".szs"));
+                    SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")));
 
                     if (!texArcCache.ContainsKey(textureArc))
                     {

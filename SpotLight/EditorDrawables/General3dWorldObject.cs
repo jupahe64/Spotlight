@@ -459,9 +459,10 @@ namespace SpotLight.EditorDrawables
             string mdlName = ModelName == "" ? ObjectName : ModelName;
             if (BfresModelCache.Contains(mdlName))
                 return;
-            if (File.Exists(Program.ObjectDataPath + mdlName + ".szs"))
+            string Result = Program.TryGetPathViaProject("ObjectData", mdlName + ".szs");
+            if (File.Exists(Result))
             {
-                SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.ObjectDataPath + mdlName + ".szs"));
+                SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Result));
 
                 if (objArc.Files.ContainsKey(mdlName + ".bfres"))
                 {

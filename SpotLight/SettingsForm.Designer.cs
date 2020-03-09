@@ -46,11 +46,18 @@
             this.UniqueIDsCheckBox = new System.Windows.Forms.CheckBox();
             this.ResetSpotlightButton = new System.Windows.Forms.Button();
             this.IDEditingCheckBox = new System.Windows.Forms.CheckBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.EditingGroupBox = new System.Windows.Forms.GroupBox();
+            this.ProjectPathButton = new System.Windows.Forms.Button();
+            this.ProjectPathTextBox = new System.Windows.Forms.TextBox();
+            this.ProjectPathLabel = new System.Windows.Forms.Label();
+            this.MiscellaneousGroupBox = new System.Windows.Forms.GroupBox();
+            this.LanguageLabel = new System.Windows.Forms.Label();
+            this.LanguageComboBox = new System.Windows.Forms.ComboBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.EditingGroupBox.SuspendLayout();
+            this.MiscellaneousGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // GamePathLabel
@@ -97,7 +104,7 @@
             this.ObjectParameterGroupBox.Controls.Add(this.ClearDescriptionsButton);
             this.ObjectParameterGroupBox.Controls.Add(this.DatabaseInfoLabel);
             this.ObjectParameterGroupBox.Controls.Add(this.RebuildDatabaseButton);
-            this.ObjectParameterGroupBox.Location = new System.Drawing.Point(12, 38);
+            this.ObjectParameterGroupBox.Location = new System.Drawing.Point(12, 64);
             this.ObjectParameterGroupBox.Name = "ObjectParameterGroupBox";
             this.ObjectParameterGroupBox.Size = new System.Drawing.Size(466, 78);
             this.ObjectParameterGroupBox.TabIndex = 4;
@@ -138,7 +145,7 @@
             this.RenderingGroupBox.Controls.Add(this.PlayerLabel);
             this.RenderingGroupBox.Controls.Add(this.PlayerComboBox);
             this.RenderingGroupBox.Controls.Add(this.RenderAreaCheckBox);
-            this.RenderingGroupBox.Location = new System.Drawing.Point(12, 122);
+            this.RenderingGroupBox.Location = new System.Drawing.Point(12, 148);
             this.RenderingGroupBox.Name = "RenderingGroupBox";
             this.RenderingGroupBox.Size = new System.Drawing.Size(466, 75);
             this.RenderingGroupBox.TabIndex = 5;
@@ -200,7 +207,7 @@
             // LoadingAndSavingGroupBox
             // 
             this.LoadingAndSavingGroupBox.Controls.Add(this.UniqueIDsCheckBox);
-            this.LoadingAndSavingGroupBox.Location = new System.Drawing.Point(12, 203);
+            this.LoadingAndSavingGroupBox.Location = new System.Drawing.Point(12, 229);
             this.LoadingAndSavingGroupBox.Name = "LoadingAndSavingGroupBox";
             this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(466, 57);
             this.LoadingAndSavingGroupBox.TabIndex = 6;
@@ -223,7 +230,7 @@
             // 
             this.ResetSpotlightButton.BackColor = System.Drawing.Color.DarkRed;
             this.ResetSpotlightButton.ForeColor = System.Drawing.Color.Silver;
-            this.ResetSpotlightButton.Location = new System.Drawing.Point(369, 34);
+            this.ResetSpotlightButton.Location = new System.Drawing.Point(375, 28);
             this.ResetSpotlightButton.Name = "ResetSpotlightButton";
             this.ResetSpotlightButton.Size = new System.Drawing.Size(91, 23);
             this.ResetSpotlightButton.TabIndex = 7;
@@ -242,23 +249,91 @@
             this.IDEditingCheckBox.UseVisualStyleBackColor = true;
             this.IDEditingCheckBox.CheckedChanged += new System.EventHandler(this.IDEditingCheckBox_CheckedChanged);
             // 
-            // groupBox1
+            // EditingGroupBox
             // 
-            this.groupBox1.Controls.Add(this.IDEditingCheckBox);
-            this.groupBox1.Controls.Add(this.ResetSpotlightButton);
-            this.groupBox1.Location = new System.Drawing.Point(12, 344);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(466, 57);
-            this.groupBox1.TabIndex = 9;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Miscellaneous";
+            this.EditingGroupBox.Controls.Add(this.IDEditingCheckBox);
+            this.EditingGroupBox.Location = new System.Drawing.Point(12, 292);
+            this.EditingGroupBox.Name = "EditingGroupBox";
+            this.EditingGroupBox.Size = new System.Drawing.Size(466, 52);
+            this.EditingGroupBox.TabIndex = 9;
+            this.EditingGroupBox.TabStop = false;
+            this.EditingGroupBox.Text = "Editing";
+            // 
+            // ProjectPathButton
+            // 
+            this.ProjectPathButton.Location = new System.Drawing.Point(443, 38);
+            this.ProjectPathButton.Name = "ProjectPathButton";
+            this.ProjectPathButton.Size = new System.Drawing.Size(35, 20);
+            this.ProjectPathButton.TabIndex = 12;
+            this.ProjectPathButton.Text = "· · ·";
+            this.ProjectPathButton.UseVisualStyleBackColor = true;
+            this.ProjectPathButton.Click += new System.EventHandler(this.ProjectPathButton_Click);
+            // 
+            // ProjectPathTextBox
+            // 
+            this.ProjectPathTextBox.Location = new System.Drawing.Point(101, 38);
+            this.ProjectPathTextBox.Name = "ProjectPathTextBox";
+            this.ProjectPathTextBox.Size = new System.Drawing.Size(336, 20);
+            this.ProjectPathTextBox.TabIndex = 11;
+            this.ProjectPathTextBox.Text = "Project/Content";
+            this.ProjectPathTextBox.TextChanged += new System.EventHandler(this.ProjectPathTextBox_TextChanged);
+            // 
+            // ProjectPathLabel
+            // 
+            this.ProjectPathLabel.AutoSize = true;
+            this.ProjectPathLabel.Location = new System.Drawing.Point(12, 41);
+            this.ProjectPathLabel.Name = "ProjectPathLabel";
+            this.ProjectPathLabel.Size = new System.Drawing.Size(43, 13);
+            this.ProjectPathLabel.TabIndex = 10;
+            this.ProjectPathLabel.Text = "Project:";
+            // 
+            // MiscellaneousGroupBox
+            // 
+            this.MiscellaneousGroupBox.Controls.Add(this.LanguageComboBox);
+            this.MiscellaneousGroupBox.Controls.Add(this.LanguageLabel);
+            this.MiscellaneousGroupBox.Controls.Add(this.ResetSpotlightButton);
+            this.MiscellaneousGroupBox.Location = new System.Drawing.Point(12, 350);
+            this.MiscellaneousGroupBox.Name = "MiscellaneousGroupBox";
+            this.MiscellaneousGroupBox.Size = new System.Drawing.Size(466, 51);
+            this.MiscellaneousGroupBox.TabIndex = 13;
+            this.MiscellaneousGroupBox.TabStop = false;
+            this.MiscellaneousGroupBox.Text = "Miscellaneous";
+            // 
+            // LanguageLabel
+            // 
+            this.LanguageLabel.AutoSize = true;
+            this.LanguageLabel.Location = new System.Drawing.Point(6, 22);
+            this.LanguageLabel.Name = "LanguageLabel";
+            this.LanguageLabel.Size = new System.Drawing.Size(58, 13);
+            this.LanguageLabel.TabIndex = 8;
+            this.LanguageLabel.Text = "Language:";
+            // 
+            // LanguageComboBox
+            // 
+            this.LanguageComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.LanguageComboBox.FormattingEnabled = true;
+            this.LanguageComboBox.Items.AddRange(new object[] {
+            "English",
+            "French",
+            "Spanish",
+            "German",
+            "Japanese"});
+            this.LanguageComboBox.Location = new System.Drawing.Point(70, 19);
+            this.LanguageComboBox.Name = "LanguageComboBox";
+            this.LanguageComboBox.Size = new System.Drawing.Size(97, 21);
+            this.LanguageComboBox.TabIndex = 9;
+            this.LanguageComboBox.SelectedIndexChanged += new System.EventHandler(this.LanguageComboBox_SelectedIndexChanged);
             // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(490, 413);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.MiscellaneousGroupBox);
+            this.Controls.Add(this.ProjectPathButton);
+            this.Controls.Add(this.ProjectPathTextBox);
+            this.Controls.Add(this.ProjectPathLabel);
+            this.Controls.Add(this.EditingGroupBox);
             this.Controls.Add(this.LoadingAndSavingGroupBox);
             this.Controls.Add(this.RenderingGroupBox);
             this.Controls.Add(this.ObjectParameterGroupBox);
@@ -278,8 +353,10 @@
             this.RenderingGroupBox.PerformLayout();
             this.LoadingAndSavingGroupBox.ResumeLayout(false);
             this.LoadingAndSavingGroupBox.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.EditingGroupBox.ResumeLayout(false);
+            this.EditingGroupBox.PerformLayout();
+            this.MiscellaneousGroupBox.ResumeLayout(false);
+            this.MiscellaneousGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -304,6 +381,12 @@
         private System.Windows.Forms.CheckBox UniqueIDsCheckBox;
         private System.Windows.Forms.Button ResetSpotlightButton;
         private System.Windows.Forms.CheckBox IDEditingCheckBox;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox EditingGroupBox;
+        private System.Windows.Forms.Button ProjectPathButton;
+        private System.Windows.Forms.TextBox ProjectPathTextBox;
+        private System.Windows.Forms.Label ProjectPathLabel;
+        private System.Windows.Forms.GroupBox MiscellaneousGroupBox;
+        private System.Windows.Forms.ComboBox LanguageComboBox;
+        private System.Windows.Forms.Label LanguageLabel;
     }
 }

@@ -98,7 +98,7 @@ namespace SpotLight
         {
             listBox1.Items.Clear();
 
-            foreach (string filePath in Directory.EnumerateFiles(Program.StageDataPath))
+            foreach (string filePath in Directory.EnumerateFiles(Program.BaseStageDataPath))
             {
                 if (!filePath.EndsWith("Map1.szs"))
                     continue;

@@ -22,6 +22,7 @@ namespace SpotLight
             InitializeComponent();
             CenterToParent();
             GamePathTextBox.Text = Program.GamePath;
+            ProjectPathTextBox.Text = Program.ProjectPath;
 
             #region Databases
 
@@ -66,19 +67,10 @@ namespace SpotLight
             PlayerComboBox.SelectedIndex = PlayerComboBox.FindStringExact(Properties.Settings.Default.PlayerChoice);
             UniqueIDsCheckBox.Checked = Properties.Settings.Default.UniqueIDs;
             IDEditingCheckBox.Checked = Properties.Settings.Default.AllowIDEdits;
+            LanguageComboBox.SelectedIndex = LanguageComboBox.FindStringExact(Properties.Settings.Default.Language);
         }
 
         private LevelEditorForm Home;
-
-        public static string UserName
-        {
-            get => Properties.Settings.Default.UserName;
-            set
-            {
-                Properties.Settings.Default.UserName = value;
-                Properties.Settings.Default.Save();
-            }
-        }
 
         private void GamePathButton_Click(object sender, EventArgs e)
         {
@@ -112,6 +104,11 @@ namespace SpotLight
                 e.Cancel = true;
                 MessageBox.Show("The game path is invalid.\nPlease try again","Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
             }
+            if (!Program.ProjectPath.Equals("") && !Program.ProjectPathIsValid())
+            {
+                e.Cancel = true;
+                MessageBox.Show("The project path is invalid.\nPlease try again", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void RebuildDatabaseButton_Click(object sender, EventArgs e)
@@ -123,7 +120,7 @@ namespace SpotLight
             });
             DatabaseGenThread.Start();
             Program.ParameterDB = new ObjectParameterDatabase();
-            Program.ParameterDB.Create(Program.StageDataPath);
+            Program.ParameterDB.Create(Program.BaseStageDataPath);
             Program.ParameterDB.Save(Program.SOPDPath);
             if (DatabaseGenThread.IsAlive)
                 LoadLevelForm.DoClose = true;
@@ -194,6 +191,40 @@ namespace SpotLight
         private void IDEditingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.AllowIDEdits = IDEditingCheckBox.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ProjectPathButton_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog ofd = new CommonOpenFileDialog()
+            {
+                Title = "Select the Game Directory of Super Mario 3D World",
+                IsFolderPicker = true
+            };
+            Program.ProjectPath = "";
+            while (!Program.ProjectPathIsValid())
+            {
+                if (Program.GamePath != "")
+                    MessageBox.Show("The Directory doesn't contain ObjectData and StageData.", "The ProjectPath is invalid");
+
+                if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    Program.ProjectPath = ofd.FileName;
+                }
+                else
+                    Program.ProjectPath = ProjectPathTextBox.Text;
+            }
+            ProjectPathTextBox.Text = Program.ProjectPath;
+        }
+
+        private void ProjectPathTextBox_TextChanged(object sender, EventArgs e) => Program.ProjectPath = ProjectPathTextBox.Text;
+
+        private void LanguageComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (LanguageComboBox.SelectedItem.ToString().Equals(Properties.Settings.Default.Language))
+                return;
+
+            Properties.Settings.Default.Language = LanguageComboBox.SelectedItem.ToString();
             Properties.Settings.Default.Save();
         }
     }

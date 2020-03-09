@@ -5,7 +5,7 @@
     <Setting Name="GamePath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="UserName" Type="System.String" Scope="User">
+    <Setting Name="ProjectPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="PlayerChoice" Type="System.String" Scope="User">
@@ -22,6 +22,12 @@
     </Setting>
     <Setting Name="AllowIDEdits" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SnapDistance" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.5</Value>
+    </Setting>
+    <Setting Name="Language" Type="System.String" Scope="User">
+      <Value Profile="(Default)">English</Value>
     </Setting>
   </Settings>
 </SettingsFile>
