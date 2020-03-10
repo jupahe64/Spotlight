@@ -310,7 +310,6 @@
             // 
             // ClosePathCheckBox
             // 
-            this.ClosePathCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.ClosePathCheckBox.AutoSize = true;
             this.ClosePathCheckBox.Location = new System.Drawing.Point(0, 3);
             this.ClosePathCheckBox.Name = "ClosePathCheckBox";
@@ -409,17 +408,17 @@
             // NameColumnHeader
             // 
             this.NameColumnHeader.Text = "Property Name";
-            this.NameColumnHeader.Width = 102;
+            this.NameColumnHeader.Width = 133;
             // 
             // TypeColumnHeader
             // 
             this.TypeColumnHeader.Text = "Type";
-            this.TypeColumnHeader.Width = 58;
+            this.TypeColumnHeader.Width = 74;
             // 
             // DescriptionColumnHeader
             // 
             this.DescriptionColumnHeader.Text = "Description";
-            this.DescriptionColumnHeader.Width = 337;
+            this.DescriptionColumnHeader.Width = 285;
             // 
             // PropertyHintTextBox
             // 

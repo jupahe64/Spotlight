@@ -33,7 +33,8 @@ namespace SpotLight
                     if (!Dirs[i].FullName.Equals(VersionDirectoryfilePath))
                         Directory.Delete(Dirs[i].FullName, true);
             }
-            CurrentLanguage = new Language(Properties.Settings.Default.Language, Path.Combine(LanguagePath, Properties.Settings.Default.Language+".txt"));
+            if (Directory.Exists(LanguagePath))
+                CurrentLanguage = File.Exists(Path.Combine(LanguagePath, Properties.Settings.Default.Language + ".txt")) ? new Language(Properties.Settings.Default.Language, Path.Combine(LanguagePath, Properties.Settings.Default.Language + ".txt")) : new Language();
 
             Application.Run(new LevelEditorForm());
         }

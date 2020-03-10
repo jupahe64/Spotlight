@@ -37,9 +37,11 @@ namespace SpotLight
             string[] Lines = File.ReadAllLines(Filename);
             for (int i = 0; i < Lines.Length; i++)
             {
+                if (Lines[i].Equals("") || Lines[i].StartsWith("#"))
+                    continue;
                 string[] Current = Lines[i].Split('|');
                 if (!Translations.ContainsKey(Current[0]))
-                    Translations.Add(Current[0], Current[1]);
+                    Translations.Add(Current[0], Current[1].Replace("<N>", Environment.NewLine).Replace("</>","|"));
             }
         }
 

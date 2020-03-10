@@ -295,18 +295,15 @@ namespace SpotLight
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter =
-                "Level Files (Map)|*Map1.szs|" +
-                "Level Files (Design)|*Design1.szs|" +
-                "Level Files (Sound)|*Sound1.szs|" +
-                "All Level Files|*Map1.szs;*Design1.szs;*Sound1.szs",
-                InitialDirectory = currentScene?.EditZone.Directory ?? Program.BaseStageDataPath };
+                string.Format("{0}|*Map1.szs|{1}|*Design1.szs|{2}|*Sound1.szs|{3}|*Map1.szs;*Design1.szs;*Sound1.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3]),
+                InitialDirectory = currentScene?.EditZone.Directory ?? (Program.ProjectPath.Equals("") ? Program.BaseStageDataPath : System.IO.Path.Combine(Program.ProjectPath, "StageData")) };
 
-            SpotlightToolStripStatusLabel.Text = "Waiting...";
+            SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
 
             if (ofd.ShowDialog() == DialogResult.OK && ofd.FileName != "")
                 OpenLevel(ofd.FileName);
             else
-                SpotlightToolStripStatusLabel.Text = "Open Cancelled";
+                SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
         }
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -315,7 +312,7 @@ namespace SpotLight
                 return;
 
             currentScene.Save();
-            SpotlightToolStripStatusLabel.Text = "Level saved!";
+            SpotlightToolStripStatusLabel.Text = StatusLevelSavedMessage;
         }
 
         private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -325,18 +322,18 @@ namespace SpotLight
 
             if (currentScene.SaveAs())
             {
-                SpotlightToolStripStatusLabel.Text = "Level saved!";
+                SpotlightToolStripStatusLabel.Text = StatusLevelSavedMessage;
                 ZoneDocumentTabControl.SelectedTab.Name = currentScene.ToString(); //level name might have changed
             }
             else
-                SpotlightToolStripStatusLabel.Text = "Save Cancelled or Failed.";
+                SpotlightToolStripStatusLabel.Text = StatusSaveCancelledOrFailedMessage;
         }
 
         private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SettingsForm SF = new SettingsForm(this);
             SF.ShowDialog();
-            SpotlightToolStripStatusLabel.Text = "Settings Saved.";
+            SpotlightToolStripStatusLabel.Text = StatusSettingsSavedMessage;
         }
 
         //----------------------------------------------------------------------------
@@ -366,14 +363,14 @@ namespace SpotLight
             }
             else
             {
-                MessageBox.Show("StageList.szs is missing from " + Program.GamePath + "\\SystemData", "Missing File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(string.Format(LevelParamsMissingText, Program.GamePath), LevelParamsMissingHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void DuplicateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (currentScene.SelectedObjects.Count == 0)
-                SpotlightToolStripStatusLabel.Text = "Can't duplicate nothing!";
+                SpotlightToolStripStatusLabel.Text = DuplicateNothingMessage;
             else
             {
                 string SelectedObjects = "";
@@ -413,7 +410,7 @@ namespace SpotLight
                 MainSceneListView.Refresh();
                 ObjectUIControl.Invalidate();
 
-                SpotlightToolStripStatusLabel.Text = $"Duplicated {SelectedObjects}";
+                SpotlightToolStripStatusLabel.Text = string.Format(DuplicateSuccessMessage, SelectedObjects);
             }
         }
 
@@ -422,22 +419,22 @@ namespace SpotLight
             string stagelistpath = Program.TryGetPathViaProject("SystemData", "StageList.szs");
             if (!File.Exists(stagelistpath))
             {
-                MessageBox.Show($"StageList.szs Could not be found inside {stagelistpath}, so this feature cannot be used.", "404", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                SpotlightToolStripStatusLabel.Text = "Open Failed";
+                MessageBox.Show(string.Format(LevelSelectMissing, stagelistpath), "404", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SpotlightToolStripStatusLabel.Text = StatusOpenFailedMessage;
                 return;
             }
-            SpotlightToolStripStatusLabel.Text = "Waiting...";
+            SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
             StageList STGLST = new StageList(stagelistpath);
             LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST, true);
             LPSF.ShowDialog();
             if (LPSF.levelname.Equals(""))
             {
-                SpotlightToolStripStatusLabel.Text = "Open Cancelled";
+                SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
                 return;
             }
             if (!Program.ProjectPath.Equals("") && !File.Exists(System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs")))
             {
-                DialogResult DR = MessageBox.Show($"{LPSF.levelname} isn't inside your project directory. Would you like to create a copy in your project directory?", "Confirmation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                DialogResult DR = MessageBox.Show(string.Format(LevelSelectCopyText,LPSF.levelname), LevelSelectCopyHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (DR == DialogResult.Yes)
                 {
                     File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Map1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs"));
@@ -448,7 +445,7 @@ namespace SpotLight
                 }
                 else if (DR == DialogResult.Cancel)
                 {
-                    SpotlightToolStripStatusLabel.Text = "Open Cancelled";
+                    SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
                     return;
                 }
             }
@@ -485,7 +482,7 @@ namespace SpotLight
             string DeletedObjects = "";
             for (int i = 0; i < currentScene.SelectedObjects.Count; i++)
                 DeletedObjects += currentScene.SelectedObjects.ElementAt(i).ToString() + (i + 1 == currentScene.SelectedObjects.Count ? "." : ", ");
-            SpotlightToolStripStatusLabel.Text = $"Deleted {DeletedObjects}";
+            SpotlightToolStripStatusLabel.Text = string.Format(StatusObjectsDeletedMessage, DeletedObjects);
 
             currentScene.DeleteSelected();
             LevelGLControlModern.Refresh();
@@ -526,7 +523,7 @@ namespace SpotLight
 //a  v a l i d  d a t a b a s e  r e m e m b e r ?
 //= )"); //As much as I wish we could keep this, we can't.
 
-                DialogResult DR = MessageBox.Show("The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?","Invalid Database", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                DialogResult DR = MessageBox.Show(DatabaseInvalidText, DatabaseInvalidHeader, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
                 if (DR == DialogResult.Yes)
                 {
                     Thread DatabaseGenThread = new Thread(() =>
@@ -541,7 +538,7 @@ namespace SpotLight
                     if (DatabaseGenThread.IsAlive)
                         LoadLevelForm.DoClose = true;
                 }
-                MessageBox.Show("Database Created", "Operation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(DatabaseCreatedText, DatabaseCreatedHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             new AddObjectForm(currentScene, LevelGLControlModern).ShowDialog(this);
@@ -589,7 +586,7 @@ namespace SpotLight
             currentScene.ExecuteAddition(additionManager);
             currentScene.ExecuteDeletion(deletionManager);
             currentScene.EndUndoCollection();
-            SpotlightToolStripStatusLabel.Text = "Moved to the Link List";
+            SpotlightToolStripStatusLabel.Text = StatusMovedToLinksMessage;
         }
 
         private void MoveToAppropriateListsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -646,7 +643,7 @@ namespace SpotLight
             currentScene.ExecuteAddition(additionManager);
             currentScene.ExecuteDeletion(deletionManager);
             currentScene.EndUndoCollection();
-            SpotlightToolStripStatusLabel.Text = "Moved to the Appropriate List";
+            SpotlightToolStripStatusLabel.Text = StatusMovedFromLinksMessage;
         }
 
         private void SpotlightWikiToolStripMenuItem_Click(object sender, EventArgs e) => Process.Start("https://github.com/jupahe64/Spotlight/wiki");
@@ -655,11 +652,11 @@ namespace SpotLight
         {
             if (CheckForUpdates(out Version Latest, true))
             {
-                if (MessageBox.Show($"Spotlight Version {Latest.ToString()} is currently available for download! Would you like to visit the Download Page?", "Update Ready!", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                if (MessageBox.Show(string.Format(UpdateReadyText, Latest.ToString()), UpdateReadyHeader, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                     Process.Start("https://github.com/jupahe64/Spotlight/releases");
             }
             else if (!Latest.Equals(new Version(0, 0, 0, 0)))
-                MessageBox.Show($"You are using the Latest version of Spotlight ({new Version(Application.ProductVersion).ToString()})", "No Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(string.Format(UpdateNoneText, new Version(Application.ProductVersion).ToString()), UpdateNoneHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         #endregion
@@ -843,14 +840,12 @@ namespace SpotLight
             #region ask to save unsaved changes
             if (unsavedZones.Count>0)
             {
-                StringBuilder sb = new StringBuilder("You have unsaved changes in:\n");
+                string UnsavedZones = "";
 
                 foreach (var zone in unsavedZones)
-                    sb.AppendLine(zone.LevelFileName);
+                    UnsavedZones += zone.LevelFileName+"\n";
 
-                sb.AppendLine("Do you want to save them ? ");
-
-                switch (MessageBox.Show(sb.ToString(), "Unsaved Changes!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                switch (MessageBox.Show(string.Format(UnsavedChangesText, UnsavedZones), UnsavedChangesHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
                 {
                     case DialogResult.Yes:
                         foreach (var zone in unsavedZones)
@@ -886,7 +881,7 @@ namespace SpotLight
                 SetAppStatus(false);
                 string levelname = currentScene.EditZone.LevelName;
                 currentScene = null;
-                SpotlightToolStripStatusLabel.Text = $"{levelname} was closed.";
+                SpotlightToolStripStatusLabel.Text = string.Format(StatusLevelClosed, levelname);
             }
             #endregion
         }
@@ -965,7 +960,7 @@ namespace SpotLight
         /// Checks for Updates
         /// </summary>
         /// <returns></returns>
-        public static bool CheckForUpdates(out Version Latest, bool ShowError = false)
+        public bool CheckForUpdates(out Version Latest, bool ShowError = false)
         {
             System.Net.WebClient Client = new System.Net.WebClient();
             Latest = null;
@@ -976,7 +971,7 @@ namespace SpotLight
             catch (Exception e)
             {
                 if (ShowError)
-                    MessageBox.Show($"Failed to retrieve update information.\n{e.Message}", "Connection Failure", MessageBoxButtons.OK, MessageBoxIcon.Warning); //No internet lol
+                    MessageBox.Show(string.Format(UpdateFailText, e.Message), UpdateFailHeader, MessageBoxButtons.OK, MessageBoxIcon.Warning); //Imagine not having internet
                 Latest = new Version(0, 0, 0, 0);
                 return false;
             }
@@ -1000,8 +995,14 @@ namespace SpotLight
         }
 
         #region Translations
+        /// <summary>
+        /// Sets up the text. if this is not called, I bet there will be some crashes
+        /// </summary>
         public void Localize()
         {
+            Text = Program.CurrentLanguage.GetTranslation("EditorTitle") ?? "Spotlight";
+
+            #region Program Strings
             WelcomeMessageHeader = Program.CurrentLanguage.GetTranslation("WelcomeMessageHeader") ?? "Introduction";
             WelcomeMessageText = Program.CurrentLanguage.GetTranslation("WelcomeMessageText") ??
 @"Welcome to Spotlight!
@@ -1028,6 +1029,82 @@ Would you like to generate a new object Database from your 3DW Directory?";
 The latest Database version is {1}.
 Would you like to rebuild the database from your 3DW Files?";
             DatabaseOutdatedHeader = Program.CurrentLanguage.GetTranslation("DatabaseOutdatedHeader") ?? "Database Outdated";
+
+            StatusWaitMessage = Program.CurrentLanguage.GetTranslation("StatusWaitMessage") ?? "Waiting...";
+            StatusOpenCancelledMessage = Program.CurrentLanguage.GetTranslation("StatusOpenCancelledMessage") ?? "Open Cancelled";
+            StatusOpenFailedMessage = Program.CurrentLanguage.GetTranslation("StatusOpenFailedMessage") ?? "Open Failed";
+            StatusLevelSavedMessage = Program.CurrentLanguage.GetTranslation("StatusLevelSavedMessage") ?? "Level Saved!";
+            StatusSettingsSavedMessage = Program.CurrentLanguage.GetTranslation("StatusSettingsSavedMessage") ?? "Settings Saved.";
+            StatusSaveCancelledOrFailedMessage = Program.CurrentLanguage.GetTranslation("StatusSaveCancelledOrFailedMessage") ?? "Save Cancelled or Failed.";
+            FileLevelOpenFilter = Program.CurrentLanguage.GetTranslation("FileLevelOpenFilter") ?? "Level Files (Map)|Level Files (Design)|Level Files (Sound)|All Level Files";
+
+            LevelParamsMissingText = Program.CurrentLanguage.GetTranslation("LevelParamsMissingText") ?? "StageList.szs is missing from {0}\\SystemData";
+            LevelParamsMissingHeader = Program.CurrentLanguage.GetTranslation("LevelParamsMissingHeader") ?? "Missing File";
+
+            DuplicateNothingMessage = Program.CurrentLanguage.GetTranslation("DuplicateNothingMessage") ?? "Can't duplicate nothing!";
+            DuplicateSuccessMessage = Program.CurrentLanguage.GetTranslation("DuplicateSuccessMessage") ?? "Duplicated {0}";
+
+            LevelSelectMissing = Program.CurrentLanguage.GetTranslation("LevelSelectMissing") ?? "StageList.szs Could not be found inside {0}, so this feature cannot be used.";
+            LevelSelectCopyText = Program.CurrentLanguage.GetTranslation("LevelSelectCopyText") ?? "{0} isn't inside your project directory. Would you like to create a copy in your project directory?";
+            LevelSelectCopyHeader = Program.CurrentLanguage.GetTranslation("LevelSelectCopyHeader") ?? "Confirmation";
+
+            StatusObjectsDeletedMessage = Program.CurrentLanguage.GetTranslation("StatusObjectsDeletedMessage") ?? "Deleted {0}";
+            DatabaseInvalidText = Program.CurrentLanguage.GetTranslation("DatabaseInvalidText") ?? "The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?";
+            DatabaseInvalidHeader = Program.CurrentLanguage.GetTranslation("DatabaseInvalidHeader") ?? "Invalid Database";
+            DatabaseCreatedText = Program.CurrentLanguage.GetTranslation("DatabaseCreatedText") ?? "Database Created";
+            DatabaseCreatedHeader = Program.CurrentLanguage.GetTranslation("DatabaseCreatedHeader") ?? "Operation Complete";
+
+            StatusMovedToLinksMessage = Program.CurrentLanguage.GetTranslation("StatusMovedToLinksMessage") ?? "Moved to the Link List";
+            StatusMovedFromLinksMessage = Program.CurrentLanguage.GetTranslation("StatusMovedFromLinksMessage") ?? "Moved to the Appropriate List";
+            UpdateReadyText = Program.CurrentLanguage.GetTranslation("UpdateReadyText") ?? "Spotlight Version {0} is currently available for download! Would you like to visit the Download Page?";
+            UpdateReadyHeader = Program.CurrentLanguage.GetTranslation("UpdateReadyHeader") ?? "Update Ready!";
+            UpdateNoneText = Program.CurrentLanguage.GetTranslation("UpdateNoneText") ?? "You are using the Latest version of Spotlight ({0})";
+            UpdateNoneHeader = Program.CurrentLanguage.GetTranslation("UpdateNoneHeader") ?? "No Updates";
+            UpdateFailText = Program.CurrentLanguage.GetTranslation("UpdateFailText") ?? "Failed to retrieve update information.\n{0}";
+            UpdateFailHeader = Program.CurrentLanguage.GetTranslation("UpdateFailHeader") ?? "Connection Failure";
+
+            UnsavedChangesText = Program.CurrentLanguage.GetTranslation("UnsavedChangesText") ?? "You have unsaved changes in:\n {0} Do you want to save them?";
+            UnsavedChangesHeader = Program.CurrentLanguage.GetTranslation("UnsavedChangesHeader") ?? "Unsaved Changes!";
+            StatusLevelClosed = Program.CurrentLanguage.GetTranslation("StatusLevelClosed") ?? "{0} was closed.";
+            #endregion
+
+            #region Controls
+            #region Toolstrip Items
+            FileToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("FileToolStripMenuItem") ?? "File";
+            OpenToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("OpenToolStripMenuItem") ?? "Open";
+            OpenExToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("OpenExToolStripMenuItem") ?? "Open with Selector";
+            SaveToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SaveToolStripMenuItem") ?? "Save";
+            SaveAsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SaveAsToolStripMenuItem") ?? "Save As";
+            OptionsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("OptionsToolStripMenuItem") ?? "Options";
+
+            EditToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("EditToolStripMenuItem") ?? "Edit";
+            UndoToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("UndoToolStripMenuItem") ?? "Undo";
+            RedoToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("RedoToolStripMenuItem") ?? "Redo";
+            AddObjectToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("AddObjectToolStripMenuItem") ?? "Add Object";
+            AddZoneToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("AddZoneToolStripMenuItem") ?? "Add Zone";
+            DuplicateToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DuplicateToolStripMenuItem") ?? "Duplicate";
+            DeleteToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DeleteToolStripMenuItem") ?? "Delete";
+            SelectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectAllToolStripMenuItem") ?? "Select All";
+            DeselectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DeselectAllToolStripMenuItem") ?? "Deselect All";
+            LevelParametersToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("LevelParametersToolStripMenuItem") ?? "Level Parameters";
+            MoveSelectionToToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveSelectionToToolStripMenuItem") ?? "Move Selection To";
+            MoveToLinkedToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveToLinkedToolStripMenuItem") ?? "Linked Objects";
+            MoveToAppropriateListsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveToAppropriateListsToolStripMenuItem") ?? "Appropriate Lists";
+
+            ModeToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("ModeToolStripMenuItem") ?? "Mode";
+            EditObjectsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("EditObjectsToolStripMenuItem") ?? "Edit Objects";
+            EditLinksToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("EditLinksToolStripMenuItem") ?? "Edit Links";
+
+            AboutToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("AboutToolStripMenuItem") ?? "About";
+            SpotlightWikiToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SpotlightWikiToolStripMenuItem") ?? "Spotlight Wiki";
+            CheckForUpdatesToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("CheckForUpdatesToolStripMenuItem") ?? "Check for Updates";
+            #endregion
+
+            ZonesTabPage.Text = Program.CurrentLanguage.GetTranslation("ZonesTabPage") ?? "Zones";
+            ObjectsTabPage.Text = Program.CurrentLanguage.GetTranslation("ObjectsTabPage") ?? "Objects";
+            EditIndividualButton.Text = Program.CurrentLanguage.GetTranslation("EditIndividualButton") ?? "Edit Individual";
+            CurrentObjectLabel.Text = Program.CurrentLanguage.GetTranslation("CurrentObjectLabel") ?? "Nothing Selected";
+            #endregion
         }
 
         private string WelcomeMessageHeader { get; set; }
@@ -1044,7 +1121,43 @@ Would you like to rebuild the database from your 3DW Files?";
         private string DatabaseOutdatedHeader { get; set; }
         private string DatabaseOutdatedText { get; set; }
 
-        #endregion
+        private string StatusWaitMessage { get; set; }
+        private string StatusOpenCancelledMessage { get; set; }
+        private string StatusOpenFailedMessage { get; set; }
+        private string StatusLevelSavedMessage { get; set; }
+        private string StatusSettingsSavedMessage { get; set; }
+        private string StatusSaveCancelledOrFailedMessage { get; set; }
+        private string FileLevelOpenFilter { get; set; }
 
+        private string LevelParamsMissingHeader { get; set; }
+        private string LevelParamsMissingText { get; set; }
+
+        private string DuplicateNothingMessage { get; set; }
+        private string DuplicateSuccessMessage { get; set; }
+
+        private string LevelSelectMissing { get; set; }
+        private string LevelSelectCopyHeader { get; set; }
+        private string LevelSelectCopyText { get; set; }
+
+        private string StatusObjectsDeletedMessage { get; set; }
+        private string DatabaseInvalidHeader { get; set; }
+        private string DatabaseInvalidText { get; set; }
+        private string DatabaseCreatedHeader { get; set; }
+        private string DatabaseCreatedText { get; set; }
+
+        private string StatusMovedToLinksMessage { get; set; }
+        private string StatusMovedFromLinksMessage { get; set; }
+        private string UpdateReadyHeader { get; set; }
+        private string UpdateReadyText { get; set; }
+        private string UpdateNoneHeader { get; set; }
+        private string UpdateNoneText { get; set; }
+        private string UpdateFailHeader { get; set; }
+        private string UpdateFailText { get; set; }
+
+        private string UnsavedChangesHeader { get; set; }
+        private string UnsavedChangesText { get; set; }
+        private string StatusLevelClosed { get; set; }
+        
+        #endregion
     }
 }

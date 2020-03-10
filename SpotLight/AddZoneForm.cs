@@ -11,52 +11,53 @@ namespace SpotLight
     class AddZoneForm : Form
     {
         #region generated code
-        private ListBox listBox1;
-        private Button OKBtn;
-        private Button CancelBtn;
+        private ListBox ZonesListBox;
+        private Button OKButton;
+        private Button CancelSelectionButton;
         private CheckBox FilterZonesCheckbox;
 
         private void InitializeComponent()
         {
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.OKBtn = new System.Windows.Forms.Button();
-            this.CancelBtn = new System.Windows.Forms.Button();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddZoneForm));
+            this.ZonesListBox = new System.Windows.Forms.ListBox();
+            this.OKButton = new System.Windows.Forms.Button();
+            this.CancelSelectionButton = new System.Windows.Forms.Button();
             this.FilterZonesCheckbox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
-            // listBox1
+            // ZonesListBox
             // 
-            this.listBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.ZonesListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(12, 12);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(348, 368);
-            this.listBox1.TabIndex = 0;
-            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
+            this.ZonesListBox.FormattingEnabled = true;
+            this.ZonesListBox.Location = new System.Drawing.Point(12, 12);
+            this.ZonesListBox.Name = "ZonesListBox";
+            this.ZonesListBox.Size = new System.Drawing.Size(348, 368);
+            this.ZonesListBox.TabIndex = 0;
+            this.ZonesListBox.SelectedIndexChanged += new System.EventHandler(this.ZoneListBox_SelectedIndexChanged);
             // 
-            // OKBtn
+            // OKButton
             // 
-            this.OKBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.OKBtn.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.OKBtn.Location = new System.Drawing.Point(204, 387);
-            this.OKBtn.Name = "OKBtn";
-            this.OKBtn.Size = new System.Drawing.Size(75, 23);
-            this.OKBtn.TabIndex = 1;
-            this.OKBtn.Text = "OK";
-            this.OKBtn.UseVisualStyleBackColor = true;
+            this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.OKButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.OKButton.Location = new System.Drawing.Point(204, 387);
+            this.OKButton.Name = "OKButton";
+            this.OKButton.Size = new System.Drawing.Size(75, 23);
+            this.OKButton.TabIndex = 1;
+            this.OKButton.Text = "OK";
+            this.OKButton.UseVisualStyleBackColor = true;
             // 
-            // CancelBtn
+            // CancelSelectionButton
             // 
-            this.CancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CancelBtn.Location = new System.Drawing.Point(285, 387);
-            this.CancelBtn.Name = "CancelBtn";
-            this.CancelBtn.Size = new System.Drawing.Size(75, 23);
-            this.CancelBtn.TabIndex = 2;
-            this.CancelBtn.Text = "Cancel";
-            this.CancelBtn.UseVisualStyleBackColor = true;
+            this.CancelSelectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.CancelSelectionButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.CancelSelectionButton.Location = new System.Drawing.Point(285, 387);
+            this.CancelSelectionButton.Name = "CancelSelectionButton";
+            this.CancelSelectionButton.Size = new System.Drawing.Size(75, 23);
+            this.CancelSelectionButton.TabIndex = 2;
+            this.CancelSelectionButton.Text = "Cancel";
+            this.CancelSelectionButton.UseVisualStyleBackColor = true;
             // 
             // FilterZonesCheckbox
             // 
@@ -74,11 +75,12 @@ namespace SpotLight
             // 
             this.ClientSize = new System.Drawing.Size(372, 422);
             this.Controls.Add(this.FilterZonesCheckbox);
-            this.Controls.Add(this.CancelBtn);
-            this.Controls.Add(this.OKBtn);
-            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.CancelSelectionButton);
+            this.Controls.Add(this.OKButton);
+            this.Controls.Add(this.ZonesListBox);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "AddZoneForm";
-            this.Text = "Add Zone";
+            this.Text = "Spotlight - Add Zone";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -88,30 +90,37 @@ namespace SpotLight
         public AddZoneForm()
         {
             InitializeComponent();
-
+            CenterToParent();
             FilterZonesCheckbox_CheckedChanged(null, null);
+
+            #region Localize()
+            Text = Program.CurrentLanguage.GetTranslation("AddZonesTitle") ?? "Spotlight - Add Zone";
+            FilterZonesCheckbox.Text = Program.CurrentLanguage.GetTranslation("FilterZonesCheckbox") ?? "Filter Zones";
+            OKButton.Text = Program.CurrentLanguage.GetTranslation("OKButton") ?? "OK";
+            CancelSelectionButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
+            #endregion
         }
 
         public string SelectedFileName { get; private set; }
 
         private void FilterZonesCheckbox_CheckedChanged(object sender, EventArgs e)
         {
-            listBox1.Items.Clear();
+            ZonesListBox.Items.Clear();
 
-            foreach (string filePath in Directory.EnumerateFiles(Program.BaseStageDataPath))
+            foreach (string filePath in Directory.EnumerateFiles(Program.ProjectPath.Equals("") ? Program.BaseStageDataPath: Path.Combine(Program.ProjectPath, "StageData")))
             {
                 if (!filePath.EndsWith("Map1.szs"))
                     continue;
                 if (FilterZonesCheckbox.Checked && !filePath.Contains("Zone"))
                     continue;
 
-                listBox1.Items.Add(Path.GetFileName(filePath));
+                ZonesListBox.Items.Add(Path.GetFileName(filePath));
             }
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void ZoneListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedFileName = (string)listBox1.SelectedItem;
+            SelectedFileName = (string)ZonesListBox.SelectedItem;
         }
     }
 }

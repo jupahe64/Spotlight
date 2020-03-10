@@ -19,6 +19,7 @@ namespace SpotLight
         {
             InitializeComponent();
             CenterToParent();
+            Localize();
             DBEntryListView.ShowGroups = true;
             DBEntryListView.DoubleBuffering(true);
             if (System.IO.File.Exists(Program.SODDPath))
@@ -290,6 +291,34 @@ namespace SpotLight
                 };
             }
         }
+
+
+
+
+        private void Localize()
+        {
+            Text = Program.CurrentLanguage.GetTranslation("AddObjectsTitle") ?? "Spotlight - Add Object";
+            ObjectFromDBTab.Text = Program.CurrentLanguage.GetTranslation("ObjectFromDBTab") ?? "Objects";
+            RailTab.Text = Program.CurrentLanguage.GetTranslation("RailTab") ?? "Rails";
+            SearchLabel.Text = Program.CurrentLanguage.GetTranslation("SearchText") ?? "Search";
+            ClassNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("ClassNameColumnHeader") ?? "Class Name";
+            EnglishNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("EnglishNameColumnHeader") ?? "Name";
+            ObjectCountColumnHeader.Text = Program.CurrentLanguage.GetTranslation("ObjectCountColumnHeader") ?? "Objects";
+            ModelCountColumnHeader.Text = Program.CurrentLanguage.GetTranslation("ModelCountColumnHeader") ?? "Models";
+
+            RailTypeLabel.Text = Program.CurrentLanguage.GetTranslation("RailTypeLabel") ?? "Rail Type";
+            ClosePathCheckBox.Text = Program.CurrentLanguage.GetTranslation("ClosePathCheckBox") ?? "Close the Path?";
+            ReverseRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("ReverseRailCheckBox") ?? "Reverse?";
+            LadderRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("LadderRailCheckBox") ?? "Is Ladder?";
+            RailNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("RailNameColumnHeader") ?? "Rail Name";
+            RailDescriptionColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectDescriptionText") ?? "Description";
+        }
+
+        private string NothingSelectedText { get; set; }
+        private string NoPropertiesText { get; set; }
+        private string SinglePropertyText { get; set; }
+        private string MultiplePropertiesText { get; set; }
+        private string NoDescriptionFound { get; set; }
     }
     public static class ControlExtensions
     {

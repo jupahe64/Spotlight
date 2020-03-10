@@ -51,8 +51,8 @@
             this.ProjectPathTextBox = new System.Windows.Forms.TextBox();
             this.ProjectPathLabel = new System.Windows.Forms.Label();
             this.MiscellaneousGroupBox = new System.Windows.Forms.GroupBox();
-            this.LanguageLabel = new System.Windows.Forms.Label();
             this.LanguageComboBox = new System.Windows.Forms.ComboBox();
+            this.LanguageLabel = new System.Windows.Forms.Label();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
@@ -71,16 +71,16 @@
             // 
             // GamePathTextBox
             // 
-            this.GamePathTextBox.Location = new System.Drawing.Point(101, 12);
+            this.GamePathTextBox.Location = new System.Drawing.Point(135, 12);
             this.GamePathTextBox.Name = "GamePathTextBox";
-            this.GamePathTextBox.Size = new System.Drawing.Size(336, 20);
+            this.GamePathTextBox.Size = new System.Drawing.Size(434, 20);
             this.GamePathTextBox.TabIndex = 1;
             this.GamePathTextBox.Text = "3DW/Content";
             this.GamePathTextBox.TextChanged += new System.EventHandler(this.GamePathTextBox_TextChanged);
             // 
             // GamePathButton
             // 
-            this.GamePathButton.Location = new System.Drawing.Point(443, 12);
+            this.GamePathButton.Location = new System.Drawing.Point(575, 12);
             this.GamePathButton.Name = "GamePathButton";
             this.GamePathButton.Size = new System.Drawing.Size(35, 20);
             this.GamePathButton.TabIndex = 2;
@@ -94,7 +94,7 @@
             this.RebuildDatabaseButton.Name = "RebuildDatabaseButton";
             this.RebuildDatabaseButton.Size = new System.Drawing.Size(108, 23);
             this.RebuildDatabaseButton.TabIndex = 3;
-            this.RebuildDatabaseButton.Text = "Rebuild Database";
+            this.RebuildDatabaseButton.Text = "Rebuild";
             this.RebuildDatabaseButton.UseVisualStyleBackColor = true;
             this.RebuildDatabaseButton.Click += new System.EventHandler(this.RebuildDatabaseButton_Click);
             // 
@@ -106,7 +106,7 @@
             this.ObjectParameterGroupBox.Controls.Add(this.RebuildDatabaseButton);
             this.ObjectParameterGroupBox.Location = new System.Drawing.Point(12, 64);
             this.ObjectParameterGroupBox.Name = "ObjectParameterGroupBox";
-            this.ObjectParameterGroupBox.Size = new System.Drawing.Size(466, 78);
+            this.ObjectParameterGroupBox.Size = new System.Drawing.Size(598, 78);
             this.ObjectParameterGroupBox.TabIndex = 4;
             this.ObjectParameterGroupBox.TabStop = false;
             this.ObjectParameterGroupBox.Text = "Databases";
@@ -126,7 +126,7 @@
             this.ClearDescriptionsButton.Name = "ClearDescriptionsButton";
             this.ClearDescriptionsButton.Size = new System.Drawing.Size(108, 23);
             this.ClearDescriptionsButton.TabIndex = 5;
-            this.ClearDescriptionsButton.Text = "Clear Descriptions";
+            this.ClearDescriptionsButton.Text = "Clear";
             this.ClearDescriptionsButton.UseVisualStyleBackColor = true;
             this.ClearDescriptionsButton.Click += new System.EventHandler(this.ClearDescriptionsButton_Click);
             // 
@@ -147,7 +147,7 @@
             this.RenderingGroupBox.Controls.Add(this.RenderAreaCheckBox);
             this.RenderingGroupBox.Location = new System.Drawing.Point(12, 148);
             this.RenderingGroupBox.Name = "RenderingGroupBox";
-            this.RenderingGroupBox.Size = new System.Drawing.Size(466, 75);
+            this.RenderingGroupBox.Size = new System.Drawing.Size(598, 75);
             this.RenderingGroupBox.TabIndex = 5;
             this.RenderingGroupBox.TabStop = false;
             this.RenderingGroupBox.Text = "Rendering";
@@ -157,7 +157,7 @@
             this.RenderSkyboxesCheckBox.AutoSize = true;
             this.RenderSkyboxesCheckBox.Checked = true;
             this.RenderSkyboxesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.RenderSkyboxesCheckBox.Location = new System.Drawing.Point(103, 19);
+            this.RenderSkyboxesCheckBox.Location = new System.Drawing.Point(149, 19);
             this.RenderSkyboxesCheckBox.Name = "RenderSkyboxesCheckBox";
             this.RenderSkyboxesCheckBox.Size = new System.Drawing.Size(110, 17);
             this.RenderSkyboxesCheckBox.TabIndex = 3;
@@ -185,9 +185,9 @@
             "Peach",
             "Toad",
             "Rosalina"});
-            this.PlayerComboBox.Location = new System.Drawing.Point(51, 42);
+            this.PlayerComboBox.Location = new System.Drawing.Point(86, 42);
             this.PlayerComboBox.Name = "PlayerComboBox";
-            this.PlayerComboBox.Size = new System.Drawing.Size(65, 21);
+            this.PlayerComboBox.Size = new System.Drawing.Size(106, 21);
             this.PlayerComboBox.TabIndex = 1;
             this.PlayerComboBox.SelectedIndexChanged += new System.EventHandler(this.PlayerComboBox_SelectedIndexChanged);
             // 
@@ -209,7 +209,7 @@
             this.LoadingAndSavingGroupBox.Controls.Add(this.UniqueIDsCheckBox);
             this.LoadingAndSavingGroupBox.Location = new System.Drawing.Point(12, 229);
             this.LoadingAndSavingGroupBox.Name = "LoadingAndSavingGroupBox";
-            this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(466, 57);
+            this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(598, 57);
             this.LoadingAndSavingGroupBox.TabIndex = 6;
             this.LoadingAndSavingGroupBox.TabStop = false;
             this.LoadingAndSavingGroupBox.Text = "Loading and Saving";
@@ -230,11 +230,11 @@
             // 
             this.ResetSpotlightButton.BackColor = System.Drawing.Color.DarkRed;
             this.ResetSpotlightButton.ForeColor = System.Drawing.Color.Silver;
-            this.ResetSpotlightButton.Location = new System.Drawing.Point(375, 28);
+            this.ResetSpotlightButton.Location = new System.Drawing.Point(501, 22);
             this.ResetSpotlightButton.Name = "ResetSpotlightButton";
             this.ResetSpotlightButton.Size = new System.Drawing.Size(91, 23);
             this.ResetSpotlightButton.TabIndex = 7;
-            this.ResetSpotlightButton.Text = "Reset Spotlight";
+            this.ResetSpotlightButton.Text = "Reset";
             this.ResetSpotlightButton.UseVisualStyleBackColor = false;
             this.ResetSpotlightButton.Click += new System.EventHandler(this.ResetSpotlightButton_Click);
             // 
@@ -254,14 +254,14 @@
             this.EditingGroupBox.Controls.Add(this.IDEditingCheckBox);
             this.EditingGroupBox.Location = new System.Drawing.Point(12, 292);
             this.EditingGroupBox.Name = "EditingGroupBox";
-            this.EditingGroupBox.Size = new System.Drawing.Size(466, 52);
+            this.EditingGroupBox.Size = new System.Drawing.Size(598, 52);
             this.EditingGroupBox.TabIndex = 9;
             this.EditingGroupBox.TabStop = false;
             this.EditingGroupBox.Text = "Editing";
             // 
             // ProjectPathButton
             // 
-            this.ProjectPathButton.Location = new System.Drawing.Point(443, 38);
+            this.ProjectPathButton.Location = new System.Drawing.Point(575, 38);
             this.ProjectPathButton.Name = "ProjectPathButton";
             this.ProjectPathButton.Size = new System.Drawing.Size(35, 20);
             this.ProjectPathButton.TabIndex = 12;
@@ -271,9 +271,9 @@
             // 
             // ProjectPathTextBox
             // 
-            this.ProjectPathTextBox.Location = new System.Drawing.Point(101, 38);
+            this.ProjectPathTextBox.Location = new System.Drawing.Point(135, 38);
             this.ProjectPathTextBox.Name = "ProjectPathTextBox";
-            this.ProjectPathTextBox.Size = new System.Drawing.Size(336, 20);
+            this.ProjectPathTextBox.Size = new System.Drawing.Size(434, 20);
             this.ProjectPathTextBox.TabIndex = 11;
             this.ProjectPathTextBox.Text = "Project/Content";
             this.ProjectPathTextBox.TextChanged += new System.EventHandler(this.ProjectPathTextBox_TextChanged);
@@ -283,9 +283,9 @@
             this.ProjectPathLabel.AutoSize = true;
             this.ProjectPathLabel.Location = new System.Drawing.Point(12, 41);
             this.ProjectPathLabel.Name = "ProjectPathLabel";
-            this.ProjectPathLabel.Size = new System.Drawing.Size(43, 13);
+            this.ProjectPathLabel.Size = new System.Drawing.Size(88, 13);
             this.ProjectPathLabel.TabIndex = 10;
-            this.ProjectPathLabel.Text = "Project:";
+            this.ProjectPathLabel.Text = "Project Directory:";
             // 
             // MiscellaneousGroupBox
             // 
@@ -294,10 +294,22 @@
             this.MiscellaneousGroupBox.Controls.Add(this.ResetSpotlightButton);
             this.MiscellaneousGroupBox.Location = new System.Drawing.Point(12, 350);
             this.MiscellaneousGroupBox.Name = "MiscellaneousGroupBox";
-            this.MiscellaneousGroupBox.Size = new System.Drawing.Size(466, 51);
+            this.MiscellaneousGroupBox.Size = new System.Drawing.Size(598, 51);
             this.MiscellaneousGroupBox.TabIndex = 13;
             this.MiscellaneousGroupBox.TabStop = false;
             this.MiscellaneousGroupBox.Text = "Miscellaneous";
+            // 
+            // LanguageComboBox
+            // 
+            this.LanguageComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.LanguageComboBox.FormattingEnabled = true;
+            this.LanguageComboBox.Items.AddRange(new object[] {
+            "English"});
+            this.LanguageComboBox.Location = new System.Drawing.Point(95, 19);
+            this.LanguageComboBox.Name = "LanguageComboBox";
+            this.LanguageComboBox.Size = new System.Drawing.Size(97, 21);
+            this.LanguageComboBox.TabIndex = 9;
+            this.LanguageComboBox.SelectedIndexChanged += new System.EventHandler(this.LanguageComboBox_SelectedIndexChanged);
             // 
             // LanguageLabel
             // 
@@ -308,27 +320,11 @@
             this.LanguageLabel.TabIndex = 8;
             this.LanguageLabel.Text = "Language:";
             // 
-            // LanguageComboBox
-            // 
-            this.LanguageComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.LanguageComboBox.FormattingEnabled = true;
-            this.LanguageComboBox.Items.AddRange(new object[] {
-            "English",
-            "French",
-            "Spanish",
-            "German",
-            "Japanese"});
-            this.LanguageComboBox.Location = new System.Drawing.Point(70, 19);
-            this.LanguageComboBox.Name = "LanguageComboBox";
-            this.LanguageComboBox.Size = new System.Drawing.Size(97, 21);
-            this.LanguageComboBox.TabIndex = 9;
-            this.LanguageComboBox.SelectedIndexChanged += new System.EventHandler(this.LanguageComboBox_SelectedIndexChanged);
-            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(490, 413);
+            this.ClientSize = new System.Drawing.Size(622, 413);
             this.Controls.Add(this.MiscellaneousGroupBox);
             this.Controls.Add(this.ProjectPathButton);
             this.Controls.Add(this.ProjectPathTextBox);
