@@ -77,7 +77,7 @@ namespace SpotLight
 
             if (DBEntryListView.SelectedItems.Count == 0 || DBEntryListView.SelectedItems[0].Tag == null)
             {
-                ClassNameLabel.Text = "Nothing Selected";
+                ClassNameLabel.Text = NothingSelectedText;
                 SelectObjectListView.Enabled = false;
                 SelectModelListView.Enabled = false;
                 PropertyNotesListView.Enabled = false;
@@ -87,7 +87,7 @@ namespace SpotLight
             ObjectInformation = OID.GetInformation(SelectedClassName);
             ClassNameLabel.Text = ObjectInformation.ClassName;
             EnglishNameTextBox.Text = (ObjectInformation.EnglishName == null || ObjectInformation.EnglishName.Length == 0) ? ObjectInformation.ClassName : ObjectInformation.EnglishName;
-            ObjectDescriptionTextBox.Text = ObjectInformation.Description.Length == 0 ? "No Description Found": ObjectInformation.Description ;
+            ObjectDescriptionTextBox.Text = ObjectInformation.Description.Length == 0 ? NoDescriptionFoundText: ObjectInformation.Description ;
             Parameter Param = (Parameter)DBEntryListView.SelectedItems[0].Tag;
             for (int i = 0; i < Param.ObjectNames.Count; i++)
             {
@@ -108,7 +108,7 @@ namespace SpotLight
                 PropertyNotesListView.Enabled = true;
                 PropertyHintTextBox.Text = PropertyNotesListView.SelectedItems[0].SubItems[2].Text;
             }
-            PropertyLabel.Text = PropertyNotesListView.Items.Count == 0 ? "No Properties":(PropertyNotesListView.Items.Count > 1 ? $"{PropertyNotesListView.Items.Count} Properties":"1 Property");
+            PropertyLabel.Text = PropertyNotesListView.Items.Count == 0 ? NoPropertiesText:string.Format(PropertyNotesListView.Items.Count > 1 ? MultiplePropertiesText:SinglePropertyText, PropertyNotesListView.Items.Count);
 
             Loading = false;
         }
@@ -125,7 +125,7 @@ namespace SpotLight
         private void SearchTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             string Search = SearchTextBox.Text.ToLower();
-            DBEntryListView.Groups[10].Header = "Search Results: {RESULT}".Replace("{RESULT}", SearchTextBox.Text);
+            DBEntryListView.Groups[10].Header = string.Format(SearchResultsSuccessText, SearchTextBox.Text);
             if (Search.Equals(""))
             {
                 DBEntryListView.Items.Clear();
@@ -145,7 +145,7 @@ namespace SpotLight
                     DBEntryListView.Items.Add(new ListViewItem(new string[] { Param.ClassName, OID.GetInformation(Param.ClassName).EnglishName ?? Param.ClassName, Param.ObjectNames.Count.ToString().PadLeft(3, '0'), Param.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = DBEntryListView.Groups[10], Tag = Param });
                 }
                 if (DBEntryListView.Items.Count == 0)
-                    DBEntryListView.Items.Add(new ListViewItem(new string[] { "No Results for " + SearchTextBox.Text, "----------", "---", "---" }) { Group = DBEntryListView.Groups[10] });
+                    DBEntryListView.Items.Add(new ListViewItem(new string[] { string.Format(SearchResultsFailureText, SearchTextBox.Text), "----------", "---", "---" }) { Group = DBEntryListView.Groups[10] });
             }
         }
 
@@ -199,7 +199,7 @@ namespace SpotLight
         {
             if (Edited)
             {
-                DialogResult result = MessageBox.Show("You edited one or more object descriptions\nWould you like to save?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                DialogResult result = MessageBox.Show(SaveDescriptionText, SaveDescriptionHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
                     OID.Save(Program.SODDPath);
@@ -213,10 +213,7 @@ namespace SpotLight
             if (ObjectTypeTabControl.SelectedTab == ObjectFromDBTab)
             {
                 if (Loading || DBEntryListView.SelectedItems.Count == 0)
-                {
-                    MessageBox.Show("You need to select an object from the Database", "No object selected", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
-                }
 
                 scene.ObjectPlaceDelegate = PlaceObjectFromDB;
 
@@ -229,6 +226,8 @@ namespace SpotLight
 
             if (ObjectTypeTabControl.SelectedTab == RailTab)
             {
+                if (Loading || RailFormationListView.SelectedItems.Count == 0)
+                    return;
                 scene.ObjectPlaceDelegate = PlaceRail;
                 Close();
                 return;
@@ -312,13 +311,32 @@ namespace SpotLight
             LadderRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("LadderRailCheckBox") ?? "Is Ladder?";
             RailNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("RailNameColumnHeader") ?? "Rail Name";
             RailDescriptionColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectDescriptionText") ?? "Description";
+            ModelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectNameText") ?? "Name";
+            ObjectNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectNameText") ?? "Name";
+            NameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectPropertyNameText") ?? "Property Name";
+            TypeColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectTypeText") ?? "Type";
+            SelectObjectButton.Text = Program.CurrentLanguage.GetTranslation("GlobalSelectText") ?? "Select";
+
+            NothingSelectedText = Program.CurrentLanguage.GetTranslation("AddObjectNothingSelectedText") ?? "Nothing Selected";
+            NoPropertiesText = Program.CurrentLanguage.GetTranslation("AddObjectNoPropertiesText") ?? "No Properties";
+            SinglePropertyText = Program.CurrentLanguage.GetTranslation("AddObjectSinglePropertyText") ?? "{0} Property";
+            MultiplePropertiesText = Program.CurrentLanguage.GetTranslation("AddObjectMultiPropertyText") ?? "{0} Properties";
+            NoDescriptionFoundText = Program.CurrentLanguage.GetTranslation("NoDescriptionFoundText") ?? "No Description Found";
+            SearchResultsSuccessText = Program.CurrentLanguage.GetTranslation("SearchResultsSuccessText") ?? "Search Results: {0}";
+            SearchResultsFailureText = Program.CurrentLanguage.GetTranslation("SearchResultsFailureText") ?? "No Results for {0}";
+            SaveDescriptionText = Program.CurrentLanguage.GetTranslation("SaveDescriptionText") ?? "You edited one or more object descriptions\nWould you like to save?";
+            SaveDescriptionHeader = Program.CurrentLanguage.GetTranslation("SaveDescriptionHeader") ?? "Save changes?";
         }
 
         private string NothingSelectedText { get; set; }
         private string NoPropertiesText { get; set; }
         private string SinglePropertyText { get; set; }
         private string MultiplePropertiesText { get; set; }
-        private string NoDescriptionFound { get; set; }
+        private string NoDescriptionFoundText { get; set; }
+        private string SearchResultsSuccessText { get; set; }
+        private string SearchResultsFailureText { get; set; }
+        private string SaveDescriptionHeader { get; set; }
+        private string SaveDescriptionText { get; set; }
     }
     public static class ControlExtensions
     {
