@@ -35,6 +35,8 @@ namespace SpotLight
             }
             if (Directory.Exists(LanguagePath))
                 CurrentLanguage = File.Exists(Path.Combine(LanguagePath, Properties.Settings.Default.Language + ".txt")) ? new Language(Properties.Settings.Default.Language, Path.Combine(LanguagePath, Properties.Settings.Default.Language + ".txt")) : new Language();
+            else
+                CurrentLanguage = new Language();
 
             Application.Run(new LevelEditorForm());
         }
