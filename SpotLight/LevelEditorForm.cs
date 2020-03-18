@@ -424,6 +424,7 @@ namespace SpotLight
                 return;
             }
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
+            Refresh();
             StageList STGLST = new StageList(stagelistpath);
             LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST, true);
             LPSF.ShowDialog();
@@ -675,7 +676,7 @@ namespace SpotLight
                 OpenZone(zone);
                 if (LoadingThread.IsAlive)
                     LoadLevelForm.DoClose = true;
-                SpotlightToolStripStatusLabel.Text = $"\"{zone.LevelName}\" has been Loaded successfully.";
+                SpotlightToolStripStatusLabel.Text = string.Format(StatusOpenSuccessMessage, zone.LevelName);
 
                 SetAppStatus(true);
             }
@@ -1030,6 +1031,7 @@ The latest Database version is {1}.
 Would you like to rebuild the database from your 3DW Files?";
             DatabaseOutdatedHeader = Program.CurrentLanguage.GetTranslation("DatabaseOutdatedHeader") ?? "Database Outdated";
 
+            StatusOpenSuccessMessage = Program.CurrentLanguage.GetTranslation("StatusOpenSuccessMessage") ?? "{0} has been Loaded successfully.";
             StatusWaitMessage = Program.CurrentLanguage.GetTranslation("StatusWaitMessage") ?? "Waiting...";
             StatusOpenCancelledMessage = Program.CurrentLanguage.GetTranslation("StatusOpenCancelledMessage") ?? "Open Cancelled";
             StatusOpenFailedMessage = Program.CurrentLanguage.GetTranslation("StatusOpenFailedMessage") ?? "Open Failed";
@@ -1121,6 +1123,7 @@ Would you like to rebuild the database from your 3DW Files?";
         private string DatabaseOutdatedHeader { get; set; }
         private string DatabaseOutdatedText { get; set; }
 
+        private string StatusOpenSuccessMessage { get; set; }
         private string StatusWaitMessage { get; set; }
         private string StatusOpenCancelledMessage { get; set; }
         private string StatusOpenFailedMessage { get; set; }

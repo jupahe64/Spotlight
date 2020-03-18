@@ -16,6 +16,7 @@ namespace SpotLight
         {
             InitializeComponent();
             CenterToParent();
+            Localize();
             LevelName = levelname;
             DoClose = false;
             LevelTimer.Start();
@@ -30,7 +31,7 @@ namespace SpotLight
         }
         string LevelName;
         string Scenario;
-        int counter = 0;
+        //int counter = 0;
         bool reset = false;
         Random rand = new Random();
         private void LevelTimer_Tick(object sender, EventArgs e)
@@ -110,6 +111,13 @@ namespace SpotLight
                 MainProgressBar.Value = MainProgressBar.Maximum;
                 Close();
             }
+        }
+
+        private void Localize()
+        {
+            LoadingLevelText = Program.CurrentLanguage.GetTranslation("LoadingLevelText") ?? "Loading Level...";
+            DatabaseGeneratingText = Program.CurrentLanguage.GetTranslation("DatabaseGeneratingText") ?? "Generating Database...";
+            OperationCompleteText = Program.CurrentLanguage.GetTranslation("OperationCompleteText") ?? "Operation Complete!";
         }
 
         private string LoadingLevelText { get; set; }

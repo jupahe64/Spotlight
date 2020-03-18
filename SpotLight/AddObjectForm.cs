@@ -313,8 +313,8 @@ namespace SpotLight
             RailDescriptionColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectDescriptionText") ?? "Description";
             ModelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectNameText") ?? "Name";
             ObjectNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectNameText") ?? "Name";
-            NameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectPropertyNameText") ?? "Property Name";
-            TypeColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectTypeText") ?? "Type";
+            NameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("GlobalPropertyNameText") ?? "Property Name";
+            TypeColumnHeader.Text = Program.CurrentLanguage.GetTranslation("GlobalTypeText") ?? "Type";
             SelectObjectButton.Text = Program.CurrentLanguage.GetTranslation("GlobalSelectText") ?? "Select";
 
             NothingSelectedText = Program.CurrentLanguage.GetTranslation("AddObjectNothingSelectedText") ?? "Nothing Selected";

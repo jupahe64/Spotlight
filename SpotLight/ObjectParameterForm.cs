@@ -29,71 +29,94 @@ namespace SpotLight
 
             public override string ToString()
             {
-                return useAltNames ? AltName : ActualName;
+                return UseAltNames ? AltName : ActualName;
             }
         }
         
         public static TypeDef[] typeDefs = new TypeDef[]
         {
-            new TypeDef(0,     "int",    "Whole Number"),
-            new TypeDef(0f,    "float",  "Decimal Number"),
-            new TypeDef("",    "string", "Text/Word"),
-            new TypeDef(false, "bool",   "Flag")
+            new TypeDef(0,     "int",    TypeDefInteger),
+            new TypeDef(0f,    "float",  TypeDefSingle),
+            new TypeDef("",    "string", TypeDefString),
+            new TypeDef(false, "bool",   TypeDefBoolean)
         };
 
-        public IReadOnlyList<(TypeDef typeDef, string name)> Parameters => editorControl.parameters;
+        public IReadOnlyList<(TypeDef typeDef, string name)> Parameters => MainEditorControl.parameters;
 
-        public static bool useAltNames = true;
+        public static bool UseAltNames = true;
 
         public ObjectParameterForm(List<(TypeDef typeDef, string name)> parameters)
         {
             InitializeComponent();
+            Localize();
 
             for (int i = 0; i < typeDefs.Length; i++)
             {
-                cbNewType.Items.Add(typeDefs[i].AltName);
+                NewTypeComboBox.Items.Add(typeDefs[i].AltName);
             }
-            cbNewType.SelectedIndex = 0;
+            NewTypeComboBox.SelectedIndex = 0;
 
-            editorControl.parameters = parameters;
+            MainEditorControl.parameters = parameters;
         }
 
-        private void BtnAdd_Click(object sender, EventArgs e)
+        private void AddButton_Click(object sender, EventArgs e)
         {
-            if (tbNewName.Text == "")
+            if (NewNameTextBox.Text == "")
                 return;
 
-            editorControl.parameters.Add((typeDefs[cbNewType.SelectedIndex], tbNewName.Text));
-            tbNewName.Text = "";
-            editorControl.Refresh();
+            MainEditorControl.parameters.Add((typeDefs[NewTypeComboBox.SelectedIndex], NewNameTextBox.Text));
+            NewNameTextBox.Text = "";
+            MainEditorControl.Refresh();
         }
 
         private void CheckUseProgrammingTerms_CheckedChanged(object sender, EventArgs e)
         {
-            useAltNames = !checkUseProgrammingTerms.Checked;
-            editorControl.Refresh();
+            UseAltNames = !UseProgrammingTermsCheckbox.Checked;
+            MainEditorControl.Refresh();
 
-            int tmp = cbNewType.SelectedIndex;
+            int tmp = NewTypeComboBox.SelectedIndex;
 
-            cbNewType.Items.Clear();
+            NewTypeComboBox.Items.Clear();
             
-            if (useAltNames)
+            if (UseAltNames)
             {
                 for (int i = 0; i < typeDefs.Length; i++)
                 {
-                    cbNewType.Items.Add(typeDefs[i].AltName);
+                    NewTypeComboBox.Items.Add(typeDefs[i].AltName);
                 }
             }
             else
             {
                 for (int i = 0; i < typeDefs.Length; i++)
                 {
-                    cbNewType.Items.Add(typeDefs[i].ActualName);
+                    NewTypeComboBox.Items.Add(typeDefs[i].ActualName);
                 }
             }
 
-            cbNewType.SelectedIndex = tmp;
+            NewTypeComboBox.SelectedIndex = tmp;
         }
+
+        private void Localize()
+        {
+            Text = Program.CurrentLanguage.GetTranslation("ObjectParametersTitle") ?? "Spotlight - Object Parameter Editor";
+            TypeDefInteger = Program.CurrentLanguage.GetTranslation("TypeDefInteger") ?? "Whole Number";
+            TypeDefSingle = Program.CurrentLanguage.GetTranslation("TypeDefSingle") ?? "Decimal Number";
+            TypeDefString = Program.CurrentLanguage.GetTranslation("TypeDefString") ?? "Text";
+            TypeDefBoolean = Program.CurrentLanguage.GetTranslation("TypeDefBoolean") ?? "Checkbox";
+            RemoveParameterText = Program.CurrentLanguage.GetTranslation("RemoveParameterText") ?? "Remove";
+            UseProgrammingTermsCheckbox.Text = Program.CurrentLanguage.GetTranslation("UseProgrammingTermsCheckbox") ?? "Use Programming Terms";
+            TypeLabel.Text = Program.CurrentLanguage.GetTranslation("GlobalTypeText") ?? "Type";
+            NameLabel.Text = Program.CurrentLanguage.GetTranslation("GlobalPropertyNameText") ?? "Property Name";
+            AddButton.Text = Program.CurrentLanguage.GetTranslation("ObjectParameterAddText") ?? "Add";
+            OKButton.Text = Program.CurrentLanguage.GetTranslation("OKButton") ?? "OK";
+            CancelSelectionButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
+        }
+
+        private static string TypeDefInteger { get; set; }
+        private static string TypeDefSingle { get; set; }
+        private static string TypeDefString { get; set; }
+        private static string TypeDefBoolean { get; set; }
+        internal static string RemoveParameterText { get; set; }
     }
 
     public class ObjectParameterEditorControl : FlexibleUIControl
@@ -115,7 +138,7 @@ namespace SpotLight
             {
                 int currentY = 10 + i * 30 + AutoScrollPosition.Y;
 
-                if (Button(usableWidth-60, currentY - 2, 50, "Remove") && !alreadyRemoved)
+                if (Button(usableWidth-60, currentY - 2, 50, ObjectParameterForm.RemoveParameterText) && !alreadyRemoved)
                 {
                     parameters.RemoveAt(i);
                     alreadyRemoved = true;

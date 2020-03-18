@@ -16,13 +16,20 @@ namespace SpotLight
         {
             InitializeComponent();
             CenterToScreen();
+
+            Text = Program.CurrentLanguage.GetTranslation("LevelSelectTitle") ?? "Spotlight - Choose a Level";
+            WorldIDColumnHeader.Text = Program.CurrentLanguage.GetTranslation("WorldIDColumnHeader") ?? "World";
+            LevelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("LevelNameColumnHeader") ?? "Level Name";
+            CourseIDColumnHeader.Text = Program.CurrentLanguage.GetTranslation("CourseIDColumnHeader") ?? "ID";
+
+
             if (ShowCourseSelect)
             {
-                LevelsListView.Items.Add(new ListViewItem(new string[] { "0", "CourseSelectStage", "0" }));
+                LevelsListView.Items.Add(new ListViewItem(new string[] { "0", Program.CurrentLanguage.GetTranslation("CourseSelectStage") ?? "CourseSelectStage", "0" }) { Tag = "CourseSelectStage" });
             }
             for (int i = 0; i < stagelist.Worlds.Count; i++)
                 for (int j = 0; j < stagelist.Worlds[i].Levels.Count; j++)
-                    LevelsListView.Items.Add(new ListViewItem(new string[] { (i+1).ToString(), stagelist.Worlds[i].Levels[j].StageName, stagelist.Worlds[i].Levels[j].CourseID.ToString() }));
+                    LevelsListView.Items.Add(new ListViewItem(new string[] { (i + 1).ToString(), Program.CurrentLanguage.GetTranslation(stagelist.Worlds[i].Levels[j].StageName) ?? stagelist.Worlds[i].Levels[j].StageName, stagelist.Worlds[i].Levels[j].CourseID.ToString() }) { Tag = stagelist.Worlds[i].Levels[j].StageName });
         }
         public string levelname = "";
         public bool Selected = false;
@@ -30,7 +37,7 @@ namespace SpotLight
         private void LevelsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (LevelsListView.SelectedItems.Count > 0)
-                levelname = LevelsListView.SelectedItems[0].SubItems[1].Text;
+                levelname = LevelsListView.SelectedItems[0].Tag.ToString();
         }
 
         private void ChooseLevelButton_Click(object sender, EventArgs e)
