@@ -65,13 +65,13 @@
             this.ModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditObjectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditLinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SpotlightWikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CheckForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.AddObjectTimer = new System.Windows.Forms.Timer(this.components);
-            this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.SpotlightWikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.CheckForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -338,16 +338,18 @@
             // 
             this.UndoToolStripMenuItem.Enabled = false;
             this.UndoToolStripMenuItem.Name = "UndoToolStripMenuItem";
+            this.UndoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
             this.UndoToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
-            this.UndoToolStripMenuItem.Text = "Undo              Ctrl+Z";
+            this.UndoToolStripMenuItem.Text = "Undo";
             this.UndoToolStripMenuItem.Click += new System.EventHandler(this.UndoToolStripMenuItem_Click);
             // 
             // RedoToolStripMenuItem
             // 
             this.RedoToolStripMenuItem.Enabled = false;
             this.RedoToolStripMenuItem.Name = "RedoToolStripMenuItem";
+            this.RedoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
             this.RedoToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
-            this.RedoToolStripMenuItem.Text = "Redo               Ctrl+Y";
+            this.RedoToolStripMenuItem.Text = "Redo";
             this.RedoToolStripMenuItem.Click += new System.EventHandler(this.RedoToolStripMenuItem_Click);
             // 
             // AddObjectToolStripMenuItem
@@ -465,6 +467,29 @@
             this.EditLinksToolStripMenuItem.Text = "Edit Links";
             this.EditLinksToolStripMenuItem.Click += new System.EventHandler(this.EditLinksToolStripMenuItem_Click);
             // 
+            // AboutToolStripMenuItem
+            // 
+            this.AboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SpotlightWikiToolStripMenuItem,
+            this.CheckForUpdatesToolStripMenuItem});
+            this.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
+            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
+            this.AboutToolStripMenuItem.Text = "About";
+            // 
+            // SpotlightWikiToolStripMenuItem
+            // 
+            this.SpotlightWikiToolStripMenuItem.Name = "SpotlightWikiToolStripMenuItem";
+            this.SpotlightWikiToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.SpotlightWikiToolStripMenuItem.Text = "Spotlight Wiki";
+            this.SpotlightWikiToolStripMenuItem.Click += new System.EventHandler(this.SpotlightWikiToolStripMenuItem_Click);
+            // 
+            // CheckForUpdatesToolStripMenuItem
+            // 
+            this.CheckForUpdatesToolStripMenuItem.Name = "CheckForUpdatesToolStripMenuItem";
+            this.CheckForUpdatesToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.CheckForUpdatesToolStripMenuItem.Text = "Check for Updates";
+            this.CheckForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.CheckForUpdatesToolStripMenuItem_Click);
+            // 
             // SpotlightStatusStrip
             // 
             this.SpotlightStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -488,29 +513,6 @@
             // AddObjectTimer
             // 
             this.AddObjectTimer.Tick += new System.EventHandler(this.AddObjectTimer_Tick);
-            // 
-            // AboutToolStripMenuItem
-            // 
-            this.AboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.SpotlightWikiToolStripMenuItem,
-            this.CheckForUpdatesToolStripMenuItem});
-            this.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem";
-            this.AboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
-            this.AboutToolStripMenuItem.Text = "About";
-            // 
-            // SpotlightWikiToolStripMenuItem
-            // 
-            this.SpotlightWikiToolStripMenuItem.Name = "SpotlightWikiToolStripMenuItem";
-            this.SpotlightWikiToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.SpotlightWikiToolStripMenuItem.Text = "Spotlight Wiki";
-            this.SpotlightWikiToolStripMenuItem.Click += new System.EventHandler(this.SpotlightWikiToolStripMenuItem_Click);
-            // 
-            // CheckForUpdatesToolStripMenuItem
-            // 
-            this.CheckForUpdatesToolStripMenuItem.Name = "CheckForUpdatesToolStripMenuItem";
-            this.CheckForUpdatesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.CheckForUpdatesToolStripMenuItem.Text = "Check for Updates";
-            this.CheckForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.CheckForUpdatesToolStripMenuItem_Click);
             // 
             // LevelEditorForm
             // 
