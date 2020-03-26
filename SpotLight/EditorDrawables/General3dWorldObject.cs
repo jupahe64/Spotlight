@@ -605,6 +605,7 @@ namespace SpotLight.EditorDrawables
 
                 if (control.Button("Edit"))
                 {
+                    ObjectParameterForm.LocalizeTypeDefs();
                     List<(ObjectParameterForm.TypeDef typeDef, string name)> parameters = new List<(ObjectParameterForm.TypeDef typeDef, string name)>();
 
                     List<KeyValuePair<string, dynamic>> otherParameters = new List<KeyValuePair<string, dynamic>>();
@@ -612,13 +613,13 @@ namespace SpotLight.EditorDrawables
                     foreach (var item in dict)
                     {
                         if (item.Value is int)
-                            parameters.Add((ObjectParameterForm.typeDefs[0], item.Key));
+                            parameters.Add((ObjectParameterForm.TypeDefs[0], item.Key));
                         else if (item.Value is float)
-                            parameters.Add((ObjectParameterForm.typeDefs[1], item.Key));
+                            parameters.Add((ObjectParameterForm.TypeDefs[1], item.Key));
                         else if (item.Value is string)
-                            parameters.Add((ObjectParameterForm.typeDefs[2], item.Key));
+                            parameters.Add((ObjectParameterForm.TypeDefs[2], item.Key));
                         else if (item.Value is bool)
-                            parameters.Add((ObjectParameterForm.typeDefs[3], item.Key));
+                            parameters.Add((ObjectParameterForm.TypeDefs[3], item.Key));
                         else
                             otherParameters.Add(item);
                     }

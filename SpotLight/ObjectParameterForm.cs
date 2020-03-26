@@ -33,7 +33,7 @@ namespace SpotLight
             }
         }
         
-        public static TypeDef[] typeDefs = new TypeDef[]
+        public static TypeDef[] TypeDefs => new TypeDef[]
         {
             new TypeDef(0,     "int",    TypeDefInteger),
             new TypeDef(0f,    "float",  TypeDefSingle),
@@ -50,9 +50,9 @@ namespace SpotLight
             InitializeComponent();
             Localize();
 
-            for (int i = 0; i < typeDefs.Length; i++)
+            for (int i = 0; i < TypeDefs.Length; i++)
             {
-                NewTypeComboBox.Items.Add(typeDefs[i].AltName);
+                NewTypeComboBox.Items.Add(TypeDefs[i].AltName);
             }
             NewTypeComboBox.SelectedIndex = 0;
 
@@ -64,7 +64,7 @@ namespace SpotLight
             if (NewNameTextBox.Text == "")
                 return;
 
-            MainEditorControl.parameters.Add((typeDefs[NewTypeComboBox.SelectedIndex], NewNameTextBox.Text));
+            MainEditorControl.parameters.Add((TypeDefs[NewTypeComboBox.SelectedIndex], NewNameTextBox.Text));
             NewNameTextBox.Text = "";
             MainEditorControl.Refresh();
         }
@@ -80,29 +80,33 @@ namespace SpotLight
             
             if (UseAltNames)
             {
-                for (int i = 0; i < typeDefs.Length; i++)
+                for (int i = 0; i < TypeDefs.Length; i++)
                 {
-                    NewTypeComboBox.Items.Add(typeDefs[i].AltName);
+                    NewTypeComboBox.Items.Add(TypeDefs[i].AltName);
                 }
             }
             else
             {
-                for (int i = 0; i < typeDefs.Length; i++)
+                for (int i = 0; i < TypeDefs.Length; i++)
                 {
-                    NewTypeComboBox.Items.Add(typeDefs[i].ActualName);
+                    NewTypeComboBox.Items.Add(TypeDefs[i].ActualName);
                 }
             }
 
             NewTypeComboBox.SelectedIndex = tmp;
         }
 
-        private void Localize()
+        public static void LocalizeTypeDefs()
         {
-            Text = Program.CurrentLanguage.GetTranslation("ObjectParametersTitle") ?? "Spotlight - Object Parameter Editor";
             TypeDefInteger = Program.CurrentLanguage.GetTranslation("TypeDefInteger") ?? "Whole Number";
             TypeDefSingle = Program.CurrentLanguage.GetTranslation("TypeDefSingle") ?? "Decimal Number";
             TypeDefString = Program.CurrentLanguage.GetTranslation("TypeDefString") ?? "Text";
             TypeDefBoolean = Program.CurrentLanguage.GetTranslation("TypeDefBoolean") ?? "Checkbox";
+        }
+        private void Localize()
+        {
+            Text = Program.CurrentLanguage.GetTranslation("ObjectParametersTitle") ?? "Spotlight - Object Parameter Editor";
+            LocalizeTypeDefs();
             RemoveParameterText = Program.CurrentLanguage.GetTranslation("RemoveParameterText") ?? "Remove";
             UseProgrammingTermsCheckbox.Text = Program.CurrentLanguage.GetTranslation("UseProgrammingTermsCheckbox") ?? "Use Programming Terms";
             TypeLabel.Text = Program.CurrentLanguage.GetTranslation("GlobalTypeText") ?? "Type";
@@ -146,7 +150,7 @@ namespace SpotLight
                 else
                 {
                     parameters[i] = (
-                    (ObjectParameterForm.TypeDef)ChoicePickerField(10, currentY, 150, parameters[i].typeDef, ObjectParameterForm.typeDefs),
+                    (ObjectParameterForm.TypeDef)ChoicePickerField(10, currentY, 150, parameters[i].typeDef, ObjectParameterForm.TypeDefs),
                     TextInputField(170, currentY, usableWidth - 180 - 60, parameters[i].name, false)
                     );
                 }
