@@ -19,7 +19,21 @@ namespace SpotLight.EditorDrawables
     {
         LinkManager linkManager;
 
-        public LinkConnection SelectedConnection = null;
+        LinkConnection selectedConnection;
+
+        public LinkConnection SelectedConnection
+        {
+            get => selectedConnection;
+            set
+            {
+                if (value != selectedConnection)
+                {
+                    selectedConnection = value;
+
+                    UpdateSelection(0);
+                }
+            }
+        }
 
         public LinkEdit3DWScene()
         {
@@ -168,7 +182,8 @@ namespace SpotLight.EditorDrawables
                 SelectedConnection.Name
                 ));
 
-            RemoveConnection(
+            //don't set SelectedConnection to null
+            base.RemoveConnection(
                 SelectedConnection.Source, 
                 SelectedConnection.Dest, 
                 SelectedConnection.Name
@@ -178,9 +193,24 @@ namespace SpotLight.EditorDrawables
 
             UpdateLinkDestinations();
 
-            SelectedConnection = new LinkConnection(newSource, newDest, newName);
+            SelectedConnection.Source = newSource;
+            SelectedConnection.Dest = newDest;
+            SelectedConnection.Name = newName;
         }
-        
+
+        public override void RemoveConnection(I3dWorldObject source, I3dWorldObject dest, string name)
+        {
+            base.RemoveConnection(source, dest, name);
+
+            if (this is LinkEdit3DWScene les)
+            {
+                if (les.SelectedConnection?.Source == source && les.SelectedConnection?.Dest == dest && les.SelectedConnection?.Name == name)
+                    les.SelectedConnection = null;
+
+                control.Refresh();
+            }
+        }
+
         public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)
         {
             if (e.Button == MouseButtons.Right)
@@ -192,7 +222,6 @@ namespace SpotLight.EditorDrawables
             if (linkManager.hoveredConnection != null)
             {
                 SelectedConnection = linkManager.hoveredConnection;
-                UpdateSelection(REDRAW);
                 return REDRAW;
             }
             else

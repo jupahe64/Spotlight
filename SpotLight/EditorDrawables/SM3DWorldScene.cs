@@ -846,20 +846,12 @@ namespace SpotLight.EditorDrawables
             }
         }
 
-        public void RemoveConnection(I3dWorldObject source, I3dWorldObject dest, string name)
+        public virtual void RemoveConnection(I3dWorldObject source, I3dWorldObject dest, string name)
         {
             source.Links[name].Remove(dest);
-
-            if (this is LinkEdit3DWScene les)
-            {
-                if (les.SelectedConnection?.Source == source && les.SelectedConnection?.Dest == dest && les.SelectedConnection?.Name == name)
-                    les.SelectedConnection = null;
-
-                control.Refresh();
-            }
         }
 
-        public void AddConnection(I3dWorldObject source, I3dWorldObject dest, string name)
+        public virtual void AddConnection(I3dWorldObject source, I3dWorldObject dest, string name)
         {
             if (source.Links == null)
                 source.Links = new Dictionary<string, List<I3dWorldObject>>();
