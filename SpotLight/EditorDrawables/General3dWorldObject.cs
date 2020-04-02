@@ -376,11 +376,14 @@ namespace SpotLight.EditorDrawables
             if (!ObjectRenderState.ShouldBeDrawn(this))
                 return;
 
-            if((!SpotLight.Properties.Settings.Default.DrawAreas && ClassName.Contains("Area"))||
-               (!SpotLight.Properties.Settings.Default.DrawSkyBoxes && ClassName=="SkyProjection"))
+            if (!Selected)
             {
-                control.SkipPickingColors(1);
-                return;
+                if ((!SpotLight.Properties.Settings.Default.DrawAreas && ClassName.Contains("Area")) ||
+                    (!SpotLight.Properties.Settings.Default.DrawSkyBoxes && ClassName == "SkyProjection"))
+                {
+                    control.SkipPickingColors(1);
+                    return;
+                }
             }
 
             bool hovered = editorScene.Hovered == this;
