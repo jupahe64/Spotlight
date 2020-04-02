@@ -16,6 +16,7 @@ using SpotLight.ObjectParamDatabase;
 using SpotLight.Level;
 using System.Threading;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
+using System.Reflection;
 
 namespace SpotLight
 {
@@ -23,9 +24,56 @@ namespace SpotLight
     {
         LevelParameterForm LPF;
         SM3DWorldScene currentScene;
+
+        #region keystrokes for 3d view only
+        Keys KS_AddObject = KeyStroke("Shift+A");
+        Keys KS_DeleteSelected = KeyStroke("Delete");
+        #endregion
+
+        protected override bool ProcessCmdKey(ref Message m, Keys keyData)
+        {
+            if (LevelGLControlModern.IsHovered)
+            {
+                if (keyData == KS_AddObject)
+                    AddObjectToolStripMenuItem_Click(null, null);
+                else if (keyData == KS_DeleteSelected)
+                    DeleteToolStripMenuItem_Click(null, null);
+
+                LevelGLControlModern.PerformKeyDown(new KeyEventArgs(keyData));
+                LevelGLControlModern.PerformKeyUp(new KeyEventArgs(keyData));
+
+                foreach(var memberInfo in typeof(LevelEditorForm).GetMembers(BindingFlags.NonPublic |
+                         BindingFlags.Instance))
+                {
+                    if(memberInfo is FieldInfo info)
+                    {
+                        if (info.GetValue(this) is ToolStripMenuItem menuItem)
+                        {
+                            if (keyData == menuItem.ShortcutKeys)
+                                return base.ProcessCmdKey(ref m, keyData);
+                        }
+                        Console.WriteLine(info.Name);
+                    }
+                }
+
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref m, keyData);
+        }
+
         public LevelEditorForm()
         {
             InitializeComponent();
+
+            string KeyStrokeName(Keys keyData) =>
+                    System.ComponentModel.TypeDescriptor.GetConverter(typeof(Keys)).ConvertToString(keyData);
+
+            SelectAllToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_SelectAll);
+            DeselectAllToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_DeSelectAll);
+            UndoToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_Undo);
+            RedoToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_Redo);
+
             MainTabControl.SelectedTab = ObjectsTabPage;
             LevelGLControlModern.CameraDistance = 20;
 
@@ -955,7 +1003,6 @@ namespace SpotLight
             if (currentScene.ObjectPlaceDelegate == null)
                 AddObjectTimer.Stop();
         }
-
 
         /// <summary>
         /// Checks for Updates
