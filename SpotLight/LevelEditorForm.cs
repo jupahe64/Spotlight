@@ -609,7 +609,9 @@ namespace SpotLight
 
             if (SM3DWorldZone.TryOpen(System.IO.Path.Combine(Program.BaseStageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
             {
-                currentScene.ZonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone));
+                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone);
+                currentScene.ZonePlacements.Add(zonePlacement);
+                currentScene.AddToUndo(new RevertableSingleAddition(zonePlacement, currentScene.ZonePlacements));
                 ZoneDocumentTabControl_SelectedTabChanged(null, null);
             }
         }
