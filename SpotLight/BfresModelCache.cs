@@ -131,6 +131,8 @@ namespace SpotLight
                  r, b, -r,  0, 0, 1, 1,
                 -r, b,  r,  0, 0, 1, 1,
                  r, b,  r,  0, 0, 1, 1,
+
+                 0, b,  0,  0, 0, 0.5f, 1,
             };
 
             //-x to x
@@ -143,7 +145,7 @@ namespace SpotLight
             indices.Add(0b110);
             indices.Add(0b111);
 
-            //-y to y
+            //-z to z
             indices.Add(0b000);
             indices.Add(0b010);
             indices.Add(0b001);
@@ -153,7 +155,7 @@ namespace SpotLight
             indices.Add(0b101);
             indices.Add(0b111);
 
-            //-z to z
+            //-y to y
             indices.Add(0b000);
             indices.Add(0b100);
             indices.Add(0b001);
@@ -161,6 +163,16 @@ namespace SpotLight
             indices.Add(0b010);
             indices.Add(0b110);
             indices.Add(0b011);
+            indices.Add(0b111);
+
+            //floor
+            indices.Add(8);
+            indices.Add(0b100);
+            indices.Add(8);
+            indices.Add(0b101);
+            indices.Add(8);
+            indices.Add(0b110);
+            indices.Add(8);
             indices.Add(0b111);
 
             //new Vector4(0, 0.5f, 1, 1)
@@ -176,7 +188,7 @@ namespace SpotLight
             b = 0;
             int v = 16;
 
-            data = new float[v * 2 * 7];
+            data = new float[(v+1) * 2 * 7];
 
             int i = 0;
 
@@ -216,7 +228,20 @@ namespace SpotLight
                 //top to bottom
                 indices.Add(2 * edgeIndex);
                 indices.Add(2 * edgeIndex + 1);
+
+                indices.Add(2 * edgeIndex + 1);
+                indices.Add(v*2);
             }
+
+            //floor
+            data[i++] = 0;
+            data[i++] = b;
+            data[i++] = 0;
+
+            data[i++] = 0;
+            data[i++] = 0f;
+            data[i++] = 0.5f;
+            data[i++] = 1;
 
             SubmitExtraModel(control, PrimitiveType.Lines, "AreaCylinder", indices, data);
             #endregion
