@@ -275,7 +275,23 @@ namespace SpotLight
 
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
-            if (currentScene.SelectedObjects.Count > 1)
+            var selection = new HashSet<object>();
+
+            foreach (var item in currentScene.SelectedObjects)
+            {
+                if (item is Rail rail)
+                {
+                    foreach (var point in rail.PathPoints)
+                    {
+                        if(point.Selected)
+                            selection.Add(point);
+                    }
+                }
+                else
+                    selection.Add(item);
+            }
+
+            if (selection.Count > 1)
             {
                 CurrentObjectLabel.Text = "Multiple objects selected";
                 string SelectedObjects = "";
@@ -283,8 +299,8 @@ namespace SpotLight
                 int multi = 1;
 
                 List<string> selectedobjectnames = new List<string>();
-                for (int i = 0; i < currentScene.SelectedObjects.Count; i++)
-                    selectedobjectnames.Add(currentScene.SelectedObjects.ElementAt(i).ToString());
+                for (int i = 0; i < selection.Count; i++)
+                    selectedobjectnames.Add(selection.ElementAt(i).ToString());
 
                 selectedobjectnames.Sort();
                 for (int i = 0; i < selectedobjectnames.Count; i++)
@@ -311,12 +327,18 @@ namespace SpotLight
                 SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
                 SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
             }
-            else if (currentScene.SelectedObjects.Count == 0)
+            else if (selection.Count == 0)
                 CurrentObjectLabel.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected.";
             else
             {
-                CurrentObjectLabel.Text = currentScene.SelectedObjects.First().ToString() + " selected";
-                SpotlightToolStripStatusLabel.Text = $"Selected \"{currentScene.SelectedObjects.First().ToString()}\".";
+                object selected = selection.First();
+
+                CurrentObjectLabel.Text = selected.ToString() + " selected";
+                SpotlightToolStripStatusLabel.Text = $"Selected \"{selected.ToString()}\".";
+
+
+                MainSceneListView.CurrentList.Contains(selected);
+                MainSceneListView.TryEnsureVisible(selected);
             }
             MainSceneListView.Refresh();
 
