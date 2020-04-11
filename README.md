@@ -6,7 +6,7 @@ It has a boatload of features inside allowing you to make your very own levels, 
 ## System Requirements
 
 - OpenGL 3.0+
-- Windows 8+
+- Windows 7+
 
 ## Assistance and How to Use
 
