@@ -43,8 +43,25 @@ namespace SpotLight.EditorDrawables
                 Vector3 pos = new Vector3();
                 Vector3 cp1 = new Vector3();
                 Vector3 cp2 = new Vector3();
+
+                var properties = new Dictionary<string, dynamic>();
+
                 foreach (ByamlIterator.DictionaryEntry entry in pointEntry.IterDictionary())
                 {
+                    if (entry.Key == "Comment" ||
+                        entry.Key == "Id" ||
+                        entry.Key == "IsLinkDest" ||
+                        entry.Key == "LayerConfigName" ||
+                        entry.Key == "Links" ||
+                        entry.Key == "ModelName" ||
+                        entry.Key == "Rotate" ||
+                        entry.Key == "Scale" ||
+                        entry.Key == "UnitConfig" ||
+                        entry.Key == "UnitConfigName"
+
+                        )
+                        continue;
+
                     dynamic _data = entry.Parse();
                     if (entry.Key == "Translate")
                     {
@@ -68,8 +85,11 @@ namespace SpotLight.EditorDrawables
                             _data[1]["Z"] / 100f
                         );
                     }
+                    else
+                        properties.Add(entry.Key, _data);
                 }
-                pathPoints.Add(new RailPoint(pos, cp1 - pos, cp2 - pos));
+
+                pathPoints.Add(new RailPoint(pos, cp1 - pos, cp2 - pos, properties));
             }
 
             return pathPoints;
@@ -164,7 +184,7 @@ namespace SpotLight.EditorDrawables
             ArrayNode railPointsNode = writer.CreateArrayNode();
 
             int i = 0;
-            foreach (PathPoint point in PathPoints)
+            foreach (RailPoint point in PathPoints)
             {
                 DictionaryNode pointNode = writer.CreateDictionaryNode();
 
@@ -191,6 +211,17 @@ namespace SpotLight.EditorDrawables
                 pointNode.AddDynamicValue("UnitConfig", CreateUnitConfig("Point"), true);
                 
                 pointNode.AddDynamicValue("UnitConfigName", "Point");
+
+                if (point.Properties.Count != 0)
+                {
+                    foreach (KeyValuePair<string, dynamic> keyValuePair in point.Properties)
+                    {
+                        if (keyValuePair.Value is string && keyValuePair.Value == "")
+                            pointNode.AddDynamicValue(keyValuePair.Key, null, true);
+                        else
+                            pointNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
+                    }
+                }
 
                 railPointsNode.AddDictionaryNodeRef(pointNode, true);
 
@@ -320,25 +351,28 @@ namespace SpotLight.EditorDrawables
         {
             bool any = false;
 
-            foreach (PathPoint point in pathPoints)
+            foreach (RailPoint point in pathPoints)
                 any |= point.Selected;
 
 
             if (!any)
                 return false;
 
-            objectUIControl.AddObjectUIContainer(new RailUIContainer(this, scene), "Path");
+            objectUIControl.AddObjectUIContainer(new RailUIContainer(this, scene), "Rail");
 
-            List<PathPoint> points = new List<PathPoint>();
+            List<RailPoint> points = new List<RailPoint>();
 
-            foreach (PathPoint point in pathPoints)
+            foreach (RailPoint point in pathPoints)
             {
                 if (point.Selected)
                     points.Add(point);
             }
 
             if (points.Count == 1)
-                objectUIControl.AddObjectUIContainer(new SinglePathPointUIContainer(points[0], scene), "Path Point");
+            {
+                objectUIControl.AddObjectUIContainer(new SinglePathPointUIContainer(points[0], scene), "Rail Point");
+                objectUIControl.AddObjectUIContainer(new General3dWorldObject.ExtraPropertiesUIContainer(points[0].Properties, scene), "Point Properties");
+            }
 
             return true;
         }
@@ -424,10 +458,12 @@ namespace SpotLight.EditorDrawables
             set => ControlPoint2 = Vector3.Transform(value, SceneDrawState.ZoneTransform.RotationTransform.Inverted());
         }
 
-        public RailPoint(Vector3 position, Vector3 controlPoint1, Vector3 controlPoint2)
+        public Dictionary<string, dynamic> Properties { get; private set; } = null;
+
+        public RailPoint(Vector3 position, Vector3 controlPoint1, Vector3 controlPoint2, Dictionary<string, dynamic> properties)
             : base(position, controlPoint1, controlPoint2)
         {
-
+            Properties = properties;
         }
 
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)

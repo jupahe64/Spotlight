@@ -91,7 +91,7 @@ namespace SpotLight.EditorDrawables
         public Vector3 DisplayScale { get; set; }
 
         public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
-        public Dictionary<string, dynamic> Properties { get; set; } = null;
+        public Dictionary<string, dynamic> Properties { get; set; } = new Dictionary<string, dynamic>();
 
         private static readonly Dictionary<string, List<I3dWorldObject>> EMPTY_LINKS = new Dictionary<string, List<I3dWorldObject>>();
         /// <summary>
@@ -119,7 +119,6 @@ namespace SpotLight.EditorDrawables
 
             if (info.PropertyEntries.Count > 0)
             {
-                Properties = new Dictionary<string, dynamic>();
                 foreach (var entry in info.PropertyEntries.Values)
                 {
                     Properties.Add(entry.Key, entry.Parse()??"");
@@ -213,7 +212,7 @@ namespace SpotLight.EditorDrawables
 
             objNode.AddDynamicValue("UnitConfigName", ObjectName);
 
-            if (Properties != null)
+            if (Properties.Count!=0)
             {
                 foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
                 {
@@ -240,10 +239,10 @@ namespace SpotLight.EditorDrawables
         {
             if (!Selected)
                 return false;
-            objectUIControl.AddObjectUIContainer(new BasicPropertyProvider(this, scene), "General");
+            objectUIControl.AddObjectUIContainer(new BasicPropertyUIContainer(this, scene), "General");
 
             if (Properties != null)
-                objectUIControl.AddObjectUIContainer(new ExtraPropertiesProvider(Properties, scene), "Properties");
+                objectUIControl.AddObjectUIContainer(new ExtraPropertiesUIContainer(Properties, scene), "Properties");
 
             if (Links != null)
                 objectUIControl.AddObjectUIContainer(new LinksProvider(this, scene), "Links");
@@ -490,14 +489,14 @@ namespace SpotLight.EditorDrawables
             return Program.ParameterDB.ObjectParameters[ClassName].TryGetObjectList(zone, out objList);
         }
 
-        public class BasicPropertyProvider : IObjectUIContainer
+        public class BasicPropertyUIContainer : IObjectUIContainer
         {
             PropertyCapture? capture = null;
 
             General3dWorldObject obj;
             EditorSceneBase scene;
 
-            public BasicPropertyProvider(General3dWorldObject obj, EditorSceneBase scene)
+            public BasicPropertyUIContainer(General3dWorldObject obj, EditorSceneBase scene)
             {
                 this.obj = obj;
                 this.scene = scene;
@@ -575,7 +574,7 @@ namespace SpotLight.EditorDrawables
             }
         }
 
-        public class ExtraPropertiesProvider : IObjectUIContainer
+        public class ExtraPropertiesUIContainer : IObjectUIContainer
         {
             Dictionary<string, dynamic> dict;
             EditorSceneBase scene;
@@ -584,7 +583,7 @@ namespace SpotLight.EditorDrawables
 
             List<KeyValuePair<string, dynamic>> capture = null;
 
-            public ExtraPropertiesProvider(Dictionary<string, dynamic> dict, EditorSceneBase scene)
+            public ExtraPropertiesUIContainer(Dictionary<string, dynamic> dict, EditorSceneBase scene)
             {
                 this.dict = dict;
                 this.scene = scene;

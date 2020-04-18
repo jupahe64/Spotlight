@@ -373,64 +373,64 @@ namespace SpotLight
         /// </summary>
         public static List<PathPoint> BasicPath => new List<PathPoint>()
         {
-            new RailPoint(new Vector3(-3,0,0), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,0), Vector3.Zero, Vector3.Zero),
+            new RailPoint(new Vector3(-3,0,0), Vector3.Zero, Vector3.Zero, null),
+            new RailPoint(new Vector3(3,0,0), Vector3.Zero, Vector3.Zero, null),
         };
         /// <summary>
         /// 4-Point Path (Circle, Recommended Closed)
         /// </summary>
         public static List<PathPoint> CirclePath => new List<PathPoint>()
         {
-            new RailPoint(new Vector3(-3,0,0), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(0,0,3), new Vector3(-2,0,0), new Vector3(2,0,0)),
-            new RailPoint(new Vector3(3,0,0), new Vector3(0,0,2), new Vector3(0,0,-2)),
-            new RailPoint(new Vector3(0,0,-3), new Vector3(2,0,0), new Vector3(-2,0,0)),
+            new RailPoint(new Vector3(-3,0,0), new Vector3(0,0,-2), new Vector3(0,0,2), null),
+            new RailPoint(new Vector3(0,0,3), new Vector3(-2,0,0), new Vector3(2,0,0), null),
+            new RailPoint(new Vector3(3,0,0), new Vector3(0,0,2), new Vector3(0,0,-2), null),
+            new RailPoint(new Vector3(0,0,-3), new Vector3(2,0,0), new Vector3(-2,0,0), null),
         };
         /// <summary>
         /// 4-Point Path (Square, Recommended Closed)
         /// </summary>
         public static List<PathPoint> SquarePath => new List<PathPoint>()
         {
-            new RailPoint(new Vector3(-3,0,-3), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,-3), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,3), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(-3,0,3), Vector3.Zero, Vector3.Zero),
+            new RailPoint(new Vector3(-3,0,-3), Vector3.Zero, Vector3.Zero, null),
+            new RailPoint(new Vector3(3,0,-3), Vector3.Zero, Vector3.Zero, null),
+            new RailPoint(new Vector3(3,0,3), Vector3.Zero, Vector3.Zero, null),
+            new RailPoint(new Vector3(-3,0,3), Vector3.Zero, Vector3.Zero, null),
         };
         /// <summary>
         /// 4-Point Path (Rectangle, Recommended Closed)
         /// </summary>
         public static List<PathPoint> RectanglePath => new List<PathPoint>()
         {
-            new RailPoint(new Vector3(-3,0,-6), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,-6), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,6), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(-3,0,6), Vector3.Zero, Vector3.Zero),
+            new RailPoint(new Vector3(-3,0,-6), Vector3.Zero, Vector3.Zero, null),
+            new RailPoint(new Vector3(3,0,-6), Vector3.Zero, Vector3.Zero, null),
+            new RailPoint(new Vector3(3,0,6), Vector3.Zero, Vector3.Zero, null),
+            new RailPoint(new Vector3(-3,0,6), Vector3.Zero, Vector3.Zero, null),
         };
         /// <summary>
         /// 6-Point Path (Rounded Rectangle, Recommended Closed)
         /// </summary>
         public static List<PathPoint> RoundedRectanglePath => new List<PathPoint>()
         {
-            new RailPoint(new Vector3(-3,0,-5), new Vector3(0,0,2), new Vector3(0,0,-2)),
-            new RailPoint(new Vector3(0,0,-8), new Vector3(-2,0,0), new Vector3(2,0,0)),
-            new RailPoint(new Vector3(3,0,-5), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(3,0,5), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(0,0,8), new Vector3(2,0,0), new Vector3(-2,0,0)),
-            new RailPoint(new Vector3(-3,0,5), new Vector3(0,0,2), new Vector3(0,0,-2)),
+            new RailPoint(new Vector3(-3,0,-5), new Vector3(0,0,2), new Vector3(0,0,-2), null),
+            new RailPoint(new Vector3(0,0,-8), new Vector3(-2,0,0), new Vector3(2,0,0), null),
+            new RailPoint(new Vector3(3,0,-5), new Vector3(0,0,-2), new Vector3(0,0,2), null),
+            new RailPoint(new Vector3(3,0,5), new Vector3(0,0,-2), new Vector3(0,0,2), null),
+            new RailPoint(new Vector3(0,0,8), new Vector3(2,0,0), new Vector3(-2,0,0), null),
+            new RailPoint(new Vector3(-3,0,5), new Vector3(0,0,2), new Vector3(0,0,-2), null),
         };
         /// <summary>
         /// 8-Point Path (Rounded Square, Recommended Closed)
         /// </summary>
         public static List<PathPoint> RoundedSquarePath => new List<PathPoint>()
         {
-            new RailPoint(new Vector3(-6,0,-3), new Vector3(0,0,2), new Vector3(0,0,-2)),//good
-            new RailPoint(new Vector3(-3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0)),//good
-            new RailPoint(new Vector3(3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0)),//good
-            new RailPoint(new Vector3(6,0,-3), new Vector3(0,0,-2), new Vector3(0,0,2)),//good
-            new RailPoint(new Vector3(6,0,3), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0)),
-            new RailPoint(new Vector3(-3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0)),
-            new RailPoint(new Vector3(-6,0,3), new Vector3(0,0,2), new Vector3(0,0,-2)),
+            new RailPoint(new Vector3(-6,0,-3), new Vector3(0,0,2), new Vector3(0,0,-2), null),//good
+            new RailPoint(new Vector3(-3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0), null),//good
+            new RailPoint(new Vector3(3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0), null),//good
+            new RailPoint(new Vector3(6,0,-3), new Vector3(0,0,-2), new Vector3(0,0,2), null),//good
+            new RailPoint(new Vector3(6,0,3), new Vector3(0,0,-2), new Vector3(0,0,2), null),
+            new RailPoint(new Vector3(3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0), null),
+            new RailPoint(new Vector3(-3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0), null),
+            new RailPoint(new Vector3(-6,0,3), new Vector3(0,0,2), new Vector3(0,0,-2), null),
         };
     }
 }
