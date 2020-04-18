@@ -40,7 +40,7 @@
             this.MainSceneListView = new GL_EditorFramework.SceneListView();
             this.CurrentObjectLabel = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
-            this.ZoneDocumentTabControl = new SpotLight.DocumentTabControl();
+            this.ZoneDocumentTabControl = new GL_EditorFramework.DocumentTabControl();
             this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -222,7 +222,7 @@
             this.ZoneDocumentTabControl.Size = new System.Drawing.Size(520, 515);
             this.ZoneDocumentTabControl.TabIndex = 1;
             this.ZoneDocumentTabControl.SelectedTabChanged += new System.EventHandler(this.ZoneDocumentTabControl_SelectedTabChanged);
-            this.ZoneDocumentTabControl.TabClosing += new SpotLight.DocumentTabClosingEventHandler(this.ZoneDocumentTabControl_TabClosing);
+            this.ZoneDocumentTabControl.TabClosing += new GL_EditorFramework.DocumentTabClosingEventHandler(this.ZoneDocumentTabControl_TabClosing);
             // 
             // LevelGLControlModern
             // 
@@ -580,7 +580,7 @@
         public GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         public GL_EditorFramework.ObjectUIControl ObjectUIControl;
         public GL_EditorFramework.SceneListView MainSceneListView;
-        private DocumentTabControl ZoneDocumentTabControl;
+        private GL_EditorFramework.DocumentTabControl ZoneDocumentTabControl;
         private System.Windows.Forms.ListBox ZoneListBox;
         private System.Windows.Forms.ToolStripMenuItem AddZoneToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MoveSelectionToToolStripMenuItem;
