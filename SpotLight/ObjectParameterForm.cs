@@ -17,12 +17,14 @@ namespace SpotLight
         public struct TypeDef
         {
             public readonly object DefaultValue;
+            public readonly Type Type;
             public readonly string ActualName;
             public readonly string AltName;
 
-            public TypeDef(object defaultValue, string actualName, string altName)
+            public TypeDef(Type type, object defaultValue, string actualName, string altName)
             {
                 DefaultValue = defaultValue;
+                Type = type;
                 ActualName = actualName;
                 AltName = altName;
             }
@@ -35,13 +37,13 @@ namespace SpotLight
         
         public static TypeDef[] TypeDefs => new TypeDef[]
         {
-            new TypeDef(0,     "int",    TypeDefInteger),
-            new TypeDef(0f,    "float",  TypeDefSingle),
-            new TypeDef("",    "string", TypeDefString),
-            new TypeDef(false, "bool",   TypeDefBoolean)
+            new TypeDef(typeof(int),    0,     "int",    TypeDefInteger),
+            new TypeDef(typeof(float),  0f,    "float",  TypeDefSingle),
+            new TypeDef(typeof(string), "",    "string", TypeDefString),
+            new TypeDef(typeof(bool),   false, "bool",   TypeDefBoolean)
         };
 
-        public IReadOnlyList<(TypeDef typeDef, string name)> Parameters => MainEditorControl.parameters;
+        public IReadOnlyList<(TypeDef typeDef, string name)> EditedParameterInfos => MainEditorControl.parameters;
 
         public static bool UseAltNames = true;
 

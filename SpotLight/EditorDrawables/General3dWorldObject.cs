@@ -576,115 +576,141 @@ namespace SpotLight.EditorDrawables
 
         public class ExtraPropertiesUIContainer : IObjectUIContainer
         {
-            Dictionary<string, dynamic> dict;
+            Dictionary<string, dynamic> propertyDict;
             EditorSceneBase scene;
 
-            string[] keys;
+            string[] propertyDictKeys;
 
             List<KeyValuePair<string, dynamic>> capture = null;
 
-            public ExtraPropertiesUIContainer(Dictionary<string, dynamic> dict, EditorSceneBase scene)
+            public ExtraPropertiesUIContainer(Dictionary<string, dynamic> propertyDict, EditorSceneBase scene)
             {
-                this.dict = dict;
+                this.propertyDict = propertyDict;
                 this.scene = scene;
-                keys = dict.Keys.ToArray();
+                propertyDictKeys = propertyDict.Keys.ToArray();
             }
 
             public void DoUI(IObjectUIControl control)
             {
-                for (int i = 0; i < keys.Length; i++)
+                for (int i = 0; i < propertyDictKeys.Length; i++)
                 {
-                    string key = keys[i];
-                    if (dict[key] is int)
-                        dict[key] = (int)control.NumberInput(dict[key], key);
-                    else if (dict[key] is float)
-                        dict[key] = control.NumberInput(dict[key], key);
-                    else if (dict[key] is string)
-                        dict[key] = control.TextInput(dict[key], key);
-                    else if (dict[key] is bool)
-                        dict[key] = control.CheckBox(key, dict[key]);
+                    string key = propertyDictKeys[i];
+                    if (propertyDict[key] is int)
+                        propertyDict[key] = (int)control.NumberInput(propertyDict[key], key);
+                    else if (propertyDict[key] is float)
+                        propertyDict[key] = control.NumberInput(propertyDict[key], key);
+                    else if (propertyDict[key] is string)
+                        propertyDict[key] = control.TextInput(propertyDict[key], key);
+                    else if (propertyDict[key] is bool)
+                        propertyDict[key] = control.CheckBox(key, propertyDict[key]);
                 }
 
                 if (control.Button("Edit"))
                 {
                     ObjectParameterForm.LocalizeTypeDefs();
-                    List<(ObjectParameterForm.TypeDef typeDef, string name)> parameters = new List<(ObjectParameterForm.TypeDef typeDef, string name)>();
+                    List<(ObjectParameterForm.TypeDef typeDef, string name)> parameterInfos = new List<(ObjectParameterForm.TypeDef typeDef, string name)>();
 
                     List<KeyValuePair<string, dynamic>> otherParameters = new List<KeyValuePair<string, dynamic>>();
 
-                    foreach (var item in dict)
+                    //get parameterInfos from propertyDict
+                    foreach (var item in propertyDict)
                     {
                         if (item.Value is int)
-                            parameters.Add((ObjectParameterForm.TypeDefs[0], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDefs[0], item.Key));
                         else if (item.Value is float)
-                            parameters.Add((ObjectParameterForm.TypeDefs[1], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDefs[1], item.Key));
                         else if (item.Value is string)
-                            parameters.Add((ObjectParameterForm.TypeDefs[2], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDefs[2], item.Key));
                         else if (item.Value is bool)
-                            parameters.Add((ObjectParameterForm.TypeDefs[3], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDefs[3], item.Key));
                         else
-                            otherParameters.Add(item);
+                            otherParameters.Add(item); //arrays and dictionaries are not supported
                     }
 
-                    var parameterForm = new ObjectParameterForm(parameters);
+                    var parameterForm = new ObjectParameterForm(parameterInfos);
                     
                     if (parameterForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
                         List<RevertableDictAddition.AddInfo> addInfos = new List<RevertableDictAddition.AddInfo>();
                         List<RevertableDictDeletion.DeleteInfo> deleteInfos = new List<RevertableDictDeletion.DeleteInfo>();
+                        List<RevertableDictEntryChange> changeInfos = new List<RevertableDictEntryChange>();
 
                         HashSet<string> newParamNames = new HashSet<string>();
 
-                        List<KeyValuePair<string, dynamic>> newEntries = new List<KeyValuePair<string, dynamic>>();
-                        foreach ((ObjectParameterForm.TypeDef def, string name) in parameterForm.Parameters)
+                        List<KeyValuePair<string, dynamic>> newParameters = new List<KeyValuePair<string, dynamic>>();
+                        foreach ((ObjectParameterForm.TypeDef typeDef, string parameterName) in parameterForm.EditedParameterInfos)
                         {
-                            if (dict.ContainsKey(name))
-                                newEntries.Add(new KeyValuePair<string, dynamic>(name, dict[name]));
+                            //check if name stayed the same
+                            if (propertyDict.ContainsKey(parameterName))
+                            {
+                                if (propertyDict[parameterName].GetType() == typeDef.Type)
+                                {
+                                    //keep value if name and type stayed the same
+                                    newParameters.Add(new KeyValuePair<string, dynamic>(parameterName, propertyDict[parameterName]));
+                                }
+                                else
+                                {
+                                    //set value to the default value of the new type
+                                    newParameters.Add(new KeyValuePair<string, dynamic>(parameterName, typeDef.DefaultValue));
+                                    //and add the value change to changeInfos
+                                    changeInfos.Add(new RevertableDictEntryChange(parameterName, propertyDict, propertyDict[parameterName]));
+                                }
+                            }
                             else
                             {
-                                newEntries.Add(new KeyValuePair<string, dynamic>(name, def.DefaultValue));
-                                addInfos.Add(new RevertableDictAddition.AddInfo(def.DefaultValue, name));
+                                //add added paramter to addInfos
+                                newParameters.Add(new KeyValuePair<string, dynamic>(parameterName, typeDef.DefaultValue));
+                                addInfos.Add(new RevertableDictAddition.AddInfo(typeDef.DefaultValue, parameterName));
                             }
-                            newParamNames.Add(name);
+                            newParamNames.Add(parameterName);
                         }
 
-                        foreach (var keyValuePair in dict)
+                        //add removed parameters to deleteInfos
+                        foreach (var keyValuePair in propertyDict)
                         {
                             if (!newParamNames.Contains(keyValuePair.Key))
                                 deleteInfos.Add(new RevertableDictDeletion.DeleteInfo(keyValuePair.Value, keyValuePair.Key));
                         }
 
+                        //add everything to undo
                         scene.BeginUndoCollection();
                         scene.AddToUndo(new RevertableDictAddition(new RevertableDictAddition.AddInDictInfo[]
                         {
-                            new RevertableDictAddition.AddInDictInfo(addInfos.ToArray(), dict)
+                            new RevertableDictAddition.AddInDictInfo(addInfos.ToArray(), propertyDict)
                         },
-                        new RevertableDictAddition.SingleAddInDictInfo[0]));
+                        Array.Empty<RevertableDictAddition.SingleAddInDictInfo>()));
 
                         scene.AddToUndo(new RevertableDictDeletion(new RevertableDictDeletion.DeleteInDictInfo[]
                         {
-                            new RevertableDictDeletion.DeleteInDictInfo(deleteInfos.ToArray(), dict)
+                            new RevertableDictDeletion.DeleteInDictInfo(deleteInfos.ToArray(), propertyDict)
                         },
-                        new RevertableDictDeletion.SingleDeleteInDictInfo[0]));
+                        Array.Empty<RevertableDictDeletion.SingleDeleteInDictInfo>()));
+
+                        
+                        foreach (var changeInfo in changeInfos)
+                        {
+                            scene.AddToUndo(changeInfo);
+                        }
                         scene.EndUndoCollection();
 
-                        dict.Clear();
+                        //regenerate propertyDict by merging the newParameters and the oterParameters
+                        propertyDict.Clear();
 
-                        foreach (var keyValuePair in newEntries)
-                            dict.Add(keyValuePair.Key, keyValuePair.Value);
+                        foreach (var keyValuePair in newParameters)
+                            propertyDict.Add(keyValuePair.Key, keyValuePair.Value);
 
                         foreach (var keyValuePair in otherParameters)
-                            dict.Add(keyValuePair.Key, keyValuePair.Value);
+                            propertyDict.Add(keyValuePair.Key, keyValuePair.Value);
                         
-
-                        keys = dict.Keys.ToArray();
+                        //update keys
+                        propertyDictKeys = propertyDict.Keys.ToArray();
                     }
                 }
             }
 
             public void OnValueChangeStart()
             {
-                capture = dict.ToList();
+                capture = propertyDict.ToList();
             }
 
             public void OnValueChanged()
@@ -697,9 +723,9 @@ namespace SpotLight.EditorDrawables
 
                 foreach (var keyValuePair in capture)
                 {
-                    if(keyValuePair.Value!= dict[keyValuePair.Key])
+                    if(keyValuePair.Value!= propertyDict[keyValuePair.Key])
                     {
-                        scene.AddToUndo(new RevertableDictEntryChange(keyValuePair.Key, dict, keyValuePair.Value));
+                        scene.AddToUndo(new RevertableDictEntryChange(keyValuePair.Key, propertyDict, keyValuePair.Value));
                     }
 
                 }
