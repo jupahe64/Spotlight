@@ -14,7 +14,7 @@ using static GL_EditorFramework.EditorDrawables.EditorSceneBase.PropertyCapture;
 
 namespace SpotLight.EditorDrawables
 {
-    public class Rail : Path, I3dWorldObject
+    public class Rail : Path<RailPoint>, I3dWorldObject
     {
         public enum RailObjType
         {
@@ -22,6 +22,8 @@ namespace SpotLight.EditorDrawables
             RailWithMoveParameter,
             RailWithEffect
         }
+
+        public static Array RailTypes = Enum.GetValues(typeof(RailObjType));
 
         public static Dictionary<string, dynamic> CreateUnitConfig(string className) => new Dictionary<string, dynamic>
         {
@@ -34,9 +36,9 @@ namespace SpotLight.EditorDrawables
             ["PlacementTargetFile"] = "Map"
         };
 
-        protected static List<PathPoint> PathPointsFromRailPointsEntry(ByamlIterator.DictionaryEntry railPointsEntry)
+        protected static List<RailPoint> RailPointsFromRailPointsEntry(ByamlIterator.DictionaryEntry railPointsEntry)
         {
-            List<PathPoint> pathPoints = new List<PathPoint>();
+            List<RailPoint> pathPoints = new List<RailPoint>();
 
             foreach (ByamlIterator.ArrayEntry pointEntry in railPointsEntry.IterArray())
             {
@@ -110,8 +112,9 @@ namespace SpotLight.EditorDrawables
         public RailObjType ObjType { get; set; }
 
         public Rail(LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
-            : base(PathPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]))
         {
+            pathPoints = RailPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]);
+
             ID = info.ID;
             if (zone != null)
                 zone.SubmitRailID(ID);
@@ -139,15 +142,39 @@ namespace SpotLight.EditorDrawables
         /// <param name="isLadder">Unknown</param>
         /// <param name="isReverseCoord">Reverses the order the rails are in</param>
         /// <param name="railObjType"><see cref="RailObjType"/></param>
-        public Rail(List<PathPoint> pathPoints, string iD, bool isClosed, bool isLadder, bool isReverseCoord, RailObjType railObjType, SM3DWorldZone zone)
-            : base(pathPoints)
+        public Rail(List<RailPoint> railPoints, string iD, bool isClosed, bool isLadder, bool isReverseCoord, RailObjType railObjType, SM3DWorldZone zone)
         {
             ID = iD;
             Closed = isClosed;
             IsLadder = isLadder;
             IsReverseCoord = isReverseCoord;
             ObjType = railObjType;
+
+            pathPoints = railPoints;
+
+            foreach (var point in pathPoints)
+                SetupPoint(point);
+
             zone?.SubmitRailID(ID);
+        }
+
+        protected override void SetupPoint(RailPoint point)
+        {
+            point.Properties.Clear();
+
+            if (ObjType == RailObjType.RailWithMoveParameter)
+            {
+                point.Properties.Add("AngleV", 0f);
+                point.Properties.Add("Distance", 0f);
+                point.Properties.Add("OffsetY", 0f);
+                point.Properties.Add("Speed", 0f);
+                point.Properties.Add("WaitTime", 0);
+            }
+            else if(ObjType == RailObjType.RailWithEffect)
+            {
+                point.Properties.Add("ThroughWater", false);
+                point.Properties.Add("ThroughWaterBottom", false);
+            }
         }
 
         #region I3DWorldObject implementation
@@ -286,13 +313,13 @@ namespace SpotLight.EditorDrawables
             if(!anyPointsSelected)
                 return;
 
-            List<PathPoint> newPoints = new List<PathPoint>();
+            List<RailPoint> newPoints = new List<RailPoint>();
 
-            foreach (PathPoint point in pathPoints)
+            foreach (RailPoint point in pathPoints)
             {
                 if (point.Selected)
                 {
-                    newPoints.Add(new PathPoint(point.Position, point.ControlPoint1, point.ControlPoint2));
+                    newPoints.Add(new RailPoint(point.Position, point.ControlPoint1, point.ControlPoint2, point.Properties));
                 }
             }
 
@@ -358,7 +385,7 @@ namespace SpotLight.EditorDrawables
             if (!any)
                 return false;
 
-            objectUIControl.AddObjectUIContainer(new RailUIContainer(this, scene), "Rail");
+            
 
             List<RailPoint> points = new List<RailPoint>();
 
@@ -368,10 +395,17 @@ namespace SpotLight.EditorDrawables
                     points.Add(point);
             }
 
+            General3dWorldObject.ExtraPropertiesUIContainer pointPropertyContainer = null;
+
+            if (points.Count == 1)
+                pointPropertyContainer = new General3dWorldObject.ExtraPropertiesUIContainer(points[0].Properties, scene);
+
+            objectUIControl.AddObjectUIContainer(new RailUIContainer(this, scene, pointPropertyContainer), "Rail");
+
             if (points.Count == 1)
             {
                 objectUIControl.AddObjectUIContainer(new SinglePathPointUIContainer(points[0], scene), "Rail Point");
-                objectUIControl.AddObjectUIContainer(new General3dWorldObject.ExtraPropertiesUIContainer(points[0].Properties, scene), "Point Properties");
+                objectUIControl.AddObjectUIContainer(pointPropertyContainer, "Point Properties");
             }
 
             return true;
@@ -388,18 +422,27 @@ namespace SpotLight.EditorDrawables
 
             Rail rail;
             readonly EditorSceneBase scene;
-            public RailUIContainer(Rail rail, EditorSceneBase scene)
+
+            RailObjType lastRailType;
+
+            General3dWorldObject.ExtraPropertiesUIContainer pathPointPropertyContainer;
+
+            public RailUIContainer(Rail rail, EditorSceneBase scene, General3dWorldObject.ExtraPropertiesUIContainer pathPointPropertyContainer)
             {
                 this.rail = rail;
 
                 List<PathPoint> points = new List<PathPoint>();
 
                 this.scene = scene;
+
+                lastRailType = rail.ObjType;
+
+                this.pathPointPropertyContainer = pathPointPropertyContainer;
             }
 
             public void DoUI(IObjectUIControl control)
             {
-                rail.ObjType = (RailObjType)control.ChoicePicker("Rail Type", rail.ObjType, Enum.GetValues(typeof(RailObjType)));
+                rail.ObjType = (RailObjType)control.ChoicePicker("Rail Type", rail.ObjType, RailTypes);
 
                 rail.IsLadder = control.CheckBox("Is Ladder", rail.IsLadder);
 
@@ -424,9 +467,63 @@ namespace SpotLight.EditorDrawables
 
             public void OnValueSet()
             {
+                scene.BeginUndoCollection();
+
                 pathCapture?.HandleUndo(scene);
 
                 pathCapture = null;
+
+                if (lastRailType != rail.ObjType)
+                {
+                    foreach (var point in rail.pathPoints)
+                    {
+                        #region add deletion to undo
+
+                        RevertableDictDeletion.DeleteInfo[] deleteInfos = new RevertableDictDeletion.DeleteInfo[point.Properties.Count];
+
+                        int i = 0;
+
+                        foreach (var keyValuePair in point.Properties)
+                            deleteInfos[i++] = new RevertableDictDeletion.DeleteInfo(keyValuePair.Value, keyValuePair.Key);
+
+                        scene.AddToUndo(new RevertableDictDeletion(
+                            new RevertableDictDeletion.DeleteInDictInfo[]
+                            {
+                                new RevertableDictDeletion.DeleteInDictInfo(deleteInfos, point.Properties)
+                            },
+                            Array.Empty<RevertableDictDeletion.SingleDeleteInDictInfo>()));
+
+                        #endregion
+
+                        rail.SetupPoint(point);
+
+                        #region add addition to undo
+
+                        RevertableDictAddition.AddInfo[] addInfos = new RevertableDictAddition.AddInfo[point.Properties.Count];
+
+                        i = 0;
+
+                        foreach (var keyValuePair in point.Properties)
+                            addInfos[i++] = new RevertableDictAddition.AddInfo(keyValuePair.Value, keyValuePair.Key);
+
+                        scene.AddToUndo(new RevertableDictAddition(
+                            new RevertableDictAddition.AddInDictInfo[]
+                            {
+                                new RevertableDictAddition.AddInDictInfo(addInfos, point.Properties)
+                            },
+                            Array.Empty<RevertableDictAddition.SingleAddInDictInfo>()));
+
+                        #endregion
+                    }
+
+                    
+
+                    pathPointPropertyContainer?.UpdateKeys();
+
+                    lastRailType = rail.ObjType;
+                }
+
+                scene.EndUndoCollection();
 
                 scene.Refresh();
             }
@@ -460,10 +557,22 @@ namespace SpotLight.EditorDrawables
 
         public Dictionary<string, dynamic> Properties { get; private set; } = null;
 
+        public RailPoint()
+            : base()
+        {
+            Properties = new Dictionary<string, dynamic>();
+        }
+
         public RailPoint(Vector3 position, Vector3 controlPoint1, Vector3 controlPoint2, Dictionary<string, dynamic> properties)
             : base(position, controlPoint1, controlPoint2)
         {
             Properties = properties;
+        }
+
+        public RailPoint(Vector3 position, Vector3 controlPoint1, Vector3 controlPoint2)
+            : base(position, controlPoint1, controlPoint2)
+        {
+            Properties = new Dictionary<string, dynamic>();
         }
 
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)

@@ -576,7 +576,7 @@ namespace SpotLight.EditorDrawables
 
         public class ExtraPropertiesUIContainer : IObjectUIContainer
         {
-            Dictionary<string, dynamic> propertyDict;
+            readonly Dictionary<string, dynamic> propertyDict;
             EditorSceneBase scene;
 
             string[] propertyDictKeys;
@@ -588,6 +588,12 @@ namespace SpotLight.EditorDrawables
                 this.propertyDict = propertyDict;
                 this.scene = scene;
                 propertyDictKeys = propertyDict.Keys.ToArray();
+            }
+
+            public void UpdateKeys()
+            {
+                propertyDictKeys = propertyDict.Keys.ToArray();
+                capture = null;
             }
 
             public void DoUI(IObjectUIControl control)
@@ -720,6 +726,8 @@ namespace SpotLight.EditorDrawables
 
             public void OnValueSet()
             {
+                if (capture == null)
+                    return;
 
                 foreach (var keyValuePair in capture)
                 {
@@ -729,6 +737,7 @@ namespace SpotLight.EditorDrawables
                     }
 
                 }
+
                 capture = null;
 
                 scene.Refresh();

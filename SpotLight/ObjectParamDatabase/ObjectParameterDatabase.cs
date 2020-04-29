@@ -187,14 +187,22 @@ namespace SpotLight.ObjectParamDatabase
                 GetObjectInfos(Sounds[i], SOUNDinfosByListName);
 
 
+            HashSet<string> railClassNames = new HashSet<string>();
+
+            foreach (string name in Enum.GetNames(typeof(Rail.RailObjType)))
+                railClassNames.Add(name);
+
             void GetParameters<T>(Dictionary<string, List<ObjectInfo>> infosByListName) where T : Parameter, new()
             {
                 byte ListID = 0;
+
+
+
                 foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in infosByListName)
                 {
                     for (int j = 0; j < keyValuePair.Value.Count; j++)
                     {
-                        if (keyValuePair.Value[j].ClassName == "Rail")
+                        if (railClassNames.Contains(keyValuePair.Value[j].ClassName))
                         {
                             continue;
                         }
