@@ -16,14 +16,14 @@ namespace SpotLight
 
     public partial class ObjectParameterForm : Form
     {
-        public struct TypeDef
+        public class TypeDef
         {
-            public readonly object DefaultValue;
-            public readonly Type Type;
-            public readonly string ActualName;
-            public readonly string AltName;
+            public object DefaultValue { get; private set; }
+            public Type Type { get; private set; }
+            public string ActualName { get; private set; }
+            public string AltName { get; private set; }
 
-            public TypeDef(Type type, object defaultValue, string actualName, string altName)
+            private TypeDef(Type type, object defaultValue, string actualName, string altName)
             {
                 DefaultValue = defaultValue;
                 Type = type;
@@ -36,18 +36,26 @@ namespace SpotLight
                 return UseAltNames ? AltName : ActualName;
             }
 
-            public static TypeDef[] Defs => new TypeDef[]
+            public static readonly TypeDef[] Defs = new TypeDef[]
             {
-                new TypeDef(typeof(int),    0,     "int",    TypeDefInteger),
-                new TypeDef(typeof(float),  0f,    "float",  TypeDefSingle),
-                new TypeDef(typeof(string), "",    "string", TypeDefString),
-                new TypeDef(typeof(bool),   false, "bool",   TypeDefBoolean)
+                new TypeDef(typeof(int),    0,     "int",    String.Empty),
+                new TypeDef(typeof(float),  0f,    "float",  String.Empty),
+                new TypeDef(typeof(string), "",    "string", String.Empty),
+                new TypeDef(typeof(bool),   false, "bool",   String.Empty)
             };
 
-            public static TypeDef IntDef = Defs[0];
-            public static TypeDef FloatDef = Defs[1];
-            public static TypeDef StringDef = Defs[2];
-            public static TypeDef BoolDef = Defs[3];
+            public static readonly TypeDef IntDef = Defs[0];
+            public static readonly TypeDef FloatDef = Defs[1];
+            public static readonly TypeDef StringDef = Defs[2];
+            public static readonly TypeDef BoolDef = Defs[3];
+
+            public static void Localize()
+            {
+                IntDef.AltName = Program.CurrentLanguage.GetTranslation("TypeDefInteger") ?? "Whole Number";
+                FloatDef.AltName = Program.CurrentLanguage.GetTranslation("TypeDefSingle") ?? "Decimal Number";
+                StringDef.AltName = Program.CurrentLanguage.GetTranslation("TypeDefString") ?? "Text";
+                BoolDef.AltName = Program.CurrentLanguage.GetTranslation("TypeDefBoolean") ?? "Checkbox";
+            }
         }
         
 
@@ -109,17 +117,10 @@ namespace SpotLight
             NewTypeComboBox.SelectedIndex = tmp;
         }
 
-        public static void LocalizeTypeDefs()
-        {
-            TypeDefInteger = Program.CurrentLanguage.GetTranslation("TypeDefInteger") ?? "Whole Number";
-            TypeDefSingle = Program.CurrentLanguage.GetTranslation("TypeDefSingle") ?? "Decimal Number";
-            TypeDefString = Program.CurrentLanguage.GetTranslation("TypeDefString") ?? "Text";
-            TypeDefBoolean = Program.CurrentLanguage.GetTranslation("TypeDefBoolean") ?? "Checkbox";
-        }
         private void Localize()
         {
             Text = Program.CurrentLanguage.GetTranslation("ObjectParametersTitle") ?? "Spotlight - Object Parameter Editor";
-            LocalizeTypeDefs();
+            TypeDef.Localize();
             RemoveParameterText = Program.CurrentLanguage.GetTranslation("RemoveParameterText") ?? "Remove";
             UseProgrammingTermsCheckbox.Text = Program.CurrentLanguage.GetTranslation("UseProgrammingTermsCheckbox") ?? "Use Programming Terms";
             TypeLabel.Text = Program.CurrentLanguage.GetTranslation("GlobalTypeText") ?? "Type";

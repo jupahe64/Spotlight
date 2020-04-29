@@ -613,7 +613,7 @@ namespace SpotLight.EditorDrawables
 
                 if (control.Button("Edit"))
                 {
-                    ObjectParameterForm.LocalizeTypeDefs();
+                    ObjectParameterForm.TypeDef.Localize();
                     List<(ObjectParameterForm.TypeDef typeDef, string name)> parameterInfos = new List<(ObjectParameterForm.TypeDef typeDef, string name)>();
 
                     List<KeyValuePair<string, dynamic>> otherParameters = new List<KeyValuePair<string, dynamic>>();
