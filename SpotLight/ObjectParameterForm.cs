@@ -12,6 +12,8 @@ using System.Windows.Forms;
 
 namespace SpotLight
 {
+
+
     public partial class ObjectParameterForm : Form
     {
         public struct TypeDef
@@ -33,15 +35,24 @@ namespace SpotLight
             {
                 return UseAltNames ? AltName : ActualName;
             }
+
+            public static TypeDef[] Defs => new TypeDef[]
+            {
+                new TypeDef(typeof(int),    0,     "int",    TypeDefInteger),
+                new TypeDef(typeof(float),  0f,    "float",  TypeDefSingle),
+                new TypeDef(typeof(string), "",    "string", TypeDefString),
+                new TypeDef(typeof(bool),   false, "bool",   TypeDefBoolean)
+            };
+
+            public static TypeDef IntDef = Defs[0];
+            public static TypeDef FloatDef = Defs[1];
+            public static TypeDef StringDef = Defs[2];
+            public static TypeDef BoolDef = Defs[3];
         }
         
-        public static TypeDef[] TypeDefs => new TypeDef[]
-        {
-            new TypeDef(typeof(int),    0,     "int",    TypeDefInteger),
-            new TypeDef(typeof(float),  0f,    "float",  TypeDefSingle),
-            new TypeDef(typeof(string), "",    "string", TypeDefString),
-            new TypeDef(typeof(bool),   false, "bool",   TypeDefBoolean)
-        };
+
+
+        
 
         public IReadOnlyList<(TypeDef typeDef, string name)> EditedParameterInfos => MainEditorControl.parameters;
 
@@ -52,9 +63,9 @@ namespace SpotLight
             InitializeComponent();
             Localize();
 
-            for (int i = 0; i < TypeDefs.Length; i++)
+            for (int i = 0; i < TypeDef.Defs.Length; i++)
             {
-                NewTypeComboBox.Items.Add(TypeDefs[i].AltName);
+                NewTypeComboBox.Items.Add(TypeDef.Defs[i].AltName);
             }
             NewTypeComboBox.SelectedIndex = 0;
 
@@ -66,7 +77,7 @@ namespace SpotLight
             if (NewNameTextBox.Text == "")
                 return;
 
-            MainEditorControl.parameters.Add((TypeDefs[NewTypeComboBox.SelectedIndex], NewNameTextBox.Text));
+            MainEditorControl.parameters.Add((TypeDef.Defs[NewTypeComboBox.SelectedIndex], NewNameTextBox.Text));
             NewNameTextBox.Text = "";
             MainEditorControl.Refresh();
         }
@@ -82,16 +93,16 @@ namespace SpotLight
             
             if (UseAltNames)
             {
-                for (int i = 0; i < TypeDefs.Length; i++)
+                for (int i = 0; i < TypeDef.Defs.Length; i++)
                 {
-                    NewTypeComboBox.Items.Add(TypeDefs[i].AltName);
+                    NewTypeComboBox.Items.Add(TypeDef.Defs[i].AltName);
                 }
             }
             else
             {
-                for (int i = 0; i < TypeDefs.Length; i++)
+                for (int i = 0; i < TypeDef.Defs.Length; i++)
                 {
-                    NewTypeComboBox.Items.Add(TypeDefs[i].ActualName);
+                    NewTypeComboBox.Items.Add(TypeDef.Defs[i].ActualName);
                 }
             }
 
@@ -152,7 +163,7 @@ namespace SpotLight
                 else
                 {
                     parameters[i] = (
-                    (ObjectParameterForm.TypeDef)ChoicePickerField(10, currentY, 150, parameters[i].typeDef, ObjectParameterForm.TypeDefs),
+                    (ObjectParameterForm.TypeDef)ChoicePickerField(10, currentY, 150, parameters[i].typeDef, ObjectParameterForm.TypeDef.Defs),
                     TextInputField(170, currentY, usableWidth - 180 - 60, parameters[i].name, false)
                     );
                 }

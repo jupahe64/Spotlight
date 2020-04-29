@@ -616,13 +616,13 @@ namespace SpotLight.EditorDrawables
                     foreach (var item in propertyDict)
                     {
                         if (item.Value is int)
-                            parameterInfos.Add((ObjectParameterForm.TypeDefs[0], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDef.IntDef, item.Key));
                         else if (item.Value is float)
-                            parameterInfos.Add((ObjectParameterForm.TypeDefs[1], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDef.FloatDef, item.Key));
                         else if (item.Value is string)
-                            parameterInfos.Add((ObjectParameterForm.TypeDefs[2], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDef.StringDef, item.Key));
                         else if (item.Value is bool)
-                            parameterInfos.Add((ObjectParameterForm.TypeDefs[3], item.Key));
+                            parameterInfos.Add((ObjectParameterForm.TypeDef.BoolDef, item.Key));
                         else
                             otherParameters.Add(item); //arrays and dictionaries are not supported
                     }
