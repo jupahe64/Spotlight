@@ -309,6 +309,8 @@ namespace SpotLight.EditorDrawables
             foreach (AbstractGlDrawable obj in StaticObjects)
                 obj.Prepare(control);
 
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
             foreach (var zonePlacement in ZonePlacements)
                 zonePlacement.Prepare(control);
         }
@@ -509,8 +511,6 @@ namespace SpotLight.EditorDrawables
             foreach (var obj in Get3DWObjects())
                 yield return obj;
 
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
-
             if(editZoneIndex==0) //zonePlacements can be edited
                 foreach (var zonePlacement in ZonePlacements)
                     yield return zonePlacement;
@@ -518,8 +518,6 @@ namespace SpotLight.EditorDrawables
 
         protected IEnumerable<I3dWorldObject> Get3DWObjects()
         {
-            SceneDrawState.ZoneTransform = EditZoneTransform;
-
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in EditZone.ObjLists.Values)
             {
@@ -529,14 +527,10 @@ namespace SpotLight.EditorDrawables
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
                 yield return obj;
-
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
         }
 
         public void UpdateLinkDestinations()
         {
-            SceneDrawState.ZoneTransform = EditZoneTransform;
-
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in EditZone.ObjLists.Values)
             {
@@ -547,9 +541,6 @@ namespace SpotLight.EditorDrawables
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
                 obj.ClearLinkDestinations();
 
-
-            SceneDrawState.ZoneTransform = EditZoneTransform;
-
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objects in EditZone.ObjLists.Values)
             {
@@ -559,8 +550,6 @@ namespace SpotLight.EditorDrawables
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
                 obj.AddLinkDestinations();
-
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
         }
 
         /// <summary>
@@ -569,8 +558,6 @@ namespace SpotLight.EditorDrawables
         public override void DeleteSelected()
         {
             DeletionManager manager = new DeletionManager();
-
-            SceneDrawState.ZoneTransform = EditZoneTransform;
 
             foreach (ObjectList objList in EditZone.ObjLists.Values)
             {
@@ -592,8 +579,6 @@ namespace SpotLight.EditorDrawables
                     placement.DeleteSelected(this, manager, ZonePlacements);
                 }
             }
-
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
 
 
             List<Revertable3DWorldObjAddition.ObjListInfo> objsToDelete = new List<Revertable3DWorldObjAddition.ObjListInfo>();
@@ -667,8 +652,6 @@ namespace SpotLight.EditorDrawables
 
             Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
-            SceneDrawState.ZoneTransform = EditZoneTransform;
-
             SceneObjectIterState.InLinks = false;
             foreach (ObjectList objList in EditZone.ObjLists.Values)
             {
@@ -695,9 +678,6 @@ namespace SpotLight.EditorDrawables
 
             EditZone.LinkedObjects.AddRange(duplicates.Values);
 
-
-            SceneDrawState.ZoneTransform = EditZoneTransform;
-
             //Clear LinkDestinations
             SceneObjectIterState.InLinks = false;
             foreach (List<I3dWorldObject> objects in EditZone.ObjLists.Values)
@@ -721,8 +701,6 @@ namespace SpotLight.EditorDrawables
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
                 obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
-
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
 
             BeginUndoCollection();
             //Add to undo

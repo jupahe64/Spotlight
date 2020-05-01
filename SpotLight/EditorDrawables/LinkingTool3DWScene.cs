@@ -66,8 +66,6 @@ namespace SpotLight.EditorDrawables
             }
             else if (SelectedConnection != null)
             {
-                SceneDrawState.ZoneTransform = EditZoneTransform;
-
                 //Check if mouse is on the Dest Point
                 Point linkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint(this));
                 Point nextToLinkingPoint = GL_Control.ScreenCoordFor(SelectedConnection.Dest.GetLinkingPoint(this) + control.InvertedRotationMatrix.Row0 * 0.25f);
@@ -420,8 +418,6 @@ namespace SpotLight.EditorDrawables
 
                 if (pass == Pass.OPAQUE)
                 {
-                    SceneDrawState.ZoneTransform = scene.EditZoneTransform;
-
                     Vector3 sourceObjPoint = Vector3.Zero;
                     Vector3 destObjPoint = Vector3.Zero;
 

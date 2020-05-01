@@ -29,6 +29,8 @@ namespace SpotLight.EditorDrawables
             {
                 Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
 
+                ZoneTransform transformBackup = SceneDrawState.ZoneTransform;
+
                 SceneDrawState.ZoneTransform = new ZoneTransform(
                     new Matrix4(rotMat) * Matrix4.CreateTranslation(Position),
                     rotMat);
@@ -44,9 +46,9 @@ namespace SpotLight.EditorDrawables
                     obj.Prepare(control);
 
                 Zone.IsPrepared = true;
-            }
 
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
+                SceneDrawState.ZoneTransform = transformBackup;
+            }
         }
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
@@ -67,6 +69,8 @@ namespace SpotLight.EditorDrawables
 
             rotMat = Selected ? editorScene.SelectionTransformAction.NewRot(rotMat) : rotMat;
 
+            ZoneTransform transformBackup = SceneDrawState.ZoneTransform;
+
             SceneDrawState.ZoneTransform = new ZoneTransform(
                 new Matrix4(rotMat) * Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(Position) : Position),
                 rotMat);
@@ -85,11 +89,11 @@ namespace SpotLight.EditorDrawables
             foreach (I3dWorldObject obj in Zone.LinkedObjects)
                 obj.Draw(control, pass, editorScene);
 
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
-
             SceneDrawState.HighlightColorOverride = null;
 
             editorScene.SelectionTransformAction = actionBackup;
+
+            SceneDrawState.ZoneTransform = transformBackup;
         }
 
         public ZoneTransform GetTransform()
@@ -108,6 +112,8 @@ namespace SpotLight.EditorDrawables
 
             Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
 
+            ZoneTransform transformBackup = SceneDrawState.ZoneTransform;
+
             SceneDrawState.ZoneTransform = new ZoneTransform(
                 new Matrix4(rotMat) * Matrix4.CreateTranslation(Position),
                 rotMat);
@@ -121,6 +127,8 @@ namespace SpotLight.EditorDrawables
 
             foreach (I3dWorldObject obj in Zone.LinkedObjects)
                 count += obj.GetPickableSpan();
+
+            SceneDrawState.ZoneTransform = transformBackup;
 
             return count;
         }
