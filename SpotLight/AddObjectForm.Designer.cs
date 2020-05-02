@@ -151,6 +151,7 @@
             this.DBEntryListView.UseCompatibleStateImageBehavior = false;
             this.DBEntryListView.View = System.Windows.Forms.View.Details;
             this.DBEntryListView.SelectedIndexChanged += new System.EventHandler(this.ObjectSelectListView_SelectedIndexChanged);
+            this.DBEntryListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.DBEntryListView_MouseDoubleClick);
             // 
             // ClassNameColumnHeader
             // 

@@ -36,6 +36,7 @@ namespace SpotLight
             this.ZonesListBox.Size = new System.Drawing.Size(348, 368);
             this.ZonesListBox.TabIndex = 0;
             this.ZonesListBox.SelectedIndexChanged += new System.EventHandler(this.ZoneListBox_SelectedIndexChanged);
+            this.ZonesListBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ZonesListBox_MouseDoubleClick);
             // 
             // OKButton
             // 
@@ -121,6 +122,11 @@ namespace SpotLight
         private void ZoneListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             SelectedFileName = (string)ZonesListBox.SelectedItem;
+        }
+
+        private void ZonesListBox_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            OKButton.PerformClick();
         }
     }
 }

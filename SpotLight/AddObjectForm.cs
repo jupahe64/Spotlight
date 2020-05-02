@@ -337,6 +337,11 @@ namespace SpotLight
         private string SearchResultsFailureText { get; set; }
         private string SaveDescriptionHeader { get; set; }
         private string SaveDescriptionText { get; set; }
+
+        private void DBEntryListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            SelectObjectButton.PerformClick();
+        }
     }
     public static class ControlExtensions
     {

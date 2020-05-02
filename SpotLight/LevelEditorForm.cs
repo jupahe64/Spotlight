@@ -633,6 +633,7 @@ namespace SpotLight
             {
                 var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone);
                 currentScene.ZonePlacements.Add(zonePlacement);
+                currentScene.Prepare(LevelGLControlModern);
                 currentScene.AddToUndo(new RevertableSingleAddition(zonePlacement, currentScene.ZonePlacements));
                 ZoneDocumentTabControl_SelectedTabChanged(null, null);
             }
