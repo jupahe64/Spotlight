@@ -613,7 +613,8 @@ namespace SpotLight
                 return;
             }
             new AddObjectForm(currentScene, LevelGLControlModern).ShowDialog(this);
-            AddObjectTimer.Start();
+
+            SpotlightToolStripStatusLabel.Text = "You have to place the object by clicking, when holding shift multiple objects can be placed";
         }
 
         private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
@@ -790,6 +791,7 @@ namespace SpotLight
             scene.ZonePlacementsChanged += Scene_ZonePlacementsChanged;
             scene.Reverted += Scene_Reverted;
             scene.IsSavedChanged += Scene_IsSavedChanged;
+            scene.ObjectPlaced += Scene_ObjectPlaced;
         }
 
         private void Scene_IsSavedChanged(object sender, EventArgs e)
@@ -1022,11 +1024,11 @@ namespace SpotLight
             e.Cancel = !ZoneDocumentTabControl.TryClearTabs();
         }
 
-        private void AddObjectTimer_Tick(object sender, EventArgs e)
+        private void Scene_ObjectPlaced(object sender, EventArgs e)
         {
             MainSceneListView.Refresh();
             if (currentScene.ObjectPlaceDelegate == null)
-                AddObjectTimer.Stop();
+                SpotlightToolStripStatusLabel.Text = "";
         }
 
         /// <summary>

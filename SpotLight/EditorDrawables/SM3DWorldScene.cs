@@ -170,6 +170,8 @@ namespace SpotLight.EditorDrawables
 
         public event EventHandler ZonePlacementsChanged;
 
+        public event EventHandler ObjectPlaced;
+
         public T ConvertToOtherSceneType<T>() where T : SM3DWorldScene, new() => new T
         {
             mainZone = mainZone,
@@ -229,6 +231,8 @@ namespace SpotLight.EditorDrawables
 
                 if (!WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
                     ObjectPlaceDelegate = null;
+
+                ObjectPlaced?.Invoke(null, null);
 
                 return REDRAW_PICKING;
             }
