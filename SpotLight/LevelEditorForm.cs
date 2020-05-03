@@ -30,36 +30,28 @@ namespace SpotLight
         Keys KS_DeleteSelected = KeyStroke("Delete");
         #endregion
 
-        protected override bool ProcessCmdKey(ref Message m, Keys keyData)
+        protected override bool ProcessKeyPreview(ref Message m)
         {
             if (LevelGLControlModern.IsHovered)
             {
-                if (keyData == KS_AddObject)
-                    AddObjectToolStripMenuItem_Click(null, null);
-                else if (keyData == KS_DeleteSelected)
-                    DeleteToolStripMenuItem_Click(null, null);
+                Keys keyData = (Keys)(unchecked((int)(long)m.WParam)) | ModifierKeys;
 
-                LevelGLControlModern.PerformKeyDown(new KeyEventArgs(keyData));
-                LevelGLControlModern.PerformKeyUp(new KeyEventArgs(keyData));
-
-                foreach(var memberInfo in typeof(LevelEditorForm).GetMembers(BindingFlags.NonPublic |
-                         BindingFlags.Instance))
+                if (m.Msg == 0x0100) //WM_KEYDOWN
                 {
-                    if(memberInfo is FieldInfo info)
-                    {
-                        if (info.GetValue(this) is ToolStripMenuItem menuItem)
-                        {
-                            if (keyData == menuItem.ShortcutKeys)
-                                return base.ProcessCmdKey(ref m, keyData);
-                        }
-                        Console.WriteLine(info.Name);
-                    }
-                }
+                    if (keyData == KS_AddObject)
+                        AddObjectToolStripMenuItem_Click(null, null);
+                    else if (keyData == KS_DeleteSelected)
+                        DeleteToolStripMenuItem_Click(null, null);
 
-                return true;
+                    LevelGLControlModern.PerformKeyDown(new KeyEventArgs(keyData));
+                }
+                else if (m.Msg == 0x0101) //WM_KEYUP
+                {
+                    LevelGLControlModern.PerformKeyUp(new KeyEventArgs(keyData));
+                }
             }
 
-            return base.ProcessCmdKey(ref m, keyData);
+            return base.ProcessKeyPreview(ref m);
         }
 
         public LevelEditorForm()
@@ -71,8 +63,12 @@ namespace SpotLight
 
             SelectAllToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_SelectAll);
             DeselectAllToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_DeSelectAll);
+
             UndoToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_Undo);
             RedoToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_Redo);
+
+            AddObjectToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_AddObject);
+            DeleteToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_DeleteSelected);
 
             MainTabControl.SelectedTab = ObjectsTabPage;
             LevelGLControlModern.CameraDistance = 20;
@@ -365,7 +361,7 @@ namespace SpotLight
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter =
-                string.Format("{0}|*Map1.szs|{1}|*Design1.szs|{2}|*Sound1.szs|{3}|*Map1.szs;*Design1.szs;*Sound1.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3]),
+                string.Format("{0}|*StageMap1.szs|{0}|*Map1.szs|{1}|*Design1.szs|{2}|*Sound1.szs|{3}|*Map1.szs;*Design1.szs;*Sound1.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3]),
                 InitialDirectory = currentScene?.EditZone.Directory ?? (Program.ProjectPath.Equals("") ? Program.BaseStageDataPath : System.IO.Path.Combine(Program.ProjectPath, "StageData")) };
 
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
