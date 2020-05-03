@@ -55,6 +55,9 @@ namespace SpotLight.EditorDrawables
         {
             if (e.Button != MouseButtons.Left)
             {
+                if (selectedConnection.Source == selectedConnection.Dest)
+                    selectedConnection = null;
+
                 linkDragMode = LinkDragMode.None;
                 return 0;
             }
