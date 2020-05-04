@@ -159,6 +159,8 @@ namespace SpotLight.EditorDrawables
             multiSelect = true;
 
             StaticObjects.Add(new LinkRenderer(this));
+
+            StaticObjects.Add(new ZonePlacementRenderer(this));
         }
 
         public SM3DWorldScene()
@@ -166,6 +168,8 @@ namespace SpotLight.EditorDrawables
             multiSelect = true;
 
             StaticObjects.Add(new LinkRenderer(this));
+
+            StaticObjects.Add(new ZonePlacementRenderer(this));
         }
 
         public event EventHandler ZonePlacementsChanged;
@@ -183,15 +187,6 @@ namespace SpotLight.EditorDrawables
             redoStack = redoStack,
             IsSaved = IsSaved,
         };
-
-        public override void Draw(GL_ControlModern control, Pass pass)
-        {
-            base.Draw(control, pass);
-
-            if (editZoneIndex != 0) //zonePlacements can't be edited
-                foreach (var zonePlacement in ZonePlacements)
-                    zonePlacement.Draw(control, pass, this);
-        }
 
         public delegate (I3dWorldObject obj, ObjectList objList)[] ObjectPlacementHandler(Vector3 position, SM3DWorldZone zone);
         /// <summary>
@@ -387,6 +382,43 @@ namespace SpotLight.EditorDrawables
                     }
                     GL.End();
                 }
+            }
+
+            public override int GetPickableSpan()
+            {
+                return 0;
+            }
+
+            public override void Prepare(GL_ControlLegacy control)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Draw(GL_ControlLegacy control, Pass pass)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        class ZonePlacementRenderer : AbstractGlDrawable
+        {
+            readonly SM3DWorldScene scene;
+
+            public ZonePlacementRenderer(SM3DWorldScene scene)
+            {
+                this.scene = scene;
+            }
+
+            public override void Prepare(GL_ControlModern control)
+            {
+
+            }
+
+            public override void Draw(GL_ControlModern control, Pass pass)
+            {
+                if (scene.editZoneIndex != 0) //zonePlacements can't be edited
+                    foreach (var zonePlacement in scene.ZonePlacements)
+                        zonePlacement.Draw(control, pass, scene);
             }
 
             public override int GetPickableSpan()
