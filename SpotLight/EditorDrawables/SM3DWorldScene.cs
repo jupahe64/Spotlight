@@ -931,6 +931,32 @@ namespace SpotLight.EditorDrawables
             control.Repick();
         }
 
+        public void GrowSelection()
+        {
+            List<I3dWorldObject> objectsToSelect = new List<I3dWorldObject>();
+
+            foreach (var obj in Get3DWObjects())
+            {
+                if (obj.Links != null && obj.IsSelected())
+                {
+                    foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in obj.Links)
+                    {
+                        foreach (I3dWorldObject _obj in keyValuePair.Value)
+                        {
+                            objectsToSelect.Add(obj);
+                        }
+                    }
+                }
+            }
+
+            foreach (var obj in objectsToSelect)
+            {
+                obj.SelectDefault(control);
+            }
+
+            control.Refresh();
+        }
+
         public class DuplicationInfo
         {
             Dictionary<I3dWorldObject, I3dWorldObject> duplicatedObjects;

@@ -1242,5 +1242,10 @@ Would you like to rebuild the database from your 3DW Files?";
         {
             currentScene?.PasteCopiedObjects();
         }
+
+        private void GrowSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentScene?.GrowSelection();
+        }
     }
 }
