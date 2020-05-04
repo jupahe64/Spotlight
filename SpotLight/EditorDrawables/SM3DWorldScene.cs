@@ -792,7 +792,7 @@ namespace SpotLight.EditorDrawables
             public IRevertable Revert(EditorSceneBase scene)
             {
                 SM3DWorldScene s = (SM3DWorldScene)scene;
-                s.AddConnection(source, dest, name);
+                s.TryAddConnection(source, dest, name);
                 s.UpdateLinkDestinations();
                 return new RevertableConnectionAddition(source, dest, name);
             }
@@ -822,7 +822,7 @@ namespace SpotLight.EditorDrawables
             {
                 SM3DWorldScene s = (SM3DWorldScene)scene;
                 s.RemoveConnection(source, dest, name);
-                s.AddConnection(prevSource, prevDest, prevName);
+                s.TryAddConnection(prevSource, prevDest, prevName);
                 s.UpdateLinkDestinations();
                 return new RevertableConnectionChange(
                     prevSource, prevDest, prevName,
@@ -835,10 +835,13 @@ namespace SpotLight.EditorDrawables
             source.Links[name].Remove(dest);
         }
 
-        public virtual void AddConnection(I3dWorldObject source, I3dWorldObject dest, string name)
+        public virtual bool TryAddConnection(I3dWorldObject source, I3dWorldObject dest, string name)
         {
             if (source.Links == null)
                 source.Links = new Dictionary<string, List<I3dWorldObject>>();
+
+            if (source.Links == null) //object doesn't support links
+                return false;
 
             if (!source.Links.ContainsKey(name))
                 source.Links.Add(name, new List<I3dWorldObject>());

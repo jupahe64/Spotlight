@@ -283,16 +283,7 @@ namespace SpotLight.EditorDrawables
 
         public void AddLinkDestinations()
         {
-            if (Links != null)
-            {
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
-                {
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
-                    {
-                        obj.AddLinkDestination(keyValuePair.Key, this);
-                    }
-                }
-            }
+            //We don't expect Rails to have Links
         }
 
         public void AddLinkDestination(string linkName, I3dWorldObject linkingObject)
@@ -336,40 +327,7 @@ namespace SpotLight.EditorDrawables
 
         public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo)
         {
-            if (Links != null)
-            {
-                bool isDuplicate = duplicationInfo.IsDuplicate(this);
-
-                bool hasDuplicate = duplicationInfo.HasDuplicate(this);
-
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
-                {
-                    I3dWorldObject[] oldLink = keyValuePair.Value.ToArray();
-
-                    //Clear Link
-                    keyValuePair.Value.Clear();
-
-                    //Populate Link
-                    foreach (I3dWorldObject obj in oldLink)
-                    {
-                        bool objHasDuplicate = duplicationInfo.TryGetDuplicate(obj, out I3dWorldObject duplicate);
-
-                        if (!(isDuplicate && objHasDuplicate))
-                        {
-                            //Link to original
-                            keyValuePair.Value.Add(obj);
-                            obj.AddLinkDestination(keyValuePair.Key, this);
-                        }
-
-                        if (objHasDuplicate && (hasDuplicate == isDuplicate))
-                        {
-                            //Link to duplicate
-                            keyValuePair.Value.Add(duplicate);
-                            duplicate.AddLinkDestination(keyValuePair.Key, this);
-                        }
-                    }
-                }
-            }
+            //We don't expect Rails to have Links
         }
         #endregion
 
