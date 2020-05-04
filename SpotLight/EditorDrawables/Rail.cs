@@ -291,7 +291,7 @@ namespace SpotLight.EditorDrawables
             linkDestinations.Add((linkName, linkingObject));
         }
 
-        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, SM3DWorldZone zone)
+        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, ZoneTransform? zoneToZoneTransform = null, bool deselectOld = true)
         {
             bool anyPointsSelected = false;
             foreach (PathPoint point in pathPoints)
@@ -314,18 +314,17 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-            duplicates[this] = new Rail(newPoints, zone.NextRailID(), Closed, IsLadder, IsReverseCoord, ObjType, zone);
+            duplicates[this] = new Rail(newPoints, scene.EditZone.NextRailID(), Closed, IsLadder, IsReverseCoord, ObjType, scene.EditZone);
 
-            var duplicate = duplicates[this];
-
-            DeselectAll(scene.GL_Control);
+            if(deselectOld)
+                DeselectAll(scene.GL_Control);
             
             duplicates[this].Prepare((GL_EditorFramework.GL_Core.GL_ControlModern)scene.GL_Control);
 
             duplicates[this].SelectDefault(scene.GL_Control);
         }
 
-        public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo)
+        public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
         {
             //We don't expect Rails to have Links
         }

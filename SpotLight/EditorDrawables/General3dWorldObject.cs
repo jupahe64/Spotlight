@@ -274,12 +274,13 @@ namespace SpotLight.EditorDrawables
             linkDestinations.Add((linkName, linkingObject));
         }
 
-        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, SM3DWorldZone zone)
+        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, ZoneTransform? zoneToZoneTransform = null, bool deselectOld = true)
         {
             if (!Selected)
                 return;
 
-            Selected = false;
+            if(deselectOld)
+                Selected = false;
 
             //copy links
             Dictionary<string, List<I3dWorldObject>> newLinks;
@@ -308,14 +309,23 @@ namespace SpotLight.EditorDrawables
             }
             else
                 newProperties = null;
-            
-            duplicates[this] = new General3dWorldObject(Position, Rotation, Scale, zone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
-                newLinks, newProperties, zone);
+
+            Vector3 position = Position;
+            Vector3 rotation = Rotation;
+
+            if (zoneToZoneTransform.HasValue)
+            {
+                position = (new Vector4(position, 1) * zoneToZoneTransform.Value.PositionTransform).Xyz;
+                rotation = Framework.ApplyRotation(rotation, zoneToZoneTransform.Value.RotationTransform);
+            }
+
+            duplicates[this] = new General3dWorldObject(position, rotation, Scale, scene.EditZone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
+                newLinks, newProperties, scene.EditZone);
 
             duplicates[this].SelectDefault(scene.GL_Control);
         }
 
-        public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo)
+        public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
         {
             if (Links != null)
             {
@@ -335,7 +345,7 @@ namespace SpotLight.EditorDrawables
                     {
                         bool objHasDuplicate = duplicationInfo.TryGetDuplicate(obj, out I3dWorldObject duplicate);
 
-                        if (!(isDuplicate && objHasDuplicate))
+                        if (!(isDuplicate && objHasDuplicate) && !(isDuplicate&&!allowKeepLinksOfDuplicate))
                         {
                             //Link to original
                             keyValuePair.Value.Add(obj);

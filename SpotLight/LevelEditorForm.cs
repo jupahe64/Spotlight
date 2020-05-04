@@ -1230,7 +1230,17 @@ Would you like to rebuild the database from your 3DW Files?";
         private string UnsavedChangesHeader { get; set; }
         private string UnsavedChangesText { get; set; }
         private string StatusLevelClosed { get; set; }
-        
+
         #endregion
+
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentScene?.CopySelectedObjects();
+        }
+
+        private void PasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentScene?.PasteCopiedObjects();
+        }
     }
 }

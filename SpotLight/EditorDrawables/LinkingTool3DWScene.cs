@@ -55,14 +55,14 @@ namespace SpotLight.EditorDrawables
         {
             if (e.Button != MouseButtons.Left)
             {
-                if (selectedConnection.Source == selectedConnection.Dest)
+                if (selectedConnection?.Source == selectedConnection?.Dest)
                     selectedConnection = null;
 
                 linkDragMode = LinkDragMode.None;
                 return 0;
             }
 
-            if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftCtrl))
+            if (Hovered3dObject!=null && WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftCtrl))
             {
                 SelectedConnection = new LinkConnection(Hovered3dObject, Hovered3dObject, Hovered3dObject.Links?.Keys.First()??"UnnamedConnection");
                 linkDragMode = LinkDragMode.Dest;
@@ -139,13 +139,18 @@ namespace SpotLight.EditorDrawables
                         SelectedConnection = null;
                     else
                     {
-                        AddConnection(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name);
+                        if (TryAddConnection(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name))
+                        {
+                            UpdateLinkDestinations();
 
-                        UpdateLinkDestinations();
+                            AddToUndo(new RevertableConnectionAddition(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name));
 
-                        AddToUndo(new RevertableConnectionAddition(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name));
-
-                        SelectedConnection.Dest = Hovered3dObject;
+                            SelectedConnection.Dest = Hovered3dObject;
+                        }
+                        else //SelectedConnection.Source doesn't support links
+                        {
+                            selectedConnection = null;
+                        }
 
                         UpdateSelection(0);
                     }
@@ -190,7 +195,7 @@ namespace SpotLight.EditorDrawables
                 SelectedConnection.Name
                 );
 
-            AddConnection(newSource, newDest, newName);
+            TryAddConnection(newSource, newDest, newName);
 
             UpdateLinkDestinations();
 

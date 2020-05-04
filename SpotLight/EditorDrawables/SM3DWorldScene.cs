@@ -662,7 +662,7 @@ namespace SpotLight.EditorDrawables
             foreach (ObjectList objList in EditZone.ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objList)
-                    obj.DuplicateSelected(duplicates, this, EditZone);
+                    obj.DuplicateSelected(duplicates, this);
 
                 objList.AddRange(duplicates.Values);
 
@@ -675,7 +675,7 @@ namespace SpotLight.EditorDrawables
             }
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
-                obj.DuplicateSelected(duplicates, this, EditZone);
+                obj.DuplicateSelected(duplicates, this);
 
             foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
 
@@ -702,11 +702,11 @@ namespace SpotLight.EditorDrawables
             foreach (ObjectList objects in EditZone.ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objects)
-                    obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
+                    obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, true);
             }
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
-                obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo);
+                obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, true);
 
             BeginUndoCollection();
             //Add to undo
@@ -723,6 +723,173 @@ namespace SpotLight.EditorDrawables
                 ZonePlacementsChanged?.Invoke(this, null);
 
                 RevertableAddition.AddInListInfo addInListInfo = new RevertableAddition.AddInListInfo(newPlacements.ToArray(), ZonePlacements);
+
+                AddToUndo(new RevertableAddition(new RevertableAddition.AddInListInfo[] { addInListInfo }, Array.Empty<RevertableAddition.SingleAddInListInfo>()));
+            }
+
+            EndUndoCollection();
+            control.Refresh();
+            control.Repick();
+        }
+
+        static List<ZonePlacement> copiedZonePlacements = null;
+
+        static List<(string listName, Dictionary<I3dWorldObject, I3dWorldObject> copies)> copiedObjects = null;
+
+        static SM3DWorldZone copySrcZone = null;
+
+        static ZoneTransform copySrcZoneTransform;
+
+        /// <summary>
+        /// Copies the selected objects for pasting
+        /// </summary>
+        public void CopySelectedObjects()
+        {
+            copiedZonePlacements = new List<ZonePlacement>();
+            if (editZoneIndex == 0) //editing main zone
+            {
+                foreach (ZonePlacement placement in ZonePlacements)
+                {
+                    if (placement.IsSelectedAll())
+                    {
+                        copiedZonePlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Scale, placement.Zone));
+                    }
+                }
+                //the rest will be handled at the end of the function
+            }
+
+            //Duplicate Selected Objects
+            copiedObjects = new List<(string listName, Dictionary<I3dWorldObject, I3dWorldObject> copies)>();
+
+            SceneObjectIterState.InLinks = false;
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in EditZone.ObjLists)
+            {
+                Dictionary<I3dWorldObject, I3dWorldObject> copies = new Dictionary<I3dWorldObject, I3dWorldObject>();
+
+                foreach (I3dWorldObject obj in keyValuePair.Value)
+                    obj.DuplicateSelected(copies, this, null, false);
+
+                if(copies.Count>0)
+                    copiedObjects.Add((keyValuePair.Key, copies));
+            }
+            SceneObjectIterState.InLinks = true;
+
+            {
+                Dictionary<I3dWorldObject, I3dWorldObject> copies = new Dictionary<I3dWorldObject, I3dWorldObject>();
+
+                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                    obj.DuplicateSelected(copies, this);
+
+                if (copies.Count > 0)
+                    copiedObjects.Add(("Links", copies));
+            }
+
+            if(copiedZonePlacements.Count > 0 || copiedObjects.Count > 0)
+            {
+                copySrcZone = EditZone;
+
+                copySrcZoneTransform = EditZoneTransform;
+            }
+            else
+            {
+                copiedZonePlacements = null;
+                copiedObjects = null;
+            }
+        }
+
+        /// <summary>
+        /// Pastes the copied objects and adds links if necessary
+        /// </summary>
+        public void PasteCopiedObjects()
+        {
+            //Duplicate Selected Objects
+            List<Revertable3DWorldObjAddition.ObjListInfo> objListInfos = new List<Revertable3DWorldObjAddition.ObjListInfo>();
+
+            Dictionary<I3dWorldObject, I3dWorldObject> totalDuplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+
+            if (copiedObjects != null)
+            {
+                bool isSameZone = EditZone == copySrcZone;
+
+                ZoneTransform? zoneToZoneTransform = null;
+
+                if (!isSameZone)
+                {
+                    zoneToZoneTransform = new ZoneTransform(
+                        EditZoneTransform.PositionTransform.Inverted() * copySrcZoneTransform.PositionTransform,
+                        EditZoneTransform.RotationTransform.Inverted() * copySrcZoneTransform.RotationTransform
+                        );
+
+                }
+
+                SelectedObjects.Clear();
+
+                foreach ((string listName, Dictionary<I3dWorldObject, I3dWorldObject> copies) in copiedObjects)
+                {
+                    if (!EditZone.ObjLists.TryGetValue(listName, out ObjectList list))
+                    {
+                        list = EditZone.LinkedObjects;
+                    }
+
+                    Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
+
+                    foreach (I3dWorldObject obj in copies.Values)
+                        obj.DuplicateSelected(duplicates, this, zoneToZoneTransform, false); //yep we need to duplicate the copies
+
+                    list.AddRange(duplicates.Values);
+
+                    foreach (var keyValuePair in copies) totalDuplicates.Add(keyValuePair.Key, duplicates[keyValuePair.Value]);
+
+                    if (duplicates.Count > 0)
+                        objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(list, duplicates.Values.ToArray()));
+                }
+
+                //Clear LinkDestinations
+                SceneObjectIterState.InLinks = false;
+                foreach (List<I3dWorldObject> objects in EditZone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        obj.ClearLinkDestinations();
+                }
+                SceneObjectIterState.InLinks = true;
+                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                    obj.ClearLinkDestinations();
+
+                //Rebuild links
+                DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
+
+                SceneObjectIterState.InLinks = false;
+                foreach (ObjectList objects in EditZone.ObjLists.Values)
+                {
+                    foreach (I3dWorldObject obj in objects)
+                        obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, isSameZone);
+                }
+                SceneObjectIterState.InLinks = true;
+                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
+                    obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, isSameZone);
+            }
+
+            BeginUndoCollection();
+            //Add to undo
+            if (objListInfos.Count > 0)
+                AddToUndo(new Revertable3DWorldObjAddition(objListInfos.ToArray()));
+
+            List<ZonePlacement> totalDuplicatesOfZonePlacements = new List<ZonePlacement>();
+
+            if (editZoneIndex==0 && copiedZonePlacements?.Count > 0)
+            {
+                foreach (var placement in copiedZonePlacements)
+                {
+                    var newPlacement = new ZonePlacement(placement.Position, placement.Rotation, placement.Scale, placement.Zone);
+
+                    newPlacement.SelectDefault(control);
+                    ZonePlacements.Add(newPlacement);
+
+                    totalDuplicatesOfZonePlacements.Add(newPlacement);
+                }
+                ZonePlacementsChanged?.Invoke(this, null);
+
+                RevertableAddition.AddInListInfo addInListInfo = new RevertableAddition.AddInListInfo(totalDuplicatesOfZonePlacements.ToArray(), ZonePlacements);
 
                 AddToUndo(new RevertableAddition(new RevertableAddition.AddInListInfo[] { addInListInfo }, Array.Empty<RevertableAddition.SingleAddInListInfo>()));
             }
@@ -847,6 +1014,8 @@ namespace SpotLight.EditorDrawables
                 source.Links.Add(name, new List<I3dWorldObject>());
 
             source.Links[name].Add(dest);
+
+            return true;
         }
 
         #endregion

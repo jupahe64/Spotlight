@@ -36,7 +36,11 @@
             this.ZoneListBox = new System.Windows.Forms.ListBox();
             this.EditIndividualButton = new System.Windows.Forms.Button();
             this.ObjectsTabPage = new System.Windows.Forms.TabPage();
+            this.MainSceneListView = new GL_EditorFramework.SceneListView();
             this.CurrentObjectLabel = new System.Windows.Forms.Label();
+            this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
+            this.ZoneDocumentTabControl = new GL_EditorFramework.DocumentTabControl();
+            this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,6 +61,8 @@
             this.MoveSelectionToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToLinkedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToAppropriateListsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CopyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.PasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditObjectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditLinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,10 +72,6 @@
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
-            this.MainSceneListView = new GL_EditorFramework.SceneListView();
-            this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
-            this.ZoneDocumentTabControl = new GL_EditorFramework.DocumentTabControl();
-            this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -81,9 +83,9 @@
             this.MainTabControl.SuspendLayout();
             this.ZonesTabPage.SuspendLayout();
             this.ObjectsTabPage.SuspendLayout();
+            this.ZoneDocumentTabControl.SuspendLayout();
             this.SpotlightMenuStrip.SuspendLayout();
             this.SpotlightStatusStrip.SuspendLayout();
-            this.ZoneDocumentTabControl.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -179,6 +181,17 @@
             this.ObjectsTabPage.Text = "Objects";
             this.ObjectsTabPage.UseVisualStyleBackColor = true;
             // 
+            // MainSceneListView
+            // 
+            this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainSceneListView.Enabled = false;
+            this.MainSceneListView.Location = new System.Drawing.Point(3, 3);
+            this.MainSceneListView.Name = "MainSceneListView";
+            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
+            this.MainSceneListView.Size = new System.Drawing.Size(246, 213);
+            this.MainSceneListView.TabIndex = 1;
+            this.MainSceneListView.ItemDoubleClicked += new GL_EditorFramework.ItemDoubleClickedEventHandler(this.MainSceneListView_ItemDoubleClicked);
+            // 
             // CurrentObjectLabel
             // 
             this.CurrentObjectLabel.AutoSize = true;
@@ -187,6 +200,53 @@
             this.CurrentObjectLabel.Size = new System.Drawing.Size(87, 13);
             this.CurrentObjectLabel.TabIndex = 0;
             this.CurrentObjectLabel.Text = "Nothing selected";
+            // 
+            // ObjectUIControl
+            // 
+            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ObjectUIControl.BackColor = System.Drawing.SystemColors.Control;
+            this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
+            this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
+            this.ObjectUIControl.Name = "ObjectUIControl";
+            this.ObjectUIControl.Size = new System.Drawing.Size(254, 245);
+            this.ObjectUIControl.TabIndex = 1;
+            // 
+            // ZoneDocumentTabControl
+            // 
+            this.ZoneDocumentTabControl.Controls.Add(this.LevelGLControlModern);
+            this.ZoneDocumentTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ZoneDocumentTabControl.Location = new System.Drawing.Point(0, 0);
+            this.ZoneDocumentTabControl.Name = "ZoneDocumentTabControl";
+            this.ZoneDocumentTabControl.Size = new System.Drawing.Size(520, 515);
+            this.ZoneDocumentTabControl.TabIndex = 1;
+            this.ZoneDocumentTabControl.SelectedTabChanged += new System.EventHandler(this.ZoneDocumentTabControl_SelectedTabChanged);
+            this.ZoneDocumentTabControl.TabClosing += new GL_EditorFramework.DocumentTabClosingEventHandler(this.ZoneDocumentTabControl_TabClosing);
+            // 
+            // LevelGLControlModern
+            // 
+            this.LevelGLControlModern.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
+            this.LevelGLControlModern.CameraDistance = 10F;
+            this.LevelGLControlModern.CameraTarget = ((OpenTK.Vector3)(resources.GetObject("LevelGLControlModern.CameraTarget")));
+            this.LevelGLControlModern.CamRotX = 0F;
+            this.LevelGLControlModern.CamRotY = 0F;
+            this.LevelGLControlModern.CurrentShader = null;
+            this.LevelGLControlModern.Fov = 0.7853982F;
+            this.LevelGLControlModern.Location = new System.Drawing.Point(3, 32);
+            this.LevelGLControlModern.Margin = new System.Windows.Forms.Padding(3, 32, 3, 3);
+            this.LevelGLControlModern.Name = "LevelGLControlModern";
+            this.LevelGLControlModern.NormPickingDepth = 0F;
+            this.LevelGLControlModern.ShowOrientationCube = true;
+            this.LevelGLControlModern.Size = new System.Drawing.Size(515, 481);
+            this.LevelGLControlModern.Stereoscopy = GL_EditorFramework.GL_Core.GL_ControlBase.StereoscopyType.DISABLED;
+            this.LevelGLControlModern.TabIndex = 0;
+            this.LevelGLControlModern.VSync = false;
+            this.LevelGLControlModern.ZFar = 32000F;
+            this.LevelGLControlModern.ZNear = 1.5F;
             // 
             // SpotlightMenuStrip
             // 
@@ -270,7 +330,9 @@
             this.SelectAllToolStripMenuItem,
             this.DeselectAllToolStripMenuItem,
             this.LevelParametersToolStripMenuItem,
-            this.MoveSelectionToToolStripMenuItem});
+            this.MoveSelectionToToolStripMenuItem,
+            this.CopyToolStripMenuItem,
+            this.PasteToolStripMenuItem});
             this.EditToolStripMenuItem.Name = "EditToolStripMenuItem";
             this.EditToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.EditToolStripMenuItem.Text = "Edit";
@@ -363,16 +425,32 @@
             // MoveToLinkedToolStripMenuItem
             // 
             this.MoveToLinkedToolStripMenuItem.Name = "MoveToLinkedToolStripMenuItem";
-            this.MoveToLinkedToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.MoveToLinkedToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.MoveToLinkedToolStripMenuItem.Text = "Linked Objects";
             this.MoveToLinkedToolStripMenuItem.Click += new System.EventHandler(this.MoveToLinkedToolStripMenuItem_Click);
             // 
             // MoveToAppropriateListsToolStripMenuItem
             // 
             this.MoveToAppropriateListsToolStripMenuItem.Name = "MoveToAppropriateListsToolStripMenuItem";
-            this.MoveToAppropriateListsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.MoveToAppropriateListsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.MoveToAppropriateListsToolStripMenuItem.Text = "Appropriate Lists";
             this.MoveToAppropriateListsToolStripMenuItem.Click += new System.EventHandler(this.MoveToAppropriateListsToolStripMenuItem_Click);
+            // 
+            // CopyToolStripMenuItem
+            // 
+            this.CopyToolStripMenuItem.Name = "CopyToolStripMenuItem";
+            this.CopyToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.CopyToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.CopyToolStripMenuItem.Text = "Copy";
+            this.CopyToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
+            // 
+            // PasteToolStripMenuItem
+            // 
+            this.PasteToolStripMenuItem.Name = "PasteToolStripMenuItem";
+            this.PasteToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.PasteToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.PasteToolStripMenuItem.Text = "Paste";
+            this.PasteToolStripMenuItem.Click += new System.EventHandler(this.PasteToolStripMenuItem_Click);
             // 
             // ModeToolStripMenuItem
             // 
@@ -416,14 +494,14 @@
             // SpotlightWikiToolStripMenuItem
             // 
             this.SpotlightWikiToolStripMenuItem.Name = "SpotlightWikiToolStripMenuItem";
-            this.SpotlightWikiToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.SpotlightWikiToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.SpotlightWikiToolStripMenuItem.Text = "Spotlight Wiki";
             this.SpotlightWikiToolStripMenuItem.Click += new System.EventHandler(this.SpotlightWikiToolStripMenuItem_Click);
             // 
             // CheckForUpdatesToolStripMenuItem
             // 
             this.CheckForUpdatesToolStripMenuItem.Name = "CheckForUpdatesToolStripMenuItem";
-            this.CheckForUpdatesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.CheckForUpdatesToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.CheckForUpdatesToolStripMenuItem.Text = "Check for Updates";
             this.CheckForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.CheckForUpdatesToolStripMenuItem_Click);
             // 
@@ -447,64 +525,6 @@
             this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
-            // 
-            // MainSceneListView
-            // 
-            this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MainSceneListView.Enabled = false;
-            this.MainSceneListView.Location = new System.Drawing.Point(3, 3);
-            this.MainSceneListView.Name = "MainSceneListView";
-            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
-            this.MainSceneListView.Size = new System.Drawing.Size(246, 213);
-            this.MainSceneListView.TabIndex = 1;
-            this.MainSceneListView.ItemDoubleClicked += new GL_EditorFramework.ItemDoubleClickedEventHandler(this.MainSceneListView_ItemDoubleClicked);
-            // 
-            // ObjectUIControl
-            // 
-            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ObjectUIControl.BackColor = System.Drawing.SystemColors.Control;
-            this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
-            this.ObjectUIControl.MinimumSize = new System.Drawing.Size(200, 200);
-            this.ObjectUIControl.Name = "ObjectUIControl";
-            this.ObjectUIControl.Size = new System.Drawing.Size(254, 245);
-            this.ObjectUIControl.TabIndex = 1;
-            // 
-            // ZoneDocumentTabControl
-            // 
-            this.ZoneDocumentTabControl.Controls.Add(this.LevelGLControlModern);
-            this.ZoneDocumentTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ZoneDocumentTabControl.Location = new System.Drawing.Point(0, 0);
-            this.ZoneDocumentTabControl.Name = "ZoneDocumentTabControl";
-            this.ZoneDocumentTabControl.Size = new System.Drawing.Size(520, 515);
-            this.ZoneDocumentTabControl.TabIndex = 1;
-            this.ZoneDocumentTabControl.SelectedTabChanged += new System.EventHandler(this.ZoneDocumentTabControl_SelectedTabChanged);
-            this.ZoneDocumentTabControl.TabClosing += new GL_EditorFramework.DocumentTabClosingEventHandler(this.ZoneDocumentTabControl_TabClosing);
-            // 
-            // LevelGLControlModern
-            // 
-            this.LevelGLControlModern.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
-            this.LevelGLControlModern.CameraDistance = 10F;
-            this.LevelGLControlModern.CameraTarget = ((OpenTK.Vector3)(resources.GetObject("LevelGLControlModern.CameraTarget")));
-            this.LevelGLControlModern.CamRotX = 0F;
-            this.LevelGLControlModern.CamRotY = 0F;
-            this.LevelGLControlModern.CurrentShader = null;
-            this.LevelGLControlModern.Fov = 0.7853982F;
-            this.LevelGLControlModern.Location = new System.Drawing.Point(3, 32);
-            this.LevelGLControlModern.Margin = new System.Windows.Forms.Padding(3, 32, 3, 3);
-            this.LevelGLControlModern.Name = "LevelGLControlModern";
-            this.LevelGLControlModern.NormPickingDepth = 0F;
-            this.LevelGLControlModern.ShowOrientationCube = true;
-            this.LevelGLControlModern.Size = new System.Drawing.Size(515, 481);
-            this.LevelGLControlModern.Stereoscopy = GL_EditorFramework.GL_Core.GL_ControlBase.StereoscopyType.DISABLED;
-            this.LevelGLControlModern.TabIndex = 0;
-            this.LevelGLControlModern.VSync = false;
-            this.LevelGLControlModern.ZFar = 32000F;
-            this.LevelGLControlModern.ZNear = 1.5F;
             // 
             // LevelEditorForm
             // 
@@ -532,11 +552,11 @@
             this.MainTabControl.ResumeLayout(false);
             this.ZonesTabPage.ResumeLayout(false);
             this.ObjectsTabPage.ResumeLayout(false);
+            this.ZoneDocumentTabControl.ResumeLayout(false);
             this.SpotlightMenuStrip.ResumeLayout(false);
             this.SpotlightMenuStrip.PerformLayout();
             this.SpotlightStatusStrip.ResumeLayout(false);
             this.SpotlightStatusStrip.PerformLayout();
-            this.ZoneDocumentTabControl.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -584,6 +604,8 @@
         private System.Windows.Forms.ToolStripMenuItem AboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem SpotlightWikiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem CheckForUpdatesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem CopyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem PasteToolStripMenuItem;
     }
 }
 
