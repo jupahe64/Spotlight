@@ -943,7 +943,7 @@ namespace SpotLight.EditorDrawables
                     {
                         foreach (I3dWorldObject _obj in keyValuePair.Value)
                         {
-                            objectsToSelect.Add(obj);
+                            objectsToSelect.Add(_obj);
                         }
                     }
                 }
