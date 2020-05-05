@@ -21,12 +21,11 @@ namespace SpotLight
             StageTypeComboBox.DataSource = new BindingSource(comboSource, null);
             StageTypeComboBox.DisplayMember = "Value";
             StageTypeComboBox.ValueMember = "Key";
-            Loading = false;
-            StageList = new StageList(Program.GamePath + "\\SystemData\\StageList.szs");
+            StageList = new StageList(Program.TryGetPathViaProject("SystemData", "StageList.szs"));
 
             WorldIDNumericUpDown.Maximum = StageList.Worlds.Count;
 
-            if (LevelName != "")
+            if (!LevelName.Equals(""))
             {
                 bool Breakout = false;
                 for (int x = 0; x < StageList.Worlds.Count; x++)
@@ -44,6 +43,8 @@ namespace SpotLight
                         break;
                 }
             }
+            Localize();
+            Loading = false;
         }
 
         Dictionary<int, StageTypes> comboSource = new Dictionary<int, StageTypes>
@@ -121,7 +122,8 @@ namespace SpotLight
             LPSF.ShowDialog();
             if (LPSF.levelname == "")
                 return;
-            
+
+            Loading = true;
             bool Breakout = false;
             for (int x = 0; x < StageList.Worlds.Count; x++)
             {
@@ -137,6 +139,7 @@ namespace SpotLight
                 if (Breakout)
                     break;
             }
+            Loading = false;
         }
 
         private void LoadLevelData(LevelParam LV, int worldID, int levelID)
@@ -154,7 +157,7 @@ namespace SpotLight
                 }
             }
             StageNameTextBox.Text = LV.StageName;
-            CourseLabel.Text = $"World {worldID}-{LV.StageID}";
+            CourseLabel.Text = string.Format(WorldString, worldID, LV.StageID);
             WorldIDNumericUpDown.Value = worldID;
             LevelIDNumericUpDown.Value = LV.StageID;
             CourseIDNumericUpDown.Value = LV.CourseID;
@@ -195,6 +198,24 @@ namespace SpotLight
         {
             StageList.Save();
             Changed = false;
+
+            bool Breakout = false;
+            for (int x = 0; x < StageList.Worlds.Count; x++)
+            {
+                for (int y = 0; y < StageList.Worlds[x].Levels.Count; y++)
+                {
+                    if (StageList.Worlds[x].Levels[y].StageName.Equals(StageNameTextBox.Text))
+                    {
+                        LoadLevelData(StageList.Worlds[x].Levels[y], StageList.Worlds[x].WorldID, y);
+                        Breakout = true;
+                        break;
+                    }
+                }
+                if (Breakout)
+                    break;
+            }
+
+            MessageBox.Show("Save Complete!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void LevelParameterForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -218,7 +239,7 @@ namespace SpotLight
 
         private void StageNameTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageName = StageNameTextBox.Text;
@@ -227,7 +248,7 @@ namespace SpotLight
         
         private void StageTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageType = JapaneseStageTypes[Convert.ToInt32(((KeyValuePair<int, StageTypes>)StageTypeComboBox.Items[StageTypeComboBox.SelectedIndex]).Key)];
@@ -236,23 +257,33 @@ namespace SpotLight
 
         private void WorldIDNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
-            
+
+            LevelParam current = StageList.Worlds[LevelID[0]].Levels[LevelID[1]];
+            StageList.Worlds[LevelID[0]].Levels.RemoveAt(LevelID[1]);
+            StageList.Worlds[(int)WorldIDNumericUpDown.Value-1].Levels.Add(current);
+            LevelID[0] = (int)WorldIDNumericUpDown.Value-1;
+            LevelID[1] = StageList.Worlds[(int)WorldIDNumericUpDown.Value-1].Levels.Count - 1;
+            LevelIDNumericUpDown.Value = LevelID[1];
+            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageID = (int)LevelIDNumericUpDown.Value;
+            Changed = true;
+            CourseLabel.Text = string.Format(WorldString, LevelID[0]+1, LevelID[1]+1);
         }
 
         private void LevelIDNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageID = (int)LevelIDNumericUpDown.Value;
             Changed = true;
+            CourseLabel.Text = string.Format(WorldString, LevelID[0]+1, LevelID[1]+1);
         }
 
         private void CourseIDNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].CourseID = (int)CourseIDNumericUpDown.Value;
@@ -261,7 +292,7 @@ namespace SpotLight
 
         private void TimerNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].Timer = (int)TimerNumericUpDown.Value;
@@ -270,7 +301,7 @@ namespace SpotLight
 
         private void GreenStarsNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GreenStarNum = (int)GreenStarsNumericUpDown.Value;
@@ -279,7 +310,7 @@ namespace SpotLight
 
         private void GreenStarLockNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GreenStarLock = (int)GreenStarLockNumericUpDown.Value;
@@ -288,7 +319,7 @@ namespace SpotLight
 
         private void DoubleMarioNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].DoubleMario = (int)DoubleMarioNumericUpDown.Value;
@@ -297,7 +328,7 @@ namespace SpotLight
 
         private void StampCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].IllustItemNum = StampCheckBox.Checked ? 1 : 0;
@@ -306,7 +337,7 @@ namespace SpotLight
 
         private void GhostBaseTimeNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GhostBaseTime = (int)GhostBaseTimeNumericUpDown.Value;
@@ -315,11 +346,43 @@ namespace SpotLight
 
         private void GhostIDNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (Loading == true)
+            if (Loading)
                 return;
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GhostID = (int)GhostIDNumericUpDown.Value;
             Changed = true;
         }
+
+        #region Localization
+        public void Localize()
+        {
+            Text = Program.CurrentLanguage.GetTranslation("LevelParamTitle") ?? "Spotlight - Level Parameters";
+            SaveSuccessHeader = Program.CurrentLanguage.GetTranslation("SaveSuccessHeader") ?? "Notice";
+            SaveSuccessText = Program.CurrentLanguage.GetTranslation("SaveSuccessText") ?? "Save Successful!";
+            SaveFailedHeader = Program.CurrentLanguage.GetTranslation("SaveSuccessHeader") ?? "Warning";
+            SaveFailedText = Program.CurrentLanguage.GetTranslation("SaveSuccessText") ?? "Save Failed!";
+            WorldString = Program.CurrentLanguage.GetTranslation("CourseLabel") ?? "World {0}-{1}";
+
+            ChangeLevelsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("ChangeLevels") ?? "Change Levels";
+            SaveToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("Save") ?? "Save";
+            StageNameLabel.Text = Program.CurrentLanguage.GetTranslation("StageNameLabel") ?? "Stage Name";
+            StageNameTextBox.Text = Program.CurrentLanguage.GetTranslation("StageNameDefault") ?? "No Level Selected";
+            StageTypeLabel.Text = Program.CurrentLanguage.GetTranslation("StageTypeLabel") ?? "Stage Type";
+            GlobalIDLabel.Text = Program.CurrentLanguage.GetTranslation("GlobalIDLabel") ?? "Global ID";
+            StampCheckBox.Text = Program.CurrentLanguage.GetTranslation("StampCheckBox") ?? "Has Stamp?";
+            TimeLabel.Text = Program.CurrentLanguage.GetTranslation("TimeLabel") ?? "Time";
+            GreenStarUnlockCountLabel.Text = Program.CurrentLanguage.GetTranslation("GreenStarUnlockCountLabel") ?? "Green Star Unlock Requirement";
+            GreenStarLabel.Text = Program.CurrentLanguage.GetTranslation("GreenStarLabel") ?? "Green Stars";
+            DoubleCherryLabel.Text = Program.CurrentLanguage.GetTranslation("DoubleCherryLabel") ?? "Double Cherry Max";
+            GhostTimeLabel.Text = Program.CurrentLanguage.GetTranslation("GhostTimeLabel") ?? "Mii Ghost Time";
+            GhostIDLabel.Text = Program.CurrentLanguage.GetTranslation("GhostIDLabel") ?? "Mii Ghost ID";
+        }
+        
+        private string WorldString { get; set; }
+        private string SaveSuccessHeader { get; set; }
+        private string SaveSuccessText { get; set; }
+        private string SaveFailedHeader { get; set; }
+        private string SaveFailedText { get; set; }
+        #endregion
     }
 }

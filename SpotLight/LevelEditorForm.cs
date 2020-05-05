@@ -70,6 +70,8 @@ namespace SpotLight
             AddObjectToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_AddObject);
             DeleteToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(KS_DeleteSelected);
 
+            GrowSelectionToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(Keys.Control|Keys.Oemplus).Replace("Oemplus","+");
+
             MainTabControl.SelectedTab = ObjectsTabPage;
             LevelGLControlModern.CameraDistance = 20;
 
@@ -289,7 +291,7 @@ namespace SpotLight
 
             if (selection.Count > 1)
             {
-                CurrentObjectLabel.Text = "Multiple objects selected";
+                CurrentObjectLabel.Text = MultipleSelected;
                 string SelectedObjects = "";
                 string previousobject = "";
                 int multi = 1;
@@ -321,16 +323,16 @@ namespace SpotLight
                     previousobject = currentobject;
                 }
                 SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
-                SpotlightToolStripStatusLabel.Text = $"Selected {SelectedObjects}";
+                SpotlightToolStripStatusLabel.Text = SelectedText + $" {SelectedObjects}";
             }
             else if (selection.Count == 0)
-                CurrentObjectLabel.Text = SpotlightToolStripStatusLabel.Text = "Nothing selected.";
+                CurrentObjectLabel.Text = SpotlightToolStripStatusLabel.Text = NothingSelected;
             else
             {
                 object selected = selection.First();
 
-                CurrentObjectLabel.Text = selected.ToString() + " selected";
-                SpotlightToolStripStatusLabel.Text = $"Selected \"{selected.ToString()}\".";
+                CurrentObjectLabel.Text = selected.ToString() + SelectedText.ToLower();
+                SpotlightToolStripStatusLabel.Text = SelectedText+$" \"{selected.ToString()}\".";
 
 
                 MainSceneListView.CurrentList.Contains(selected);
@@ -372,6 +374,45 @@ namespace SpotLight
                 SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
         }
 
+        private void OpenExToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string stagelistpath = Program.TryGetPathViaProject("SystemData", "StageList.szs");
+            if (!File.Exists(stagelistpath))
+            {
+                MessageBox.Show(string.Format(LevelSelectMissing, stagelistpath), "404", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SpotlightToolStripStatusLabel.Text = StatusOpenFailedMessage;
+                return;
+            }
+            SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
+            Refresh();
+            StageList STGLST = new StageList(stagelistpath);
+            LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST, true);
+            LPSF.ShowDialog();
+            if (LPSF.levelname.Equals(""))
+            {
+                SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
+                return;
+            }
+            if (!Program.ProjectPath.Equals("") && !File.Exists(System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs")))
+            {
+                DialogResult DR = MessageBox.Show(string.Format(LevelSelectCopyText,LPSF.levelname), LevelSelectCopyHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (DR == DialogResult.Yes)
+                {
+                    File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Map1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs"));
+                    if (File.Exists(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Design1.szs")))
+                        File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Design1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Design1.szs"), true);
+                    if (File.Exists(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Sound1.szs")))
+                        File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Sound1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Sound1.szs"), true);
+                }
+                else if (DR == DialogResult.Cancel)
+                {
+                    SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
+                    return;
+                }
+            }
+            OpenLevel(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}Map1.szs"));
+        }
+
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (currentScene == null)
@@ -406,31 +447,79 @@ namespace SpotLight
 
         private void UndoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentScene == null)
-                return;
-            currentScene.Undo();
+            currentScene?.Undo();
             LevelGLControlModern.Refresh();
         }
 
         private void RedoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentScene == null)
-                return;
-            currentScene.Redo();
+            currentScene?.Redo();
             LevelGLControlModern.Refresh();
         }
 
-        private void LevelParametersToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AddObjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Directory.Exists(Program.GamePath + "\\SystemData") && File.Exists(Program.GamePath + "\\SystemData\\StageList.szs"))
+            if (Program.ParameterDB == null)
             {
-                LPF = new LevelParameterForm(currentScene == null ? "" : currentScene.ToString());
-                LPF.Show();
+//                MessageBox.Show(
+//@"Y o u  c h o s e  n o t  t o  g e n e r a t e
+//a  v a l i d  d a t a b a s e  r e m e m b e r ?
+//= )"); //As much as I wish we could keep this, we can't.
+
+                DialogResult DR = MessageBox.Show(DatabaseInvalidText, DatabaseInvalidHeader, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                if (DR == DialogResult.Yes)
+                {
+                    Thread DatabaseGenThread = new Thread(() =>
+                    {
+                        LoadLevelForm LLF = new LoadLevelForm("GenDatabase", "GenDatabase");
+                        LLF.ShowDialog();
+                    });
+                    DatabaseGenThread.Start();
+                    Program.ParameterDB = new ObjectParameterDatabase();
+                    Program.ParameterDB.Create(Program.BaseStageDataPath);
+                    Program.ParameterDB.Save(Program.SOPDPath);
+                    if (DatabaseGenThread.IsAlive)
+                        LoadLevelForm.DoClose = true;
+                }
+                MessageBox.Show(DatabaseCreatedText, DatabaseCreatedHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
             }
-            else
+            new AddObjectForm(currentScene, LevelGLControlModern).ShowDialog(this);
+
+            SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
+        }
+
+        private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentScene.EditZoneIndex != 0)
+                return;
+
+            AddZoneForm azf = new AddZoneForm();
+
+            if (azf.ShowDialog() == DialogResult.Cancel)
+                return;
+
+            if (azf.SelectedFileName == null)
+                return;
+
+            if (SM3DWorldZone.TryOpen(System.IO.Path.Combine(Program.BaseStageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
             {
-                MessageBox.Show(string.Format(LevelParamsMissingText, Program.GamePath), LevelParamsMissingHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone);
+                currentScene.ZonePlacements.Add(zonePlacement);
+                currentScene.Prepare(LevelGLControlModern);
+                currentScene.AddToUndo(new RevertableSingleAddition(zonePlacement, currentScene.ZonePlacements));
+                ZoneDocumentTabControl_SelectedTabChanged(null, null);
             }
+        }
+
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentScene?.CopySelectedObjects();
+        }
+
+        private void PasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentScene?.PasteCopiedObjects();
         }
 
         private void DuplicateToolStripMenuItem_Click(object sender, EventArgs e)
@@ -480,67 +569,6 @@ namespace SpotLight
             }
         }
 
-        private void OpenExToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string stagelistpath = Program.TryGetPathViaProject("SystemData", "StageList.szs");
-            if (!File.Exists(stagelistpath))
-            {
-                MessageBox.Show(string.Format(LevelSelectMissing, stagelistpath), "404", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                SpotlightToolStripStatusLabel.Text = StatusOpenFailedMessage;
-                return;
-            }
-            SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
-            Refresh();
-            StageList STGLST = new StageList(stagelistpath);
-            LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST, true);
-            LPSF.ShowDialog();
-            if (LPSF.levelname.Equals(""))
-            {
-                SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
-                return;
-            }
-            if (!Program.ProjectPath.Equals("") && !File.Exists(System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs")))
-            {
-                DialogResult DR = MessageBox.Show(string.Format(LevelSelectCopyText,LPSF.levelname), LevelSelectCopyHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-                if (DR == DialogResult.Yes)
-                {
-                    File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Map1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs"));
-                    if (File.Exists(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Design1.szs")))
-                        File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Design1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Design1.szs"), true);
-                    if (File.Exists(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Sound1.szs")))
-                        File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Sound1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Sound1.szs"), true);
-                }
-                else if (DR == DialogResult.Cancel)
-                {
-                    SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
-                    return;
-                }
-            }
-            OpenLevel(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}Map1.szs"));
-        }
-
-        private void EditObjectsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentScene.GetType() != typeof(SM3DWorldScene))
-            {
-                currentScene = currentScene.ConvertToOtherSceneType<SM3DWorldScene>();
-                AssignSceneEvents(currentScene);
-                LevelGLControlModern.MainDrawable = currentScene;
-                LevelGLControlModern.Refresh();
-            }
-        }
-
-        private void EditLinksToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentScene.GetType() != typeof(LinkEdit3DWScene))
-            {
-                currentScene = currentScene.ConvertToOtherSceneType<LinkEdit3DWScene>();
-                AssignSceneEvents(currentScene);
-                LevelGLControlModern.MainDrawable = currentScene;
-                LevelGLControlModern.Refresh();
-            }
-        }
-
         private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (currentScene == null)
@@ -581,59 +609,9 @@ namespace SpotLight
             MainSceneListView.Refresh();
         }
 
-        private void AddObjectToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GrowSelectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Program.ParameterDB == null)
-            {
-//                MessageBox.Show(
-//@"Y o u  c h o s e  n o t  t o  g e n e r a t e
-//a  v a l i d  d a t a b a s e  r e m e m b e r ?
-//= )"); //As much as I wish we could keep this, we can't.
-
-                DialogResult DR = MessageBox.Show(DatabaseInvalidText, DatabaseInvalidHeader, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
-                if (DR == DialogResult.Yes)
-                {
-                    Thread DatabaseGenThread = new Thread(() =>
-                    {
-                        LoadLevelForm LLF = new LoadLevelForm("GenDatabase", "GenDatabase");
-                        LLF.ShowDialog();
-                    });
-                    DatabaseGenThread.Start();
-                    Program.ParameterDB = new ObjectParameterDatabase();
-                    Program.ParameterDB.Create(Program.BaseStageDataPath);
-                    Program.ParameterDB.Save(Program.SOPDPath);
-                    if (DatabaseGenThread.IsAlive)
-                        LoadLevelForm.DoClose = true;
-                }
-                MessageBox.Show(DatabaseCreatedText, DatabaseCreatedHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-            new AddObjectForm(currentScene, LevelGLControlModern).ShowDialog(this);
-
-            SpotlightToolStripStatusLabel.Text = "You have to place the object by clicking, when holding shift multiple objects can be placed";
-        }
-
-        private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentScene.EditZoneIndex != 0)
-                return;
-
-            AddZoneForm azf = new AddZoneForm();
-
-            if (azf.ShowDialog() == DialogResult.Cancel)
-                return;
-
-            if (azf.SelectedFileName == null)
-                return;
-
-            if (SM3DWorldZone.TryOpen(System.IO.Path.Combine(Program.BaseStageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
-            {
-                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone);
-                currentScene.ZonePlacements.Add(zonePlacement);
-                currentScene.Prepare(LevelGLControlModern);
-                currentScene.AddToUndo(new RevertableSingleAddition(zonePlacement, currentScene.ZonePlacements));
-                ZoneDocumentTabControl_SelectedTabChanged(null, null);
-            }
+            currentScene?.GrowSelection();
         }
 
         private void MoveToLinkedToolStripMenuItem_Click(object sender, EventArgs e)
@@ -716,6 +694,45 @@ namespace SpotLight
             currentScene.EndUndoCollection();
             SpotlightToolStripStatusLabel.Text = StatusMovedFromLinksMessage;
         }
+
+        private void LevelParametersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Directory.Exists(Program.GamePath + "\\SystemData") && File.Exists(Program.GamePath + "\\SystemData\\StageList.szs"))
+            {
+                LPF = new LevelParameterForm(currentScene == null ? "" : currentScene.ToString());
+                LPF.Show();
+            }
+            else
+            {
+                MessageBox.Show(string.Format(LevelParamsMissingText, Program.GamePath), LevelParamsMissingHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        //----------------------------------------------------------------------------
+
+        private void EditObjectsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentScene.GetType() != typeof(SM3DWorldScene))
+            {
+                currentScene = currentScene.ConvertToOtherSceneType<SM3DWorldScene>();
+                AssignSceneEvents(currentScene);
+                LevelGLControlModern.MainDrawable = currentScene;
+                LevelGLControlModern.Refresh();
+            }
+        }
+
+        private void EditLinksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentScene.GetType() != typeof(LinkEdit3DWScene))
+            {
+                currentScene = currentScene.ConvertToOtherSceneType<LinkEdit3DWScene>();
+                AssignSceneEvents(currentScene);
+                LevelGLControlModern.MainDrawable = currentScene;
+                LevelGLControlModern.Refresh();
+            }
+        }
+
+        //----------------------------------------------------------------------------
 
         private void SpotlightWikiToolStripMenuItem_Click(object sender, EventArgs e) => Process.Start("https://github.com/jupahe64/Spotlight/wiki");
 
@@ -1004,10 +1021,16 @@ namespace SpotLight
             RedoToolStripMenuItem.Enabled = Trigger;
             AddObjectToolStripMenuItem.Enabled = Trigger;
             AddZoneToolStripMenuItem.Enabled = Trigger;
+            CopyToolStripMenuItem.Enabled = Trigger;
+            PasteToolStripMenuItem.Enabled = Trigger;
             DuplicateToolStripMenuItem.Enabled = Trigger;
             DeleteToolStripMenuItem.Enabled = Trigger;
             SelectAllToolStripMenuItem.Enabled = Trigger;
             DeselectAllToolStripMenuItem.Enabled = Trigger;
+            GrowSelectionToolStripMenuItem.Enabled = Trigger;
+            MoveSelectionToToolStripMenuItem.Enabled = Trigger;
+            MoveToAppropriateListsToolStripMenuItem.Enabled = Trigger;
+            MoveToLinkedToolStripMenuItem.Enabled = Trigger;
             ModeToolStripMenuItem.Enabled = Trigger;
             EditObjectsToolStripMenuItem.Enabled = Trigger;
             EditLinksToolStripMenuItem.Enabled = Trigger;
@@ -1108,6 +1131,7 @@ Would you like to rebuild the database from your 3DW Files?";
             StatusLevelSavedMessage = Program.CurrentLanguage.GetTranslation("StatusLevelSavedMessage") ?? "Level Saved!";
             StatusSettingsSavedMessage = Program.CurrentLanguage.GetTranslation("StatusSettingsSavedMessage") ?? "Settings Saved.";
             StatusSaveCancelledOrFailedMessage = Program.CurrentLanguage.GetTranslation("StatusSaveCancelledOrFailedMessage") ?? "Save Cancelled or Failed.";
+            StatusObjectPlaceNoticeMessage = Program.CurrentLanguage.GetTranslation("StatusObjectPlaceNoticeMessage") ?? "You have to place the object by clicking, when holding shift multiple objects can be placed";
             FileLevelOpenFilter = Program.CurrentLanguage.GetTranslation("FileLevelOpenFilter") ?? "Level Files (Map)|Level Files (Design)|Level Files (Sound)|All Level Files";
 
             LevelParamsMissingText = Program.CurrentLanguage.GetTranslation("LevelParamsMissingText") ?? "StageList.szs is missing from {0}\\SystemData";
@@ -1138,6 +1162,10 @@ Would you like to rebuild the database from your 3DW Files?";
             UnsavedChangesText = Program.CurrentLanguage.GetTranslation("UnsavedChangesText") ?? "You have unsaved changes in:\n {0} Do you want to save them?";
             UnsavedChangesHeader = Program.CurrentLanguage.GetTranslation("UnsavedChangesHeader") ?? "Unsaved Changes!";
             StatusLevelClosed = Program.CurrentLanguage.GetTranslation("StatusLevelClosed") ?? "{0} was closed.";
+
+            MultipleSelected = Program.CurrentLanguage.GetTranslation("MultipleSelected") ?? "Multiple Objects Selected";
+            NothingSelected = Program.CurrentLanguage.GetTranslation("NothingSelected") ?? "Nothing Selected";
+            SelectedText = Program.CurrentLanguage.GetTranslation("Selected") ?? "Selected";
             #endregion
 
             #region Controls
@@ -1200,6 +1228,7 @@ Would you like to rebuild the database from your 3DW Files?";
         private string StatusLevelSavedMessage { get; set; }
         private string StatusSettingsSavedMessage { get; set; }
         private string StatusSaveCancelledOrFailedMessage { get; set; }
+        private string StatusObjectPlaceNoticeMessage { get; set; }
         private string FileLevelOpenFilter { get; set; }
 
         private string LevelParamsMissingHeader { get; set; }
@@ -1231,21 +1260,10 @@ Would you like to rebuild the database from your 3DW Files?";
         private string UnsavedChangesText { get; set; }
         private string StatusLevelClosed { get; set; }
 
+        private string NothingSelected { get; set; }
+        private string MultipleSelected { get; set; }
+        private string SelectedText { get; set; }
+
         #endregion
-
-        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            currentScene?.CopySelectedObjects();
-        }
-
-        private void PasteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            currentScene?.PasteCopiedObjects();
-        }
-
-        private void GrowSelectionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            currentScene?.GrowSelection();
-        }
     }
 }

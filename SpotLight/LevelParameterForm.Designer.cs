@@ -34,25 +34,25 @@
             this.ChangeLevelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.StageTypeComboBox = new System.Windows.Forms.ComboBox();
-            this.InfoLabel1 = new System.Windows.Forms.Label();
+            this.StageTypeLabel = new System.Windows.Forms.Label();
             this.StageNameTextBox = new System.Windows.Forms.TextBox();
-            this.InfoLabel = new System.Windows.Forms.Label();
+            this.StageNameLabel = new System.Windows.Forms.Label();
             this.WorldIDNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.LevelIDNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.CourseLabel = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            this.GlobalIDLabel = new System.Windows.Forms.Label();
             this.CourseIDNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.TimerNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
+            this.TimeLabel = new System.Windows.Forms.Label();
             this.GreenStarsNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
+            this.GreenStarLabel = new System.Windows.Forms.Label();
+            this.GreenStarUnlockCountLabel = new System.Windows.Forms.Label();
             this.GreenStarLockNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label5 = new System.Windows.Forms.Label();
+            this.GhostIDLabel = new System.Windows.Forms.Label();
             this.GhostIDNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label6 = new System.Windows.Forms.Label();
+            this.GhostTimeLabel = new System.Windows.Forms.Label();
             this.GhostBaseTimeNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label7 = new System.Windows.Forms.Label();
+            this.DoubleCherryLabel = new System.Windows.Forms.Label();
             this.DoubleMarioNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.StampCheckBox = new System.Windows.Forms.CheckBox();
             this.HelpToolTip = new System.Windows.Forms.ToolTip(this.components);
@@ -77,7 +77,7 @@
             this.SaveToolStripMenuItem});
             this.ParamMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.ParamMenuStrip.Name = "ParamMenuStrip";
-            this.ParamMenuStrip.Size = new System.Drawing.Size(304, 24);
+            this.ParamMenuStrip.Size = new System.Drawing.Size(386, 24);
             this.ParamMenuStrip.TabIndex = 0;
             // 
             // ChangeLevelsToolStripMenuItem
@@ -99,51 +99,53 @@
             // 
             // StageTypeComboBox
             // 
+            this.StageTypeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.StageTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.StageTypeComboBox.Enabled = false;
             this.StageTypeComboBox.FormattingEnabled = true;
-            this.StageTypeComboBox.Location = new System.Drawing.Point(87, 53);
+            this.StageTypeComboBox.Location = new System.Drawing.Point(125, 53);
             this.StageTypeComboBox.Name = "StageTypeComboBox";
-            this.StageTypeComboBox.Size = new System.Drawing.Size(205, 21);
+            this.StageTypeComboBox.Size = new System.Drawing.Size(249, 21);
             this.StageTypeComboBox.TabIndex = 1;
             this.HelpToolTip.SetToolTip(this.StageTypeComboBox, "The Type of stage that this is.\r\nThe Options are Self-Explanitory");
             this.StageTypeComboBox.SelectedIndexChanged += new System.EventHandler(this.StageTypeComboBox_SelectedIndexChanged);
             // 
-            // InfoLabel1
+            // StageTypeLabel
             // 
-            this.InfoLabel1.AutoSize = true;
-            this.InfoLabel1.Location = new System.Drawing.Point(13, 56);
-            this.InfoLabel1.Name = "InfoLabel1";
-            this.InfoLabel1.Size = new System.Drawing.Size(65, 13);
-            this.InfoLabel1.TabIndex = 2;
-            this.InfoLabel1.Text = "Stage Type:";
-            this.HelpToolTip.SetToolTip(this.InfoLabel1, "The Type of stage that this is.\r\nThe Options are Self-Explanitory");
+            this.StageTypeLabel.AutoSize = true;
+            this.StageTypeLabel.Location = new System.Drawing.Point(13, 56);
+            this.StageTypeLabel.Name = "StageTypeLabel";
+            this.StageTypeLabel.Size = new System.Drawing.Size(65, 13);
+            this.StageTypeLabel.TabIndex = 2;
+            this.StageTypeLabel.Text = "Stage Type:";
+            this.HelpToolTip.SetToolTip(this.StageTypeLabel, "The Type of stage that this is.\r\nThe Options are Self-Explanitory");
             // 
             // StageNameTextBox
             // 
+            this.StageNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.StageNameTextBox.Enabled = false;
-            this.StageNameTextBox.Location = new System.Drawing.Point(87, 27);
+            this.StageNameTextBox.Location = new System.Drawing.Point(125, 27);
             this.StageNameTextBox.Name = "StageNameTextBox";
-            this.StageNameTextBox.Size = new System.Drawing.Size(205, 20);
+            this.StageNameTextBox.Size = new System.Drawing.Size(249, 20);
             this.StageNameTextBox.TabIndex = 3;
             this.StageNameTextBox.Text = "No Level Selected";
             this.HelpToolTip.SetToolTip(this.StageNameTextBox, "The name of the Stage.\r\nUsually the name of the archive without \"Map1.szs\"");
             this.StageNameTextBox.TextChanged += new System.EventHandler(this.StageNameTextBox_TextChanged);
             // 
-            // InfoLabel
+            // StageNameLabel
             // 
-            this.InfoLabel.AutoSize = true;
-            this.InfoLabel.Location = new System.Drawing.Point(12, 30);
-            this.InfoLabel.Name = "InfoLabel";
-            this.InfoLabel.Size = new System.Drawing.Size(69, 13);
-            this.InfoLabel.TabIndex = 4;
-            this.InfoLabel.Text = "Stage Name:";
-            this.HelpToolTip.SetToolTip(this.InfoLabel, "The name of the Stage.\r\nUsually the name of the archive without \"Map1.szs\"");
+            this.StageNameLabel.AutoSize = true;
+            this.StageNameLabel.Location = new System.Drawing.Point(12, 30);
+            this.StageNameLabel.Name = "StageNameLabel";
+            this.StageNameLabel.Size = new System.Drawing.Size(69, 13);
+            this.StageNameLabel.TabIndex = 4;
+            this.StageNameLabel.Text = "Stage Name:";
+            this.HelpToolTip.SetToolTip(this.StageNameLabel, "The name of the Stage.\r\nUsually the name of the archive without \"Map1.szs\"");
             // 
             // WorldIDNumericUpDown
             // 
             this.WorldIDNumericUpDown.Enabled = false;
-            this.WorldIDNumericUpDown.Location = new System.Drawing.Point(73, 84);
+            this.WorldIDNumericUpDown.Location = new System.Drawing.Point(93, 84);
             this.WorldIDNumericUpDown.Minimum = new decimal(new int[] {
             1,
             0,
@@ -163,7 +165,7 @@
             // LevelIDNumericUpDown
             // 
             this.LevelIDNumericUpDown.Enabled = false;
-            this.LevelIDNumericUpDown.Location = new System.Drawing.Point(125, 84);
+            this.LevelIDNumericUpDown.Location = new System.Drawing.Point(145, 84);
             this.LevelIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -185,26 +187,27 @@
             this.CourseLabel.Text = "World X-Y";
             this.HelpToolTip.SetToolTip(this.CourseLabel, "Use the two numbers on the right to change this");
             // 
-            // label1
+            // GlobalIDLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(178, 86);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(54, 13);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Global ID:";
+            this.GlobalIDLabel.AutoSize = true;
+            this.GlobalIDLabel.Location = new System.Drawing.Point(219, 86);
+            this.GlobalIDLabel.Name = "GlobalIDLabel";
+            this.GlobalIDLabel.Size = new System.Drawing.Size(54, 13);
+            this.GlobalIDLabel.TabIndex = 8;
+            this.GlobalIDLabel.Text = "Global ID:";
             // 
             // CourseIDNumericUpDown
             // 
+            this.CourseIDNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.CourseIDNumericUpDown.Enabled = false;
-            this.CourseIDNumericUpDown.Location = new System.Drawing.Point(238, 84);
+            this.CourseIDNumericUpDown.Location = new System.Drawing.Point(279, 84);
             this.CourseIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
             0,
             0});
             this.CourseIDNumericUpDown.Name = "CourseIDNumericUpDown";
-            this.CourseIDNumericUpDown.Size = new System.Drawing.Size(54, 20);
+            this.CourseIDNumericUpDown.Size = new System.Drawing.Size(95, 20);
             this.CourseIDNumericUpDown.TabIndex = 9;
             this.HelpToolTip.SetToolTip(this.CourseIDNumericUpDown, "The global ID used by this level");
             this.CourseIDNumericUpDown.ValueChanged += new System.EventHandler(this.CourseIDNumericUpDown_ValueChanged);
@@ -212,14 +215,14 @@
             // TimerNumericUpDown
             // 
             this.TimerNumericUpDown.Enabled = false;
-            this.TimerNumericUpDown.Location = new System.Drawing.Point(52, 119);
+            this.TimerNumericUpDown.Location = new System.Drawing.Point(279, 119);
             this.TimerNumericUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
             this.TimerNumericUpDown.Name = "TimerNumericUpDown";
-            this.TimerNumericUpDown.Size = new System.Drawing.Size(67, 20);
+            this.TimerNumericUpDown.Size = new System.Drawing.Size(95, 20);
             this.TimerNumericUpDown.TabIndex = 10;
             this.HelpToolTip.SetToolTip(this.TimerNumericUpDown, "The time you have to clear the level");
             this.TimerNumericUpDown.Value = new decimal(new int[] {
@@ -229,19 +232,20 @@
             0});
             this.TimerNumericUpDown.ValueChanged += new System.EventHandler(this.TimerNumericUpDown_ValueChanged);
             // 
-            // label2
+            // TimeLabel
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 121);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(33, 13);
-            this.label2.TabIndex = 11;
-            this.label2.Text = "Time:";
+            this.TimeLabel.AutoSize = true;
+            this.TimeLabel.Location = new System.Drawing.Point(137, 121);
+            this.TimeLabel.Name = "TimeLabel";
+            this.TimeLabel.Size = new System.Drawing.Size(33, 13);
+            this.TimeLabel.TabIndex = 11;
+            this.TimeLabel.Text = "Time:";
             // 
             // GreenStarsNumericUpDown
             // 
+            this.GreenStarsNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarsNumericUpDown.Enabled = false;
-            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(197, 119);
+            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(279, 145);
             this.GreenStarsNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -253,52 +257,54 @@
             this.HelpToolTip.SetToolTip(this.GreenStarsNumericUpDown, "The number of Green Stars in this level");
             this.GreenStarsNumericUpDown.ValueChanged += new System.EventHandler(this.GreenStarsNumericUpDown_ValueChanged);
             // 
-            // label3
+            // GreenStarLabel
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(125, 121);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(66, 13);
-            this.label3.TabIndex = 13;
-            this.label3.Text = "Green Stars:";
+            this.GreenStarLabel.AutoSize = true;
+            this.GreenStarLabel.Location = new System.Drawing.Point(13, 173);
+            this.GreenStarLabel.Name = "GreenStarLabel";
+            this.GreenStarLabel.Size = new System.Drawing.Size(66, 13);
+            this.GreenStarLabel.TabIndex = 13;
+            this.GreenStarLabel.Text = "Green Stars:";
             // 
-            // label4
+            // GreenStarUnlockCountLabel
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 148);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(158, 13);
-            this.label4.TabIndex = 15;
-            this.label4.Text = "Green Star Unlock Requirement";
+            this.GreenStarUnlockCountLabel.AutoSize = true;
+            this.GreenStarUnlockCountLabel.Location = new System.Drawing.Point(12, 147);
+            this.GreenStarUnlockCountLabel.Name = "GreenStarUnlockCountLabel";
+            this.GreenStarUnlockCountLabel.Size = new System.Drawing.Size(158, 13);
+            this.GreenStarUnlockCountLabel.TabIndex = 15;
+            this.GreenStarUnlockCountLabel.Text = "Green Star Unlock Requirement";
             // 
             // GreenStarLockNumericUpDown
             // 
+            this.GreenStarLockNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarLockNumericUpDown.Enabled = false;
-            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(176, 146);
+            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(279, 171);
             this.GreenStarLockNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
             0,
             0});
             this.GreenStarLockNumericUpDown.Name = "GreenStarLockNumericUpDown";
-            this.GreenStarLockNumericUpDown.Size = new System.Drawing.Size(116, 20);
+            this.GreenStarLockNumericUpDown.Size = new System.Drawing.Size(95, 20);
             this.GreenStarLockNumericUpDown.TabIndex = 14;
             this.HelpToolTip.SetToolTip(this.GreenStarLockNumericUpDown, "Number of Green Stars needed to unlock this level");
             this.GreenStarLockNumericUpDown.ValueChanged += new System.EventHandler(this.GreenStarLockNumericUpDown_ValueChanged);
             // 
-            // label5
+            // GhostIDLabel
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(157, 211);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(68, 13);
-            this.label5.TabIndex = 19;
-            this.label5.Text = "Mii Ghost ID:";
+            this.GhostIDLabel.AutoSize = true;
+            this.GhostIDLabel.Location = new System.Drawing.Point(205, 231);
+            this.GhostIDLabel.Name = "GhostIDLabel";
+            this.GhostIDLabel.Size = new System.Drawing.Size(68, 13);
+            this.GhostIDLabel.TabIndex = 19;
+            this.GhostIDLabel.Text = "Mii Ghost ID:";
             // 
             // GhostIDNumericUpDown
             // 
+            this.GhostIDNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GhostIDNumericUpDown.Enabled = false;
-            this.GhostIDNumericUpDown.Location = new System.Drawing.Point(231, 209);
+            this.GhostIDNumericUpDown.Location = new System.Drawing.Point(279, 229);
             this.GhostIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -310,24 +316,24 @@
             0,
             -2147418112});
             this.GhostIDNumericUpDown.Name = "GhostIDNumericUpDown";
-            this.GhostIDNumericUpDown.Size = new System.Drawing.Size(61, 20);
+            this.GhostIDNumericUpDown.Size = new System.Drawing.Size(95, 20);
             this.GhostIDNumericUpDown.TabIndex = 18;
             this.HelpToolTip.SetToolTip(this.GhostIDNumericUpDown, "The ID of the Ghost that belongs to this stage");
             this.GhostIDNumericUpDown.ValueChanged += new System.EventHandler(this.GhostIDNumericUpDown_ValueChanged);
             // 
-            // label6
+            // GhostTimeLabel
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(13, 211);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(77, 13);
-            this.label6.TabIndex = 17;
-            this.label6.Text = "Mii Ghost Time";
+            this.GhostTimeLabel.AutoSize = true;
+            this.GhostTimeLabel.Location = new System.Drawing.Point(13, 231);
+            this.GhostTimeLabel.Name = "GhostTimeLabel";
+            this.GhostTimeLabel.Size = new System.Drawing.Size(77, 13);
+            this.GhostTimeLabel.TabIndex = 17;
+            this.GhostTimeLabel.Text = "Mii Ghost Time";
             // 
             // GhostBaseTimeNumericUpDown
             // 
             this.GhostBaseTimeNumericUpDown.Enabled = false;
-            this.GhostBaseTimeNumericUpDown.Location = new System.Drawing.Point(96, 208);
+            this.GhostBaseTimeNumericUpDown.Location = new System.Drawing.Point(115, 229);
             this.GhostBaseTimeNumericUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -344,35 +350,37 @@
             0});
             this.GhostBaseTimeNumericUpDown.ValueChanged += new System.EventHandler(this.GhostBaseTimeNumericUpDown_ValueChanged);
             // 
-            // label7
+            // DoubleCherryLabel
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 175);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(100, 13);
-            this.label7.TabIndex = 21;
-            this.label7.Text = "Double Cherry Max:";
+            this.DoubleCherryLabel.AutoSize = true;
+            this.DoubleCherryLabel.Location = new System.Drawing.Point(13, 199);
+            this.DoubleCherryLabel.Name = "DoubleCherryLabel";
+            this.DoubleCherryLabel.Size = new System.Drawing.Size(100, 13);
+            this.DoubleCherryLabel.TabIndex = 21;
+            this.DoubleCherryLabel.Text = "Double Cherry Max:";
             // 
             // DoubleMarioNumericUpDown
             // 
+            this.DoubleMarioNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DoubleMarioNumericUpDown.Enabled = false;
-            this.DoubleMarioNumericUpDown.Location = new System.Drawing.Point(118, 173);
+            this.DoubleMarioNumericUpDown.Location = new System.Drawing.Point(279, 197);
             this.DoubleMarioNumericUpDown.Maximum = new decimal(new int[] {
             5,
             0,
             0,
             0});
             this.DoubleMarioNumericUpDown.Name = "DoubleMarioNumericUpDown";
-            this.DoubleMarioNumericUpDown.Size = new System.Drawing.Size(84, 20);
+            this.DoubleMarioNumericUpDown.Size = new System.Drawing.Size(95, 20);
             this.DoubleMarioNumericUpDown.TabIndex = 20;
             this.HelpToolTip.SetToolTip(this.DoubleMarioNumericUpDown, "Amount of Extra Players you can get with a Double Cherry");
             this.DoubleMarioNumericUpDown.ValueChanged += new System.EventHandler(this.DoubleMarioNumericUpDown_ValueChanged);
             // 
             // StampCheckBox
             // 
+            this.StampCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.StampCheckBox.AutoSize = true;
             this.StampCheckBox.Enabled = false;
-            this.StampCheckBox.Location = new System.Drawing.Point(208, 174);
+            this.StampCheckBox.Location = new System.Drawing.Point(12, 120);
             this.StampCheckBox.Name = "StampCheckBox";
             this.StampCheckBox.Size = new System.Drawing.Size(84, 17);
             this.StampCheckBox.TabIndex = 22;
@@ -388,48 +396,52 @@
             // 
             // DividerBLabel
             // 
+            this.DividerBLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.DividerBLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.DividerBLabel.Location = new System.Drawing.Point(12, 200);
+            this.DividerBLabel.Location = new System.Drawing.Point(12, 220);
             this.DividerBLabel.Name = "DividerBLabel";
-            this.DividerBLabel.Size = new System.Drawing.Size(280, 2);
+            this.DividerBLabel.Size = new System.Drawing.Size(362, 2);
             this.DividerBLabel.TabIndex = 23;
             // 
             // DividerALabel
             // 
+            this.DividerALabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.DividerALabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.DividerALabel.Location = new System.Drawing.Point(12, 111);
             this.DividerALabel.Name = "DividerALabel";
-            this.DividerALabel.Size = new System.Drawing.Size(280, 2);
+            this.DividerALabel.Size = new System.Drawing.Size(362, 2);
             this.DividerALabel.TabIndex = 24;
             // 
             // LevelParameterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(304, 241);
+            this.ClientSize = new System.Drawing.Size(386, 257);
             this.Controls.Add(this.DividerALabel);
             this.Controls.Add(this.DividerBLabel);
             this.Controls.Add(this.StampCheckBox);
-            this.Controls.Add(this.label7);
+            this.Controls.Add(this.DoubleCherryLabel);
             this.Controls.Add(this.DoubleMarioNumericUpDown);
-            this.Controls.Add(this.label5);
+            this.Controls.Add(this.GhostIDLabel);
             this.Controls.Add(this.GhostIDNumericUpDown);
-            this.Controls.Add(this.label6);
+            this.Controls.Add(this.GhostTimeLabel);
             this.Controls.Add(this.GhostBaseTimeNumericUpDown);
-            this.Controls.Add(this.label4);
+            this.Controls.Add(this.GreenStarUnlockCountLabel);
             this.Controls.Add(this.GreenStarLockNumericUpDown);
-            this.Controls.Add(this.label3);
+            this.Controls.Add(this.GreenStarLabel);
             this.Controls.Add(this.GreenStarsNumericUpDown);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.TimeLabel);
             this.Controls.Add(this.TimerNumericUpDown);
             this.Controls.Add(this.CourseIDNumericUpDown);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.GlobalIDLabel);
             this.Controls.Add(this.CourseLabel);
             this.Controls.Add(this.LevelIDNumericUpDown);
             this.Controls.Add(this.WorldIDNumericUpDown);
-            this.Controls.Add(this.InfoLabel);
+            this.Controls.Add(this.StageNameLabel);
             this.Controls.Add(this.StageNameTextBox);
-            this.Controls.Add(this.InfoLabel1);
+            this.Controls.Add(this.StageTypeLabel);
             this.Controls.Add(this.StageTypeComboBox);
             this.Controls.Add(this.ParamMenuStrip);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -461,25 +473,25 @@
         private System.Windows.Forms.MenuStrip ParamMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem ChangeLevelsToolStripMenuItem;
         private System.Windows.Forms.ComboBox StageTypeComboBox;
-        private System.Windows.Forms.Label InfoLabel1;
+        private System.Windows.Forms.Label StageTypeLabel;
         private System.Windows.Forms.TextBox StageNameTextBox;
-        private System.Windows.Forms.Label InfoLabel;
+        private System.Windows.Forms.Label StageNameLabel;
         private System.Windows.Forms.NumericUpDown WorldIDNumericUpDown;
         private System.Windows.Forms.NumericUpDown LevelIDNumericUpDown;
         private System.Windows.Forms.Label CourseLabel;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label GlobalIDLabel;
         private System.Windows.Forms.NumericUpDown CourseIDNumericUpDown;
         private System.Windows.Forms.NumericUpDown TimerNumericUpDown;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label TimeLabel;
         private System.Windows.Forms.NumericUpDown GreenStarsNumericUpDown;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label GreenStarLabel;
+        private System.Windows.Forms.Label GreenStarUnlockCountLabel;
         private System.Windows.Forms.NumericUpDown GreenStarLockNumericUpDown;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label GhostIDLabel;
         private System.Windows.Forms.NumericUpDown GhostIDNumericUpDown;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label GhostTimeLabel;
         private System.Windows.Forms.NumericUpDown GhostBaseTimeNumericUpDown;
-        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label DoubleCherryLabel;
         private System.Windows.Forms.NumericUpDown DoubleMarioNumericUpDown;
         private System.Windows.Forms.CheckBox StampCheckBox;
         private System.Windows.Forms.ToolTip HelpToolTip;

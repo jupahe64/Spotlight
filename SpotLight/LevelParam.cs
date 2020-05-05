@@ -151,6 +151,11 @@ namespace SpotLight
 
         public void Save()
         {
+            for (int i = 0; i < Worlds.Count; i++)
+            {
+                Worlds[i].Levels = Worlds[i].Levels.OrderBy(O => O.CourseID).ToList();
+            }
+
             byte[] tmp = ToByaml();
             //File.WriteAllBytes("Test.byml", tmp);
             //BymlFileData Output = new BymlFileData() { Version = 1, SupportPaths = false, byteOrder = Syroot.BinaryData.Endian.Big };

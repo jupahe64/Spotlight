@@ -100,7 +100,7 @@ namespace SpotLight
             {
                 if (!File.Exists(GamePathFile))
                     return ProjectPathFile;
-                else if (File.GetLastWriteTime(ProjectPathFile).CompareTo(File.GetLastWriteTime(GamePathFile)) > 0)
+                else if (File.GetLastWriteTime(ProjectPathFile).CompareTo(File.GetLastWriteTime(GamePathFile)) >= 0)
                     return ProjectPathFile;
                 else
                     return GamePathFile;
