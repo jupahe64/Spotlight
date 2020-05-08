@@ -58,7 +58,13 @@ namespace SpotLight.EditorDrawables
                 if (selectedConnection?.Source == selectedConnection?.Dest)
                     selectedConnection = null;
 
-                linkDragMode = LinkDragMode.None;
+                if(linkDragMode!= LinkDragMode.None)
+                {
+                    control.CameraTarget = actionStartCamTarget;
+
+                    linkDragMode = LinkDragMode.None;
+                }
+
                 return 0;
             }
 
@@ -77,6 +83,7 @@ namespace SpotLight.EditorDrawables
                 if (diff.LengthSquared < nextToDiff.LengthSquared)
                 {
                     linkDragMode = LinkDragMode.Dest;
+                    actionStartCamTarget = control.CameraTarget;
                     return 0;
                 }
 
@@ -88,6 +95,7 @@ namespace SpotLight.EditorDrawables
                 if (diff.LengthSquared < nextToDiff.LengthSquared)
                 {
                     linkDragMode = LinkDragMode.Source;
+                    actionStartCamTarget = control.CameraTarget;
                     return 0;
                 }
 
@@ -107,6 +115,14 @@ namespace SpotLight.EditorDrawables
                 var |= REDRAW;
 
             return var;
+        }
+
+        public override void MarginScroll(MarginScrollEventArgs e, GL_ControlBase control)
+        {
+            if (linkDragMode != LinkDragMode.None)
+            {
+                control.CameraTarget += new Vector3(e.AmountX * control.FactorX * control.CameraDistance * 0.25f, -e.AmountY * control.FactorY * control.CameraDistance * 0.25f, 0) * control.InvertedRotationMatrix;
+            }
         }
 
         public override uint KeyDown(KeyEventArgs e, GL_ControlBase control, bool isRepeat)
