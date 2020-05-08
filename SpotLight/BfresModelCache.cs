@@ -670,10 +670,10 @@ namespace SpotLight
                         if (vec4c0.Length > 0)
                         {
                             bufferData[_i + 5] = BitConverter.ToSingle(new byte[]{
-                            (byte)(col.X * 255),
-                            (byte)(col.Y * 255),
-                            (byte)(col.Z * 255),
-                            (byte)(col.W * 255)}, 0);
+                            (byte)Math.Min(col.X * 255,255),
+                            (byte)Math.Min(col.Y * 255,255),
+                            (byte)Math.Min(col.Z * 255,255),
+                            (byte)Math.Min(col.W * 255,255)}, 0);
                         }
                         else
                             bufferData[_i + 5] = white;
@@ -941,19 +941,23 @@ namespace SpotLight
 
             if (texture.Format == GX2SurfaceFormat.T_BC4_UNorm)
             {
-                deswizzled = DDSCompressor.DecompressBC4(deswizzled, (int)texture.Width, (int)texture.Height, false).Data;
+                deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)texture.Width, (int)texture.Height, false);
+                //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)texture.Width, (int)texture.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM);
             }
             else if (texture.Format == GX2SurfaceFormat.T_BC4_SNorm)
             {
-                deswizzled = DDSCompressor.DecompressBC4(deswizzled, (int)texture.Width, (int)texture.Height, true).Data;
+                deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)texture.Width, (int)texture.Height, true);
+                //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)texture.Width, (int)texture.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_SNORM);
             }
             else if (texture.Format == GX2SurfaceFormat.T_BC5_UNorm)
             {
-                deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, false, true);
+                //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, false, true);
+                deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)texture.Width, (int)texture.Height, false);
             }
             else if (texture.Format == GX2SurfaceFormat.T_BC5_SNorm)
             {
-                deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, true, true);
+                //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, true, true);
+                deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)texture.Width, (int)texture.Height, true);
             }
             else
             {

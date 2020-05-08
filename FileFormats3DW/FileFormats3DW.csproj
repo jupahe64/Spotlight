@@ -34,13 +34,4 @@
     <PackageReference Include="Syroot.Maths" Version="1.5.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="DirectXTex">
-      <HintPath>DLLs\DirectXTex.dll</HintPath>
-    </Reference>
-    <Reference Include="DirectXTexNet">
-      <HintPath>DLLs\DirectXTexNet.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

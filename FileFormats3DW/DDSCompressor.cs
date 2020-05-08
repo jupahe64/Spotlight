@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using DirectXTexNet;
 
 namespace FileFormats3DW
 {
@@ -366,55 +365,159 @@ namespace FileFormats3DW
             return new Bitmap(Output, W * 4, H * 4);
         }
         public static Bitmap DecompressBC4(Byte[] data, int width, int height, bool IsSNORM)
-          {
-              int W = (width + 3) / 4;
-              int H = (height + 3) / 4;
+        {
+            int W = (width + 3) / 4;
+            int H = (height + 3) / 4;
 
-              byte[] Output = new byte[W * H * 64];
+            byte[] Output = new byte[W * H * 64];
 
-              for (int Y = 0; Y < H; Y++)
-              {
-                  for (int X = 0; X < W; X++)
-                  {
-                      int IOffs = (Y * W + X) * 8;
+            for (int Y = 0; Y < H; Y++)
+            {
+                for (int X = 0; X < W; X++)
+                {
+                    int IOffs = (Y * W + X) * 8;
 
-                      byte[] Red = new byte[8];
+                    byte[] Red = new byte[8];
 
-                      Red[0] = data[IOffs + 0];
-                      Red[1] = data[IOffs + 1];
+                    Red[0] = data[IOffs + 0];
+                    Red[1] = data[IOffs + 1];
 
-                      CalculateBC3Alpha(Red);
+                    CalculateBC3Alpha(Red);
 
-                      int RedLow = Get32(data, IOffs + 2);
-                      int RedHigh = Get16(data, IOffs + 6);
+                    int RedLow = Get32(data, IOffs + 2);
+                    int RedHigh = Get16(data, IOffs + 6);
 
-                      ulong RedCh = (uint)RedLow | (ulong)RedHigh << 32;
+                    ulong RedCh = (uint)RedLow | (ulong)RedHigh << 32;
 
-                      int TOffset = 0;
-                      int TW = Math.Min(width - X * 4, 4);
-                      int TH = Math.Min(height - Y * 4, 4);
+                    int TOffset = 0;
+                    int TW = Math.Min(width - X * 4, 4);
+                    int TH = Math.Min(height - Y * 4, 4);
 
-                      for (int TY = 0; TY < 4; TY++)
-                      {
-                          for (int TX = 0; TX < 4; TX++)
-                          {
-                              int OOffset = (X * 4 + TX + (Y * 4 + TY) * W * 4) * 4;
+                    for (int TY = 0; TY < 4; TY++)
+                    {
+                        for (int TX = 0; TX < 4; TX++)
+                        {
+                            int OOffset = (X * 4 + TX + (Y * 4 + TY) * W * 4) * 4;
 
-                              byte RedPx = Red[(RedCh >> (TY * 12 + TX * 3)) & 7];
+                            byte RedPx = Red[(RedCh >> (TY * 12 + TX * 3)) & 7];
 
-                              Output[OOffset + 0] = RedPx;
-                              Output[OOffset + 1] = RedPx;
-                              Output[OOffset + 2] = RedPx;
-                              Output[OOffset + 3] = 255;
+                            Output[OOffset + 0] = RedPx;
+                            Output[OOffset + 1] = RedPx;
+                            Output[OOffset + 2] = RedPx;
+                            Output[OOffset + 3] = 255;
 
-                              TOffset += 4;
-                          }
-                      }
-                  }
-              }
+                            TOffset += 4;
+                        }
+                    }
+                }
+            }
 
-              return new Bitmap(Output, W * 4, H * 4);
-          }
+            return new Bitmap(Output, W * 4, H * 4);
+        }
+
+        public static byte[] DecompressBC4_JPH(Byte[] data, int width, int height, bool IsSNORM)
+        {
+            int W = (width + 3) / 4;
+            int H = (height + 3) / 4;
+
+            byte[] Output = new byte[W * H * 64];
+
+            for (int Y = 0; Y < H; Y++)
+            {
+                for (int X = 0; X < W; X++)
+                {
+                    int IOffs = (Y * W + X) * 8;
+                    float[] colorTable = new float[8];
+                    float r0, r1;
+
+                    if (!IsSNORM)
+                    {
+                        r0 = data[IOffs + 0] / 255f;
+                        r1 = data[IOffs + 1] / 255f;
+
+                        colorTable[0] = r0;
+                        colorTable[1] = r1;
+
+                        if (r0 > r1)
+                        {
+                            // 6 interpolated color values
+                            colorTable[2] = (6 * r0 + 1 * r1) / 7.0f; // bit code 010
+                            colorTable[3] = (5 * r0 + 2 * r1) / 7.0f; // bit code 011
+                            colorTable[4] = (4 * r0 + 3 * r1) / 7.0f; // bit code 100
+                            colorTable[5] = (3 * r0 + 4 * r1) / 7.0f; // bit code 101
+                            colorTable[6] = (2 * r0 + 5 * r1) / 7.0f; // bit code 110
+                            colorTable[7] = (1 * r0 + 6 * r1) / 7.0f; // bit code 111
+                        }
+                        else
+                        {
+                            // 4 interpolated color values
+                            colorTable[2] = (4 * r0 + 1 * r1) / 5.0f; // bit code 010
+                            colorTable[3] = (3 * r0 + 2 * r1) / 5.0f; // bit code 011
+                            colorTable[4] = (2 * r0 + 3 * r1) / 5.0f; // bit code 100
+                            colorTable[5] = (1 * r0 + 4 * r1) / 5.0f; // bit code 101
+                            colorTable[6] = 0.0f;               // bit code 110
+                            colorTable[7] = 1.0f;               // bit code 111
+                        }
+                    }
+                    else
+                    {
+                        r0 = data[IOffs + 0] / 127f;
+                        r1 = data[IOffs + 1] / 127f;
+
+                        colorTable[0] = r0;
+                        colorTable[1] = r1;
+
+                        if (r0 > r1)
+                        {
+                            // 6 interpolated color values
+                            colorTable[2] = (6 * r0 + 1 * r1) / 7.0f; // bit code 010
+                            colorTable[3] = (5 * r0 + 2 * r1) / 7.0f; // bit code 011
+                            colorTable[4] = (4 * r0 + 3 * r1) / 7.0f; // bit code 100
+                            colorTable[5] = (3 * r0 + 4 * r1) / 7.0f; // bit code 101
+                            colorTable[6] = (2 * r0 + 5 * r1) / 7.0f; // bit code 110
+                            colorTable[7] = (1 * r0 + 6 * r1) / 7.0f; // bit code 111
+                        }
+                        else
+                        {
+                            // 4 interpolated color values
+                            colorTable[2] = (4 * r0 + 1 * r1) / 5.0f; // bit code 010
+                            colorTable[3] = (3 * r0 + 2 * r1) / 5.0f; // bit code 011
+                            colorTable[4] = (2 * r0 + 3 * r1) / 5.0f; // bit code 100
+                            colorTable[5] = (1 * r0 + 4 * r1) / 5.0f; // bit code 101
+                            colorTable[6] = -1.0f;              // bit code 110
+                            colorTable[7] = 1.0f;              // bit code 111
+                        }
+                    }
+
+                    int RedLow = Get32(data, IOffs + 2);
+                    int RedHigh = Get16(data, IOffs + 6);
+
+                    ulong RedCh = (uint)RedLow | (ulong)RedHigh << 32;
+
+                    int TOffset = 0;
+
+                    for (int TY = 0; TY < 4; TY++)
+                    {
+                        for (int TX = 0; TX < 4; TX++)
+                        {
+                            int OOffset = (X * 4 + TX + (Y * 4 + TY) * W * 4) * 4;
+
+                            byte RedPx = (byte)Math.Min(colorTable[(RedCh >> (TY * 12 + TX * 3)) & 7] * 255,255);
+
+                            Output[OOffset + 0] = RedPx;
+                            Output[OOffset + 1] = RedPx;
+                            Output[OOffset + 2] = RedPx;
+                            Output[OOffset + 3] = 255;
+
+                            TOffset += 4;
+                        }
+                    }
+                }
+            }
+
+            return Output;
+        }
+
         public static byte[] DecompressBC5(Byte[] data, int width, int height, bool IsSNORM, bool IsByteArray)
         {
             int W = (width + 3) / 4;
@@ -616,208 +719,111 @@ namespace FileFormats3DW
 
             return new Bitmap(Output, W * 4, H * 4);
         }
-        public static unsafe byte[] CompressBlock(Byte[] data, int width, int height, DDS_DXGI_FORMAT format, float AlphaRef = 0.5f, bool fastCompress = false)
+
+        public static byte[] DecompressBC5_JPH(Byte[] data, int width, int height, bool IsSNORM)
         {
-            long inputRowPitch = width * 4;
-            long inputSlicePitch = width * height * 4;
-
-            if (data.Length == inputSlicePitch)
+            void GetBlockInfo(int IOffs, out float[] colorTable, out ulong channelKey)
             {
-                byte* buf;
-                buf = (byte*)Marshal.AllocHGlobal((int)inputSlicePitch);
-                Marshal.Copy(data, 0, (IntPtr)buf, (int)inputSlicePitch);
+                colorTable = new float[8];
+                float r0, r1;
 
-                DirectXTexNet.Image inputImage = new DirectXTexNet.Image(
-                    width, height, DXGI_FORMAT.R8G8B8A8_UNORM, inputRowPitch,
-                    inputSlicePitch, (IntPtr)buf, null);
-
-                TexMetadata texMetadata = new TexMetadata(width, height, 1, 1, 1, 0, 0,
-                    DXGI_FORMAT.R8G8B8A8_UNORM, TEX_DIMENSION.TEXTURE2D);
-
-                ScratchImage scratchImage = TexHelper.Instance.InitializeTemporary(
-                    new DirectXTexNet.Image[] { inputImage }, texMetadata, null);
-
-                var compFlags = TEX_COMPRESS_FLAGS.DEFAULT;
-              //  compFlags |= TEX_COMPRESS_FLAGS.PARALLEL;
-
-                if (format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM ||
-                    format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM_SRGB ||
-                    format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC7_TYPELESS)
+                if (!IsSNORM)
                 {
-                    if (fastCompress)
-                        compFlags |= TEX_COMPRESS_FLAGS.BC7_QUICK;
+                    r0 = data[IOffs + 0] / 255f;
+                    r1 = data[IOffs + 1] / 255f;
+
+                    colorTable[0] = r0;
+                    colorTable[1] = r1;
+
+                    if (r0 > r1)
+                    {
+                        // 6 interpolated color values
+                        colorTable[2] = (6 * r0 + 1 * r1) / 7.0f; // bit code 010
+                        colorTable[3] = (5 * r0 + 2 * r1) / 7.0f; // bit code 011
+                        colorTable[4] = (4 * r0 + 3 * r1) / 7.0f; // bit code 100
+                        colorTable[5] = (3 * r0 + 4 * r1) / 7.0f; // bit code 101
+                        colorTable[6] = (2 * r0 + 5 * r1) / 7.0f; // bit code 110
+                        colorTable[7] = (1 * r0 + 6 * r1) / 7.0f; // bit code 111
+                    }
+                    else
+                    {
+                        // 4 interpolated color values
+                        colorTable[2] = (4 * r0 + 1 * r1) / 5.0f; // bit code 010
+                        colorTable[3] = (3 * r0 + 2 * r1) / 5.0f; // bit code 011
+                        colorTable[4] = (2 * r0 + 3 * r1) / 5.0f; // bit code 100
+                        colorTable[5] = (1 * r0 + 4 * r1) / 5.0f; // bit code 101
+                        colorTable[6] = 0.0f;               // bit code 110
+                        colorTable[7] = 1.0f;               // bit code 111
+                    }
+                }
+                else
+                {
+                    r0 = data[IOffs + 0] / 127f;
+                    r1 = data[IOffs + 1] / 127f;
+
+                    colorTable[0] = r0;
+                    colorTable[1] = r1;
+
+                    if (r0 > r1)
+                    {
+                        // 6 interpolated color values
+                        colorTable[2] = (6 * r0 + 1 * r1) / 7.0f; // bit code 010
+                        colorTable[3] = (5 * r0 + 2 * r1) / 7.0f; // bit code 011
+                        colorTable[4] = (4 * r0 + 3 * r1) / 7.0f; // bit code 100
+                        colorTable[5] = (3 * r0 + 4 * r1) / 7.0f; // bit code 101
+                        colorTable[6] = (2 * r0 + 5 * r1) / 7.0f; // bit code 110
+                        colorTable[7] = (1 * r0 + 6 * r1) / 7.0f; // bit code 111
+                    }
+                    else
+                    {
+                        // 4 interpolated color values
+                        colorTable[2] = (4 * r0 + 1 * r1) / 5.0f; // bit code 010
+                        colorTable[3] = (3 * r0 + 2 * r1) / 5.0f; // bit code 011
+                        colorTable[4] = (2 * r0 + 3 * r1) / 5.0f; // bit code 100
+                        colorTable[5] = (1 * r0 + 4 * r1) / 5.0f; // bit code 101
+                        colorTable[6] = -1.0f;              // bit code 110
+                        colorTable[7] = 1.0f;              // bit code 111
+                    }
                 }
 
-                if (format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM_SRGB ||
-                format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM_SRGB ||
-                format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM_SRGB ||
-                format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM_SRGB ||
-                format == DDS_DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM_SRGB)
-                {
-                    compFlags |= TEX_COMPRESS_FLAGS.SRGB;
-                }
-
-                using (var comp = scratchImage.Compress((DXGI_FORMAT)format, compFlags, 0.5f))
-                {
-                    TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out long outRowPitch, out long outSlicePitch, CP_FLAGS.NONE);
-
-                    byte[] result = new byte[outSlicePitch];
-                    Marshal.Copy(comp.GetImage(0).Pixels, result, 0, result.Length);
-
-                    inputImage = null;
-                    scratchImage.Dispose();
-
-
-                    return result;
-                }
-            }
-            return null;
-        }
-        public static unsafe byte[] DecompressBlock(Byte[] data, int width, int height, DDS_DXGI_FORMAT format)
-        {
-            Console.WriteLine(format);
-            Console.WriteLine(width);
-            Console.WriteLine(height);
-            TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out long inputRowPitch, out long inputSlicePitch, CP_FLAGS.NONE);
-
-            DXGI_FORMAT FormatDecompressed;
-
-            if (format.ToString().Contains("SRGB"))
-                FormatDecompressed = DXGI_FORMAT.R8G8B8A8_UNORM_SRGB;
-            else
-                FormatDecompressed = DXGI_FORMAT.R8G8B8A8_UNORM;
-
-            byte* buf;
-            buf = (byte*)Marshal.AllocHGlobal((int)inputSlicePitch);
-            Marshal.Copy(data, 0, (IntPtr)buf, (int)inputSlicePitch);
-
-            DirectXTexNet.Image inputImage = new DirectXTexNet.Image(
-                width, height, (DXGI_FORMAT)format, inputRowPitch,
-                inputSlicePitch, (IntPtr)buf, null);
-
-            TexMetadata texMetadata = new TexMetadata(width, height, 1, 1, 1, 0, 0,
-                (DXGI_FORMAT)format, TEX_DIMENSION.TEXTURE2D);
-
-            ScratchImage scratchImage = TexHelper.Instance.InitializeTemporary(
-                new DirectXTexNet.Image[] { inputImage }, texMetadata, null);
-
-            using (var decomp = scratchImage.Decompress(0, FormatDecompressed))
-            {
-                byte[] result = new byte[4 * width * height];
-                Marshal.Copy(decomp.GetImage(0).Pixels, result, 0, result.Length);
-
-                inputImage = null;
-                scratchImage.Dispose();
-
-                return result;
-            }
-        }
-        public static unsafe byte[] DecodePixelBlock(Byte[] data, int width, int height, DDS_DXGI_FORMAT format, float AlphaRef = 0.5f)
-        {
-            if (format == DDS_DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM)
-            {
-                byte[] result = new byte[data.Length];
-                Array.Copy(data, result, data.Length);
-                return result;
+                channelKey = ((uint)Get32(data, IOffs + 2) | (ulong)Get16(data, IOffs + 6) << 32);
             }
 
-            return Convert(data, width, height, (DXGI_FORMAT)format, DXGI_FORMAT.R8G8B8A8_UNORM);
-        }
-        public static unsafe byte[] EncodePixelBlock(Byte[] data, int width, int height, DDS_DXGI_FORMAT format, float AlphaRef = 0.5f)
-        {
-            if (format == DDS_DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM || format == DDS_DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
-                return data;
+            int W = (width + 3) / 4;
+            int H = (height + 3) / 4;
 
-            return Convert(data, width, height, DXGI_FORMAT.R8G8B8A8_UNORM, (DXGI_FORMAT)format);
-        }
-        public static unsafe byte[] Convert(Byte[] data, int width, int height, DXGI_FORMAT inputFormat, DXGI_FORMAT outputFormat)
-        {
-            TexHelper.Instance.ComputePitch(inputFormat, width, height, out long inputRowPitch, out long inputSlicePitch, CP_FLAGS.NONE);
+            byte[] Output = new byte[W * H * 64];
 
-            if (data.Length == inputSlicePitch)
+            for (int Y = 0; Y < H; Y++)
             {
-                byte* buf;
-                buf = (byte*)Marshal.AllocHGlobal((int)inputSlicePitch);
-                Marshal.Copy(data, 0, (IntPtr)buf, (int)inputSlicePitch);
-
-                DirectXTexNet.Image inputImage = new DirectXTexNet.Image(
-                    width, height, inputFormat, inputRowPitch,
-                    inputSlicePitch, (IntPtr)buf, null);
-
-                TexMetadata texMetadata = new TexMetadata(width, height, 1, 1, 1, 0, 0,
-                    inputFormat, TEX_DIMENSION.TEXTURE2D);
-
-                ScratchImage scratchImage = TexHelper.Instance.InitializeTemporary(
-                    new DirectXTexNet.Image[] { inputImage }, texMetadata, null);
-
-                var convFlags = TEX_FILTER_FLAGS.DEFAULT;
-
-                if (inputFormat == DXGI_FORMAT.B8G8R8A8_UNORM_SRGB ||
-                 inputFormat == DXGI_FORMAT.B8G8R8X8_UNORM_SRGB ||
-                 inputFormat == DXGI_FORMAT.R8G8B8A8_UNORM_SRGB)
+                for (int X = 0; X < W; X++)
                 {
-                    convFlags |= TEX_FILTER_FLAGS.SRGB;
-                }
+                    int IOffs = (Y * W + X) * 16;
 
-                using (var decomp = scratchImage.Convert(0, outputFormat, convFlags, 0.5f))
-                {
-                    TexHelper.Instance.ComputePitch(outputFormat, width, height, out long outRowPitch, out long outSlicePitch, CP_FLAGS.NONE);
+                    GetBlockInfo(IOffs, out float[] colorTableR, out ulong channelKeyR);
 
-                    byte[] result = new byte[outSlicePitch];
-                    Marshal.Copy(decomp.GetImage(0).Pixels, result, 0, result.Length);
+                    GetBlockInfo(IOffs+8, out float[] colorTableA, out ulong channelKeyA);
 
-                    inputImage = null;
-                    scratchImage.Dispose();
+                    for (int TY = 0; TY < 4; TY++)
+                    {
+                        for (int TX = 0; TX < 4; TX++)
+                        {
+                            int OOffset = (X * 4 + TX + (Y * 4 + TY) * W * 4) * 4;
 
+                            byte RedPx = (byte)Math.Min(colorTableR[(channelKeyR >> (TY * 12 + TX * 3)) & 7] * 255, 255);
 
-                    return result;
+                            byte AlphaPx = (byte)Math.Min(colorTableA[(channelKeyA >> (TY * 12 + TX * 3)) & 7] * 255, 255);
+
+                            Output[OOffset + 0] = RedPx;
+                            Output[OOffset + 1] = RedPx;
+                            Output[OOffset + 2] = RedPx;
+                            Output[OOffset + 3] = AlphaPx;
+                        }
+                    }
                 }
             }
-            return null;
-        }
-        /*    public static byte[] CompressBlock(Byte[] data, int width, int height, DDS_DXGI_FORMAT format, float AlphaRef)
-            {
-                return DirectXTex.ImageCompressor.Compress(data, width, height, (int)format, AlphaRef);
-            }*/
 
-        public static byte[] DecompressCompLibBlock(Byte[] data, int width, int height, DDS_DXGI_FORMAT format)
-        {
-            byte[] output = null;
-
-            switch (format)
-            {
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM:
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM_SRGB:
-                    output = CSharpImageLibrary.DDS.Dxt.DecompressDxt1(data, (int)width, (int)height);
-                    break;
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM:
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM_SRGB:
-                    output = CSharpImageLibrary.DDS.Dxt.DecompressDxt5(data, (int)width, (int)height);
-                    break;
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM:
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_SNORM:
-                    output = CSharpImageLibrary.DDS.Dxt.DecompressDxt4(data, (int)width, (int)height);
-                    break;
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM:
-                case DDS_DXGI_FORMAT.DXGI_FORMAT_BC5_SNORM:
-                    output = CSharpImageLibrary.DDS.Dxt.DecompressDxt4(data, (int)width, (int)height);
-                    break;
-                //case DDS_DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM:
-                //case DDS_DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM_SRGB:
-                //    output = CSharpImageLibrary.DDS.Dxt.DecompressBc7(data, (int)width, (int)height);
-                //    break;
-                default:
-                    output = DecompressBlock(data, width, height, format);
-                        break;
-
-            }
-
-            return output;
-        }
-
-        public static Bitmap DecompressCompLibBlock(Byte[] data, int width, int height, DDS_DXGI_FORMAT format, bool GetBitmap)
-        {
-            return new Bitmap(DecompressBlock(data, width, height, format), (int)width, (int)height);
+            return Output;
         }
 
         public static int Get16(byte[] Data, int Address)
