@@ -25,6 +25,11 @@ namespace SpotLight.EditorDrawables
 
         public static Array RailTypes = Enum.GetValues(typeof(RailObjType));
 
+        public override string ToString()
+        {
+            return ObjType.ToString();
+        }
+
         public static Dictionary<string, dynamic> CreateUnitConfig(string className) => new Dictionary<string, dynamic>
         {
             ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
