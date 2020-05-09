@@ -821,7 +821,7 @@ namespace SpotLight
 
         private void Scene_Reverted(object sender, RevertedEventArgs e)
         {
-            UpdateZoneList();
+            UpdateZoneList(true);
             MainSceneListView.Refresh();
             currentScene.SetupObjectUIControl(ObjectUIControl);
         }
@@ -872,7 +872,7 @@ namespace SpotLight
             #endregion
         }
 
-        private void UpdateZoneList()
+        private void UpdateZoneList(bool noEventTrigger = false)
         {
             ZoneListBox.BeginUpdate();
             ZoneListBox.Items.Clear();
@@ -882,12 +882,7 @@ namespace SpotLight
                 ZoneListBox.Items.Add(item);
             }
 
-            int prevSel = ZoneListBox.SelectedIndex;
-
             ZoneListBox.SelectedIndex = currentScene.EditZoneIndex;
-
-            if(prevSel== ZoneListBox.SelectedIndex)
-                ZoneListBox_SelectedIndexChanged(null, null);
 
             ZoneListBox.EndUpdate();
         }
@@ -981,6 +976,9 @@ namespace SpotLight
 
             currentScene.EditZoneIndex = ZoneListBox.SelectedIndex;
 
+            if (MainSceneListView.RootLists.TryGetValue("Common_Linked", out var linked) && linked == currentScene.EditZone.LinkedObjects) //Zone didn't change
+                goto UPDATE_THE_REST;
+
             MainSceneListView.RootLists.Clear();
 
             MainSceneListView.RootLists.Add("Common_Linked", currentScene.EditZone.LinkedObjects);
@@ -994,8 +992,6 @@ namespace SpotLight
             }
 
             MainSceneListView.UpdateComboBoxItems();
-            currentScene.SetupObjectUIControl(ObjectUIControl);
-            LevelGLControlModern.Refresh();
 
             if(zone.HasCategoryMap)
                 MainSceneListView.SetRootList(SM3DWorldZone.MAP_PREFIX+"ObjectList");
@@ -1007,6 +1003,10 @@ namespace SpotLight
             MainSceneListView.Refresh();
 
             EditIndividualButton.Enabled = ZoneListBox.SelectedIndex > 0;
+
+        UPDATE_THE_REST:
+            currentScene.SetupObjectUIControl(ObjectUIControl);
+            LevelGLControlModern.Refresh();
         }
 
         /// <summary>
