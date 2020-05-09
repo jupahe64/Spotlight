@@ -614,6 +614,11 @@ namespace SpotLight
             currentScene?.GrowSelection();
         }
 
+        private void SelectAllLinkedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentScene?.SelectAllLinked();
+        }
+
         private void MoveToLinkedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             AdditionManager additionManager = new AdditionManager();
@@ -1028,6 +1033,7 @@ namespace SpotLight
             SelectAllToolStripMenuItem.Enabled = Trigger;
             DeselectAllToolStripMenuItem.Enabled = Trigger;
             GrowSelectionToolStripMenuItem.Enabled = Trigger;
+            SelectAllLinkedToolStripMenuItem.Enabled = Trigger;
             MoveSelectionToToolStripMenuItem.Enabled = Trigger;
             MoveToAppropriateListsToolStripMenuItem.Enabled = Trigger;
             MoveToLinkedToolStripMenuItem.Enabled = Trigger;

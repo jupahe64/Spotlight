@@ -985,6 +985,61 @@ namespace SpotLight.EditorDrawables
             control.Refresh();
         }
 
+        public void SelectAllLinked()
+        {
+            List<I3dWorldObject> objectsToSelect = new List<I3dWorldObject>();
+
+            bool done = false;
+            while (!done)
+            {
+                done = true;
+
+                foreach (var obj in Get3DWObjects())
+                {
+                    if (obj.IsSelected())
+                    {
+                        foreach ((string name, I3dWorldObject _obj) in obj.LinkDestinations)
+                        {
+                            if (!_obj.IsSelected())
+                            {
+                                _obj.SelectDefault(control);
+                                done = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            done = false;
+            while (!done)
+            {
+                done = true;
+
+                foreach (var obj in Get3DWObjects())
+                {
+                    if (obj.IsSelected())
+                    {
+                        if (obj.Links != null)
+                        {
+                            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in obj.Links)
+                            {
+                                foreach (I3dWorldObject _obj in keyValuePair.Value)
+                                {
+                                    if (!_obj.IsSelected())
+                                    {
+                                        _obj.SelectDefault(control);
+                                        done = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            control.Refresh();
+        }
+
         public class DuplicationInfo
         {
             Dictionary<I3dWorldObject, I3dWorldObject> duplicatedObjects;
