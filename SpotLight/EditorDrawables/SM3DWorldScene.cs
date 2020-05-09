@@ -520,8 +520,6 @@ namespace SpotLight.EditorDrawables
 
                     EditZoneTransform = mainZone.ZonePlacements[value - 1].GetTransform();
 
-                    SceneDrawState.ZoneTransform = EditZoneTransform;
-
                     for (int i = 0; i < mainZone.ZonePlacements.Count; i++)
                     {
                         if (i == value - 1)
@@ -533,6 +531,8 @@ namespace SpotLight.EditorDrawables
 
                     ZonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, mainZone));
                 }
+
+                SceneDrawState.ZoneTransform = EditZoneTransform;
 
                 undoStack = EditZone.undoStack;
                 redoStack = EditZone.redoStack;
