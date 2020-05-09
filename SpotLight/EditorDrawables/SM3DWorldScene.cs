@@ -172,6 +172,33 @@ namespace SpotLight.EditorDrawables
             StaticObjects.Add(new ZonePlacementRenderer(this));
         }
 
+        private CameraStateSave?[] camStateSaves = new CameraStateSave?[10];
+
+        protected void SaveCam(int index)
+        {
+            camStateSaves[index] = new CameraStateSave(control);
+        }
+
+        protected void LoadCam(int index)
+        {
+            camStateSaves[index]?.ApplyTo(control);
+        }
+
+        public override uint KeyDown(KeyEventArgs e, GL_ControlBase control, bool isRepeat)
+        {
+            int index = e.KeyCode - Keys.D0;
+
+            if (index >= 0 && index <= 9)
+            {
+                if (e.Modifiers == Keys.Shift)
+                    SaveCam(index);
+                else if (e.Modifiers == Keys.None)
+                    LoadCam(index);
+            }
+
+            return base.KeyDown(e, control, isRepeat);
+        }
+
         public event EventHandler ZonePlacementsChanged;
 
         public event EventHandler ObjectPlaced;
@@ -186,6 +213,7 @@ namespace SpotLight.EditorDrawables
             undoStack = undoStack,
             redoStack = redoStack,
             IsSaved = IsSaved,
+            camStateSaves = camStateSaves
         };
 
         public delegate (I3dWorldObject obj, ObjectList objList)[] ObjectPlacementHandler(Vector3 position, SM3DWorldZone zone);
