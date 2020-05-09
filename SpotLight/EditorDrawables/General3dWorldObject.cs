@@ -241,11 +241,11 @@ namespace SpotLight.EditorDrawables
                 return false;
             objectUIControl.AddObjectUIContainer(new BasicPropertyUIContainer(this, scene), "General");
 
-            if (Properties != null)
+            if (Properties.Count>0)
                 objectUIControl.AddObjectUIContainer(new ExtraPropertiesUIContainer(Properties, scene), "Properties");
 
             if (Links != null)
-                objectUIControl.AddObjectUIContainer(new LinksProvider(this, scene), "Links");
+                objectUIControl.AddObjectUIContainer(new LinksUIContainer(this, scene), "Links");
 
             return true;
         }
@@ -300,15 +300,10 @@ namespace SpotLight.EditorDrawables
                 newLinks = null;
 
             //copy properties
-            Dictionary<string, dynamic> newProperties;
-            if (Properties != null)
-            {
-                newProperties = new Dictionary<string, dynamic>();
-                foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
-                    newProperties[keyValuePair.Key] = keyValuePair.Value;
-            }
-            else
-                newProperties = null;
+            Dictionary<string, dynamic> newProperties = new Dictionary<string, dynamic>();
+
+            foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
+                newProperties[keyValuePair.Key] = keyValuePair.Value;
 
             Vector3 position = Position;
             Vector3 rotation = Rotation;
@@ -759,12 +754,12 @@ namespace SpotLight.EditorDrawables
             }
         }
 
-        public class LinksProvider : IObjectUIContainer
+        public class LinksUIContainer : IObjectUIContainer
         {
             General3dWorldObject obj;
             EditorSceneBase scene;
 
-            public LinksProvider(General3dWorldObject obj, EditorSceneBase scene)
+            public LinksUIContainer(General3dWorldObject obj, EditorSceneBase scene)
             {
                 this.obj = obj;
                 this.scene = scene;
