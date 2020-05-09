@@ -247,6 +247,9 @@ namespace SpotLight.EditorDrawables
             if (Links != null)
                 objectUIControl.AddObjectUIContainer(new LinksUIContainer(this, scene), "Links");
 
+            if (LinkDestinations.Count>0)
+                objectUIControl.AddObjectUIContainer(new LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
+
             return true;
         }
 
@@ -792,6 +795,47 @@ namespace SpotLight.EditorDrawables
             public void UpdateProperties()
             {
                 
+            }
+        }
+
+        public class LinkDestinationsUIContainer : IObjectUIContainer
+        {
+            General3dWorldObject obj;
+            SM3DWorldScene scene;
+
+            public LinkDestinationsUIContainer(General3dWorldObject obj, SM3DWorldScene scene)
+            {
+                this.obj = obj;
+                this.scene = scene;
+            }
+
+            public void DoUI(IObjectUIControl control)
+            {
+                foreach ((string name, I3dWorldObject _obj) in obj.linkDestinations)
+                {
+                    if (control.Link($"{_obj.ToString()} ({name})"))
+                        scene.FocusOn(_obj);
+                }
+            }
+
+            public void OnValueChanged()
+            {
+
+            }
+
+            public void OnValueChangeStart()
+            {
+
+            }
+
+            public void OnValueSet()
+            {
+
+            }
+
+            public void UpdateProperties()
+            {
+
             }
         }
     }
