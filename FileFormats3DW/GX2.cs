@@ -559,41 +559,10 @@ namespace FileFormats3DW
             ADDR_FMT_RESERVED_63 = 0x3F,
         };
 
-        public static void Debug(SurfaceOut surf)
-        {
-            if (surf == null)
-                surf = GetSurfaceInfo((GX2SurfaceFormat)0x33, 701, 77, 1, 0, 13, 1, 0);
-
-            Console.WriteLine($"size          {surf.size}");
-            Console.WriteLine($"pitch         {surf.pitch}");
-            Console.WriteLine($"height        {surf.height}");
-            Console.WriteLine($"depth         {surf.depth}");
-            Console.WriteLine($"surfSize      {surf.surfSize}");
-            Console.WriteLine($"tileMode      {surf.tileMode}");
-            Console.WriteLine($"baseAlign     {surf.baseAlign}");
-            Console.WriteLine($"pitchAlign    {surf.pitchAlign}");
-            Console.WriteLine($"heightAlign   {surf.heightAlign}");
-            Console.WriteLine($"depthAlign    {surf.depthAlign}");
-            Console.WriteLine($"bpp           {surf.bpp}");
-            Console.WriteLine($"pixelPitch    {surf.pixelPitch}");
-            Console.WriteLine($"pixelHeight   {surf.pixelHeight}");
-            Console.WriteLine($"pixelBits     {surf.pixelBits}");
-            Console.WriteLine($"sliceSize     {surf.sliceSize}");
-            Console.WriteLine($"pitchTileMax  {surf.pitchTileMax}");
-            Console.WriteLine($"heightTileMax {surf.heightTileMax}");
-            Console.WriteLine($"sliceTileMax  {surf.sliceTileMax}");
-            Console.WriteLine($"tileType      {surf.tileType}");
-            Console.WriteLine($"tileIndex     {surf.tileIndex}");
-        }
-        static readonly bool DebugSurface = false;
-
         public static GX2Surface CreateGx2Texture(byte[] imageData, string Name, uint TileMode, uint AAMode,
                uint Width, uint Height, uint Depth, uint Format, uint swizzle, uint SurfaceDim, uint MipCount)
         {
             var surfOut = GetSurfaceInfo((GX2SurfaceFormat)Format, Width, Height, Depth, SurfaceDim, TileMode, AAMode, 0);
-            Console.WriteLine("Imported surfSize" + surfOut.surfSize);
-            Console.WriteLine("Imported data block" + imageData.Length);
-            Console.WriteLine("GX2SurfaceFormat " + (GX2SurfaceFormat)Format);
 
             uint imageSize = (uint)surfOut.surfSize;
             uint alignment = surfOut.baseAlign;
@@ -606,8 +575,6 @@ namespace FileFormats3DW
             if (dataSize <= 0)
                 throw new Exception($"Image is empty!!");
 
-            Console.WriteLine("swizzle pattern " + swizzle);
-
             uint s = 0;
             if (TileMode == 1 || TileMode == 2 ||
                   TileMode == 3 || TileMode == 16)
@@ -616,8 +583,6 @@ namespace FileFormats3DW
             }
             else
                 s = 0xd0000 | swizzle << 8;
-
-            Console.WriteLine("swizzle " + s);
 
             uint blkWidth, blkHeight;
             if (GX2.IsFormatBCN((GX2SurfaceFormat)Format))
@@ -702,8 +667,6 @@ namespace FileFormats3DW
             else
                 s |= (uint)(13 << 16);
 
-            Console.WriteLine("swizzle " + s);
-
             GX2.GX2Surface surf = new GX2Surface
             {
                 depth = Depth,
@@ -733,38 +696,11 @@ namespace FileFormats3DW
             for (int mipLevel = 1; mipLevel < Swizzled.Count; mipLevel++)
             {
                 mips.Add(Swizzled[mipLevel]);
-                Console.WriteLine(Swizzled[mipLevel].Length);
             }
             surf.mipData = CombineByteArray(mips.ToArray());
             mips.Clear();
 
             surf.mipSize = surf.mipData != null ? (uint)surf.mipData.Length : 0;
-
-
-            Console.WriteLine("");
-            Console.WriteLine("// ----- GX2Surface Swizzled Info ----- ");
-            Console.WriteLine("  dim             = 1");
-            Console.WriteLine("  width           = " + surf.width);
-            Console.WriteLine("  height          = " + surf.height);
-            Console.WriteLine("  depth           = 1");
-            Console.WriteLine("  numMips         = " + surf.numMips);
-            Console.WriteLine("  format          = " + surf.format);
-            Console.WriteLine("  aa              = 0");
-            Console.WriteLine("  use             = 1");
-            Console.WriteLine("  imageSize       = " + surf.imageSize);
-            Console.WriteLine("  mipSize         = " + surf.mipSize);
-            Console.WriteLine("  tileMode        = " + surf.tileMode);
-            Console.WriteLine("  swizzle         = " + surf.swizzle);
-            Console.WriteLine("  alignment       = " + surf.alignment);
-            Console.WriteLine("  pitch           = " + surf.pitch);
-            Console.WriteLine("  data            = " + surf.data.Length);
-            Console.WriteLine("  mipData         = " + surf.mipData.Length);
-            Console.WriteLine("");
-            Console.WriteLine("  GX2 Component Selector:");
-            Console.WriteLine("");
-            Console.WriteLine("  bits per pixel  = " + (surf.bpp << 3));
-            Console.WriteLine("  bytes per pixel = " + surf.bpp);
-            Console.WriteLine("  realSize        = " + imageData.Length);
 
             return surf;
         }
@@ -881,7 +817,6 @@ namespace FileFormats3DW
                             mipSpliceSize = (int)MipSurfInfo.sliceSize;
                         }
 
-                        Console.WriteLine($"arrayLevel {arrayLevel} mipOffset " + mipOffset);
                         if (GetLevel)
                         {
                             Array.Copy(tex.mipData, 0, mipdata, 0, tex.mipData.Length);
@@ -916,31 +851,6 @@ namespace FileFormats3DW
         {
             if (tex.data == null || tex.data.Length <= 0)
                 throw new Exception("Invalid GX2 surface data. Make sure to not open Tex2 files if this is one. Those will load automatically next to Tex1!");
-
-            Console.WriteLine("DECODING TEX " + DebugTextureName);
-
-            var surfdEBUG = GetSurfaceInfo((GX2SurfaceFormat)tex.format, tex.width, tex.height, tex.depth, (uint)tex.dim, (uint)tex.tileMode, (uint)tex.aa, 0);
-            Debug(surfdEBUG);
-            /*     Console.WriteLine("");
-                 Console.WriteLine("// ----- GX2Surface Decode Info ----- ");
-                 Console.WriteLine("  dim             = " + tex.dim);
-                 Console.WriteLine("  width           = " + tex.width);
-                 Console.WriteLine("  height          = " + tex.height);
-                 Console.WriteLine("  depth           = " + tex.depth);
-                 Console.WriteLine("  numMips         = " + tex.numMips);
-                 Console.WriteLine("  format          = " + (GX2SurfaceFormat)tex.format);
-                 Console.WriteLine("  aa              = " + tex.aa);
-                 Console.WriteLine("  use             = " + tex.use);
-                 Console.WriteLine("  imageSize       = " + tex.imageSize);
-                 Console.WriteLine("  mipSize         = " + tex.mipSize);
-                 Console.WriteLine("  tileMode        = " + (GX2TileMode)tex.tileMode);
-                 Console.WriteLine("  swizzle         = " + tex.swizzle);
-                 Console.WriteLine("  alignment       = " + tex.alignment);
-                 Console.WriteLine("  pitch           = " + tex.pitch);
-                 Console.WriteLine("  bits per pixel  = " + (tex.bpp << 3));
-                 Console.WriteLine("  bytes per pixel = " + tex.bpp);
-                 Console.WriteLine("  data size       = " + tex.data.Length);
-                 Console.WriteLine("  realSize        = " + tex.imageSize);*/
 
             if (tex.mipOffset == null || tex.mipOffset.Length == 0)
                 tex.mipOffset = GenerateMipOffsets(tex);
@@ -1623,9 +1533,6 @@ namespace FileFormats3DW
 
             uint widtha, heighta, numSlicesa, thickness, microTileBytes;
 
-            if (DebugSurface)
-                Console.WriteLine("baseTileMode " + baseTileMode);
-
             if (numSamples > 1 || tileSlices > 1 || isDepth != 0)
             {
                 if (baseTileMode == 7)
@@ -1654,8 +1561,6 @@ namespace FileFormats3DW
             {
                 expTileMode = baseTileMode;
             }
-            if (DebugSurface)
-                Console.WriteLine("computeSurfaceMipLevelTileMode expTileMode " + expTileMode);
 
             if (noRecursive != 0 || level == 0)
                 return expTileMode;
@@ -1755,7 +1660,6 @@ namespace FileFormats3DW
             uint bpp = pIn.bpp;
             uint numSamples = Math.Max(1, pIn.numSamples);
             uint pitch = pIn.width;
-            Console.WriteLine("ComputeSurfaceInfoEx pitch " + pitch);
             uint height = pIn.height;
             uint numSlices = pIn.numSlices;
             uint mipLevel = pIn.mipLevel;
@@ -1773,49 +1677,15 @@ namespace FileFormats3DW
             uint valid = 0;
             uint baseTileMode = tileMode;
 
-            if (DebugSurface)
-            {
-                Console.WriteLine("---------------------------");
-                Console.WriteLine(tileMode);
-                Console.WriteLine(bpp);
-                Console.WriteLine(numSamples);
-                Console.WriteLine(pitch);
-                Console.WriteLine(height);
-                Console.WriteLine(numSlices);
-                Console.WriteLine(mipLevel);
-                Console.WriteLine(flags);
-                Console.WriteLine(pPitchOut);
-                Console.WriteLine(pHeightOut);
-                Console.WriteLine(pNumSlicesOut);
-                Console.WriteLine(pTileModeOut);
-                Console.WriteLine(pSurfSize);
-                Console.WriteLine(pBaseAlign);
-                Console.WriteLine(pPitchAlign);
-                Console.WriteLine(pHeightAlign);
-                Console.WriteLine(pDepthAlign);
-                Console.WriteLine(padDims);
-                Console.WriteLine(valid);
-                Console.WriteLine(baseTileMode);
-                Console.WriteLine("---------------------------");
-            }
-
-
             flags.value = pIn.flags.value;
-
-            Console.WriteLine("padDims " + padDims);
 
             if ((((flags.value >> 4) & 1) != 0) && (mipLevel == 0))
                 padDims = 2;
-
-            Console.WriteLine("padDims " + padDims);
 
             if (((flags.value >> 6) & 1) != 0)
                 tileMode = ConvertToNonBankSwappedMode((AddrTileMode)tileMode);
             else
             {
-                if (DebugSurface)
-                    Console.WriteLine(tileMode);
-
                 tileMode = ComputeSurfaceMipLevelTileMode(
                 tileMode,
                 bpp,
@@ -1825,13 +1695,6 @@ namespace FileFormats3DW
                 numSlices,
                 numSamples,
                 (flags.value >> 1) & 1, 0);
-
-                if (DebugSurface)
-                {
-                    Console.WriteLine("---------------------------");
-                    Console.WriteLine(tileMode);
-                    Console.WriteLine("---------------------------");
-                }
             }
 
 
@@ -1933,20 +1796,6 @@ namespace FileFormats3DW
             pOut.pitchAlign = pPitchAlign;
             pOut.heightAlign = pHeightAlign;
             pOut.depthAlign = pDepthAlign;
-
-            if (DebugSurface)
-            {
-                Console.WriteLine(pOut.pitch);
-                Console.WriteLine(pOut.height);
-                Console.WriteLine(pOut.depth);
-                Console.WriteLine(pOut.tileMode);
-                Console.WriteLine(pOut.surfSize);
-                Console.WriteLine(pOut.baseAlign);
-                Console.WriteLine(pOut.pitchAlign);
-                Console.WriteLine(pOut.heightAlign);
-                Console.WriteLine(pOut.depthAlign);
-            }
-
 
             if (valid == 0)
                 return 3;
@@ -2071,12 +1920,6 @@ namespace FileFormats3DW
 
         private static void ComputeSurfaceInfo(SurfaceIn aSurfIn, SurfaceOut pSurfOut)
         {
-            if (DebugSurface)
-            {
-                Console.WriteLine(" computeSurfaceInfo ------------------------------------ ");
-
-            }
-
             pIn = aSurfIn;
             pOut = pSurfOut;
 
@@ -2088,21 +1931,8 @@ namespace FileFormats3DW
             if (pIn.bpp > 0x80)
                 returnCode = 3;
 
-            if (DebugSurface)
-                Console.WriteLine("returnCode " + returnCode);
-
             if (returnCode == 0)
             {
-                if (DebugSurface)
-                {
-                    Console.WriteLine("-------------------------------------------");
-                    Console.WriteLine(" computeMipLevel");
-                    Console.WriteLine("-------------------------------------------");
-                    Console.WriteLine(" pIn.width " + pIn.width);
-                    Console.WriteLine(" pIn.height " + pIn.height);
-                    Console.WriteLine(" pIn.numSlices " + pIn.numSlices);
-                }
-
                 ComputeMipLevel();
 
                 width = pIn.width;
@@ -2110,14 +1940,6 @@ namespace FileFormats3DW
                 bpp = pIn.bpp;
                 expandX = 1;
                 expandY = 1;
-
-                if (DebugSurface)
-                {
-                    Console.WriteLine(pIn.width);
-                    Console.WriteLine(pIn.height);
-                    Console.WriteLine(pIn.numSlices);
-                    Console.WriteLine("-------------------------------------------");
-                }
 
                 pOut.pixelBits = pIn.bpp;
 
@@ -2128,26 +1950,10 @@ namespace FileFormats3DW
                     expandY = formatExInfo[pIn.format * 4 + 2];
                     elemMode = formatExInfo[pIn.format * 4 + 3];
 
-                    if (DebugSurface)
-                    {
-                        Console.WriteLine($"bpp {bpp}");
-                        Console.WriteLine($"expandX {expandX}");
-                        Console.WriteLine($"expandY {expandY}");
-                        Console.WriteLine($"elemMode {elemMode}");
-                    }
-
-
                     if (elemMode == 4 && expandX == 3 && pIn.tileMode == 1)
                         pIn.flags.value |= 0x200;
 
                     bpp = AdjustSurfaceInfo(elemMode, expandX, expandY, bpp, width, height);
-
-                    if (DebugSurface)
-                    {
-                        Console.WriteLine($"width {pIn.width}");
-                        Console.WriteLine($"height {pIn.height}");
-                        Console.WriteLine($"bpp {pIn.bpp}");
-                    }
                 }
                 else if (pIn.bpp != 0)
                 {
@@ -2248,12 +2054,6 @@ namespace FileFormats3DW
             pHeightOut = expHeight;
             pNumSlicesOut = expNumSlices;
             pSurfSize = (expHeight * expPitch * expNumSlices * bpp * numSamples + 7) / 8;
-
-            Console.WriteLine("pSurfSize " + pSurfSize);
-            Console.WriteLine("expHeight " + expHeight);
-            Console.WriteLine("expPitch " + expPitch);
-            Console.WriteLine("expNumSlices " + expNumSlices);
-            Console.WriteLine("numSamples " + numSamples);
 
             pTileModeOut = expTileMode;
             pBaseAlign = baseAlign;
@@ -2624,25 +2424,7 @@ namespace FileFormats3DW
             }
 
 
-            if (DebugSurface)
-            {
-                Console.WriteLine("-------------------------------------------");
-                Console.WriteLine(" hwlComputeMipLevel");
-                Console.WriteLine("-------------------------------------------");
-                Console.WriteLine(" pIn.width " + pIn.width);
-                Console.WriteLine(" pIn.height " + pIn.height);
-                Console.WriteLine(" pIn.numSlices " + pIn.numSlices);
-            }
-
             hwlHandled = HwlComputeMipLevel();
-            if (DebugSurface)
-            {
-                Console.WriteLine(" Output:");
-                Console.WriteLine(" pIn.width " + pIn.width);
-                Console.WriteLine(" pIn.height " + pIn.height);
-                Console.WriteLine(" pIn.numSlices " + pIn.numSlices);
-                Console.WriteLine("-------------------------------------------");
-            }
 
             if (hwlHandled == 0 && pIn.mipLevel != 0 && ((pIn.flags.value >> 12) & 1) != 0)
             {
