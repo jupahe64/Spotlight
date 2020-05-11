@@ -54,6 +54,14 @@ namespace SpotLight
             return base.ProcessKeyPreview(ref m);
         }
 
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (LevelGLControlModern.IsHovered && (keyData & Keys.KeyCode) == Keys.Menu) //Alt key
+                return true; //would trigger the menu otherwise
+            else
+                return base.ProcessCmdKey(ref msg, keyData);
+        }
+
         public LevelEditorForm()
         {
             InitializeComponent();
