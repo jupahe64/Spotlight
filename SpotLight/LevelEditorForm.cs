@@ -847,6 +847,7 @@ namespace SpotLight
         private void Scene_ListEntered(object sender, ListEventArgs e)
         {
             MainSceneListView.EnterList(e.List);
+            MainTabControl.SelectedTab = ObjectsTabPage;
         }
 
         private void MainSceneListView_ItemDoubleClicked(object sender, ItemDoubleClickedEventArgs e)
