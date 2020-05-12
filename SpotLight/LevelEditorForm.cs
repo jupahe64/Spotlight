@@ -339,7 +339,7 @@ namespace SpotLight
             {
                 object selected = selection.First();
 
-                CurrentObjectLabel.Text = selected.ToString() + SelectedText.ToLower();
+                CurrentObjectLabel.Text = selected.ToString() + " " + SelectedText.ToLower();
                 SpotlightToolStripStatusLabel.Text = SelectedText+$" \"{selected.ToString()}\".";
 
 
