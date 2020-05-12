@@ -738,11 +738,22 @@ namespace SpotLight
         {
             if (currentScene.GetType() != typeof(LinkEdit3DWScene))
             {
-                currentScene = currentScene.ConvertToOtherSceneType<LinkEdit3DWScene>();
+                var linkEditScene = currentScene.ConvertToOtherSceneType<LinkEdit3DWScene>();
+                linkEditScene.DestinationChanged += LinkEditScene_DestinationChanged;
+                currentScene = linkEditScene;
                 AssignSceneEvents(currentScene);
                 LevelGLControlModern.MainDrawable = currentScene;
                 LevelGLControlModern.Refresh();
             }
+        }
+
+        private void LinkEditScene_DestinationChanged(object sender, DestinationChangedEventArgs e)
+        {
+            //TODO localize
+            string objectMoved = "was moved to";
+            string noObjectsMoved = "All objects stayed in their object list (you held down Shift)";
+
+            SpotlightToolStripStatusLabel.Text = e.DestWasMovedToLinked ? (e.LinkDestination + " " + objectMoved + " " + "Common_Linked") : noObjectsMoved;
         }
 
         //----------------------------------------------------------------------------

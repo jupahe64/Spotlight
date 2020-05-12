@@ -15,9 +15,50 @@ using WinInput = System.Windows.Input;
 
 namespace SpotLight.EditorDrawables
 {
-    class LinkEdit3DWScene : SM3DWorldScene
+    public class DestinationChangedEventArgs : EventArgs
     {
-        LinkManager linkManager;
+        public I3dWorldObject LinkDestination { get; set; }
+        public bool DestWasMovedToLinked { get; set; }
+
+        public DestinationChangedEventArgs(I3dWorldObject linkDestination, bool destWasMovedToLinked)
+        {
+            LinkDestination = linkDestination;
+            DestWasMovedToLinked = destWasMovedToLinked;
+        }
+    }
+
+    public class LinkConnection
+    {
+        private I3dWorldObject source;
+        public I3dWorldObject Dest { get; set; }
+        public string Name;
+        public string[] PossibleNames;
+
+        public I3dWorldObject Source
+        {
+            get => source;
+            set
+            {
+                source = value;
+                PossibleNames = source.Links?.Keys.ToArray();
+            }
+        }
+
+        public LinkConnection(I3dWorldObject source, I3dWorldObject dest, string name)
+        {
+            Source = source;
+            Dest = dest;
+            Name = name;
+        }
+    }
+
+    public delegate void DestinationChangedEventHandler(object sender, DestinationChangedEventArgs e);
+
+    public class LinkEdit3DWScene : SM3DWorldScene
+    {
+        public event DestinationChangedEventHandler DestinationChanged;
+
+        readonly LinkManager linkManager;
 
         LinkConnection selectedConnection;
 
@@ -145,6 +186,8 @@ namespace SpotLight.EditorDrawables
                 return base.KeyUp(e, control);
         }
 
+        
+
         public override uint MouseUp(MouseEventArgs e, GL_ControlBase control)
         {
             if(linkDragMode != LinkDragMode.None && Hovered3dObject != null)
@@ -155,13 +198,24 @@ namespace SpotLight.EditorDrawables
                         SelectedConnection = null;
                     else
                     {
+                        DestinationChangedEventArgs args = null;
+
                         if (TryAddConnection(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name))
                         {
                             UpdateLinkDestinations();
 
+                            BeginUndoCollection();
                             AddToUndo(new RevertableConnectionAddition(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name));
 
+                            bool moveDestToLinked = !WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift);
+
+                            if (moveDestToLinked)
+                                MoveObjectToLinked(Hovered3dObject);
+
+                            EndUndoCollection();
                             SelectedConnection.Dest = Hovered3dObject;
+
+                            args = new DestinationChangedEventArgs(Hovered3dObject, moveDestToLinked);
                         }
                         else //SelectedConnection.Source doesn't support links
                         {
@@ -169,21 +223,46 @@ namespace SpotLight.EditorDrawables
                         }
 
                         UpdateSelection(0);
+
+                        if (args != null)
+                            DestinationChanged?.Invoke(this, args);
                     }
                 }
                 else if (linkDragMode == LinkDragMode.Source)
-                    ChangeSelectedConnection(Hovered3dObject, SelectedConnection.Dest, SelectedConnection.Name);
+                    ChangeSelectedConnection(Hovered3dObject, SelectedConnection.Dest, SelectedConnection.Name, !WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift));
 
                 else
-                    ChangeSelectedConnection(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name);
+                    ChangeSelectedConnection(SelectedConnection.Source, Hovered3dObject, SelectedConnection.Name, !WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift));
             }
 
             linkDragMode = LinkDragMode.None;
 
             return base.MouseUp(e, control) | REDRAW;
         }
-        
-        private void ChangeSelectedConnection(I3dWorldObject newSource, I3dWorldObject newDest, string newName)
+
+        private void MoveObjectToLinked(I3dWorldObject obj)
+        {
+            if (!EditZone.LinkedObjects.Contains(obj))
+            {
+                EditZone.LinkedObjects.Add(obj);
+                AddToUndo(new RevertableSingleAddition(obj, EditZone.LinkedObjects));
+
+                foreach (var list in EditZone.ObjLists.Values)
+                {
+                    int index = list.IndexOf(obj);
+
+                    if (index != -1)
+                    {
+                        list.RemoveAt(index);
+                        AddToUndo(new RevertableSingleDeletion(obj, index, list));
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        private void ChangeSelectedConnection(I3dWorldObject newSource, I3dWorldObject newDest, string newName, bool moveDestToLinked = false)
         {
             if (newSource == SelectedConnection.Source && newDest == SelectedConnection.Dest && newName == SelectedConnection.Name)
                 return; //nothing has changed
@@ -211,9 +290,16 @@ namespace SpotLight.EditorDrawables
                 SelectedConnection.Name
                 );
 
-            TryAddConnection(newSource, newDest, newName);
+            if(TryAddConnection(newSource, newDest, newName))
+            {
+                if(moveDestToLinked)
+                    MoveObjectToLinked(Hovered3dObject);
 
-            UpdateLinkDestinations();
+                if(SelectedConnection.Dest != newDest)
+                    DestinationChanged?.Invoke(this, new DestinationChangedEventArgs(newDest, moveDestToLinked));
+
+                UpdateLinkDestinations();
+            }
 
             SelectedConnection.Source = newSource;
             SelectedConnection.Dest = newDest;
@@ -349,31 +435,6 @@ namespace SpotLight.EditorDrawables
             SelectedConnection = null;
 
             UpdateSelection(REDRAW);
-        }
-
-        public class LinkConnection
-        {
-            private I3dWorldObject source;
-            public I3dWorldObject Dest { get; set; }
-            public string Name;
-            public string[] PossibleNames;
-
-            public I3dWorldObject Source
-            {
-                get => source;
-                set
-                {
-                    source = value;
-                    PossibleNames = source.Links?.Keys.ToArray();
-                }
-            }
-
-            public LinkConnection(I3dWorldObject source, I3dWorldObject dest, string name)
-            {
-                Source = source;
-                Dest = dest;
-                Name = name;
-            }
         }
 
         class LinkManager : AbstractGlDrawable
