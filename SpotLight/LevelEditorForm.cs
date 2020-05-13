@@ -62,6 +62,17 @@ namespace SpotLight
                 return base.ProcessCmdKey(ref msg, keyData);
         }
 
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+
+            foreach (var tab in ZoneDocumentTabControl.Tabs)
+            {
+                if (tab.Document is SM3DWorldScene scene)
+                    scene.CheckLocalFiles();
+            }
+        }
+
         public LevelEditorForm()
         {
             InitializeComponent();

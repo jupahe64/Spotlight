@@ -49,6 +49,8 @@ namespace SpotLight.Level
                 }
             }
         }
+
+        private DateTime lastSaveTime;
         bool isSaved = true;
 
         public IRevertable LastSavedUndo { get; private set; }
@@ -161,6 +163,8 @@ namespace SpotLight.Level
         public const string DESIGN_SUFFIX = "Design1.szs";
         public const string SOUND_SUFFIX = "Sound1.szs";
 
+        const string COMMON_SUFFIX = "1.szs";
+
         static readonly string[] extensionsToReplace = new string[]
         {
             MAP_SUFFIX,
@@ -235,6 +239,8 @@ namespace SpotLight.Level
                 HasCategorySound = true;
                 LoadCategory(SOUND_PREFIX, "Sound", 2, objectsByID);
             }
+
+            lastSaveTime = DateTime.Now;
         }
 
         private bool LoadCategory(string prefix, string categoryName, int extraFilesIndex, Dictionary<string, I3dWorldObject> linkedObjsByID)
@@ -367,19 +373,21 @@ namespace SpotLight.Level
         /// <returns>true if the save succeeded, false if it failed</returns>
         public bool Save()
         {
-            if (HasCategoryMap && !SaveCategory(Directory, MAP_PREFIX, "Map", 0, true))
+            if (HasCategoryMap && !SaveCategory(MAP_PREFIX, "Map", 0, true))
                 return false;
-            if (HasCategoryDesign && !SaveCategory(Directory, DESIGN_PREFIX, "Design", 1))
+            if (HasCategoryDesign && !SaveCategory(DESIGN_PREFIX, "Design", 1))
                 return false;
-            if (HasCategorySound && !SaveCategory(Directory, SOUND_PREFIX, "Sound", 2))
+            if (HasCategorySound && !SaveCategory(SOUND_PREFIX, "Sound", 2))
                 return false;
 
             IsSaved = true;
 
+            lastSaveTime = DateTime.Now;
+
             return true;
         }
         
-        private bool SaveCategory(string directory, string prefix, string categoryName, int extraFilesIndex, bool saveZonePlacements = false)
+        private bool SaveCategory(string prefix, string categoryName, int extraFilesIndex, bool saveZonePlacements = false)
         {
             SarcData sarcData = new SarcData()
             {
@@ -493,7 +501,7 @@ namespace SpotLight.Level
                 sarcData.Files.Add(LevelName + categoryName + ".byml", stream.ToArray());
             }
 
-            File.WriteAllBytes($"{directory}\\{LevelName}{categoryName}1.szs", YAZ0.Compress(SARC.PackN(sarcData).Item2));
+            File.WriteAllBytes(Path.Combine(Directory,LevelName + categoryName + COMMON_SUFFIX), YAZ0.Compress(SARC.PackN(sarcData).Item2));
 
             return true;
         }
@@ -501,6 +509,47 @@ namespace SpotLight.Level
         public void Unload()
         {
             loadedZones.Remove(Path.Combine(Directory, LevelFileName));
+        }
+
+        public void CheckLocalFiles()
+        {
+            void CheckCategory(int extraFilesIndex, string categoryName)
+            {
+                string fileName = Path.Combine(Directory, LevelName + categoryName + COMMON_SUFFIX);
+
+                if (File.GetLastWriteTime(fileName) > lastSaveTime && MessageBox.Show(
+                    /*Todo localize*/
+                    fileName + " was modified outside of Spotlight. Should all extra files be reloaded?", 
+                    "File Modified", 
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    extraFiles[extraFilesIndex].Clear();
+
+                    SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+
+                    string stageFileName = LevelName + categoryName + ".byml";
+
+                    foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
+                    {
+                        if (keyValuePair.Key != stageFileName)
+                        {
+                            if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
+                                extraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                            else
+                                extraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                        }
+                    }
+                }
+            }
+
+            if (HasCategoryMap)
+                CheckCategory(0, "Map");
+            if (HasCategoryDesign)
+                CheckCategory(1, "Design");
+            if (HasCategorySound)
+                CheckCategory(2, "Sound");
+
+            lastSaveTime = DateTime.Now;
         }
     }
 

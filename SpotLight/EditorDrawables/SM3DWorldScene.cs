@@ -1241,6 +1241,14 @@ namespace SpotLight.EditorDrawables
             return IsSaved = IsSaved; //seems dumb but it's the only way to make sure the IsSavedChanged event is triggered
         }
 
+        public void CheckLocalFiles()
+        {
+            foreach (var zone in GetZones())
+            {
+                zone.CheckLocalFiles();
+            }
+        }
+
         public void FocusOn(IEditableObject obj)
         {
             if (obj is I3dWorldObject)
