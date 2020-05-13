@@ -1302,5 +1302,18 @@ Would you like to rebuild the database from your 3DW Files?";
         private string SelectedText { get; set; }
 
         #endregion
+
+        private void LevelGLControlModern_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(e.Button==MouseButtons.Right)
+            {
+                if(currentScene?.ObjectPlaceDelegate != null)
+                {
+                    currentScene.ResetObjectPlaceDelegate();
+
+                    SpotlightToolStripStatusLabel.Text = "";
+                }
+            }
+        }
     }
 }

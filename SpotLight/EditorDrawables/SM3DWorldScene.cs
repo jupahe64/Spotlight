@@ -222,6 +222,8 @@ namespace SpotLight.EditorDrawables
         /// </summary>
         public ObjectPlacementHandler ObjectPlaceDelegate { get; set; }
 
+        public void ResetObjectPlaceDelegate() => ObjectPlaceDelegate = null;
+
         public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
