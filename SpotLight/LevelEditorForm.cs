@@ -503,9 +503,12 @@ namespace SpotLight
                 MessageBox.Show(DatabaseCreatedText, DatabaseCreatedHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            new AddObjectForm(currentScene, LevelGLControlModern).ShowDialog(this);
 
-            SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
+            var form = new AddObjectForm(currentScene, LevelGLControlModern, QuickFavoriteControl);
+            form.ShowDialog(this);
+
+            if(form.SomethingWasSelected)
+                SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
         }
 
         private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1084,7 +1087,10 @@ namespace SpotLight
         {
             MainSceneListView.Refresh();
             if (currentScene.ObjectPlaceDelegate == null)
+            {
                 SpotlightToolStripStatusLabel.Text = "";
+                QuickFavoriteControl.Deselect();
+            }
         }
 
         /// <summary>
@@ -1311,8 +1317,24 @@ Would you like to rebuild the database from your 3DW Files?";
                 {
                     currentScene.ResetObjectPlaceDelegate();
 
+                    QuickFavoriteControl.Deselect();
+
                     SpotlightToolStripStatusLabel.Text = "";
                 }
+            }
+        }
+
+        private void QuickFavoriteControl_SelectedFavoriteChanged(object sender, EventArgs e)
+        {
+            if(currentScene!=null && QuickFavoriteControl.SelectedFavorite!=null)
+            {
+                currentScene.ObjectPlaceDelegate = QuickFavoriteControl.SelectedFavorite.PlacementHandler;
+                SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
+            }
+            else
+            {
+                currentScene?.ResetObjectPlaceDelegate();
+                SpotlightToolStripStatusLabel.Text = "";
             }
         }
     }

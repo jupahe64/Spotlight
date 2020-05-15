@@ -49,21 +49,10 @@
             this.SelectObjectButton = new System.Windows.Forms.Button();
             this.ObjectTypeTabControl = new System.Windows.Forms.TabControl();
             this.ObjectFromDBTab = new System.Windows.Forms.TabPage();
+            this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
             this.SearchPanel = new System.Windows.Forms.Panel();
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchLabel = new System.Windows.Forms.Label();
-            this.RailTab = new System.Windows.Forms.TabPage();
-            this.RailFormationListView = new System.Windows.Forms.ListView();
-            this.RailNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.RailDescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.RailBooleanPanel = new System.Windows.Forms.Panel();
-            this.ReverseRailCheckBox = new System.Windows.Forms.CheckBox();
-            this.ClosePathCheckBox = new System.Windows.Forms.CheckBox();
-            this.LadderRailCheckBox = new System.Windows.Forms.CheckBox();
-            this.RailTypePanel = new System.Windows.Forms.Panel();
-            this.RailTypeComboBox = new System.Windows.Forms.ComboBox();
-            this.RailTypeLabel = new System.Windows.Forms.Label();
-            this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
             this.PropertyNotesListView = new System.Windows.Forms.ListView();
             this.NameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TypeColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -80,21 +69,39 @@
             this.SelectModelLabel = new System.Windows.Forms.Label();
             this.EnglishNameTextBox = new System.Windows.Forms.TextBox();
             this.ClassNameLabel = new System.Windows.Forms.Label();
+            this.RailTab = new System.Windows.Forms.TabPage();
+            this.RailFormationListView = new System.Windows.Forms.ListView();
+            this.RailNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.RailDescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.RailBooleanPanel = new System.Windows.Forms.Panel();
+            this.ReverseRailCheckBox = new System.Windows.Forms.CheckBox();
+            this.CloseRailCheckBox = new System.Windows.Forms.CheckBox();
+            this.RailTypePanel = new System.Windows.Forms.Panel();
+            this.RailTypeComboBox = new System.Windows.Forms.ComboBox();
+            this.RailTypeLabel = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.ToQuickFavoritesButton = new System.Windows.Forms.Button();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.ObjectTypeTabControl.SuspendLayout();
             this.ObjectFromDBTab.SuspendLayout();
-            this.SearchPanel.SuspendLayout();
-            this.RailTab.SuspendLayout();
-            this.RailBooleanPanel.SuspendLayout();
-            this.RailTypePanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
+            this.SearchPanel.SuspendLayout();
             this.AddSettingsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AddSettingsSplitContainer)).BeginInit();
             this.AddSettingsSplitContainer.Panel1.SuspendLayout();
             this.AddSettingsSplitContainer.Panel2.SuspendLayout();
             this.AddSettingsSplitContainer.SuspendLayout();
+            this.RailTab.SuspendLayout();
+            this.RailBooleanPanel.SuspendLayout();
+            this.RailTypePanel.SuspendLayout();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // DBEntryListView
@@ -143,10 +150,10 @@
             listViewGroup10,
             listViewGroup11});
             this.DBEntryListView.HideSelection = false;
-            this.DBEntryListView.Location = new System.Drawing.Point(3, 25);
+            this.DBEntryListView.Location = new System.Drawing.Point(0, 22);
             this.DBEntryListView.MultiSelect = false;
             this.DBEntryListView.Name = "DBEntryListView";
-            this.DBEntryListView.Size = new System.Drawing.Size(264, 434);
+            this.DBEntryListView.Size = new System.Drawing.Size(273, 418);
             this.DBEntryListView.TabIndex = 0;
             this.DBEntryListView.UseCompatibleStateImageBehavior = false;
             this.DBEntryListView.View = System.Windows.Forms.View.Details;
@@ -179,16 +186,18 @@
             this.ObjectDescriptionTextBox.Location = new System.Drawing.Point(0, 53);
             this.ObjectDescriptionTextBox.Multiline = true;
             this.ObjectDescriptionTextBox.Name = "ObjectDescriptionTextBox";
-            this.ObjectDescriptionTextBox.Size = new System.Drawing.Size(502, 86);
+            this.ObjectDescriptionTextBox.Size = new System.Drawing.Size(493, 86);
             this.ObjectDescriptionTextBox.TabIndex = 1;
             this.ObjectDescriptionTextBox.TextChanged += new System.EventHandler(this.ObjectDescriptionTextBox_TextChanged);
             // 
             // SelectObjectButton
             // 
-            this.SelectObjectButton.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.SelectObjectButton.Location = new System.Drawing.Point(0, 488);
+            this.SelectObjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SelectObjectButton.Location = new System.Drawing.Point(10, 6);
             this.SelectObjectButton.Name = "SelectObjectButton";
-            this.SelectObjectButton.Size = new System.Drawing.Size(784, 23);
+            this.SelectObjectButton.Size = new System.Drawing.Size(627, 30);
             this.SelectObjectButton.TabIndex = 2;
             this.SelectObjectButton.Text = "Select";
             this.SelectObjectButton.UseVisualStyleBackColor = true;
@@ -202,30 +211,46 @@
             this.ObjectTypeTabControl.Location = new System.Drawing.Point(0, 0);
             this.ObjectTypeTabControl.Name = "ObjectTypeTabControl";
             this.ObjectTypeTabControl.SelectedIndex = 0;
-            this.ObjectTypeTabControl.Size = new System.Drawing.Size(278, 488);
+            this.ObjectTypeTabControl.Size = new System.Drawing.Size(784, 472);
             this.ObjectTypeTabControl.TabIndex = 4;
-            this.ObjectTypeTabControl.SelectedIndexChanged += new System.EventHandler(this.ObjectTypeTabControl_SelectedIndexChanged);
             // 
             // ObjectFromDBTab
             // 
-            this.ObjectFromDBTab.Controls.Add(this.DBEntryListView);
-            this.ObjectFromDBTab.Controls.Add(this.SearchPanel);
+            this.ObjectFromDBTab.Controls.Add(this.MainSplitContainer);
             this.ObjectFromDBTab.Location = new System.Drawing.Point(4, 22);
             this.ObjectFromDBTab.Name = "ObjectFromDBTab";
             this.ObjectFromDBTab.Padding = new System.Windows.Forms.Padding(3);
-            this.ObjectFromDBTab.Size = new System.Drawing.Size(270, 462);
+            this.ObjectFromDBTab.Size = new System.Drawing.Size(776, 446);
             this.ObjectFromDBTab.TabIndex = 0;
             this.ObjectFromDBTab.Text = "Objects";
             this.ObjectFromDBTab.UseVisualStyleBackColor = true;
+            // 
+            // MainSplitContainer
+            // 
+            this.MainSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainSplitContainer.Location = new System.Drawing.Point(3, 3);
+            this.MainSplitContainer.Name = "MainSplitContainer";
+            // 
+            // MainSplitContainer.Panel1
+            // 
+            this.MainSplitContainer.Panel1.Controls.Add(this.DBEntryListView);
+            this.MainSplitContainer.Panel1.Controls.Add(this.SearchPanel);
+            // 
+            // MainSplitContainer.Panel2
+            // 
+            this.MainSplitContainer.Panel2.Controls.Add(this.splitContainer1);
+            this.MainSplitContainer.Size = new System.Drawing.Size(770, 440);
+            this.MainSplitContainer.SplitterDistance = 273;
+            this.MainSplitContainer.TabIndex = 5;
             // 
             // SearchPanel
             // 
             this.SearchPanel.Controls.Add(this.SearchTextBox);
             this.SearchPanel.Controls.Add(this.SearchLabel);
             this.SearchPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.SearchPanel.Location = new System.Drawing.Point(3, 3);
+            this.SearchPanel.Location = new System.Drawing.Point(0, 0);
             this.SearchPanel.Name = "SearchPanel";
-            this.SearchPanel.Size = new System.Drawing.Size(264, 22);
+            this.SearchPanel.Size = new System.Drawing.Size(273, 22);
             this.SearchPanel.TabIndex = 3;
             // 
             // SearchTextBox
@@ -233,7 +258,7 @@
             this.SearchTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SearchTextBox.Location = new System.Drawing.Point(44, 0);
             this.SearchTextBox.Name = "SearchTextBox";
-            this.SearchTextBox.Size = new System.Drawing.Size(220, 20);
+            this.SearchTextBox.Size = new System.Drawing.Size(229, 20);
             this.SearchTextBox.TabIndex = 1;
             this.SearchTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.SearchTextBox_KeyUp);
             // 
@@ -247,146 +272,6 @@
             this.SearchLabel.TabIndex = 2;
             this.SearchLabel.Text = "Search:";
             // 
-            // RailTab
-            // 
-            this.RailTab.Controls.Add(this.RailFormationListView);
-            this.RailTab.Controls.Add(this.RailBooleanPanel);
-            this.RailTab.Controls.Add(this.RailTypePanel);
-            this.RailTab.Location = new System.Drawing.Point(4, 22);
-            this.RailTab.Name = "RailTab";
-            this.RailTab.Padding = new System.Windows.Forms.Padding(3);
-            this.RailTab.Size = new System.Drawing.Size(270, 462);
-            this.RailTab.TabIndex = 1;
-            this.RailTab.Text = "Rails";
-            this.RailTab.UseVisualStyleBackColor = true;
-            // 
-            // RailFormationListView
-            // 
-            this.RailFormationListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.RailNameColumnHeader,
-            this.RailDescriptionColumnHeader});
-            this.RailFormationListView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RailFormationListView.FullRowSelect = true;
-            this.RailFormationListView.GridLines = true;
-            this.RailFormationListView.HideSelection = false;
-            this.RailFormationListView.Location = new System.Drawing.Point(3, 54);
-            this.RailFormationListView.MultiSelect = false;
-            this.RailFormationListView.Name = "RailFormationListView";
-            this.RailFormationListView.Size = new System.Drawing.Size(264, 405);
-            this.RailFormationListView.TabIndex = 5;
-            this.RailFormationListView.UseCompatibleStateImageBehavior = false;
-            this.RailFormationListView.View = System.Windows.Forms.View.Details;
-            // 
-            // RailNameColumnHeader
-            // 
-            this.RailNameColumnHeader.Text = "Rail Name";
-            this.RailNameColumnHeader.Width = 114;
-            // 
-            // RailDescriptionColumnHeader
-            // 
-            this.RailDescriptionColumnHeader.Text = "Description";
-            this.RailDescriptionColumnHeader.Width = 517;
-            // 
-            // RailBooleanPanel
-            // 
-            this.RailBooleanPanel.Controls.Add(this.ReverseRailCheckBox);
-            this.RailBooleanPanel.Controls.Add(this.ClosePathCheckBox);
-            this.RailBooleanPanel.Controls.Add(this.LadderRailCheckBox);
-            this.RailBooleanPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.RailBooleanPanel.Location = new System.Drawing.Point(3, 26);
-            this.RailBooleanPanel.Name = "RailBooleanPanel";
-            this.RailBooleanPanel.Size = new System.Drawing.Size(264, 28);
-            this.RailBooleanPanel.TabIndex = 6;
-            // 
-            // ReverseRailCheckBox
-            // 
-            this.ReverseRailCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.ReverseRailCheckBox.AutoSize = true;
-            this.ReverseRailCheckBox.Location = new System.Drawing.Point(107, 3);
-            this.ReverseRailCheckBox.Name = "ReverseRailCheckBox";
-            this.ReverseRailCheckBox.Size = new System.Drawing.Size(72, 17);
-            this.ReverseRailCheckBox.TabIndex = 5;
-            this.ReverseRailCheckBox.Text = "Reverse?";
-            this.ReverseRailCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // ClosePathCheckBox
-            // 
-            this.ClosePathCheckBox.AutoSize = true;
-            this.ClosePathCheckBox.Location = new System.Drawing.Point(0, 3);
-            this.ClosePathCheckBox.Name = "ClosePathCheckBox";
-            this.ClosePathCheckBox.Size = new System.Drawing.Size(101, 17);
-            this.ClosePathCheckBox.TabIndex = 4;
-            this.ClosePathCheckBox.Text = "Close the Path?";
-            this.ClosePathCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // LadderRailCheckBox
-            // 
-            this.LadderRailCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.LadderRailCheckBox.AutoSize = true;
-            this.LadderRailCheckBox.Location = new System.Drawing.Point(185, 3);
-            this.LadderRailCheckBox.Name = "LadderRailCheckBox";
-            this.LadderRailCheckBox.Size = new System.Drawing.Size(76, 17);
-            this.LadderRailCheckBox.TabIndex = 6;
-            this.LadderRailCheckBox.Text = "Is Ladder?";
-            this.LadderRailCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // RailTypePanel
-            // 
-            this.RailTypePanel.Controls.Add(this.RailTypeComboBox);
-            this.RailTypePanel.Controls.Add(this.RailTypeLabel);
-            this.RailTypePanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.RailTypePanel.Location = new System.Drawing.Point(3, 3);
-            this.RailTypePanel.Name = "RailTypePanel";
-            this.RailTypePanel.Size = new System.Drawing.Size(264, 23);
-            this.RailTypePanel.TabIndex = 7;
-            // 
-            // RailTypeComboBox
-            // 
-            this.RailTypeComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RailTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.RailTypeComboBox.FormattingEnabled = true;
-            this.RailTypeComboBox.Items.AddRange(new object[] {
-            "Rail",
-            "RailWithMoveParameter",
-            "RailWithEffect"});
-            this.RailTypeComboBox.Location = new System.Drawing.Point(55, 0);
-            this.RailTypeComboBox.Name = "RailTypeComboBox";
-            this.RailTypeComboBox.Size = new System.Drawing.Size(209, 21);
-            this.RailTypeComboBox.TabIndex = 0;
-            // 
-            // RailTypeLabel
-            // 
-            this.RailTypeLabel.AutoSize = true;
-            this.RailTypeLabel.Dock = System.Windows.Forms.DockStyle.Left;
-            this.RailTypeLabel.Location = new System.Drawing.Point(0, 0);
-            this.RailTypeLabel.Name = "RailTypeLabel";
-            this.RailTypeLabel.Size = new System.Drawing.Size(55, 13);
-            this.RailTypeLabel.TabIndex = 1;
-            this.RailTypeLabel.Text = "Rail Type:";
-            // 
-            // MainSplitContainer
-            // 
-            this.MainSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MainSplitContainer.Location = new System.Drawing.Point(0, 0);
-            this.MainSplitContainer.Name = "MainSplitContainer";
-            // 
-            // MainSplitContainer.Panel1
-            // 
-            this.MainSplitContainer.Panel1.Controls.Add(this.ObjectTypeTabControl);
-            // 
-            // MainSplitContainer.Panel2
-            // 
-            this.MainSplitContainer.Panel2.Controls.Add(this.PropertyNotesListView);
-            this.MainSplitContainer.Panel2.Controls.Add(this.PropertyHintTextBox);
-            this.MainSplitContainer.Panel2.Controls.Add(this.PropertyLabel);
-            this.MainSplitContainer.Panel2.Controls.Add(this.AddSettingsPanel);
-            this.MainSplitContainer.Panel2.Controls.Add(this.ObjectDescriptionTextBox);
-            this.MainSplitContainer.Panel2.Controls.Add(this.EnglishNameTextBox);
-            this.MainSplitContainer.Panel2.Controls.Add(this.ClassNameLabel);
-            this.MainSplitContainer.Size = new System.Drawing.Size(784, 488);
-            this.MainSplitContainer.SplitterDistance = 278;
-            this.MainSplitContainer.TabIndex = 5;
-            // 
             // PropertyNotesListView
             // 
             this.PropertyNotesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -397,10 +282,10 @@
             this.PropertyNotesListView.FullRowSelect = true;
             this.PropertyNotesListView.GridLines = true;
             this.PropertyNotesListView.HideSelection = false;
-            this.PropertyNotesListView.Location = new System.Drawing.Point(0, 278);
+            this.PropertyNotesListView.Location = new System.Drawing.Point(0, 23);
             this.PropertyNotesListView.MultiSelect = false;
             this.PropertyNotesListView.Name = "PropertyNotesListView";
-            this.PropertyNotesListView.Size = new System.Drawing.Size(502, 155);
+            this.PropertyNotesListView.Size = new System.Drawing.Size(493, 100);
             this.PropertyNotesListView.TabIndex = 4;
             this.PropertyNotesListView.UseCompatibleStateImageBehavior = false;
             this.PropertyNotesListView.View = System.Windows.Forms.View.Details;
@@ -424,10 +309,10 @@
             // PropertyHintTextBox
             // 
             this.PropertyHintTextBox.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.PropertyHintTextBox.Location = new System.Drawing.Point(0, 433);
+            this.PropertyHintTextBox.Location = new System.Drawing.Point(0, 123);
             this.PropertyHintTextBox.Multiline = true;
             this.PropertyHintTextBox.Name = "PropertyHintTextBox";
-            this.PropertyHintTextBox.Size = new System.Drawing.Size(502, 55);
+            this.PropertyHintTextBox.Size = new System.Drawing.Size(493, 55);
             this.PropertyHintTextBox.TabIndex = 6;
             this.PropertyHintTextBox.TextChanged += new System.EventHandler(this.PropertyHintTextBox_TextChanged);
             // 
@@ -436,7 +321,7 @@
             this.PropertyLabel.AutoSize = true;
             this.PropertyLabel.Dock = System.Windows.Forms.DockStyle.Top;
             this.PropertyLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PropertyLabel.Location = new System.Drawing.Point(0, 255);
+            this.PropertyLabel.Location = new System.Drawing.Point(0, 0);
             this.PropertyLabel.Name = "PropertyLabel";
             this.PropertyLabel.Size = new System.Drawing.Size(132, 23);
             this.PropertyLabel.TabIndex = 5;
@@ -445,10 +330,10 @@
             // AddSettingsPanel
             // 
             this.AddSettingsPanel.Controls.Add(this.AddSettingsSplitContainer);
-            this.AddSettingsPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.AddSettingsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.AddSettingsPanel.Location = new System.Drawing.Point(0, 139);
             this.AddSettingsPanel.Name = "AddSettingsPanel";
-            this.AddSettingsPanel.Size = new System.Drawing.Size(502, 116);
+            this.AddSettingsPanel.Size = new System.Drawing.Size(493, 119);
             this.AddSettingsPanel.TabIndex = 3;
             // 
             // AddSettingsSplitContainer
@@ -466,8 +351,8 @@
             // 
             this.AddSettingsSplitContainer.Panel2.Controls.Add(this.SelectModelListView);
             this.AddSettingsSplitContainer.Panel2.Controls.Add(this.SelectModelLabel);
-            this.AddSettingsSplitContainer.Size = new System.Drawing.Size(502, 116);
-            this.AddSettingsSplitContainer.SplitterDistance = 240;
+            this.AddSettingsSplitContainer.Size = new System.Drawing.Size(493, 119);
+            this.AddSettingsSplitContainer.SplitterDistance = 235;
             this.AddSettingsSplitContainer.TabIndex = 4;
             // 
             // SelectObjectListView
@@ -480,7 +365,7 @@
             this.SelectObjectListView.Location = new System.Drawing.Point(0, 17);
             this.SelectObjectListView.MultiSelect = false;
             this.SelectObjectListView.Name = "SelectObjectListView";
-            this.SelectObjectListView.Size = new System.Drawing.Size(240, 99);
+            this.SelectObjectListView.Size = new System.Drawing.Size(235, 102);
             this.SelectObjectListView.TabIndex = 4;
             this.SelectObjectListView.UseCompatibleStateImageBehavior = false;
             this.SelectObjectListView.View = System.Windows.Forms.View.Details;
@@ -511,7 +396,7 @@
             this.SelectModelListView.Location = new System.Drawing.Point(0, 17);
             this.SelectModelListView.MultiSelect = false;
             this.SelectModelListView.Name = "SelectModelListView";
-            this.SelectModelListView.Size = new System.Drawing.Size(258, 99);
+            this.SelectModelListView.Size = new System.Drawing.Size(254, 102);
             this.SelectModelListView.TabIndex = 6;
             this.SelectModelListView.UseCompatibleStateImageBehavior = false;
             this.SelectModelListView.View = System.Windows.Forms.View.Details;
@@ -536,9 +421,9 @@
             // 
             this.EnglishNameTextBox.Dock = System.Windows.Forms.DockStyle.Top;
             this.EnglishNameTextBox.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.EnglishNameTextBox.Location = new System.Drawing.Point(0, 23);
+            this.EnglishNameTextBox.Location = new System.Drawing.Point(0, 0);
             this.EnglishNameTextBox.Name = "EnglishNameTextBox";
-            this.EnglishNameTextBox.Size = new System.Drawing.Size(502, 30);
+            this.EnglishNameTextBox.Size = new System.Drawing.Size(493, 30);
             this.EnglishNameTextBox.TabIndex = 7;
             this.EnglishNameTextBox.Text = "Nothing Selected";
             this.EnglishNameTextBox.TextChanged += new System.EventHandler(this.EnglishNameTextBox_TextChanged);
@@ -548,19 +433,169 @@
             this.ClassNameLabel.AutoSize = true;
             this.ClassNameLabel.Dock = System.Windows.Forms.DockStyle.Top;
             this.ClassNameLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ClassNameLabel.Location = new System.Drawing.Point(0, 0);
+            this.ClassNameLabel.Location = new System.Drawing.Point(0, 30);
             this.ClassNameLabel.Name = "ClassNameLabel";
             this.ClassNameLabel.Size = new System.Drawing.Size(163, 23);
             this.ClassNameLabel.TabIndex = 2;
             this.ClassNameLabel.Text = "Nothing Selected";
+            // 
+            // RailTab
+            // 
+            this.RailTab.Controls.Add(this.RailFormationListView);
+            this.RailTab.Controls.Add(this.RailBooleanPanel);
+            this.RailTab.Controls.Add(this.RailTypePanel);
+            this.RailTab.Location = new System.Drawing.Point(4, 22);
+            this.RailTab.Name = "RailTab";
+            this.RailTab.Padding = new System.Windows.Forms.Padding(3);
+            this.RailTab.Size = new System.Drawing.Size(776, 446);
+            this.RailTab.TabIndex = 1;
+            this.RailTab.Text = "Rails";
+            this.RailTab.UseVisualStyleBackColor = true;
+            // 
+            // RailFormationListView
+            // 
+            this.RailFormationListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.RailNameColumnHeader,
+            this.RailDescriptionColumnHeader});
+            this.RailFormationListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.RailFormationListView.FullRowSelect = true;
+            this.RailFormationListView.GridLines = true;
+            this.RailFormationListView.HideSelection = false;
+            this.RailFormationListView.Location = new System.Drawing.Point(3, 54);
+            this.RailFormationListView.MultiSelect = false;
+            this.RailFormationListView.Name = "RailFormationListView";
+            this.RailFormationListView.Size = new System.Drawing.Size(770, 389);
+            this.RailFormationListView.TabIndex = 5;
+            this.RailFormationListView.UseCompatibleStateImageBehavior = false;
+            this.RailFormationListView.View = System.Windows.Forms.View.Details;
+            // 
+            // RailNameColumnHeader
+            // 
+            this.RailNameColumnHeader.Text = "Rail Name";
+            this.RailNameColumnHeader.Width = 114;
+            // 
+            // RailDescriptionColumnHeader
+            // 
+            this.RailDescriptionColumnHeader.Text = "Description";
+            this.RailDescriptionColumnHeader.Width = 517;
+            // 
+            // RailBooleanPanel
+            // 
+            this.RailBooleanPanel.Controls.Add(this.ReverseRailCheckBox);
+            this.RailBooleanPanel.Controls.Add(this.CloseRailCheckBox);
+            this.RailBooleanPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.RailBooleanPanel.Location = new System.Drawing.Point(3, 26);
+            this.RailBooleanPanel.Name = "RailBooleanPanel";
+            this.RailBooleanPanel.Size = new System.Drawing.Size(770, 28);
+            this.RailBooleanPanel.TabIndex = 6;
+            // 
+            // ReverseRailCheckBox
+            // 
+            this.ReverseRailCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.ReverseRailCheckBox.AutoSize = true;
+            this.ReverseRailCheckBox.Location = new System.Drawing.Point(360, 3);
+            this.ReverseRailCheckBox.Name = "ReverseRailCheckBox";
+            this.ReverseRailCheckBox.Size = new System.Drawing.Size(72, 17);
+            this.ReverseRailCheckBox.TabIndex = 5;
+            this.ReverseRailCheckBox.Text = "Reverse?";
+            this.ReverseRailCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // CloseRailCheckBox
+            // 
+            this.CloseRailCheckBox.AutoSize = true;
+            this.CloseRailCheckBox.Location = new System.Drawing.Point(0, 3);
+            this.CloseRailCheckBox.Name = "CloseRailCheckBox";
+            this.CloseRailCheckBox.Size = new System.Drawing.Size(101, 17);
+            this.CloseRailCheckBox.TabIndex = 4;
+            this.CloseRailCheckBox.Text = "Close the Path?";
+            this.CloseRailCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // RailTypePanel
+            // 
+            this.RailTypePanel.Controls.Add(this.RailTypeComboBox);
+            this.RailTypePanel.Controls.Add(this.RailTypeLabel);
+            this.RailTypePanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.RailTypePanel.Location = new System.Drawing.Point(3, 3);
+            this.RailTypePanel.Name = "RailTypePanel";
+            this.RailTypePanel.Size = new System.Drawing.Size(770, 23);
+            this.RailTypePanel.TabIndex = 7;
+            // 
+            // RailTypeComboBox
+            // 
+            this.RailTypeComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.RailTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.RailTypeComboBox.FormattingEnabled = true;
+            this.RailTypeComboBox.Items.AddRange(new object[] {
+            "Rail",
+            "RailWithMoveParameter",
+            "RailWithEffect"});
+            this.RailTypeComboBox.Location = new System.Drawing.Point(55, 0);
+            this.RailTypeComboBox.Name = "RailTypeComboBox";
+            this.RailTypeComboBox.Size = new System.Drawing.Size(715, 21);
+            this.RailTypeComboBox.TabIndex = 0;
+            // 
+            // RailTypeLabel
+            // 
+            this.RailTypeLabel.AutoSize = true;
+            this.RailTypeLabel.Dock = System.Windows.Forms.DockStyle.Left;
+            this.RailTypeLabel.Location = new System.Drawing.Point(0, 0);
+            this.RailTypeLabel.Name = "RailTypeLabel";
+            this.RailTypeLabel.Size = new System.Drawing.Size(55, 13);
+            this.RailTypeLabel.TabIndex = 1;
+            this.RailTypeLabel.Text = "Rail Type:";
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.ToQuickFavoritesButton);
+            this.panel1.Controls.Add(this.SelectObjectButton);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel1.Location = new System.Drawing.Point(0, 472);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(784, 39);
+            this.panel1.TabIndex = 6;
+            // 
+            // ToQuickFavoritesButton
+            // 
+            this.ToQuickFavoritesButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ToQuickFavoritesButton.Location = new System.Drawing.Point(643, 6);
+            this.ToQuickFavoritesButton.Name = "ToQuickFavoritesButton";
+            this.ToQuickFavoritesButton.Size = new System.Drawing.Size(129, 30);
+            this.ToQuickFavoritesButton.TabIndex = 3;
+            this.ToQuickFavoritesButton.Text = "To QuickFavorites";
+            this.ToQuickFavoritesButton.UseVisualStyleBackColor = true;
+            this.ToQuickFavoritesButton.Click += new System.EventHandler(this.ToQuickFavoritesButton_Click);
+            // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.AddSettingsPanel);
+            this.splitContainer1.Panel1.Controls.Add(this.ObjectDescriptionTextBox);
+            this.splitContainer1.Panel1.Controls.Add(this.ClassNameLabel);
+            this.splitContainer1.Panel1.Controls.Add(this.EnglishNameTextBox);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.PropertyNotesListView);
+            this.splitContainer1.Panel2.Controls.Add(this.PropertyHintTextBox);
+            this.splitContainer1.Panel2.Controls.Add(this.PropertyLabel);
+            this.splitContainer1.Size = new System.Drawing.Size(493, 440);
+            this.splitContainer1.SplitterDistance = 258;
+            this.splitContainer1.TabIndex = 8;
             // 
             // AddObjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 511);
-            this.Controls.Add(this.MainSplitContainer);
-            this.Controls.Add(this.SelectObjectButton);
+            this.Controls.Add(this.ObjectTypeTabControl);
+            this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(800, 550);
@@ -571,18 +606,12 @@
             this.Load += new System.EventHandler(this.AddObjectForm_Load);
             this.ObjectTypeTabControl.ResumeLayout(false);
             this.ObjectFromDBTab.ResumeLayout(false);
-            this.SearchPanel.ResumeLayout(false);
-            this.SearchPanel.PerformLayout();
-            this.RailTab.ResumeLayout(false);
-            this.RailBooleanPanel.ResumeLayout(false);
-            this.RailBooleanPanel.PerformLayout();
-            this.RailTypePanel.ResumeLayout(false);
-            this.RailTypePanel.PerformLayout();
             this.MainSplitContainer.Panel1.ResumeLayout(false);
             this.MainSplitContainer.Panel2.ResumeLayout(false);
-            this.MainSplitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).EndInit();
             this.MainSplitContainer.ResumeLayout(false);
+            this.SearchPanel.ResumeLayout(false);
+            this.SearchPanel.PerformLayout();
             this.AddSettingsPanel.ResumeLayout(false);
             this.AddSettingsSplitContainer.Panel1.ResumeLayout(false);
             this.AddSettingsSplitContainer.Panel1.PerformLayout();
@@ -590,6 +619,18 @@
             this.AddSettingsSplitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AddSettingsSplitContainer)).EndInit();
             this.AddSettingsSplitContainer.ResumeLayout(false);
+            this.RailTab.ResumeLayout(false);
+            this.RailBooleanPanel.ResumeLayout(false);
+            this.RailBooleanPanel.PerformLayout();
+            this.RailTypePanel.ResumeLayout(false);
+            this.RailTypePanel.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel1.PerformLayout();
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -626,15 +667,17 @@
         private System.Windows.Forms.Label SelectModelLabel;
         private System.Windows.Forms.ColumnHeader ObjectNameColumnHeader;
         private System.Windows.Forms.ColumnHeader ModelNameColumnHeader;
-        private System.Windows.Forms.CheckBox ClosePathCheckBox;
+        private System.Windows.Forms.CheckBox CloseRailCheckBox;
         private System.Windows.Forms.ListView RailFormationListView;
         private System.Windows.Forms.Panel RailBooleanPanel;
         private System.Windows.Forms.CheckBox ReverseRailCheckBox;
         private System.Windows.Forms.Panel RailTypePanel;
         private System.Windows.Forms.ColumnHeader RailNameColumnHeader;
         private System.Windows.Forms.ColumnHeader RailDescriptionColumnHeader;
-        private System.Windows.Forms.CheckBox LadderRailCheckBox;
         private System.Windows.Forms.ColumnHeader EnglishNameColumnHeader;
         private System.Windows.Forms.TextBox EnglishNameTextBox;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Button ToQuickFavoritesButton;
+        private System.Windows.Forms.SplitContainer splitContainer1;
     }
 }

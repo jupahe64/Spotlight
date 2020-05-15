@@ -15,7 +15,7 @@ namespace SpotLight
 {
     public partial class AddObjectForm : Form
     {
-        public AddObjectForm(SM3DWorldScene scene, GL_ControlModern control)
+        public AddObjectForm(SM3DWorldScene scene, GL_ControlModern control, QuickFavoriteControl quickFavorites)
         {
             InitializeComponent();
             CenterToParent();
@@ -46,22 +46,30 @@ namespace SpotLight
 
             this.scene = scene;
             this.control = control;
+            this.quickFavorites = quickFavorites;
         }
 
         private void AddObjectForm_Load(object sender, EventArgs e)
         {
             RailTypeComboBox.SelectedIndex = 0;
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Line [2-Points]", "A Basic Line consisting of 2 path points." }) { Tag = PathPointFormations.BasicPath });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Circle [4-Points]", "A Basic Circle consisting of 4 path points. Recommended to be closed." }) { Tag = PathPointFormations.CirclePath });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Square [4-Points]", "A Basic Square consisting of 4 path points. Recommended to be closed." }) { Tag = PathPointFormations.SquarePath });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rectangle [4-Points]", "A Basic Rectangle consisting of 4 path points. Recommended to be closed." }) { Tag = PathPointFormations.RectanglePath });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rounded Rectangle [6-Points]", "A Rounded Rectangle consisting of 6 path points. Recommended to be closed." }) { Tag = PathPointFormations.RoundedRectanglePath });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rounded Square [8-Points]", "A Rounded Square consisting of 8 path points. Recommended to be closed." }) { Tag = PathPointFormations.RoundedSquarePath });
+            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Line [2-Points]", "A Basic Line consisting of 2 path points." }) 
+            { Tag = new Func<List<RailPoint>>(PathPointFormations.BasicPath) });
+            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Circle [4-Points]", "A Basic Circle consisting of 4 path points. Recommended to be closed." }) 
+            { Tag = new Func<List<RailPoint>>(PathPointFormations.CirclePath) });
+            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Square [4-Points]", "A Basic Square consisting of 4 path points. Recommended to be closed." }) 
+            { Tag = new Func<List<RailPoint>>(PathPointFormations.SquarePath) });
+            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rectangle [4-Points]", "A Basic Rectangle consisting of 4 path points. Recommended to be closed." }) 
+            { Tag = new Func<List<RailPoint>>(PathPointFormations.RectanglePath) });
+            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rounded Rectangle [6-Points]", "A Rounded Rectangle consisting of 6 path points. Recommended to be closed." }) 
+            { Tag = new Func<List<RailPoint>>(PathPointFormations.RoundedRectanglePath) });
+            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rounded Square [8-Points]", "A Rounded Square consisting of 8 path points. Recommended to be closed." }) 
+            { Tag = new Func<List<RailPoint>>(PathPointFormations.RoundedSquarePath) });
             RailFormationListView.Items[0].Selected = true;
         }
 
         readonly SM3DWorldScene scene;
         readonly GL_ControlModern control;
+        private QuickFavoriteControl quickFavorites;
         readonly ListViewItem[] FullItems;
         private Information ObjectInformation;
 
@@ -169,22 +177,6 @@ namespace SpotLight
             Edited = true;
         }
 
-        private void ObjectTypeTabControl_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            bool trig = ObjectTypeTabControl.SelectedIndex == 0;
-
-            ClassNameLabel.Enabled = trig;
-            ObjectDescriptionTextBox.Enabled = trig;
-            SelectObjectLabel.Enabled = trig;
-            SelectObjectListView.Enabled = trig;
-            SelectModelLabel.Enabled = trig;
-            SelectModelListView.Enabled = trig;
-            PropertyLabel.Enabled = trig;
-            PropertyNotesListView.Enabled = trig;
-            PropertyHintTextBox.Enabled = trig;
-            EnglishNameTextBox.Enabled = trig;
-        }
-
         private void EnglishNameTextBox_TextChanged(object sender, EventArgs e)
         {
             if (Loading || DBEntryListView.SelectedItems.Count == 0)
@@ -208,89 +200,123 @@ namespace SpotLight
                     e.Cancel = true;
             }
         }
+
+        public bool SomethingWasSelected { get; private set; }
+
         private void SelectObjectButton_Click(object sender, EventArgs e)
         {
+            if(TryGetPlacementHandler(out var placementHandler, out string _))
+            {
+                scene.ObjectPlaceDelegate = placementHandler;
+
+                SomethingWasSelected = true;
+
+                Close();
+            }
+        }
+
+        private void ToQuickFavoritesButton_Click(object sender, EventArgs e)
+        {
+            if (TryGetPlacementHandler(out var placementHandler, out string text))
+            {
+                quickFavorites.AddFavorite(new QuickFavoriteControl.QuickFavorite(text, placementHandler));
+            }
+        }
+
+        private bool TryGetPlacementHandler(out SM3DWorldScene.ObjectPlacementHandler placementHandler, out string text)
+        {
+            #region Local Handlers and variables
+            Parameter objectParameter;
+            int objectNameIndex;
+            int objectModelIndex;
+
+            (I3dWorldObject, ObjectList)[] PlaceObjectFromDB(Vector3 pos, SM3DWorldZone zone)
+            {
+                General3dWorldObject obj = objectParameter.ToGeneral3DWorldObject(zone.NextObjID(), zone, pos,
+                    objectNameIndex,
+                    objectModelIndex);
+                obj.Prepare(control);
+
+                if (objectParameter.TryGetObjectList(zone, out ObjectList objList))
+                {
+                    return new (I3dWorldObject, ObjectList)[] {
+                        (obj, objList)
+                    };
+                }
+                else
+                {
+                    return new (I3dWorldObject, ObjectList)[] {
+                        (obj, zone.LinkedObjects)
+                    };
+                }
+            }
+
+            Rail.RailObjType railObjType;
+            Func<List<RailPoint>> railFormationFunc;
+            bool reverseRail;
+            bool closeRail;
+
+            (I3dWorldObject, ObjectList)[] PlaceRail(Vector3 pos, SM3DWorldZone zone)
+            {
+                List<RailPoint> pathPoints = PathPointFormations.GetPathFormation(pos, railFormationFunc(), reverseRail);
+
+                Rail rail = new Rail(pathPoints, zone.NextObjID(), closeRail, false, false, railObjType, zone);
+
+                rail.Prepare(control);
+
+                if (zone.ObjLists.ContainsKey("Map_Rails"))
+                {
+                    return new (I3dWorldObject, ObjectList)[] {
+                        (rail, zone.ObjLists["Map_Rails"])
+                    };
+                }
+                else
+                {
+                    return new (I3dWorldObject, ObjectList)[] {
+                        (rail, zone.LinkedObjects)
+                    };
+                }
+            }
+            #endregion
+
+            placementHandler = null;
+            text = null;
+
             if (ObjectTypeTabControl.SelectedTab == ObjectFromDBTab)
             {
                 if (Loading || DBEntryListView.SelectedItems.Count == 0)
-                    return;
+                    return false;
 
-                scene.ObjectPlaceDelegate = PlaceObjectFromDB;
+                objectParameter = Program.ParameterDB.ObjectParameters[SelectedClassName];
+                objectNameIndex = SelectObjectListView.SelectedIndices.Count == 1 ? SelectObjectListView.SelectedIndices[0] : -1;
+                objectModelIndex = SelectModelListView.SelectedIndices.Count == 1 ? SelectModelListView.SelectedIndices[0] : -1;
 
-                selectedParameter = Program.ParameterDB.ObjectParameters[SelectedClassName];
+                text = SelectedClassName + '\n' + SelectObjectListView.SelectedItems[0].Text +
+                    (string.IsNullOrEmpty(SelectModelListView.SelectedItems[0].Text) ? string.Empty : '\n' + "Mdl: " + SelectModelListView.SelectedItems[0].Text);
 
-                Close();
-                return;
+                placementHandler = PlaceObjectFromDB;
+                return true;
 
             }
 
             if (ObjectTypeTabControl.SelectedTab == RailTab)
             {
                 if (Loading || RailFormationListView.SelectedItems.Count == 0)
-                    return;
-                scene.ObjectPlaceDelegate = PlaceRail;
-                Close();
-                return;
+                    return false;
+
+                railFormationFunc = (Func<List<RailPoint>>)RailFormationListView.SelectedItems[0].Tag;
+                railObjType = (Rail.RailObjType)RailTypeComboBox.SelectedIndex;
+                reverseRail = ReverseRailCheckBox.Checked;
+                closeRail = CloseRailCheckBox.Checked;
+
+                text = RailFormationListView.SelectedItems[0].Text + '\n' + railObjType.ToString() + '\n' + (closeRail ? "Closed" : "Open");
+
+                placementHandler = PlaceRail;
+                return true;
             }
-            Close();
+
+            return true;
         }
-
-        Parameter selectedParameter;
-        /// <summary>
-        /// Place an object from the Object Database with this.
-        /// </summary>
-        /// <param name="pos">Position to place the object at</param>
-        /// <param name="zone">Zone to place the object into</param>
-        /// <returns></returns>
-        private (I3dWorldObject, ObjectList)[] PlaceObjectFromDB(Vector3 pos, SM3DWorldZone zone)
-        {
-            General3dWorldObject obj = selectedParameter.ToGeneral3DWorldObject(zone.NextObjID(), zone, pos,
-                SelectObjectListView.SelectedIndices.Count == 1 ? SelectObjectListView.SelectedIndices[0] : -1,
-                SelectModelListView.SelectedIndices.Count == 1 ? SelectModelListView.SelectedIndices[0] : -1);
-            obj.Prepare(control);
-
-            if (selectedParameter.TryGetObjectList(zone, out ObjectList objList))
-            {
-                return new (I3dWorldObject, ObjectList)[] {
-                (obj, objList)
-                };
-            }
-            else
-            {
-                return new (I3dWorldObject, ObjectList)[] {
-                (obj, zone.LinkedObjects)
-                };
-            }
-        }
-        /// <summary>
-        /// Place a rail with this.
-        /// </summary>
-        /// <param name="pos">Position to place the rail at</param>
-        /// <param name="zone">Zone to place the rail into</param>
-        /// <returns></returns>
-        private (I3dWorldObject, ObjectList)[] PlaceRail(Vector3 pos, SM3DWorldZone zone)
-        {
-            List<RailPoint> pathPoints = PathPointFormations.GetPathFormation(pos, (List<RailPoint>)RailFormationListView.SelectedItems[0].Tag, ReverseRailCheckBox.Checked);
-
-            Rail rail = new Rail(pathPoints, zone.NextObjID(), ClosePathCheckBox.Checked, LadderRailCheckBox.Checked, false, (Rail.RailObjType)RailTypeComboBox.SelectedIndex, zone);
-
-
-            rail.Prepare(control);
-
-            if (zone.ObjLists.ContainsKey("Map_Rails"))
-            {
-                return new (I3dWorldObject, ObjectList)[] {
-                    (rail, zone.ObjLists["Map_Rails"])
-                };
-            }
-            else
-            {
-                return new (I3dWorldObject, ObjectList)[] {
-                (rail, zone.LinkedObjects)
-                };
-            }
-        }
-
 
 
 
@@ -306,9 +332,8 @@ namespace SpotLight
             ModelCountColumnHeader.Text = Program.CurrentLanguage.GetTranslation("ModelCountColumnHeader") ?? "Models";
 
             RailTypeLabel.Text = Program.CurrentLanguage.GetTranslation("RailTypeLabel") ?? "Rail Type";
-            ClosePathCheckBox.Text = Program.CurrentLanguage.GetTranslation("ClosePathCheckBox") ?? "Close the Path?";
+            CloseRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("ClosePathCheckBox") ?? "Close the Path?";
             ReverseRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("ReverseRailCheckBox") ?? "Reverse?";
-            LadderRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("LadderRailCheckBox") ?? "Is Ladder?";
             RailNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("RailNameColumnHeader") ?? "Rail Name";
             RailDescriptionColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectDescriptionText") ?? "Description";
             ModelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectNameText") ?? "Name";
@@ -376,7 +401,7 @@ namespace SpotLight
         /// <summary>
         /// 2-Point Path (Line)
         /// </summary>
-        public static List<RailPoint> BasicPath => new List<RailPoint>()
+        public static List<RailPoint> BasicPath() => new List<RailPoint>()
         {
             new RailPoint(new Vector3(-3,0,0), Vector3.Zero, Vector3.Zero),
             new RailPoint(new Vector3(3,0,0), Vector3.Zero, Vector3.Zero),
@@ -384,7 +409,7 @@ namespace SpotLight
         /// <summary>
         /// 4-Point Path (Circle, Recommended Closed)
         /// </summary>
-        public static List<RailPoint> CirclePath => new List<RailPoint>()
+        public static List<RailPoint> CirclePath() => new List<RailPoint>()
         {
             new RailPoint(new Vector3(-3,0,0), new Vector3(0,0,-2), new Vector3(0,0,2)),
             new RailPoint(new Vector3(0,0,3), new Vector3(-2,0,0), new Vector3(2,0,0)),
@@ -394,7 +419,7 @@ namespace SpotLight
         /// <summary>
         /// 4-Point Path (Square, Recommended Closed)
         /// </summary>
-        public static List<RailPoint> SquarePath => new List<RailPoint>()
+        public static List<RailPoint> SquarePath() => new List<RailPoint>()
         {
             new RailPoint(new Vector3(-3,0,-3), Vector3.Zero, Vector3.Zero),
             new RailPoint(new Vector3(3,0,-3), Vector3.Zero, Vector3.Zero),
@@ -404,7 +429,7 @@ namespace SpotLight
         /// <summary>
         /// 4-Point Path (Rectangle, Recommended Closed)
         /// </summary>
-        public static List<RailPoint> RectanglePath => new List<RailPoint>()
+        public static List<RailPoint> RectanglePath() => new List<RailPoint>()
         {
             new RailPoint(new Vector3(-3,0,-6), Vector3.Zero, Vector3.Zero),
             new RailPoint(new Vector3(3,0,-6), Vector3.Zero, Vector3.Zero),
@@ -414,7 +439,7 @@ namespace SpotLight
         /// <summary>
         /// 6-Point Path (Rounded Rectangle, Recommended Closed)
         /// </summary>
-        public static List<RailPoint> RoundedRectanglePath => new List<RailPoint>()
+        public static List<RailPoint> RoundedRectanglePath() => new List<RailPoint>()
         {
             new RailPoint(new Vector3(-3,0,-5), new Vector3(0,0,2), new Vector3(0,0,-2)),
             new RailPoint(new Vector3(0,0,-8), new Vector3(-2,0,0), new Vector3(2,0,0)),
@@ -426,7 +451,7 @@ namespace SpotLight
         /// <summary>
         /// 8-Point Path (Rounded Square, Recommended Closed)
         /// </summary>
-        public static List<RailPoint> RoundedSquarePath => new List<RailPoint>()
+        public static List<RailPoint> RoundedSquarePath() => new List<RailPoint>()
         {
             new RailPoint(new Vector3(-6,0,-3), new Vector3(0,0,2), new Vector3(0,0,-2)),//good
             new RailPoint(new Vector3(-3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0)),//good

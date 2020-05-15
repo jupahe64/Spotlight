@@ -140,6 +140,7 @@
     <Compile Include="LoadLevelForm.Designer.cs">
       <DependentUpon>LoadLevelForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="QuickFavoritesControl.cs" />
     <Compile Include="SceneStates.cs" />
     <None Include="Clear Pipes.cs" />
     <Compile Include="EditorDrawables\General3dWorldObject.cs" />
