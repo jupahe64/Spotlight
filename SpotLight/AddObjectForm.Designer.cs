@@ -53,12 +53,7 @@
             this.SearchPanel = new System.Windows.Forms.Panel();
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchLabel = new System.Windows.Forms.Label();
-            this.PropertyNotesListView = new System.Windows.Forms.ListView();
-            this.NameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TypeColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.DescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.PropertyHintTextBox = new System.Windows.Forms.TextBox();
-            this.PropertyLabel = new System.Windows.Forms.Label();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.AddSettingsPanel = new System.Windows.Forms.Panel();
             this.AddSettingsSplitContainer = new System.Windows.Forms.SplitContainer();
             this.SelectObjectListView = new System.Windows.Forms.ListView();
@@ -67,8 +62,14 @@
             this.SelectModelListView = new System.Windows.Forms.ListView();
             this.ModelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SelectModelLabel = new System.Windows.Forms.Label();
-            this.EnglishNameTextBox = new System.Windows.Forms.TextBox();
             this.ClassNameLabel = new System.Windows.Forms.Label();
+            this.EnglishNameTextBox = new System.Windows.Forms.TextBox();
+            this.PropertyNotesListView = new System.Windows.Forms.ListView();
+            this.NameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TypeColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.DescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.PropertyHintTextBox = new System.Windows.Forms.TextBox();
+            this.PropertyLabel = new System.Windows.Forms.Label();
             this.RailTab = new System.Windows.Forms.TabPage();
             this.RailFormationListView = new System.Windows.Forms.ListView();
             this.RailNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -81,7 +82,6 @@
             this.RailTypeLabel = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ToQuickFavoritesButton = new System.Windows.Forms.Button();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.ObjectTypeTabControl.SuspendLayout();
             this.ObjectFromDBTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
@@ -89,6 +89,10 @@
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
             this.SearchPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.AddSettingsPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AddSettingsSplitContainer)).BeginInit();
             this.AddSettingsSplitContainer.Panel1.SuspendLayout();
@@ -98,10 +102,6 @@
             this.RailBooleanPanel.SuspendLayout();
             this.RailTypePanel.SuspendLayout();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // DBEntryListView
@@ -272,60 +272,28 @@
             this.SearchLabel.TabIndex = 2;
             this.SearchLabel.Text = "Search:";
             // 
-            // PropertyNotesListView
+            // splitContainer1
             // 
-            this.PropertyNotesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.NameColumnHeader,
-            this.TypeColumnHeader,
-            this.DescriptionColumnHeader});
-            this.PropertyNotesListView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PropertyNotesListView.FullRowSelect = true;
-            this.PropertyNotesListView.GridLines = true;
-            this.PropertyNotesListView.HideSelection = false;
-            this.PropertyNotesListView.Location = new System.Drawing.Point(0, 23);
-            this.PropertyNotesListView.MultiSelect = false;
-            this.PropertyNotesListView.Name = "PropertyNotesListView";
-            this.PropertyNotesListView.Size = new System.Drawing.Size(493, 100);
-            this.PropertyNotesListView.TabIndex = 4;
-            this.PropertyNotesListView.UseCompatibleStateImageBehavior = false;
-            this.PropertyNotesListView.View = System.Windows.Forms.View.Details;
-            this.PropertyNotesListView.SelectedIndexChanged += new System.EventHandler(this.PropertyNotesListView_SelectedIndexChanged);
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
-            // NameColumnHeader
+            // splitContainer1.Panel1
             // 
-            this.NameColumnHeader.Text = "Property Name";
-            this.NameColumnHeader.Width = 133;
+            this.splitContainer1.Panel1.Controls.Add(this.AddSettingsPanel);
+            this.splitContainer1.Panel1.Controls.Add(this.ObjectDescriptionTextBox);
+            this.splitContainer1.Panel1.Controls.Add(this.ClassNameLabel);
+            this.splitContainer1.Panel1.Controls.Add(this.EnglishNameTextBox);
             // 
-            // TypeColumnHeader
+            // splitContainer1.Panel2
             // 
-            this.TypeColumnHeader.Text = "Type";
-            this.TypeColumnHeader.Width = 74;
-            // 
-            // DescriptionColumnHeader
-            // 
-            this.DescriptionColumnHeader.Text = "Description";
-            this.DescriptionColumnHeader.Width = 285;
-            // 
-            // PropertyHintTextBox
-            // 
-            this.PropertyHintTextBox.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.PropertyHintTextBox.Location = new System.Drawing.Point(0, 123);
-            this.PropertyHintTextBox.Multiline = true;
-            this.PropertyHintTextBox.Name = "PropertyHintTextBox";
-            this.PropertyHintTextBox.Size = new System.Drawing.Size(493, 55);
-            this.PropertyHintTextBox.TabIndex = 6;
-            this.PropertyHintTextBox.TextChanged += new System.EventHandler(this.PropertyHintTextBox_TextChanged);
-            // 
-            // PropertyLabel
-            // 
-            this.PropertyLabel.AutoSize = true;
-            this.PropertyLabel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.PropertyLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PropertyLabel.Location = new System.Drawing.Point(0, 0);
-            this.PropertyLabel.Name = "PropertyLabel";
-            this.PropertyLabel.Size = new System.Drawing.Size(132, 23);
-            this.PropertyLabel.TabIndex = 5;
-            this.PropertyLabel.Text = "No Properties";
+            this.splitContainer1.Panel2.Controls.Add(this.PropertyNotesListView);
+            this.splitContainer1.Panel2.Controls.Add(this.PropertyHintTextBox);
+            this.splitContainer1.Panel2.Controls.Add(this.PropertyLabel);
+            this.splitContainer1.Size = new System.Drawing.Size(493, 440);
+            this.splitContainer1.SplitterDistance = 258;
+            this.splitContainer1.TabIndex = 8;
             // 
             // AddSettingsPanel
             // 
@@ -417,6 +385,17 @@
             this.SelectModelLabel.TabIndex = 5;
             this.SelectModelLabel.Text = "Select Model:";
             // 
+            // ClassNameLabel
+            // 
+            this.ClassNameLabel.AutoSize = true;
+            this.ClassNameLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ClassNameLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ClassNameLabel.Location = new System.Drawing.Point(0, 30);
+            this.ClassNameLabel.Name = "ClassNameLabel";
+            this.ClassNameLabel.Size = new System.Drawing.Size(163, 23);
+            this.ClassNameLabel.TabIndex = 2;
+            this.ClassNameLabel.Text = "Nothing Selected";
+            // 
             // EnglishNameTextBox
             // 
             this.EnglishNameTextBox.Dock = System.Windows.Forms.DockStyle.Top;
@@ -428,16 +407,60 @@
             this.EnglishNameTextBox.Text = "Nothing Selected";
             this.EnglishNameTextBox.TextChanged += new System.EventHandler(this.EnglishNameTextBox_TextChanged);
             // 
-            // ClassNameLabel
+            // PropertyNotesListView
             // 
-            this.ClassNameLabel.AutoSize = true;
-            this.ClassNameLabel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ClassNameLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ClassNameLabel.Location = new System.Drawing.Point(0, 30);
-            this.ClassNameLabel.Name = "ClassNameLabel";
-            this.ClassNameLabel.Size = new System.Drawing.Size(163, 23);
-            this.ClassNameLabel.TabIndex = 2;
-            this.ClassNameLabel.Text = "Nothing Selected";
+            this.PropertyNotesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.NameColumnHeader,
+            this.TypeColumnHeader,
+            this.DescriptionColumnHeader});
+            this.PropertyNotesListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PropertyNotesListView.FullRowSelect = true;
+            this.PropertyNotesListView.GridLines = true;
+            this.PropertyNotesListView.HideSelection = false;
+            this.PropertyNotesListView.Location = new System.Drawing.Point(0, 23);
+            this.PropertyNotesListView.MultiSelect = false;
+            this.PropertyNotesListView.Name = "PropertyNotesListView";
+            this.PropertyNotesListView.Size = new System.Drawing.Size(493, 100);
+            this.PropertyNotesListView.TabIndex = 4;
+            this.PropertyNotesListView.UseCompatibleStateImageBehavior = false;
+            this.PropertyNotesListView.View = System.Windows.Forms.View.Details;
+            this.PropertyNotesListView.SelectedIndexChanged += new System.EventHandler(this.PropertyNotesListView_SelectedIndexChanged);
+            // 
+            // NameColumnHeader
+            // 
+            this.NameColumnHeader.Text = "Property Name";
+            this.NameColumnHeader.Width = 133;
+            // 
+            // TypeColumnHeader
+            // 
+            this.TypeColumnHeader.Text = "Type";
+            this.TypeColumnHeader.Width = 74;
+            // 
+            // DescriptionColumnHeader
+            // 
+            this.DescriptionColumnHeader.Text = "Description";
+            this.DescriptionColumnHeader.Width = 285;
+            // 
+            // PropertyHintTextBox
+            // 
+            this.PropertyHintTextBox.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.PropertyHintTextBox.Location = new System.Drawing.Point(0, 123);
+            this.PropertyHintTextBox.Multiline = true;
+            this.PropertyHintTextBox.Name = "PropertyHintTextBox";
+            this.PropertyHintTextBox.Size = new System.Drawing.Size(493, 55);
+            this.PropertyHintTextBox.TabIndex = 6;
+            this.PropertyHintTextBox.TextChanged += new System.EventHandler(this.PropertyHintTextBox_TextChanged);
+            // 
+            // PropertyLabel
+            // 
+            this.PropertyLabel.AutoSize = true;
+            this.PropertyLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.PropertyLabel.Font = new System.Drawing.Font("Arial Black", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PropertyLabel.Location = new System.Drawing.Point(0, 0);
+            this.PropertyLabel.Name = "PropertyLabel";
+            this.PropertyLabel.Size = new System.Drawing.Size(132, 23);
+            this.PropertyLabel.TabIndex = 5;
+            this.PropertyLabel.Text = "No Properties";
             // 
             // RailTab
             // 
@@ -566,29 +589,6 @@
             this.ToQuickFavoritesButton.UseVisualStyleBackColor = true;
             this.ToQuickFavoritesButton.Click += new System.EventHandler(this.ToQuickFavoritesButton_Click);
             // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.AddSettingsPanel);
-            this.splitContainer1.Panel1.Controls.Add(this.ObjectDescriptionTextBox);
-            this.splitContainer1.Panel1.Controls.Add(this.ClassNameLabel);
-            this.splitContainer1.Panel1.Controls.Add(this.EnglishNameTextBox);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.PropertyNotesListView);
-            this.splitContainer1.Panel2.Controls.Add(this.PropertyHintTextBox);
-            this.splitContainer1.Panel2.Controls.Add(this.PropertyLabel);
-            this.splitContainer1.Size = new System.Drawing.Size(493, 440);
-            this.splitContainer1.SplitterDistance = 258;
-            this.splitContainer1.TabIndex = 8;
-            // 
             // AddObjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -612,6 +612,12 @@
             this.MainSplitContainer.ResumeLayout(false);
             this.SearchPanel.ResumeLayout(false);
             this.SearchPanel.PerformLayout();
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel1.PerformLayout();
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.AddSettingsPanel.ResumeLayout(false);
             this.AddSettingsSplitContainer.Panel1.ResumeLayout(false);
             this.AddSettingsSplitContainer.Panel1.PerformLayout();
@@ -625,12 +631,6 @@
             this.RailTypePanel.ResumeLayout(false);
             this.RailTypePanel.PerformLayout();
             this.panel1.ResumeLayout(false);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel1.PerformLayout();
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.Panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

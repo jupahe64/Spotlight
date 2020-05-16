@@ -341,6 +341,7 @@ namespace SpotLight
             NameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("GlobalPropertyNameText") ?? "Property Name";
             TypeColumnHeader.Text = Program.CurrentLanguage.GetTranslation("GlobalTypeText") ?? "Type";
             SelectObjectButton.Text = Program.CurrentLanguage.GetTranslation("GlobalSelectText") ?? "Select";
+            ToQuickFavoritesButton.Text = Program.CurrentLanguage.GetTranslation("GlobalToQuickFavoritesText") ?? "To Quick Favorites";
 
             NothingSelectedText = Program.CurrentLanguage.GetTranslation("NothingSelectedText") ?? "Nothing Selected";
             NoPropertiesText = Program.CurrentLanguage.GetTranslation("AddObjectNoPropertiesText") ?? "No Properties";

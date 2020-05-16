@@ -763,12 +763,9 @@ namespace SpotLight
 
         private void LinkEditScene_DestinationChanged(object sender, DestinationChangedEventArgs e)
         {
-            //TODO localize
-            string objectMoved = "was moved to";
-            string noObjectsMoved = "All objects stayed in their object list (you held down Shift)";
-
-            SpotlightToolStripStatusLabel.Text = e.DestWasMovedToLinked ? (e.LinkDestination + " " + objectMoved + " " + "Common_Linked") : noObjectsMoved;
+            SpotlightToolStripStatusLabel.Text = e.DestWasMovedToLinked ? (string.Format(MovedToOtherListInfo, e.LinkDestination, "Common_Linked")) : NothingMovedToLinkedInfo;
         }
+
 
         //----------------------------------------------------------------------------
 
@@ -1068,6 +1065,7 @@ namespace SpotLight
             DeselectAllToolStripMenuItem.Enabled = Trigger;
             GrowSelectionToolStripMenuItem.Enabled = Trigger;
             SelectAllLinkedToolStripMenuItem.Enabled = Trigger;
+            SelectionToolStripMenuItem.Enabled = Trigger;
             MoveSelectionToToolStripMenuItem.Enabled = Trigger;
             MoveToAppropriateListsToolStripMenuItem.Enabled = Trigger;
             MoveToLinkedToolStripMenuItem.Enabled = Trigger;
@@ -1209,6 +1207,9 @@ Would you like to rebuild the database from your 3DW Files?";
             MultipleSelected = Program.CurrentLanguage.GetTranslation("MultipleSelected") ?? "Multiple Objects Selected";
             NothingSelected = Program.CurrentLanguage.GetTranslation("NothingSelected") ?? "Nothing Selected";
             SelectedText = Program.CurrentLanguage.GetTranslation("Selected") ?? "Selected";
+
+            MovedToOtherListInfo = Program.CurrentLanguage.GetTranslation("MovedToOtherListInfo") ?? "{0} was moved to {1}";
+            NothingMovedToLinkedInfo = Program.CurrentLanguage.GetTranslation("NothingMovedToLinkedInfo") ?? "All objects stayed in their object list (you held down Shift)";
             #endregion
 
             #region Controls
@@ -1227,12 +1228,16 @@ Would you like to rebuild the database from your 3DW Files?";
             AddZoneToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("AddZoneToolStripMenuItem") ?? "Add Zone";
             DuplicateToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DuplicateToolStripMenuItem") ?? "Duplicate";
             DeleteToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DeleteToolStripMenuItem") ?? "Delete";
-            SelectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectAllToolStripMenuItem") ?? "Select All";
-            DeselectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DeselectAllToolStripMenuItem") ?? "Deselect All";
             LevelParametersToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("LevelParametersToolStripMenuItem") ?? "Level Parameters";
             MoveSelectionToToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveSelectionToToolStripMenuItem") ?? "Move Selection To";
             MoveToLinkedToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveToLinkedToolStripMenuItem") ?? "Linked Objects";
             MoveToAppropriateListsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveToAppropriateListsToolStripMenuItem") ?? "Appropriate Lists";
+
+            SelectionToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectionToolStripMenuItem") ?? "Selection";
+            SelectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectAllToolStripMenuItem") ?? "Select All";
+            DeselectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DeselectAllToolStripMenuItem") ?? "Deselect All";
+            GrowSelectionToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("GrowSelectionToolStripMenuItem") ?? "Grow Selection";
+            SelectAllLinkedToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectAllLinkedToolStripMenuItem") ?? "Select All Linked";
 
             ModeToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("ModeToolStripMenuItem") ?? "Mode";
             EditObjectsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("EditObjectsToolStripMenuItem") ?? "Edit Objects";
@@ -1306,6 +1311,9 @@ Would you like to rebuild the database from your 3DW Files?";
         private string NothingSelected { get; set; }
         private string MultipleSelected { get; set; }
         private string SelectedText { get; set; }
+
+        public string MovedToOtherListInfo { get; private set; }
+        public string NothingMovedToLinkedInfo { get; private set; }
 
         #endregion
 
