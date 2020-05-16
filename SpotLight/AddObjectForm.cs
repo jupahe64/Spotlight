@@ -291,9 +291,17 @@ namespace SpotLight
                 objectNameIndex = SelectObjectListView.SelectedIndices.Count == 1 ? SelectObjectListView.SelectedIndices[0] : -1;
                 objectModelIndex = SelectModelListView.SelectedIndices.Count == 1 ? SelectModelListView.SelectedIndices[0] : -1;
 
-                text = SelectedClassName + '\n' + SelectObjectListView.SelectedItems[0].Text +
-                    (string.IsNullOrEmpty(SelectModelListView.SelectedItems[0].Text) ? string.Empty : '\n' + "Mdl: " + SelectModelListView.SelectedItems[0].Text);
-
+                if (SelectObjectListView.Items.Count > 1)
+                {
+                    text = SelectObjectListView.SelectedItems[0].Text + "\n" + (string.IsNullOrEmpty(ObjectInformation.EnglishName) ? SelectedClassName : ObjectInformation.EnglishName) +
+                        (string.IsNullOrEmpty(SelectModelListView.SelectedItems.Count > 0 ? SelectModelListView.SelectedItems[0].ToString() : "") ? string.Empty : '\n' + "Mdl: " + SelectModelListView.SelectedItems[0].Text);
+                }
+                else
+                {
+                    text = string.IsNullOrEmpty(ObjectInformation.EnglishName) ? SelectedClassName : ObjectInformation.EnglishName + '\n' + SelectObjectListView.SelectedItems[0].Text +
+                        (string.IsNullOrEmpty(SelectModelListView.SelectedItems.Count > 0 ? SelectModelListView.SelectedItems[0].ToString():"") ? string.Empty : '\n' + "Mdl: " + SelectModelListView.SelectedItems[0].Text);
+                }
+                
                 placementHandler = PlaceObjectFromDB;
                 return true;
 
@@ -367,6 +375,11 @@ namespace SpotLight
         private void DBEntryListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             SelectObjectButton.PerformClick();
+        }
+
+        private void DeselectModelButton_Click(object sender, EventArgs e)
+        {
+            SelectModelListView.SelectedItems.Clear();
         }
     }
     public static class ControlExtensions

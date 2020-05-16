@@ -82,6 +82,7 @@
             this.RailTypeLabel = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ToQuickFavoritesButton = new System.Windows.Forms.Button();
+            this.DeselectModelButton = new System.Windows.Forms.Button();
             this.ObjectTypeTabControl.SuspendLayout();
             this.ObjectFromDBTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
@@ -317,6 +318,7 @@
             // 
             // AddSettingsSplitContainer.Panel2
             // 
+            this.AddSettingsSplitContainer.Panel2.Controls.Add(this.DeselectModelButton);
             this.AddSettingsSplitContainer.Panel2.Controls.Add(this.SelectModelListView);
             this.AddSettingsSplitContainer.Panel2.Controls.Add(this.SelectModelLabel);
             this.AddSettingsSplitContainer.Size = new System.Drawing.Size(493, 119);
@@ -589,6 +591,17 @@
             this.ToQuickFavoritesButton.UseVisualStyleBackColor = true;
             this.ToQuickFavoritesButton.Click += new System.EventHandler(this.ToQuickFavoritesButton_Click);
             // 
+            // DeselectModelButton
+            // 
+            this.DeselectModelButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.DeselectModelButton.Location = new System.Drawing.Point(236, -1);
+            this.DeselectModelButton.Name = "DeselectModelButton";
+            this.DeselectModelButton.Size = new System.Drawing.Size(18, 17);
+            this.DeselectModelButton.TabIndex = 7;
+            this.DeselectModelButton.Text = "X";
+            this.DeselectModelButton.UseVisualStyleBackColor = true;
+            this.DeselectModelButton.Click += new System.EventHandler(this.DeselectModelButton_Click);
+            // 
             // AddObjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -679,5 +692,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button ToQuickFavoritesButton;
         private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.Button DeselectModelButton;
     }
 }
