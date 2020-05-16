@@ -1251,7 +1251,7 @@ Would you like to rebuild the database from your 3DW Files?";
             ZonesTabPage.Text = Program.CurrentLanguage.GetTranslation("ZonesTabPage") ?? "Zones";
             ObjectsTabPage.Text = Program.CurrentLanguage.GetTranslation("ObjectsTabPage") ?? "Objects";
             EditIndividualButton.Text = Program.CurrentLanguage.GetTranslation("EditIndividualButton") ?? "Edit Individual";
-            CurrentObjectLabel.Text = Program.CurrentLanguage.GetTranslation("CurrentObjectLabel") ?? "Nothing Selected";
+            CurrentObjectLabel.Text = NothingSelected;
             #endregion
         }
 
