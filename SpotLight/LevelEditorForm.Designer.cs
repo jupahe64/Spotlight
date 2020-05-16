@@ -230,6 +230,8 @@
             // 
             // QuickFavoriteControl
             // 
+            this.QuickFavoriteControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.QuickFavoriteControl.Location = new System.Drawing.Point(3, 457);
             this.QuickFavoriteControl.Name = "QuickFavoriteControl";
             this.QuickFavoriteControl.Size = new System.Drawing.Size(517, 53);

@@ -25,6 +25,8 @@ namespace SpotLight
 
             WorldIDNumericUpDown.Maximum = StageList.Worlds.Count;
 
+            Localize();
+
             if (!LevelName.Equals(""))
             {
                 bool Breakout = false;
@@ -43,7 +45,6 @@ namespace SpotLight
                         break;
                 }
             }
-            Localize();
             Loading = false;
         }
 
