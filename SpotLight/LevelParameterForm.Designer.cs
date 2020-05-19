@@ -145,7 +145,7 @@
             // WorldIDNumericUpDown
             // 
             this.WorldIDNumericUpDown.Enabled = false;
-            this.WorldIDNumericUpDown.Location = new System.Drawing.Point(93, 84);
+            this.WorldIDNumericUpDown.Location = new System.Drawing.Point(16, 102);
             this.WorldIDNumericUpDown.Minimum = new decimal(new int[] {
             1,
             0,
@@ -165,7 +165,7 @@
             // LevelIDNumericUpDown
             // 
             this.LevelIDNumericUpDown.Enabled = false;
-            this.LevelIDNumericUpDown.Location = new System.Drawing.Point(145, 84);
+            this.LevelIDNumericUpDown.Location = new System.Drawing.Point(68, 102);
             this.LevelIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -190,7 +190,7 @@
             // GlobalIDLabel
             // 
             this.GlobalIDLabel.AutoSize = true;
-            this.GlobalIDLabel.Location = new System.Drawing.Point(219, 86);
+            this.GlobalIDLabel.Location = new System.Drawing.Point(276, 86);
             this.GlobalIDLabel.Name = "GlobalIDLabel";
             this.GlobalIDLabel.Size = new System.Drawing.Size(54, 13);
             this.GlobalIDLabel.TabIndex = 8;
@@ -200,7 +200,7 @@
             // 
             this.CourseIDNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.CourseIDNumericUpDown.Enabled = false;
-            this.CourseIDNumericUpDown.Location = new System.Drawing.Point(279, 84);
+            this.CourseIDNumericUpDown.Location = new System.Drawing.Point(279, 102);
             this.CourseIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -215,7 +215,7 @@
             // TimerNumericUpDown
             // 
             this.TimerNumericUpDown.Enabled = false;
-            this.TimerNumericUpDown.Location = new System.Drawing.Point(279, 119);
+            this.TimerNumericUpDown.Location = new System.Drawing.Point(279, 139);
             this.TimerNumericUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -235,7 +235,7 @@
             // TimeLabel
             // 
             this.TimeLabel.AutoSize = true;
-            this.TimeLabel.Location = new System.Drawing.Point(137, 121);
+            this.TimeLabel.Location = new System.Drawing.Point(240, 141);
             this.TimeLabel.Name = "TimeLabel";
             this.TimeLabel.Size = new System.Drawing.Size(33, 13);
             this.TimeLabel.TabIndex = 11;
@@ -245,7 +245,7 @@
             // 
             this.GreenStarsNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarsNumericUpDown.Enabled = false;
-            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(279, 145);
+            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(279, 165);
             this.GreenStarsNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -260,7 +260,7 @@
             // GreenStarLabel
             // 
             this.GreenStarLabel.AutoSize = true;
-            this.GreenStarLabel.Location = new System.Drawing.Point(13, 173);
+            this.GreenStarLabel.Location = new System.Drawing.Point(204, 193);
             this.GreenStarLabel.Name = "GreenStarLabel";
             this.GreenStarLabel.Size = new System.Drawing.Size(66, 13);
             this.GreenStarLabel.TabIndex = 13;
@@ -269,7 +269,7 @@
             // GreenStarUnlockCountLabel
             // 
             this.GreenStarUnlockCountLabel.AutoSize = true;
-            this.GreenStarUnlockCountLabel.Location = new System.Drawing.Point(12, 147);
+            this.GreenStarUnlockCountLabel.Location = new System.Drawing.Point(112, 167);
             this.GreenStarUnlockCountLabel.Name = "GreenStarUnlockCountLabel";
             this.GreenStarUnlockCountLabel.Size = new System.Drawing.Size(158, 13);
             this.GreenStarUnlockCountLabel.TabIndex = 15;
@@ -279,7 +279,7 @@
             // 
             this.GreenStarLockNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarLockNumericUpDown.Enabled = false;
-            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(279, 171);
+            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(279, 191);
             this.GreenStarLockNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -294,7 +294,7 @@
             // GhostIDLabel
             // 
             this.GhostIDLabel.AutoSize = true;
-            this.GhostIDLabel.Location = new System.Drawing.Point(205, 231);
+            this.GhostIDLabel.Location = new System.Drawing.Point(205, 251);
             this.GhostIDLabel.Name = "GhostIDLabel";
             this.GhostIDLabel.Size = new System.Drawing.Size(68, 13);
             this.GhostIDLabel.TabIndex = 19;
@@ -304,7 +304,7 @@
             // 
             this.GhostIDNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GhostIDNumericUpDown.Enabled = false;
-            this.GhostIDNumericUpDown.Location = new System.Drawing.Point(279, 229);
+            this.GhostIDNumericUpDown.Location = new System.Drawing.Point(279, 249);
             this.GhostIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -324,7 +324,7 @@
             // GhostTimeLabel
             // 
             this.GhostTimeLabel.AutoSize = true;
-            this.GhostTimeLabel.Location = new System.Drawing.Point(13, 231);
+            this.GhostTimeLabel.Location = new System.Drawing.Point(13, 251);
             this.GhostTimeLabel.Name = "GhostTimeLabel";
             this.GhostTimeLabel.Size = new System.Drawing.Size(77, 13);
             this.GhostTimeLabel.TabIndex = 17;
@@ -333,7 +333,7 @@
             // GhostBaseTimeNumericUpDown
             // 
             this.GhostBaseTimeNumericUpDown.Enabled = false;
-            this.GhostBaseTimeNumericUpDown.Location = new System.Drawing.Point(115, 229);
+            this.GhostBaseTimeNumericUpDown.Location = new System.Drawing.Point(115, 249);
             this.GhostBaseTimeNumericUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -353,7 +353,7 @@
             // DoubleCherryLabel
             // 
             this.DoubleCherryLabel.AutoSize = true;
-            this.DoubleCherryLabel.Location = new System.Drawing.Point(13, 199);
+            this.DoubleCherryLabel.Location = new System.Drawing.Point(170, 217);
             this.DoubleCherryLabel.Name = "DoubleCherryLabel";
             this.DoubleCherryLabel.Size = new System.Drawing.Size(100, 13);
             this.DoubleCherryLabel.TabIndex = 21;
@@ -363,7 +363,7 @@
             // 
             this.DoubleMarioNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DoubleMarioNumericUpDown.Enabled = false;
-            this.DoubleMarioNumericUpDown.Location = new System.Drawing.Point(279, 197);
+            this.DoubleMarioNumericUpDown.Location = new System.Drawing.Point(279, 217);
             this.DoubleMarioNumericUpDown.Maximum = new decimal(new int[] {
             5,
             0,
@@ -380,7 +380,7 @@
             this.StampCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.StampCheckBox.AutoSize = true;
             this.StampCheckBox.Enabled = false;
-            this.StampCheckBox.Location = new System.Drawing.Point(12, 120);
+            this.StampCheckBox.Location = new System.Drawing.Point(12, 140);
             this.StampCheckBox.Name = "StampCheckBox";
             this.StampCheckBox.Size = new System.Drawing.Size(84, 17);
             this.StampCheckBox.TabIndex = 22;
@@ -399,7 +399,7 @@
             this.DividerBLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DividerBLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.DividerBLabel.Location = new System.Drawing.Point(12, 220);
+            this.DividerBLabel.Location = new System.Drawing.Point(12, 240);
             this.DividerBLabel.Name = "DividerBLabel";
             this.DividerBLabel.Size = new System.Drawing.Size(362, 2);
             this.DividerBLabel.TabIndex = 23;
@@ -409,7 +409,7 @@
             this.DividerALabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DividerALabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.DividerALabel.Location = new System.Drawing.Point(12, 111);
+            this.DividerALabel.Location = new System.Drawing.Point(12, 131);
             this.DividerALabel.Name = "DividerALabel";
             this.DividerALabel.Size = new System.Drawing.Size(362, 2);
             this.DividerALabel.TabIndex = 24;
@@ -418,7 +418,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(386, 257);
+            this.ClientSize = new System.Drawing.Size(386, 281);
             this.Controls.Add(this.DividerALabel);
             this.Controls.Add(this.DividerBLabel);
             this.Controls.Add(this.StampCheckBox);

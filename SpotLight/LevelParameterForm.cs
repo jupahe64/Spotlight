@@ -158,7 +158,7 @@ namespace SpotLight
                 }
             }
             StageNameTextBox.Text = LV.StageName;
-            CourseLabel.Text = string.Format(WorldString, worldID, LV.StageID);
+            UpdateCourseLabel();
             WorldIDNumericUpDown.Value = worldID;
             LevelIDNumericUpDown.Value = LV.StageID;
             CourseIDNumericUpDown.Value = LV.CourseID;
@@ -269,8 +269,11 @@ namespace SpotLight
             LevelIDNumericUpDown.Value = LevelID[1];
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageID = (int)LevelIDNumericUpDown.Value;
             Changed = true;
-            CourseLabel.Text = string.Format(WorldString, LevelID[0]+1, LevelID[1]+1);
+            UpdateCourseLabel();
         }
+
+        private void UpdateCourseLabel() =>
+            CourseLabel.Text = $"{Program.CurrentLanguage.GetTranslation("WorldName" + (LevelID[0] + 1)) ?? "World " + (LevelID[0] + 1)}-{LevelID[1] + 1}";
 
         private void LevelIDNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
@@ -279,7 +282,7 @@ namespace SpotLight
 
             StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageID = (int)LevelIDNumericUpDown.Value;
             Changed = true;
-            CourseLabel.Text = string.Format(WorldString, LevelID[0]+1, LevelID[1]+1);
+            UpdateCourseLabel();
         }
 
         private void CourseIDNumericUpDown_ValueChanged(object sender, EventArgs e)
@@ -362,7 +365,6 @@ namespace SpotLight
             SaveSuccessText = Program.CurrentLanguage.GetTranslation("SaveSuccessText") ?? "Save Successful!";
             SaveFailedHeader = Program.CurrentLanguage.GetTranslation("SaveSuccessHeader") ?? "Warning";
             SaveFailedText = Program.CurrentLanguage.GetTranslation("SaveSuccessText") ?? "Save Failed!";
-            WorldString = Program.CurrentLanguage.GetTranslation("CourseLabel") ?? "World {0}-{1}";
 
             ChangeLevelsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("ChangeLevels") ?? "Change Levels";
             SaveToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("Save") ?? "Save";
@@ -379,7 +381,6 @@ namespace SpotLight
             GhostIDLabel.Text = Program.CurrentLanguage.GetTranslation("GhostIDLabel") ?? "Mii Ghost ID";
         }
         
-        private string WorldString { get; set; }
         private string SaveSuccessHeader { get; set; }
         private string SaveSuccessText { get; set; }
         private string SaveFailedHeader { get; set; }

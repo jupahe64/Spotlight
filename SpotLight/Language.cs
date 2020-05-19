@@ -55,14 +55,8 @@ namespace SpotLight
 
         public string GetTranslation(string Key)
         {
-            try
-            {
-                return Translations[Key];
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            Translations.TryGetValue(Key, out string value);
+            return value;
         }
     }
 }

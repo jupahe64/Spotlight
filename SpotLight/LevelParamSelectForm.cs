@@ -12,24 +12,31 @@ namespace SpotLight
 {
     public partial class LevelParamSelectForm : Form
     {
-        public LevelParamSelectForm(StageList stagelist, bool ShowCourseSelect = false)
+        ListViewItem[][] itemsBySection = new ListViewItem[13][];
+
+        private StageList stagelist;
+
+        public LevelParamSelectForm(StageList stagelist, bool showMisc = false)
         {
             InitializeComponent();
             CenterToScreen();
 
             Text = Program.CurrentLanguage.GetTranslation("LevelSelectTitle") ?? "Spotlight - Choose a Level";
-            WorldIDColumnHeader.Text = Program.CurrentLanguage.GetTranslation("WorldIDColumnHeader") ?? "World";
+            CourseIDColumnHeader.Text = Program.CurrentLanguage.GetTranslation("CourseIDColumnHeader") ?? "CourseID";
             LevelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("LevelNameColumnHeader") ?? "Level Name";
-            CourseIDColumnHeader.Text = Program.CurrentLanguage.GetTranslation("CourseIDColumnHeader") ?? "ID";
 
+            this.stagelist = stagelist;
 
-            if (ShowCourseSelect)
+            for (int i = 0; i < SectionComboBox.Items.Count-1; i++)
             {
-                LevelsListView.Items.Add(new ListViewItem(new string[] { "0", Program.CurrentLanguage.GetTranslation("CourseSelectStage") ?? "CourseSelectStage", "0" }) { Tag = "CourseSelectStage" });
+                if (Program.CurrentLanguage.Translations.TryGetValue("WorldName"+(i+1), out string value))
+                    SectionComboBox.Items[i] = value;
             }
-            for (int i = 0; i < stagelist.Worlds.Count; i++)
-                for (int j = 0; j < stagelist.Worlds[i].Levels.Count; j++)
-                    LevelsListView.Items.Add(new ListViewItem(new string[] { (i + 1).ToString(), Program.CurrentLanguage.GetTranslation(stagelist.Worlds[i].Levels[j].StageName) ?? stagelist.Worlds[i].Levels[j].StageName, stagelist.Worlds[i].Levels[j].CourseID.ToString() }) { Tag = stagelist.Worlds[i].Levels[j].StageName });
+
+            if (!showMisc)
+                SectionComboBox.Items.RemoveAt(12);
+
+            SectionComboBox.SelectedIndex = 0;
         }
         public string levelname = "";
         public bool Selected = false;
@@ -59,6 +66,55 @@ namespace SpotLight
                 Selected = true;
                 Close();
             }
+        }
+
+        private void SectionComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int i = SectionComboBox.SelectedIndex;
+
+            ListViewItem[] items = itemsBySection[i];
+
+            if (i == 12) //misc stages
+            {
+                if (LevelsListView.Columns.Contains(CourseIDColumnHeader))
+                    LevelsListView.Columns.Remove(CourseIDColumnHeader);
+            }
+            else
+            {
+                if (!LevelsListView.Columns.Contains(CourseIDColumnHeader))
+                    LevelsListView.Columns.Insert(0, CourseIDColumnHeader);
+            }
+
+            if (items == null)
+            {
+                if (i == 12) //misc stages
+                {
+                    #region misc stages
+                    items = new ListViewItem[]
+                    {
+                        new ListViewItem(new string[] { Program.CurrentLanguage.GetTranslation("CourseSelectStage") ?? "CourseSelectStage" }) { Tag = "CourseSelectStage" }
+                    };
+                    #endregion
+                }
+                else
+                {
+                    items = new ListViewItem[stagelist.Worlds[i].Levels.Count];
+                    for (int j = 0; j < stagelist.Worlds[i].Levels.Count; j++)
+                    {
+                        items[j] = new ListViewItem(new string[] 
+                        {
+                            stagelist.Worlds[i].Levels[j].StageID.ToString(),
+                            Program.CurrentLanguage.GetTranslation(stagelist.Worlds[i].Levels[j].StageName) ?? stagelist.Worlds[i].Levels[j].StageName
+
+                        }) { Tag = stagelist.Worlds[i].Levels[j].StageName };
+                    }
+                }
+
+                itemsBySection[i] = items;
+            }
+
+            LevelsListView.Items.Clear();
+            LevelsListView.Items.AddRange(items);
         }
     }
 }

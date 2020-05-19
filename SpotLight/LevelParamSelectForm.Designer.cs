@@ -30,36 +30,35 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelParamSelectForm));
             this.LevelsListView = new System.Windows.Forms.ListView();
-            this.WorldIDColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.CourseIDColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.LevelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ChooseLevelButton = new System.Windows.Forms.Button();
-            this.CourseIDColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SectionComboBox = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // LevelsListView
             // 
             this.LevelsListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.WorldIDColumnHeader,
-            this.LevelNameColumnHeader,
-            this.CourseIDColumnHeader});
+            this.CourseIDColumnHeader,
+            this.LevelNameColumnHeader});
             this.LevelsListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LevelsListView.FullRowSelect = true;
             this.LevelsListView.GridLines = true;
             this.LevelsListView.HideSelection = false;
-            this.LevelsListView.Location = new System.Drawing.Point(0, 0);
+            this.LevelsListView.Location = new System.Drawing.Point(0, 21);
             this.LevelsListView.MultiSelect = false;
             this.LevelsListView.Name = "LevelsListView";
-            this.LevelsListView.Size = new System.Drawing.Size(326, 285);
+            this.LevelsListView.Size = new System.Drawing.Size(326, 264);
             this.LevelsListView.TabIndex = 0;
             this.LevelsListView.UseCompatibleStateImageBehavior = false;
             this.LevelsListView.View = System.Windows.Forms.View.Details;
             this.LevelsListView.SelectedIndexChanged += new System.EventHandler(this.LevelsListView_SelectedIndexChanged);
             this.LevelsListView.DoubleClick += new System.EventHandler(this.LevelsListView_DoubleClick);
             // 
-            // WorldIDColumnHeader
+            // CourseIDColumnHeader
             // 
-            this.WorldIDColumnHeader.Text = "World";
-            this.WorldIDColumnHeader.Width = 40;
+            this.CourseIDColumnHeader.Text = "CourseID";
+            this.CourseIDColumnHeader.Width = 65;
             // 
             // LevelNameColumnHeader
             // 
@@ -77,10 +76,30 @@
             this.ChooseLevelButton.UseVisualStyleBackColor = true;
             this.ChooseLevelButton.Click += new System.EventHandler(this.ChooseLevelButton_Click);
             // 
-            // CourseIDColumnHeader
+            // SectionComboBox
             // 
-            this.CourseIDColumnHeader.Text = "ID";
-            this.CourseIDColumnHeader.Width = 40;
+            this.SectionComboBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.SectionComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SectionComboBox.FormattingEnabled = true;
+            this.SectionComboBox.Items.AddRange(new object[] {
+            "World 1",
+            "World 2",
+            "World 3",
+            "World 4",
+            "World 5",
+            "World 6",
+            "World Castle",
+            "World Bowser",
+            "World Star",
+            "World Mushroom",
+            "World Flower",
+            "World Crown",
+            "Misc"});
+            this.SectionComboBox.Location = new System.Drawing.Point(0, 0);
+            this.SectionComboBox.Name = "SectionComboBox";
+            this.SectionComboBox.Size = new System.Drawing.Size(326, 21);
+            this.SectionComboBox.TabIndex = 2;
+            this.SectionComboBox.SelectedIndexChanged += new System.EventHandler(this.SectionComboBox_SelectedIndexChanged);
             // 
             // LevelParamSelectForm
             // 
@@ -88,6 +107,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(326, 308);
             this.Controls.Add(this.LevelsListView);
+            this.Controls.Add(this.SectionComboBox);
             this.Controls.Add(this.ChooseLevelButton);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -104,8 +124,8 @@
 
         private System.Windows.Forms.ListView LevelsListView;
         private System.Windows.Forms.Button ChooseLevelButton;
-        private System.Windows.Forms.ColumnHeader WorldIDColumnHeader;
         private System.Windows.Forms.ColumnHeader LevelNameColumnHeader;
         private System.Windows.Forms.ColumnHeader CourseIDColumnHeader;
+        private System.Windows.Forms.ComboBox SectionComboBox;
     }
 }
