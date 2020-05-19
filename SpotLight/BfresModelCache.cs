@@ -479,6 +479,10 @@ namespace SpotLight
                                     Target = i;
                                     break;
                                 }
+                                else if (!mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains("_"))
+                                {
+                                    Target = i;
+                                }
                             }
                             TextureRef texRef = mdl.Materials[shape.MaterialIndex].TextureRefs[Target];
 
