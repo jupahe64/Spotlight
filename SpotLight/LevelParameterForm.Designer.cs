@@ -86,7 +86,6 @@
             // 
             // SaveToolStripMenuItem
             // 
-            this.SaveToolStripMenuItem.Enabled = false;
             this.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
             this.SaveToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.SaveToolStripMenuItem.Text = "Save";
@@ -462,13 +461,13 @@
             // 
             // AddLevelButton
             // 
-            this.AddLevelButton.Enabled = false;
             this.AddLevelButton.Location = new System.Drawing.Point(13, 381);
             this.AddLevelButton.Name = "AddLevelButton";
             this.AddLevelButton.Size = new System.Drawing.Size(154, 23);
             this.AddLevelButton.TabIndex = 27;
             this.AddLevelButton.Text = "Add Level";
             this.AddLevelButton.UseVisualStyleBackColor = true;
+            this.AddLevelButton.Click += new System.EventHandler(this.AddLevelButton_Click);
             // 
             // DeleteLevelButton
             // 

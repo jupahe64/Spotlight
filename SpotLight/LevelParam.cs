@@ -124,6 +124,41 @@ namespace SpotLight
             return index + 1;
         }
 
+        public int Add(string stageName, int courseId)
+        {
+            int index;
+            int stageId;
+
+            if (levels.Count == 0 || levels[0].StageID>1)
+            {
+                index = 0;
+                stageId = 1;
+            }
+            else
+            {
+                index = levels.Count;
+                stageId = levels.Count+1;
+
+                for (int i = 1; i < levels.Count; i++)
+                {
+                    if (levels[i].StageID - levels[i-1].StageID > 1)
+                    {
+                        index = i;
+                        stageId = i + 1;
+                        break;
+                    }
+                }
+            }
+            levels.Insert(index, new LevelParam()
+            {
+                StageID = stageId,
+                CourseID = courseId,
+                StageName = stageName
+            });
+
+            return index;
+        }
+
         public int UpdateLevelIndex(LevelParam levelParam)
         {
             levels.Remove(levelParam);
@@ -183,6 +218,20 @@ namespace SpotLight
                 Worlds.Add(new World(temp[i]));
 
             //File.WriteAllBytes("Original.byml",Data.Files["StageList.byml"]);
+        }
+
+        public int GetNextCourseID()
+        {
+            int max = 0;
+            for (int i = 0; i < Worlds.Count; i++)
+            {
+                for (int j = 0; j < Worlds[i].Levels.Count; j++)
+                {
+                    max = Math.Max(max, Worlds[i].Levels[j].CourseID);
+                }
+            }
+
+            return max;
         }
 
         public void Save()

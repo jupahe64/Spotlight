@@ -78,7 +78,8 @@ namespace SpotLight
 
         public bool Loading = false, Changed = false;
         public StageList StageList;
-        public int[] LevelID = new int[2];
+        public int currentWorld;
+        public int currentLvlIndex;
 
         string[] JapaneseStageTypes = new string[]
         {
@@ -125,8 +126,8 @@ namespace SpotLight
 
         private void LoadLevelData(LevelParam LV, int worldID, int levelID)
         {
-            LevelID[0] = worldID-1;
-            LevelID[1] = levelID;
+            currentWorld = worldID-1;
+            currentLvlIndex = levelID;
 
             Loading = true;
             for (int i = 0; i < JapaneseStageTypes.Length; i++)
@@ -223,14 +224,14 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageName = StageNameTextBox.Text;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].StageName = StageNameTextBox.Text;
 
             LevelsListView.BeginUpdate();
-            itemsByWorld[LevelID[0]] = null;
+            itemsByWorld[currentWorld] = null;
             WorldComboBox_SelectedIndexChanged(null, null);
 
             LevelsListView.SelectedItems.Clear();
-            LevelsListView.Items[LevelID[1]].Selected = true;
+            LevelsListView.Items[currentLvlIndex].Selected = true;
             LevelsListView.EndUpdate();
 
             Changed = true;
@@ -241,36 +242,36 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageType = JapaneseStageTypes[Convert.ToInt32(((KeyValuePair<int, StageTypes>)StageTypeComboBox.Items[StageTypeComboBox.SelectedIndex]).Key)];
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].StageType = JapaneseStageTypes[Convert.ToInt32(((KeyValuePair<int, StageTypes>)StageTypeComboBox.Items[StageTypeComboBox.SelectedIndex]).Key)];
             Changed = true;
         }
 
         private void UpdateCourseLabel() =>
-            CourseLabel.Text = $"{Program.CurrentLanguage.GetTranslation("WorldName" + (LevelID[0] + 1)) ?? "World " + (LevelID[0] + 1)}-{LevelID[1] + 1}";
+            CourseLabel.Text = $"{Program.CurrentLanguage.GetTranslation("WorldName" + (currentWorld + 1)) ?? "World " + (currentWorld + 1)}-{currentLvlIndex + 1}";
 
         private void WorldIDNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (Loading)
                 return;
 
-            itemsByWorld[LevelID[0]] = null;
+            itemsByWorld[currentWorld] = null;
             
-            LevelParam current = StageList.Worlds[LevelID[0]].Levels[LevelID[1]];
+            LevelParam current = StageList.Worlds[currentWorld].Levels[currentLvlIndex];
 
-            StageList.Worlds[LevelID[0]].RemoveAt(LevelID[1]);
+            StageList.Worlds[currentWorld].RemoveAt(currentLvlIndex);
 
-            LevelID[0] = (int)WorldIDNumericUpDown.Value-1;
-            LevelID[1] = StageList.Worlds[(int)WorldIDNumericUpDown.Value-1].Add(current);
+            currentWorld = (int)WorldIDNumericUpDown.Value-1;
+            currentLvlIndex = StageList.Worlds[(int)WorldIDNumericUpDown.Value-1].Add(current);
             Changed = true;
 
-            itemsByWorld[LevelID[0]] = null;
+            itemsByWorld[currentWorld] = null;
 
             LevelsListView.BeginUpdate();
             WorldComboBox.SelectedIndex = (int)WorldIDNumericUpDown.Value - 1;
 
             Loading = true;
             LevelsListView.SelectedItems.Clear();
-            LevelsListView.Items[LevelID[1]].Selected = true;
+            LevelsListView.Items[currentLvlIndex].Selected = true;
             Loading = false;
             LevelsListView.EndUpdate();
 
@@ -282,15 +283,15 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].StageID = (int)LevelIDNumericUpDown.Value;
-            LevelID[1] = StageList.Worlds[LevelID[0]].UpdateLevelIndex(StageList.Worlds[LevelID[0]].Levels[LevelID[1]]);
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].StageID = (int)LevelIDNumericUpDown.Value;
+            currentLvlIndex = StageList.Worlds[currentWorld].UpdateLevelIndex(StageList.Worlds[currentWorld].Levels[currentLvlIndex]);
 
             LevelsListView.BeginUpdate();
-            itemsByWorld[LevelID[0]] = null;
+            itemsByWorld[currentWorld] = null;
             WorldComboBox_SelectedIndexChanged(null, null);
 
             LevelsListView.SelectedItems.Clear();
-            LevelsListView.Items[LevelID[1]].Selected = true;
+            LevelsListView.Items[currentLvlIndex].Selected = true;
             LevelsListView.EndUpdate();
 
             Changed = true;
@@ -302,7 +303,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].CourseID = (int)CourseIDNumericUpDown.Value;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].CourseID = (int)CourseIDNumericUpDown.Value;
             Changed = true;
         }
 
@@ -311,7 +312,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].Timer = (int)TimerNumericUpDown.Value;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].Timer = (int)TimerNumericUpDown.Value;
             Changed = true;
         }
 
@@ -320,7 +321,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GreenStarNum = (int)GreenStarsNumericUpDown.Value;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].GreenStarNum = (int)GreenStarsNumericUpDown.Value;
             Changed = true;
         }
 
@@ -329,7 +330,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GreenStarLock = (int)GreenStarLockNumericUpDown.Value;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].GreenStarLock = (int)GreenStarLockNumericUpDown.Value;
             Changed = true;
         }
 
@@ -338,7 +339,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].DoubleMario = (int)DoubleMarioNumericUpDown.Value;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].DoubleMario = (int)DoubleMarioNumericUpDown.Value;
             Changed = true;
         }
 
@@ -347,7 +348,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].IllustItemNum = StampCheckBox.Checked ? 1 : 0;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].IllustItemNum = StampCheckBox.Checked ? 1 : 0;
             Changed = true;
         }
 
@@ -356,7 +357,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GhostBaseTime = (int)GhostBaseTimeNumericUpDown.Value;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].GhostBaseTime = (int)GhostBaseTimeNumericUpDown.Value;
             Changed = true;
         }
 
@@ -365,7 +366,7 @@ namespace SpotLight
             if (Loading)
                 return;
 
-            StageList.Worlds[LevelID[0]].Levels[LevelID[1]].GhostID = (int)GhostIDNumericUpDown.Value;
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].GhostID = (int)GhostIDNumericUpDown.Value;
             Changed = true;
         }
 
@@ -427,12 +428,27 @@ namespace SpotLight
             }
         }
 
-        private void DeleteLevelButton_Click(object sender, EventArgs e)
+        private void AddLevelButton_Click(object sender, EventArgs e)
         {
-            StageList.Worlds[LevelID[0]].RemoveAt(LevelID[1]);
+            int index = StageList.Worlds[currentWorld].Add("", StageList.GetNextCourseID());
 
             LevelsListView.BeginUpdate();
-            itemsByWorld[LevelID[0]] = null;
+            itemsByWorld[currentWorld] = null;
+            WorldComboBox_SelectedIndexChanged(null, null);
+
+            LevelsListView.SelectedItems.Clear();
+            LevelsListView.Items[index].Selected = true;
+            LevelsListView.EndUpdate();
+
+            Changed = true;
+        }
+
+        private void DeleteLevelButton_Click(object sender, EventArgs e)
+        {
+            StageList.Worlds[currentWorld].RemoveAt(currentLvlIndex);
+
+            LevelsListView.BeginUpdate();
+            itemsByWorld[currentWorld] = null;
             WorldComboBox_SelectedIndexChanged(null, null);
 
             LevelsListView.SelectedItems.Clear();
