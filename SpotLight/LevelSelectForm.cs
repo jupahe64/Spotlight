@@ -10,13 +10,13 @@ using System.Windows.Forms;
 
 namespace SpotLight
 {
-    public partial class LevelParamSelectForm : Form
+    public partial class LevelSelectForm : Form
     {
         ListViewItem[][] itemsBySection = new ListViewItem[13][];
 
         private StageList stagelist;
 
-        public LevelParamSelectForm(StageList stagelist, bool showMisc = false)
+        public LevelSelectForm(StageList stagelist, bool showMisc = false)
         {
             InitializeComponent();
             CenterToScreen();

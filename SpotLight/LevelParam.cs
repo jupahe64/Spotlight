@@ -96,14 +96,50 @@ namespace SpotLight
     public class World
     {
         public int WorldID { get; set; }
-        public List<LevelParam> Levels = new List<LevelParam>();
+
+        public IReadOnlyList<LevelParam> Levels => levels;
+
+        private List<LevelParam> levels = new List<LevelParam>();
 
         public World(dynamic WorldInfo)
         {
             WorldID = WorldInfo["WorldId"];
             List<dynamic> temp = WorldInfo["StageList"];
-            for (int i = 0; i < temp.Count; i++)
-                Levels.Add(new LevelParam(temp[i]));
+
+            foreach (dynamic levelEntry in temp.OrderBy(O=>O["StageId"]))
+                levels.Add(new LevelParam(levelEntry));
+        }
+
+        public int Add(LevelParam levelParam)
+        {
+            int index = -1;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                if (levelParam.StageID >= levels[i].StageID)
+                    index = i;
+            }
+
+            levels.Insert(index + 1, levelParam);
+
+            return index + 1;
+        }
+
+        public int UpdateLevelIndex(LevelParam levelParam)
+        {
+            levels.Remove(levelParam);
+            return Add(levelParam);
+        }
+
+        public int IndexOf(LevelParam levelParam) => levels.IndexOf(levelParam);
+
+        public void Remove(LevelParam levelParam)
+        {
+            levels.Remove(levelParam);
+        }
+
+        public void RemoveAt(int index)
+        {
+            levels.RemoveAt(index);
         }
 
         public override string ToString() => $"World {WorldID}";
@@ -111,10 +147,10 @@ namespace SpotLight
         public dynamic ToByaml()
         {
             Dictionary<string, object> Final = new Dictionary<string, object>() { {"WorldId", WorldID } };
-            List<dynamic> levels = new List<dynamic>();
-            for (int i = 0; i < Levels.Count; i++)
-                levels.Add(Levels[i].ToByaml());
-            Final.Add("StageList",levels);
+            List<dynamic> entries = new List<dynamic>();
+            for (int i = 0; i < levels.Count; i++)
+                entries.Add(levels[i].ToByaml());
+            Final.Add("StageList",entries);
             return Final;
         }
     }
@@ -151,11 +187,6 @@ namespace SpotLight
 
         public void Save()
         {
-            for (int i = 0; i < Worlds.Count; i++)
-            {
-                Worlds[i].Levels = Worlds[i].Levels.OrderBy(O => O.CourseID).ToList();
-            }
-
             byte[] tmp = ToByaml();
             //File.WriteAllBytes("Test.byml", tmp);
             //BymlFileData Output = new BymlFileData() { Version = 1, SupportPaths = false, byteOrder = Syroot.BinaryData.Endian.Big };

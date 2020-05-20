@@ -1,6 +1,6 @@
 ﻿namespace SpotLight
 {
-    partial class LevelParamSelectForm
+    partial class LevelSelectForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelParamSelectForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelSelectForm));
             this.LevelsListView = new System.Windows.Forms.ListView();
             this.CourseIDColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.LevelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -101,7 +101,7 @@
             this.SectionComboBox.TabIndex = 2;
             this.SectionComboBox.SelectedIndexChanged += new System.EventHandler(this.SectionComboBox_SelectedIndexChanged);
             // 
-            // LevelParamSelectForm
+            // LevelSelectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -113,7 +113,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(342, 347);
-            this.Name = "LevelParamSelectForm";
+            this.Name = "LevelSelectForm";
             this.Text = "Spotlight - Choose a Level";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LevelParamSelectForm_FormClosing);
             this.ResumeLayout(false);

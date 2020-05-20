@@ -405,7 +405,7 @@ namespace SpotLight
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
             Refresh();
             StageList STGLST = new StageList(stagelistpath);
-            LevelParamSelectForm LPSF = new LevelParamSelectForm(STGLST, true);
+            LevelSelectForm LPSF = new LevelSelectForm(STGLST, true);
             LPSF.ShowDialog();
             if (LPSF.levelname.Equals(""))
             {

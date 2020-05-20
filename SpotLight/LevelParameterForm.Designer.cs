@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelParameterForm));
             this.ParamMenuStrip = new System.Windows.Forms.MenuStrip();
-            this.ChangeLevelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.StageTypeComboBox = new System.Windows.Forms.ComboBox();
             this.StageTypeLabel = new System.Windows.Forms.Label();
@@ -58,6 +57,12 @@
             this.HelpToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.DividerBLabel = new System.Windows.Forms.Label();
             this.DividerALabel = new System.Windows.Forms.Label();
+            this.LevelsListView = new System.Windows.Forms.ListView();
+            this.CourseIDColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.LevelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.WorldComboBox = new System.Windows.Forms.ComboBox();
+            this.AddLevelButton = new System.Windows.Forms.Button();
+            this.DeleteLevelButton = new System.Windows.Forms.Button();
             this.ParamMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.WorldIDNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.LevelIDNumericUpDown)).BeginInit();
@@ -73,20 +78,11 @@
             // ParamMenuStrip
             // 
             this.ParamMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ChangeLevelsToolStripMenuItem,
             this.SaveToolStripMenuItem});
             this.ParamMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.ParamMenuStrip.Name = "ParamMenuStrip";
-            this.ParamMenuStrip.Size = new System.Drawing.Size(386, 24);
+            this.ParamMenuStrip.Size = new System.Drawing.Size(680, 24);
             this.ParamMenuStrip.TabIndex = 0;
-            // 
-            // ChangeLevelsToolStripMenuItem
-            // 
-            this.ChangeLevelsToolStripMenuItem.Name = "ChangeLevelsToolStripMenuItem";
-            this.ChangeLevelsToolStripMenuItem.Size = new System.Drawing.Size(95, 20);
-            this.ChangeLevelsToolStripMenuItem.Text = "Change Levels";
-            this.ChangeLevelsToolStripMenuItem.ToolTipText = "Change the current Level";
-            this.ChangeLevelsToolStripMenuItem.Click += new System.EventHandler(this.ChangeLevelsToolStripMenuItem_Click);
             // 
             // SaveToolStripMenuItem
             // 
@@ -103,7 +99,7 @@
             this.StageTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.StageTypeComboBox.Enabled = false;
             this.StageTypeComboBox.FormattingEnabled = true;
-            this.StageTypeComboBox.Location = new System.Drawing.Point(125, 53);
+            this.StageTypeComboBox.Location = new System.Drawing.Point(419, 80);
             this.StageTypeComboBox.Name = "StageTypeComboBox";
             this.StageTypeComboBox.Size = new System.Drawing.Size(249, 21);
             this.StageTypeComboBox.TabIndex = 1;
@@ -113,7 +109,7 @@
             // StageTypeLabel
             // 
             this.StageTypeLabel.AutoSize = true;
-            this.StageTypeLabel.Location = new System.Drawing.Point(13, 56);
+            this.StageTypeLabel.Location = new System.Drawing.Point(348, 83);
             this.StageTypeLabel.Name = "StageTypeLabel";
             this.StageTypeLabel.Size = new System.Drawing.Size(65, 13);
             this.StageTypeLabel.TabIndex = 2;
@@ -124,7 +120,7 @@
             // 
             this.StageNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.StageNameTextBox.Enabled = false;
-            this.StageNameTextBox.Location = new System.Drawing.Point(125, 27);
+            this.StageNameTextBox.Location = new System.Drawing.Point(419, 54);
             this.StageNameTextBox.Name = "StageNameTextBox";
             this.StageNameTextBox.Size = new System.Drawing.Size(249, 20);
             this.StageNameTextBox.TabIndex = 3;
@@ -135,7 +131,7 @@
             // StageNameLabel
             // 
             this.StageNameLabel.AutoSize = true;
-            this.StageNameLabel.Location = new System.Drawing.Point(12, 30);
+            this.StageNameLabel.Location = new System.Drawing.Point(344, 54);
             this.StageNameLabel.Name = "StageNameLabel";
             this.StageNameLabel.Size = new System.Drawing.Size(69, 13);
             this.StageNameLabel.TabIndex = 4;
@@ -145,7 +141,7 @@
             // WorldIDNumericUpDown
             // 
             this.WorldIDNumericUpDown.Enabled = false;
-            this.WorldIDNumericUpDown.Location = new System.Drawing.Point(16, 102);
+            this.WorldIDNumericUpDown.Location = new System.Drawing.Point(349, 124);
             this.WorldIDNumericUpDown.Minimum = new decimal(new int[] {
             1,
             0,
@@ -165,7 +161,7 @@
             // LevelIDNumericUpDown
             // 
             this.LevelIDNumericUpDown.Enabled = false;
-            this.LevelIDNumericUpDown.Location = new System.Drawing.Point(68, 102);
+            this.LevelIDNumericUpDown.Location = new System.Drawing.Point(401, 124);
             this.LevelIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -180,7 +176,7 @@
             // CourseLabel
             // 
             this.CourseLabel.AutoSize = true;
-            this.CourseLabel.Location = new System.Drawing.Point(12, 86);
+            this.CourseLabel.Location = new System.Drawing.Point(345, 108);
             this.CourseLabel.Name = "CourseLabel";
             this.CourseLabel.Size = new System.Drawing.Size(55, 13);
             this.CourseLabel.TabIndex = 7;
@@ -190,7 +186,7 @@
             // GlobalIDLabel
             // 
             this.GlobalIDLabel.AutoSize = true;
-            this.GlobalIDLabel.Location = new System.Drawing.Point(276, 86);
+            this.GlobalIDLabel.Location = new System.Drawing.Point(608, 108);
             this.GlobalIDLabel.Name = "GlobalIDLabel";
             this.GlobalIDLabel.Size = new System.Drawing.Size(54, 13);
             this.GlobalIDLabel.TabIndex = 8;
@@ -200,7 +196,7 @@
             // 
             this.CourseIDNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.CourseIDNumericUpDown.Enabled = false;
-            this.CourseIDNumericUpDown.Location = new System.Drawing.Point(279, 102);
+            this.CourseIDNumericUpDown.Location = new System.Drawing.Point(573, 137);
             this.CourseIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -215,7 +211,7 @@
             // TimerNumericUpDown
             // 
             this.TimerNumericUpDown.Enabled = false;
-            this.TimerNumericUpDown.Location = new System.Drawing.Point(279, 139);
+            this.TimerNumericUpDown.Location = new System.Drawing.Point(573, 227);
             this.TimerNumericUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -235,7 +231,7 @@
             // TimeLabel
             // 
             this.TimeLabel.AutoSize = true;
-            this.TimeLabel.Location = new System.Drawing.Point(240, 141);
+            this.TimeLabel.Location = new System.Drawing.Point(534, 229);
             this.TimeLabel.Name = "TimeLabel";
             this.TimeLabel.Size = new System.Drawing.Size(33, 13);
             this.TimeLabel.TabIndex = 11;
@@ -245,7 +241,7 @@
             // 
             this.GreenStarsNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarsNumericUpDown.Enabled = false;
-            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(279, 165);
+            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(573, 253);
             this.GreenStarsNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -260,7 +256,7 @@
             // GreenStarLabel
             // 
             this.GreenStarLabel.AutoSize = true;
-            this.GreenStarLabel.Location = new System.Drawing.Point(204, 193);
+            this.GreenStarLabel.Location = new System.Drawing.Point(498, 281);
             this.GreenStarLabel.Name = "GreenStarLabel";
             this.GreenStarLabel.Size = new System.Drawing.Size(66, 13);
             this.GreenStarLabel.TabIndex = 13;
@@ -269,7 +265,7 @@
             // GreenStarUnlockCountLabel
             // 
             this.GreenStarUnlockCountLabel.AutoSize = true;
-            this.GreenStarUnlockCountLabel.Location = new System.Drawing.Point(112, 167);
+            this.GreenStarUnlockCountLabel.Location = new System.Drawing.Point(406, 255);
             this.GreenStarUnlockCountLabel.Name = "GreenStarUnlockCountLabel";
             this.GreenStarUnlockCountLabel.Size = new System.Drawing.Size(158, 13);
             this.GreenStarUnlockCountLabel.TabIndex = 15;
@@ -279,7 +275,7 @@
             // 
             this.GreenStarLockNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarLockNumericUpDown.Enabled = false;
-            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(279, 191);
+            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(573, 279);
             this.GreenStarLockNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -294,7 +290,7 @@
             // GhostIDLabel
             // 
             this.GhostIDLabel.AutoSize = true;
-            this.GhostIDLabel.Location = new System.Drawing.Point(205, 251);
+            this.GhostIDLabel.Location = new System.Drawing.Point(499, 339);
             this.GhostIDLabel.Name = "GhostIDLabel";
             this.GhostIDLabel.Size = new System.Drawing.Size(68, 13);
             this.GhostIDLabel.TabIndex = 19;
@@ -304,7 +300,7 @@
             // 
             this.GhostIDNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GhostIDNumericUpDown.Enabled = false;
-            this.GhostIDNumericUpDown.Location = new System.Drawing.Point(279, 249);
+            this.GhostIDNumericUpDown.Location = new System.Drawing.Point(573, 337);
             this.GhostIDNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -324,7 +320,7 @@
             // GhostTimeLabel
             // 
             this.GhostTimeLabel.AutoSize = true;
-            this.GhostTimeLabel.Location = new System.Drawing.Point(13, 251);
+            this.GhostTimeLabel.Location = new System.Drawing.Point(487, 370);
             this.GhostTimeLabel.Name = "GhostTimeLabel";
             this.GhostTimeLabel.Size = new System.Drawing.Size(77, 13);
             this.GhostTimeLabel.TabIndex = 17;
@@ -333,14 +329,14 @@
             // GhostBaseTimeNumericUpDown
             // 
             this.GhostBaseTimeNumericUpDown.Enabled = false;
-            this.GhostBaseTimeNumericUpDown.Location = new System.Drawing.Point(115, 249);
+            this.GhostBaseTimeNumericUpDown.Location = new System.Drawing.Point(573, 363);
             this.GhostBaseTimeNumericUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
             this.GhostBaseTimeNumericUpDown.Name = "GhostBaseTimeNumericUpDown";
-            this.GhostBaseTimeNumericUpDown.Size = new System.Drawing.Size(55, 20);
+            this.GhostBaseTimeNumericUpDown.Size = new System.Drawing.Size(95, 20);
             this.GhostBaseTimeNumericUpDown.TabIndex = 16;
             this.HelpToolTip.SetToolTip(this.GhostBaseTimeNumericUpDown, "Unknown - Default 100");
             this.GhostBaseTimeNumericUpDown.Value = new decimal(new int[] {
@@ -353,7 +349,7 @@
             // DoubleCherryLabel
             // 
             this.DoubleCherryLabel.AutoSize = true;
-            this.DoubleCherryLabel.Location = new System.Drawing.Point(170, 217);
+            this.DoubleCherryLabel.Location = new System.Drawing.Point(464, 305);
             this.DoubleCherryLabel.Name = "DoubleCherryLabel";
             this.DoubleCherryLabel.Size = new System.Drawing.Size(100, 13);
             this.DoubleCherryLabel.TabIndex = 21;
@@ -363,7 +359,7 @@
             // 
             this.DoubleMarioNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DoubleMarioNumericUpDown.Enabled = false;
-            this.DoubleMarioNumericUpDown.Location = new System.Drawing.Point(279, 217);
+            this.DoubleMarioNumericUpDown.Location = new System.Drawing.Point(573, 305);
             this.DoubleMarioNumericUpDown.Maximum = new decimal(new int[] {
             5,
             0,
@@ -380,7 +376,7 @@
             this.StampCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.StampCheckBox.AutoSize = true;
             this.StampCheckBox.Enabled = false;
-            this.StampCheckBox.Location = new System.Drawing.Point(12, 140);
+            this.StampCheckBox.Location = new System.Drawing.Point(584, 195);
             this.StampCheckBox.Name = "StampCheckBox";
             this.StampCheckBox.Size = new System.Drawing.Size(84, 17);
             this.StampCheckBox.TabIndex = 22;
@@ -399,9 +395,9 @@
             this.DividerBLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DividerBLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.DividerBLabel.Location = new System.Drawing.Point(12, 240);
+            this.DividerBLabel.Location = new System.Drawing.Point(347, 328);
             this.DividerBLabel.Name = "DividerBLabel";
-            this.DividerBLabel.Size = new System.Drawing.Size(362, 2);
+            this.DividerBLabel.Size = new System.Drawing.Size(321, 2);
             this.DividerBLabel.TabIndex = 23;
             // 
             // DividerALabel
@@ -409,16 +405,91 @@
             this.DividerALabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DividerALabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.DividerALabel.Location = new System.Drawing.Point(12, 131);
+            this.DividerALabel.Location = new System.Drawing.Point(348, 182);
             this.DividerALabel.Name = "DividerALabel";
-            this.DividerALabel.Size = new System.Drawing.Size(362, 2);
+            this.DividerALabel.Size = new System.Drawing.Size(330, 2);
             this.DividerALabel.TabIndex = 24;
+            // 
+            // LevelsListView
+            // 
+            this.LevelsListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.CourseIDColumnHeader,
+            this.LevelNameColumnHeader});
+            this.LevelsListView.FullRowSelect = true;
+            this.LevelsListView.GridLines = true;
+            this.LevelsListView.HideSelection = false;
+            this.LevelsListView.Location = new System.Drawing.Point(12, 54);
+            this.LevelsListView.MultiSelect = false;
+            this.LevelsListView.Name = "LevelsListView";
+            this.LevelsListView.Size = new System.Drawing.Size(326, 320);
+            this.LevelsListView.TabIndex = 25;
+            this.LevelsListView.UseCompatibleStateImageBehavior = false;
+            this.LevelsListView.View = System.Windows.Forms.View.Details;
+            this.LevelsListView.SelectedIndexChanged += new System.EventHandler(this.LevelsListView_SelectedIndexChanged);
+            // 
+            // CourseIDColumnHeader
+            // 
+            this.CourseIDColumnHeader.Text = "CourseID";
+            this.CourseIDColumnHeader.Width = 65;
+            // 
+            // LevelNameColumnHeader
+            // 
+            this.LevelNameColumnHeader.Text = "Level Name";
+            this.LevelNameColumnHeader.Width = 220;
+            // 
+            // WorldComboBox
+            // 
+            this.WorldComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.WorldComboBox.FormattingEnabled = true;
+            this.WorldComboBox.Items.AddRange(new object[] {
+            "World 1",
+            "World 2",
+            "World 3",
+            "World 4",
+            "World 5",
+            "World 6",
+            "World Castle",
+            "World Bowser",
+            "World Star",
+            "World Mushroom",
+            "World Flower",
+            "World Crown"});
+            this.WorldComboBox.Location = new System.Drawing.Point(12, 27);
+            this.WorldComboBox.Name = "WorldComboBox";
+            this.WorldComboBox.Size = new System.Drawing.Size(326, 21);
+            this.WorldComboBox.TabIndex = 26;
+            this.WorldComboBox.SelectedIndexChanged += new System.EventHandler(this.WorldComboBox_SelectedIndexChanged);
+            // 
+            // AddLevelButton
+            // 
+            this.AddLevelButton.Enabled = false;
+            this.AddLevelButton.Location = new System.Drawing.Point(13, 381);
+            this.AddLevelButton.Name = "AddLevelButton";
+            this.AddLevelButton.Size = new System.Drawing.Size(154, 23);
+            this.AddLevelButton.TabIndex = 27;
+            this.AddLevelButton.Text = "Add Level";
+            this.AddLevelButton.UseVisualStyleBackColor = true;
+            // 
+            // DeleteLevelButton
+            // 
+            this.DeleteLevelButton.Enabled = false;
+            this.DeleteLevelButton.Location = new System.Drawing.Point(173, 381);
+            this.DeleteLevelButton.Name = "DeleteLevelButton";
+            this.DeleteLevelButton.Size = new System.Drawing.Size(165, 23);
+            this.DeleteLevelButton.TabIndex = 28;
+            this.DeleteLevelButton.Text = "Delete Level";
+            this.DeleteLevelButton.UseVisualStyleBackColor = true;
+            this.DeleteLevelButton.Click += new System.EventHandler(this.DeleteLevelButton_Click);
             // 
             // LevelParameterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(386, 281);
+            this.ClientSize = new System.Drawing.Size(680, 416);
+            this.Controls.Add(this.DeleteLevelButton);
+            this.Controls.Add(this.AddLevelButton);
+            this.Controls.Add(this.WorldComboBox);
+            this.Controls.Add(this.LevelsListView);
             this.Controls.Add(this.DividerALabel);
             this.Controls.Add(this.DividerBLabel);
             this.Controls.Add(this.StampCheckBox);
@@ -471,7 +542,6 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip ParamMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem ChangeLevelsToolStripMenuItem;
         private System.Windows.Forms.ComboBox StageTypeComboBox;
         private System.Windows.Forms.Label StageTypeLabel;
         private System.Windows.Forms.TextBox StageNameTextBox;
@@ -498,5 +568,11 @@
         private System.Windows.Forms.Label DividerBLabel;
         private System.Windows.Forms.Label DividerALabel;
         private System.Windows.Forms.ToolStripMenuItem SaveToolStripMenuItem;
+        private System.Windows.Forms.ListView LevelsListView;
+        private System.Windows.Forms.ColumnHeader CourseIDColumnHeader;
+        private System.Windows.Forms.ColumnHeader LevelNameColumnHeader;
+        private System.Windows.Forms.ComboBox WorldComboBox;
+        private System.Windows.Forms.Button AddLevelButton;
+        private System.Windows.Forms.Button DeleteLevelButton;
     }
 }
