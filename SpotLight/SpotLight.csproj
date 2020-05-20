@@ -163,11 +163,11 @@
     <Compile Include="LevelParameterForm.Designer.cs">
       <DependentUpon>LevelParameterForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="LevelParamSelectForm.cs">
+    <Compile Include="LevelSelectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LevelParamSelectForm.Designer.cs">
-      <DependentUpon>LevelParamSelectForm.cs</DependentUpon>
+    <Compile Include="LevelSelectForm.Designer.cs">
+      <DependentUpon>LevelSelectForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Level\SM3DWorldZone.cs" />
     <Compile Include="ObjectParamDatabase\ObjectParameterDatabase.cs" />
@@ -199,8 +199,8 @@
     <EmbeddedResource Include="LevelParameterForm.resx">
       <DependentUpon>LevelParameterForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LevelParamSelectForm.resx">
-      <DependentUpon>LevelParamSelectForm.cs</DependentUpon>
+    <EmbeddedResource Include="LevelSelectForm.resx">
+      <DependentUpon>LevelSelectForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LoadLevelForm.resx">
       <DependentUpon>LoadLevelForm.cs</DependentUpon>
