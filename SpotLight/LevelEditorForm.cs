@@ -32,10 +32,10 @@ namespace SpotLight
 
         protected override bool ProcessKeyPreview(ref Message m)
         {
+            Keys keyData = (Keys)(unchecked((int)(long)m.WParam)) | ModifierKeys;
+
             if (LevelGLControlModern.IsHovered)
             {
-                Keys keyData = (Keys)(unchecked((int)(long)m.WParam)) | ModifierKeys;
-
                 if (m.Msg == 0x0100) //WM_KEYDOWN
                 {
                     if (keyData == KS_AddObject)
@@ -50,14 +50,23 @@ namespace SpotLight
                     LevelGLControlModern.PerformKeyUp(new KeyEventArgs(keyData));
                 }
             }
+            else if(IsExclusiveKey(keyData))
+                return false;
 
             return base.ProcessKeyPreview(ref m);
         }
 
+        private bool IsExclusiveKey(Keys keyData) => keyData == CopyToolStripMenuItem.ShortcutKeys ||
+                keyData == PasteToolStripMenuItem.ShortcutKeys;
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (LevelGLControlModern.IsHovered && (keyData & Keys.KeyCode) == Keys.Menu) //Alt key
+            if (LevelGLControlModern.IsHovered &&
+                (keyData & Keys.KeyCode) == Keys.Menu) //Alt key
                 return true; //would trigger the menu otherwise
+
+            else if (!LevelGLControlModern.IsHovered && IsExclusiveKey(keyData)) 
+                return false; //would trigger the copy/paste action and prevent copy/paste for textboxes
             else
                 return base.ProcessCmdKey(ref msg, keyData);
         }

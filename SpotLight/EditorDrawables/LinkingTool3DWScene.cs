@@ -97,9 +97,12 @@ namespace SpotLight.EditorDrawables
             if (e.Button != MouseButtons.Left)
             {
                 if (selectedConnection?.Source == selectedConnection?.Dest)
+                {
                     selectedConnection = null;
+                    UpdateSelection(0);
+                }
 
-                if(linkDragMode!= LinkDragMode.None)
+                if (linkDragMode!= LinkDragMode.None)
                 {
                     control.CameraTarget = actionStartCamTarget;
 
@@ -113,6 +116,7 @@ namespace SpotLight.EditorDrawables
             {
                 SelectedConnection = new LinkConnection(Hovered3dObject, Hovered3dObject, Hovered3dObject.Links?.Keys.First()??"UnnamedConnection");
                 linkDragMode = LinkDragMode.Dest;
+                actionStartCamTarget = control.CameraTarget;
             }
             else if (SelectedConnection != null)
             {
