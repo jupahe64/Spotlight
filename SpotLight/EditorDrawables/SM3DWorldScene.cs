@@ -648,6 +648,8 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
+            if (manager.Dictionary.Count == 0)
+                return;
 
             List<Revertable3DWorldObjAddition.ObjListInfo> objsToDelete = new List<Revertable3DWorldObjAddition.ObjListInfo>();
 
@@ -664,7 +666,9 @@ namespace SpotLight.EditorDrawables
                     {
                         _objsToDelete.Add(obj);
                     }
-                    objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
+
+                    if(_objsToDelete.Count>0)
+                        objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
                 }
             }
 
@@ -678,12 +682,14 @@ namespace SpotLight.EditorDrawables
                     linkedObjsToDelete.Add(obj);
                 }
 
-                objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(EditZone.LinkedObjects, linkedObjsToDelete.ToArray()));
+                if (linkedObjsToDelete.Count > 0)
+                    objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(EditZone.LinkedObjects, linkedObjsToDelete.ToArray()));
             }
 
             BeginUndoCollection();
-            //A little hack: Delete objects by reverting their creation
-            AddToUndo(new Revertable3DWorldObjAddition(objsToDelete.ToArray()).Revert(this));
+            if (objsToDelete.Count > 0)
+                //A little hack: Delete objects by reverting their creation
+                AddToUndo(new Revertable3DWorldObjAddition(objsToDelete.ToArray()).Revert(this));
 
             ExecuteDeletion(manager);
             if (manager.Dictionary.ContainsKey(ZonePlacements))
