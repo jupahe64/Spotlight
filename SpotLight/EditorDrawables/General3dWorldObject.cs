@@ -235,24 +235,6 @@ namespace SpotLight.EditorDrawables
             return Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition + Vector3.Transform(GlobalRotation, DisplayTranslation);
         }
 
-        public override bool TrySetupObjectUIControl(EditorSceneBase scene, ObjectUIControl objectUIControl)
-        {
-            if (!Selected)
-                return false;
-            objectUIControl.AddObjectUIContainer(new BasicPropertyUIContainer(this, scene), "General");
-
-            if (Properties.Count>0)
-                objectUIControl.AddObjectUIContainer(new ExtraPropertiesUIContainer(Properties, scene), "Properties");
-
-            if (Links != null)
-                objectUIControl.AddObjectUIContainer(new LinksUIContainer(this, scene), "Links");
-
-            if (LinkDestinations.Count>0)
-                objectUIControl.AddObjectUIContainer(new LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
-
-            return true;
-        }
-
         public void ClearLinkDestinations()
         {
             linkDestinations.Clear();
@@ -495,6 +477,24 @@ namespace SpotLight.EditorDrawables
         public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
         {
             return Program.ParameterDB.ObjectParameters[ClassName].TryGetObjectList(zone, out objList);
+        }
+
+        public override bool TrySetupObjectUIControl(EditorSceneBase scene, ObjectUIControl objectUIControl)
+        {
+            if (!Selected)
+                return false;
+            objectUIControl.AddObjectUIContainer(new BasicPropertyUIContainer(this, scene), "General");
+
+            if (Properties.Count > 0)
+                objectUIControl.AddObjectUIContainer(new ExtraPropertiesUIContainer(Properties, scene), "Properties");
+
+            if (Links != null)
+                objectUIControl.AddObjectUIContainer(new LinksUIContainer(this, scene), "Links");
+
+            if (LinkDestinations.Count > 0)
+                objectUIControl.AddObjectUIContainer(new LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
+
+            return true;
         }
 
         public class BasicPropertyUIContainer : IObjectUIContainer
