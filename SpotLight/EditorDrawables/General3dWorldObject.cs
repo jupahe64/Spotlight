@@ -427,10 +427,15 @@ namespace SpotLight.EditorDrawables
                 Vector4 blockColor;
                 Vector4 lineColor;
 
-                blockColor = Color * (1 - highlightColor.W) + highlightColor * highlightColor.W;
+                if (SceneObjectIterState.InLinks)
+                    blockColor = LinkColor * (1 - highlightColor.W) + highlightColor * highlightColor.W;
+                else
+                    blockColor = Color * (1 - highlightColor.W) + highlightColor * highlightColor.W;
 
                 if (highlightColor.W != 0)
                     lineColor = highlightColor;
+                else if (SceneObjectIterState.InLinks)
+                    lineColor = LinkColor;
                 else
                     lineColor = Color;
 
