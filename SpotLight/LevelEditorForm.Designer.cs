@@ -194,7 +194,7 @@
             this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
             this.MainSceneListView.Size = new System.Drawing.Size(246, 213);
             this.MainSceneListView.TabIndex = 1;
-            this.MainSceneListView.ItemDoubleClicked += new GL_EditorFramework.ItemDoubleClickedEventHandler(this.MainSceneListView_ItemDoubleClicked);
+            this.MainSceneListView.ItemClicked += new GL_EditorFramework.ItemClickedEventHandler(this.MainSceneListView_ItemClicked);
             // 
             // CurrentObjectLabel
             // 

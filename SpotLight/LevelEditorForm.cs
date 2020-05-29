@@ -881,10 +881,30 @@ namespace SpotLight
             MainTabControl.SelectedTab = ObjectsTabPage;
         }
 
-        private void MainSceneListView_ItemDoubleClicked(object sender, ItemDoubleClickedEventArgs e)
+        private void MainSceneListView_ItemClicked(object sender, ItemClickedEventArgs e)
         {
-            if (e.Item is I3dWorldObject obj)
+            if (e.Clicks == 2 && e.Item is I3dWorldObject obj)
                 currentScene.FocusOn(obj);
+            else if(e.Item is ZonePlacement placement)
+            {
+                if (e.Clicks == 2)
+                    LevelGLControlModern.CameraTarget = placement.Position;
+                else if (e.Clicks == 3)
+                {
+                    int index = 0;
+
+                    foreach (var zone in currentScene.GetZones())
+                    {
+                        if(placement.Zone == zone)
+                        {
+                            ZoneListBox.SelectedIndex = index;
+                            break;
+                        }
+                        index++;
+                    }
+                }
+
+            }
         }
 
         private void EditIndividualButton_Click(object sender, EventArgs e)
