@@ -323,8 +323,6 @@ namespace SpotLight.EditorDrawables
 
             if(deselectOld)
                 DeselectAll(scene.GL_Control);
-            
-            duplicates[this].Prepare((GL_EditorFramework.GL_Core.GL_ControlModern)scene.GL_Control);
 
             duplicates[this].SelectDefault(scene.GL_Control);
         }

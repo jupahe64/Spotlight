@@ -452,14 +452,7 @@ namespace SpotLight.EditorDrawables
             public LinkManager(LinkEdit3DWScene scene)
             {
                 this.scene = scene;
-            }
-
-            /// <summary>
-            /// Prepares to draw models
-            /// </summary>
-            /// <param name="control">The GL_Control that's currently in use</param>
-            public override void Prepare(GL_ControlModern control)
-            {
+                
                 if (!Initialized)
                 {
                     LinksShaderProgram = new ShaderProgram(
@@ -491,7 +484,7 @@ namespace SpotLight.EditorDrawables
                     gl_Position = mtxCam*mtxMdl*position;
                     fragColor = color;
                     fragUV = uv;
-                }"), control);
+                }"));
 
                     Initialized = true;
                 }
@@ -705,11 +698,6 @@ namespace SpotLight.EditorDrawables
             }
 
             public override void Draw(GL_ControlLegacy control, Pass pass)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Prepare(GL_ControlLegacy control)
             {
                 throw new NotImplementedException();
             }

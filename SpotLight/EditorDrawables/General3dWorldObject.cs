@@ -127,6 +127,8 @@ namespace SpotLight.EditorDrawables
 
             zone?.SubmitID(ID);
 
+            DoModelLoad();
+
             loadLinks = true;
         }
 
@@ -146,6 +148,8 @@ namespace SpotLight.EditorDrawables
             DisplayScale = displayScale;
             Links = links;
             Properties = properties;
+
+            DoModelLoad();
 
             zone?.SubmitID(ID);
         }
@@ -345,16 +349,6 @@ namespace SpotLight.EditorDrawables
         #endregion
 
         /// <summary>
-        /// Prepares to draw this Object
-        /// </summary>
-        /// <param name="control">The GL_Control to draw to</param>
-        public override void Prepare(GL_ControlModern control)
-        {
-            DoModelLoad(control);
-
-            base.Prepare(control);
-        }
-        /// <summary>
         /// Draws the model to the given GL_Control
         /// </summary>
         /// <param name="control">The GL_Control to draw to</param>
@@ -451,7 +445,7 @@ namespace SpotLight.EditorDrawables
                 boundingBox.Include(GlobalPosition + Vector3.Transform(Framework.Mat3FromEulerAnglesDeg(Rotation), DisplayTranslation));
         }
 
-        public void DoModelLoad(GL_ControlModern control)
+        public void DoModelLoad()
         {
             string mdlName = ModelName == "" ? ObjectName : ModelName;
             if (BfresModelCache.Contains(mdlName))
@@ -469,12 +463,12 @@ namespace SpotLight.EditorDrawables
 
                         if (initModel is Dictionary<string, dynamic>)
                         {
-                            BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control,
+                            BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]),
                             initModel.TryGetValue("TextureArc", out dynamic texArc) ? texArc : null);
                             return;
                         }
                     }
-                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), control, null);
+                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), null);
                 }
             }
         }
@@ -576,7 +570,7 @@ namespace SpotLight.EditorDrawables
                 capture?.HandleUndo(scene);
                 capture = null;
 
-                obj.DoModelLoad((GL_ControlModern)scene.GL_Control);
+                obj.DoModelLoad();
 
                 scene.Refresh();
             }

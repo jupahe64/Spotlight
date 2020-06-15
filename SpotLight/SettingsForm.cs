@@ -233,7 +233,7 @@ namespace SpotLight
             Properties.Settings.Default.Save();
             if (BfresModelCache.Contains("CheckpointFlag"))
             {
-                BfresModelCache.ReloadModel("CheckpointFlag", Home.LevelGLControlModern);
+                BfresModelCache.ReloadModel("CheckpointFlag");
                 Home.LevelGLControlModern.Refresh();
             }
         }

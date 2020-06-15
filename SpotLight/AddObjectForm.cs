@@ -235,7 +235,6 @@ namespace SpotLight
                 General3dWorldObject obj = objectParameter.ToGeneral3DWorldObject(zone.NextObjID(), zone, pos,
                     objectNameIndex,
                     objectModelIndex);
-                obj.Prepare(control);
 
                 if (objectParameter.TryGetObjectList(zone, out ObjectList objList))
                 {
@@ -261,8 +260,6 @@ namespace SpotLight
                 List<RailPoint> pathPoints = PathPointFormations.GetPathFormation(pos, railFormationFunc(), reverseRail);
 
                 Rail rail = new Rail(pathPoints, zone.NextObjID(), closeRail, false, false, railObjType, zone);
-
-                rail.Prepare(control);
 
                 if (zone.ObjLists.ContainsKey("Map_Rails"))
                 {

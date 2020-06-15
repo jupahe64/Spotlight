@@ -107,7 +107,6 @@ namespace SpotLight
             MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
             MainSceneListView.ListExited += MainSceneListView_ListExited;
 
-            LevelGLControlModern.Visible = false;
             Localize();
 
             //Properties.Settings.Default.Reset(); //Used when testing to make sure the below part works
@@ -537,7 +536,6 @@ namespace SpotLight
             {
                 var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone);
                 currentScene.ZonePlacements.Add(zonePlacement);
-                currentScene.Prepare(LevelGLControlModern);
                 currentScene.AddToUndo(new RevertableSingleAddition(zonePlacement, currentScene.ZonePlacements));
                 ZoneDocumentTabControl_SelectedTabChanged(null, null);
             }
@@ -916,7 +914,6 @@ namespace SpotLight
         {
             if (ZoneDocumentTabControl.SelectedTab == null)
             {
-                LevelGLControlModern.Visible = false;
                 return;
             }
 
@@ -930,8 +927,6 @@ namespace SpotLight
             MainSceneListView.Refresh();
 
             UpdateZoneList();
-
-            LevelGLControlModern.Visible = true;
 
             LevelGLControlModern.MainDrawable = currentScene;
             #endregion
@@ -1373,6 +1368,11 @@ Would you like to rebuild the database from your 3DW Files?";
                 currentScene?.ResetObjectPlaceDelegate();
                 SpotlightToolStripStatusLabel.Text = "";
             }
+        }
+
+        private void LevelGLControlModern_Load(object sender, EventArgs e)
+        {
+            BfresModelCache.Initialize();
         }
     }
 }

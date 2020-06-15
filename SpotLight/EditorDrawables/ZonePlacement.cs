@@ -18,37 +18,7 @@ namespace SpotLight.EditorDrawables
         public ZonePlacement(Vector3 pos, Vector3 rot, Vector3 scale, SM3DWorldZone zone)
             : base(pos, rot, scale)
         {
-            this.Zone = zone;
-        }
-
-        public override void Prepare(GL_ControlModern control)
-        {
-            base.Prepare(control);
-
-            if (!Zone.IsPrepared)
-            {
-                Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
-
-                ZoneTransform transformBackup = SceneDrawState.ZoneTransform;
-
-                SceneDrawState.ZoneTransform = new ZoneTransform(
-                    new Matrix4(rotMat) * Matrix4.CreateTranslation(Position),
-                    rotMat);
-
-                SceneObjectIterState.InLinks = false;
-                foreach (ObjectList objects in Zone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        obj.Prepare(control);
-                }
-                SceneObjectIterState.InLinks = true;
-                foreach (I3dWorldObject obj in Zone.LinkedObjects)
-                    obj.Prepare(control);
-
-                Zone.IsPrepared = true;
-
-                SceneDrawState.ZoneTransform = transformBackup;
-            }
+            Zone = zone;
         }
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)

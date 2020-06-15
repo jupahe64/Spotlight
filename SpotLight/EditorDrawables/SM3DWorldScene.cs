@@ -276,85 +276,19 @@ namespace SpotLight.EditorDrawables
             return mainZone.LevelName;
         }
 
-        static bool Initialized = false;
-
-        static ShaderProgram LinksShaderProgram;
-
-        /// <summary>
-        /// Prepares to draw models
-        /// </summary>
-        /// <param name="control">The GL_Control that's currently in use</param>
-        public override void Prepare(GL_ControlModern control)
-        {
-            BfresModelCache.Initialize(control);
-
-            if (!Initialized)
-            {
-                LinksShaderProgram = new ShaderProgram(
-                    new FragmentShader(
-              @"#version 330
-                in vec4 fragColor;
-                void main(){
-                    gl_FragColor = fragColor;
-                }"),
-                    new VertexShader(
-              @"#version 330
-                layout(location = 0) in vec4 position;
-                layout(location = 1) in vec4 color;
-
-                out vec4 fragColor;
-
-                uniform mat4 mtxMdl;
-                uniform mat4 mtxCam;
-                void main(){
-                    gl_Position = mtxCam*mtxMdl*position;
-                    fragColor = color;
-                }"), control);
-
-                Initialized = true;
-            }
-
-            this.control = control;
-
-            if (!EditZone.IsPrepared)
-            {
-                SceneDrawState.ZoneTransform = EditZoneTransform;
-
-                SceneObjectIterState.InLinks = false;
-                foreach (ObjectList objects in EditZone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        obj.Prepare(control);
-                }
-                SceneObjectIterState.InLinks = true;
-                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
-                    obj.Prepare(control);
-
-                EditZone.IsPrepared = true;
-            }
-
-            SceneDrawState.ZoneTransform = ZoneTransform.Identity;
-
-            foreach (AbstractGlDrawable obj in StaticObjects)
-                obj.Prepare(control);
-
-            SceneDrawState.ZoneTransform = EditZoneTransform;
-
-            foreach (var zonePlacement in ZonePlacements)
-                zonePlacement.Prepare(control);
-        }
-
+        
         class LinkRenderer : AbstractGlDrawable
         {
+            static bool Initialized = false;
+
+            static ShaderProgram LinksShaderProgram;
+
             readonly SM3DWorldScene scene;
 
             public LinkRenderer(SM3DWorldScene scene)
             {
                 this.scene = scene;
-            }
-
-            public override void Prepare(GL_ControlModern control)
-            {
+                
                 if (!Initialized)
                 {
                     LinksShaderProgram = new ShaderProgram(
@@ -376,7 +310,7 @@ namespace SpotLight.EditorDrawables
                 void main(){
                     gl_Position = mtxCam*mtxMdl*position;
                     fragColor = color;
-                }"), control);
+                }"));
 
                     Initialized = true;
                 }
@@ -419,11 +353,6 @@ namespace SpotLight.EditorDrawables
                 return 0;
             }
 
-            public override void Prepare(GL_ControlLegacy control)
-            {
-                throw new NotImplementedException();
-            }
-
             public override void Draw(GL_ControlLegacy control, Pass pass)
             {
                 throw new NotImplementedException();
@@ -439,11 +368,6 @@ namespace SpotLight.EditorDrawables
                 this.scene = scene;
             }
 
-            public override void Prepare(GL_ControlModern control)
-            {
-
-            }
-
             public override void Draw(GL_ControlModern control, Pass pass)
             {
                 if (scene.editZoneIndex != 0) //zonePlacements can't be edited
@@ -454,11 +378,6 @@ namespace SpotLight.EditorDrawables
             public override int GetPickableSpan()
             {
                 return 0;
-            }
-
-            public override void Prepare(GL_ControlLegacy control)
-            {
-                throw new NotImplementedException();
             }
 
             public override void Draw(GL_ControlLegacy control, Pass pass)

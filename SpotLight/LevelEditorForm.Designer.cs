@@ -262,6 +262,7 @@
             this.LevelGLControlModern.VSync = false;
             this.LevelGLControlModern.ZFar = 32000F;
             this.LevelGLControlModern.ZNear = 1.5F;
+            this.LevelGLControlModern.Load += new System.EventHandler(this.LevelGLControlModern_Load);
             this.LevelGLControlModern.MouseClick += new System.Windows.Forms.MouseEventHandler(this.LevelGLControlModern_MouseClick);
             // 
             // SpotlightMenuStrip

@@ -50,7 +50,7 @@ namespace SpotLight
 
         public static int NoTetxure;
 
-        public static void Initialize(GL_ControlModern control)
+        public static void Initialize()
         {
             if (initialized)
                 return;
@@ -83,7 +83,7 @@ namespace SpotLight
                         fragUV = uv;
                         fragColor = color;
                         gl_Position = mtxCam*mtxMdl*position;
-                    }"), control);
+                    }"));
 
             ExtraModelShaderProgram = new ShaderProgram(
                     new FragmentShader(
@@ -107,7 +107,7 @@ namespace SpotLight
                     void main(){
                         fragColor = color;
                         gl_Position = mtxCam*mtxMdl*position;
-                    }"), control);
+                    }"));
             #endregion
 
 
@@ -177,7 +177,7 @@ namespace SpotLight
 
             //new Vector4(0, 0.5f, 1, 1)
 
-            SubmitExtraModel(control, PrimitiveType.Lines, "AreaCubeBase", indices, data);
+            SubmitExtraModel(PrimitiveType.Lines, "AreaCubeBase", indices, data);
             #endregion
 
             #region AreaCylinder
@@ -243,7 +243,7 @@ namespace SpotLight
             data[i++] = 0.5f;
             data[i++] = 1;
 
-            SubmitExtraModel(control, PrimitiveType.Lines, "AreaCylinder", indices, data);
+            SubmitExtraModel(PrimitiveType.Lines, "AreaCylinder", indices, data);
             #endregion
 
             #region TransparentWall
@@ -281,7 +281,7 @@ namespace SpotLight
             indices.Add(0b110);
             indices.Add(0b101);
 
-            SubmitExtraModel(control, PrimitiveType.Triangles, "TransparentWall", indices, data, Pass.TRANSPARENT);
+            SubmitExtraModel(PrimitiveType.Triangles, "TransparentWall", indices, data, Pass.TRANSPARENT);
             #endregion
 
             #endregion
@@ -310,7 +310,7 @@ namespace SpotLight
             initialized = true;
         }
 
-        private static void SubmitExtraModel(GL_ControlModern control, PrimitiveType primitiveType, string modelName, List<int> indices, float[] data, Pass pass = Pass.OPAQUE)
+        private static void SubmitExtraModel(PrimitiveType primitiveType, string modelName, List<int> indices, float[] data, Pass pass = Pass.OPAQUE)
         {
             int[] buffers = new int[2];
             GL.GenBuffers(2, buffers);
@@ -321,7 +321,7 @@ namespace SpotLight
             VertexArrayObject vao = new VertexArrayObject(vaoBuffer, indexBuffer);
             vao.AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 7, 0);
             vao.AddAttribute(1, 4, VertexAttribPointerType.Float, false, sizeof(float) * 7, sizeof(float) * 3);
-            vao.Initialize(control);
+            vao.Submit();
 
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(int), indices.ToArray(), BufferUsageHint.StaticDraw);
@@ -332,12 +332,12 @@ namespace SpotLight
             extraModels.Add(Path.GetFileNameWithoutExtension(modelName), new ExtraModel(vao, indices.Count, primitiveType, pass));
         }
 
-        public static void Submit(string modelName, Stream stream, GL_ControlModern control, string textureArc = null)
+        public static void Submit(string modelName, Stream stream, string textureArc = null)
         {
             ResFile bfres = new ResFile(stream);
 
             if (!cache.ContainsKey(modelName) && bfres.Models.Count>0)
-                cache[modelName] = new CachedModel(bfres, textureArc, control);
+                cache[modelName] = new CachedModel(bfres, textureArc);
         }
 
         public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass, Vector4 highlightColor)
@@ -351,7 +351,7 @@ namespace SpotLight
             {
                 if (pass == Pass.PICKING)
                 {
-                    control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+                    control.CurrentShader = Framework.SolidColorShaderProgram;
 
                     GL.LineWidth(5);
                     control.CurrentShader.SetVector4("color", control.NextPickingColor());
@@ -387,12 +387,12 @@ namespace SpotLight
 
         public const bool LoadTextures = true;
 
-        public static void ReloadModel(string ModelName, GL_ControlModern control)
+        public static void ReloadModel(string ModelName)
         {
             if (cache.ContainsKey(ModelName))
             {
                 cache.Remove(ModelName);
-                Submit(ModelName, new MemoryStream(SARC.UnpackRamN(new MemoryStream(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", ModelName+".szs")))).Files[ModelName+".bfres"]), control);
+                Submit(ModelName, new MemoryStream(SARC.UnpackRamN(new MemoryStream(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", ModelName+".szs")))).Files[ModelName+".bfres"]));
             }
         }
 
@@ -406,7 +406,7 @@ namespace SpotLight
             readonly (int,int)[] wrapModes;
             readonly Pass[] passes;
 
-            public CachedModel(ResFile bfres, string textureArc, GL_ControlModern control)
+            public CachedModel(ResFile bfres, string textureArc)
             {
                 if (LoadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
                 {
@@ -700,7 +700,7 @@ namespace SpotLight
                     vaos[shapeIndex].AddAttribute(1, 2, VertexAttribPointerType.Float, false, sizeof(float) * 6, sizeof(float) * 3);
                     vaos[shapeIndex].AddAttribute(2, 4, VertexAttribPointerType.UnsignedByte, true, sizeof(float) * 6, sizeof(float) * 5);
 
-                    vaos[shapeIndex].Initialize(control);
+                    vaos[shapeIndex].Submit();
 
                     shapeIndex++;
                 }
@@ -745,7 +745,7 @@ namespace SpotLight
             {
                 if (pass == Pass.PICKING)
                 {
-                    control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+                    control.CurrentShader = Framework.SolidColorShaderProgram;
                     control.CurrentShader.SetVector4("color", control.NextPickingColor());
                 }
                 else
@@ -811,7 +811,7 @@ namespace SpotLight
 
                 if (pass == Pass.OPAQUE && highlightColor.W != 0)
                 {
-                    control.CurrentShader = Renderers.ColorBlockRenderer.SolidColorShaderProgram;
+                    control.CurrentShader = Framework.SolidColorShaderProgram;
                     control.CurrentShader.SetVector4("color", new Vector4(highlightColor.Xyz, 1));
 
                     GL.LineWidth(3.0f);

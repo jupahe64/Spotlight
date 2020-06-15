@@ -97,8 +97,6 @@ namespace SpotLight.Level
 
         private ulong highestRailID = 0;
 
-        public bool IsPrepared { get; internal set; }
-
         public void SubmitRailID(string id)
         {
             if (id.StartsWith("rail") && ulong.TryParse(id.Substring(4), out ulong objID))
