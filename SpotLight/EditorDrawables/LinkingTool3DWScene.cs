@@ -12,6 +12,7 @@ using GL_EditorFramework.Interfaces;
 using GL_EditorFramework;
 using OpenTK;
 using WinInput = System.Windows.Input;
+using SpotLight.Level;
 
 namespace SpotLight.EditorDrawables
 {
@@ -265,6 +266,23 @@ namespace SpotLight.EditorDrawables
             }
         }
 
+        private void MoveObjectToObjList(I3dWorldObject obj, ObjectList list)
+        {
+            if (!list.Contains(obj))
+            {
+                list.Add(obj);
+                AddToUndo(new RevertableSingleAddition(obj, list));
+
+                int index = EditZone.LinkedObjects.IndexOf(obj);
+
+                if (index != -1)
+                {
+                    EditZone.LinkedObjects.RemoveAt(index);
+                    AddToUndo(new RevertableSingleDeletion(obj, index, EditZone.LinkedObjects));
+                }
+            }
+        }
+
 
         private void ChangeSelectedConnection(I3dWorldObject newSource, I3dWorldObject newDest, string newName, bool moveDestToLinked = false)
         {
@@ -297,7 +315,7 @@ namespace SpotLight.EditorDrawables
             if(TryAddConnection(newSource, newDest, newName))
             {
                 if(moveDestToLinked)
-                    MoveObjectToLinked(Hovered3dObject);
+                    MoveObjectToLinked(newDest);
 
                 if(SelectedConnection.Dest != newDest)
                     DestinationChanged?.Invoke(this, new DestinationChangedEventArgs(newDest, moveDestToLinked));
@@ -369,10 +387,21 @@ namespace SpotLight.EditorDrawables
                 connectionName = control.DropDownTextInput("Connection Name", connectionName, scene.SelectedConnection.PossibleNames);
                 if(control.Button("Reverse Connection"))
                 {
+                    scene.BeginUndoCollection();
+
                     scene.ChangeSelectedConnection(
                         scene.SelectedConnection.Dest,
                         scene.SelectedConnection.Source,
-                        scene.SelectedConnection.Name);
+                        scene.SelectedConnection.Name, 
+                        scene.EditZone.LinkedObjects.Contains(scene.SelectedConnection.Dest));
+
+                    if (scene.SelectedConnection.Source.LinkDestinations.Count == 0 && scene.EditZone.LinkedObjects.Contains(scene.SelectedConnection.Source) &&
+                        scene.SelectedConnection.Source.TryGetObjectList(scene.EditZone, out ObjectList list))
+                    {
+                        scene.MoveObjectToObjList(scene.SelectedConnection.Source, list);
+                    }
+
+                    scene.EndUndoCollection();
 
                     scene.GL_Control.Refresh();
                 }
