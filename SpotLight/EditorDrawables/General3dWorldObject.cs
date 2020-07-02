@@ -505,10 +505,24 @@ namespace SpotLight.EditorDrawables
             General3dWorldObject obj;
             EditorSceneBase scene;
 
+            string[] DB_objectNames;
+            string[] DB_modelNames;
+
             public BasicPropertyUIContainer(General3dWorldObject obj, EditorSceneBase scene)
             {
                 this.obj = obj;
                 this.scene = scene;
+
+                if (Program.ParameterDB.ObjectParameters.TryGetValue(obj.ClassName, out Parameter entry))
+                {
+                    DB_objectNames = entry.ObjectNames.ToArray();
+                    DB_modelNames = entry.ModelNames.ToArray();
+                }
+                else
+                {
+                    DB_objectNames = Array.Empty<string>();
+                    DB_modelNames = Array.Empty<string>();
+                }
             }
 
             public void DoUI(IObjectUIControl control)
@@ -518,9 +532,9 @@ namespace SpotLight.EditorDrawables
                 else
                     control.TextInput(obj.ID, "Object ID");
 
-                obj.ObjectName = control.TextInput(obj.ObjectName, "Object Name");
+                obj.ObjectName = control.DropDownTextInput("Object Name", obj.ObjectName, DB_objectNames);
                 obj.ClassName = control.TextInput(obj.ClassName, "Class Name");
-                obj.ModelName = control.TextInput(obj.ModelName, "Model Name");
+                obj.ModelName = control.DropDownTextInput("Model Name", obj.ModelName, DB_modelNames);
 
                 control.VerticalSeperator();
 
