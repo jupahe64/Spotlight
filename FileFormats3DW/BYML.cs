@@ -12,45 +12,10 @@ namespace BYAML
 {
     public class BymlFileData
     {
-        public Endian byteOrder;
+        public ByteOrder byteOrder;
         public ushort Version;
         public bool SupportPaths;
         public dynamic RootNode;
-    }
-
-    public class Offset
-    {
-        public Offset(BinaryStream writer)
-        {
-            Writer = writer;
-            Position = (uint)Writer.Position;
-            Writer.Position += 4L;
-        }
-
-        public BinaryStream Writer { get; private set; }
-
-        public uint Position { get; private set; }
-
-        public void Satisfy()
-        {
-            Satisfy((uint)Writer.Position);
-        }
-
-        public void Satisfy(uint value)
-        {
-            uint num = (uint)Writer.Position;
-            Writer.Position = Position;
-            Writer.Write(value);
-            Writer.Position = num;
-        }
-    }
-
-    public static class Extensions
-    {
-        public static Offset ReserveOffset(this BinaryStream stream)
-        {
-            return new Offset(stream);
-        }
     }
 
     /// <summary>
@@ -152,7 +117,7 @@ namespace BYAML
         /// <param name="supportPaths">Whether to expect a path array offset. This must be enabled for Mario Kart 8
         /// files.</param>
         /// <param name="byteOrder">The <see cref="Endian"/> to read data in.</param>
-        public static BymlFileData LoadN(string fileName, bool supportPaths = false, Endian byteOrder = Endian.Little)
+        public static BymlFileData LoadN(string fileName, bool supportPaths = false, ByteOrder byteOrder = ByteOrder.LittleEndian)
         {
             using (FileStream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -167,7 +132,7 @@ namespace BYAML
         /// <param name="supportPaths">Whether to expect a path array offset. This must be enabled for Mario Kart 8
         /// files.</param>
         /// <param name="byteOrder">The <see cref="Endian"/> to read data in.</param>
-        public static BymlFileData LoadN(Stream stream, bool supportPaths = false, Endian byteOrder = Endian.Little)
+        public static BymlFileData LoadN(Stream stream, bool supportPaths = false, ByteOrder byteOrder = ByteOrder.LittleEndian)
         {
             ByamlReader reader = new ByamlReader(stream, supportPaths, byteOrder, 3);
             var r = reader.Read();
@@ -181,7 +146,7 @@ namespace BYAML
         /// <param name="supportPaths">Whether to expect a path array offset. This must be enabled for Mario Kart 8
         /// files.</param>
         /// <param name="byteOrder">The <see cref="Endian"/> to read data in.</param>
-        public static BymlFileData FastLoadN(Stream stream, bool supportPaths = false, Endian byteOrder = Endian.Little)
+        public static BymlFileData FastLoadN(Stream stream, bool supportPaths = false, ByteOrder byteOrder = ByteOrder.LittleEndian)
         {
             ByamlReader reader = new ByamlReader(stream, supportPaths, byteOrder, 3, true);
             var r = reader.Read();

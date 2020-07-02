@@ -23,6 +23,8 @@ namespace SpotLight.Level
 
     public class SM3DWorldZone
     {
+        public ByteOrder byteOrder;
+
         public static Dictionary<string, WeakReference<SM3DWorldZone>> loadedZones = new Dictionary<string, WeakReference<SM3DWorldZone>>();
 
         public override string ToString() => LevelName;
@@ -118,6 +120,12 @@ namespace SpotLight.Level
                     return true;
             }
 
+            if (!File.Exists(fileName))
+            {
+                zone = null;
+                return false;
+            }
+
             string levelName;
             string categoryName;
 
@@ -138,13 +146,12 @@ namespace SpotLight.Level
                 levelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - DESIGN_SUFFIX.Length);
                 categoryName = "Sound";
             }
-            else
+            else if (fileNameWithoutPath.EndsWith(COMBINED_SUFFIX))
             {
-                zone = null;
-                return false;
+                levelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - COMBINED_SUFFIX.Length);
+                categoryName = null;
             }
-
-            if (!File.Exists(fileName))
+            else
             {
                 zone = null;
                 return false;
@@ -161,6 +168,8 @@ namespace SpotLight.Level
         public const string DESIGN_SUFFIX = "Design1.szs";
         public const string SOUND_SUFFIX = "Sound1.szs";
 
+        public const string COMBINED_SUFFIX = ".szs";
+
         const string COMMON_SUFFIX = "1.szs";
 
         static readonly string[] extensionsToReplace = new string[]
@@ -171,7 +180,7 @@ namespace SpotLight.Level
             "Map.szs",
             "Design.szs",
             "Sound.szs",
-            ".szs"
+            COMBINED_SUFFIX
         };
 
         public const string MAP_PREFIX = "Map_";
@@ -182,9 +191,10 @@ namespace SpotLight.Level
         public bool HasCategoryDesign { get; private set; }
         public bool HasCategorySound { get; private set; }
 
-        public string GetPreferredSuffix() => HasCategoryMap ? "Map1.szs" : (HasCategoryDesign ? "Design1.szs" : "Sound1.szs");
+        public string GetPreferredSuffix() => IsCombined ? COMBINED_SUFFIX : (HasCategoryMap ? MAP_SUFFIX : (HasCategoryDesign ? DESIGN_SUFFIX : SOUND_SUFFIX));
 
         public bool IsValidSaveName(string name) =>
+            (IsCombined && name.EndsWith(COMBINED_SUFFIX)) ||
             (HasCategoryMap && name.EndsWith(MAP_SUFFIX)) ||
             (HasCategoryDesign && name.EndsWith(DESIGN_SUFFIX)) ||
             (HasCategorySound && name.EndsWith(SOUND_SUFFIX));
@@ -202,6 +212,7 @@ namespace SpotLight.Level
 
             return name + GetPreferredSuffix();
         }
+
         /// <summary>
         /// Create a new Super Mario 3D World Zone
         /// </summary>
@@ -220,6 +231,10 @@ namespace SpotLight.Level
 
             Dictionary<string, I3dWorldObject> objectsByID = new Dictionary<string, I3dWorldObject>();
 
+            if(categoryName == null)
+            {
+                LoadCombined(objectsByID);
+            }
             if (categoryName == "Map")
             {
                 HasCategoryMap = true;
@@ -250,6 +265,8 @@ namespace SpotLight.Level
 
             SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
 
+            byteOrder = sarc.byteOrder;
+
             string stageFileName = LevelName + categoryName + ".byml";
 
             foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
@@ -258,71 +275,8 @@ namespace SpotLight.Level
                 {
                     Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
 
-                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(sarc.Files[LevelName + categoryName + ".byml"]));
-                    foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
-                    {
-                        if (entry.Key == "FilePath" || entry.Key == "Objs")
-                            continue;
-
-                        if (entry.Key == "ZoneList")
-                        {
-                            foreach (ArrayEntry obj in entry.IterArray())
-                            {
-                                Vector3 position = Vector3.Zero;
-                                Vector3 rotation = Vector3.Zero;
-                                Vector3 scale =    Vector3.One;
-                                SM3DWorldZone zone = null;
-                                foreach (DictionaryEntry _entry in obj.IterDictionary())
-                                {
-                                    if (_entry.Key == "UnitConfigName")
-                                        TryOpen($"{Directory}\\{_entry.Parse()}Map1.szs", out zone);
-                                    else if (_entry.Key == "Translate")
-                                    {
-                                        dynamic data = _entry.Parse();
-                                        position = new Vector3(
-                                            data["X"] / 100f,
-                                            data["Y"] / 100f,
-                                            data["Z"] / 100f
-                                        );
-                                    }
-                                    else if (_entry.Key == "Rotate")
-                                    {
-                                        dynamic data = _entry.Parse();
-                                        rotation = new Vector3(
-                                            data["X"],
-                                            data["Y"],
-                                            data["Z"]
-                                        );
-                                    }
-                                    else if (_entry.Key == "Scale")
-                                    {
-                                        dynamic data = _entry.Parse();
-                                        scale = new Vector3(
-                                            data["X"],
-                                            data["Y"],
-                                            data["Z"]
-                                        );
-                                    }
-                                }
-
-                                if (zone != null)
-                                {
-                                    ZonePlacements.Add(new ZonePlacement(position, rotation, scale, zone));
-                                }
-                            }
-
-                            continue;
-                        }
-
-                        ObjLists.Add(prefix + entry.Key, new ObjectList());
-
-                        foreach (ArrayEntry obj in entry.IterArray())
-                        {
-                            I3dWorldObject _obj = LevelIO.ParseObject(obj, this, objectsByReference, out bool alreadyReferenced, Properties.Settings.Default.UniqueIDs ? linkedObjsByID : null);
-                            if (!alreadyReferenced)
-                                ObjLists[prefix + entry.Key].Add(_obj);
-                        }
-                    }
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    LoadStageByml(byamlIter, prefix, linkedObjsByID, objectsByReference);
                 }
                 else
                 {
@@ -335,7 +289,147 @@ namespace SpotLight.Level
 
             return true;
         }
-        
+
+        private bool IsCombined = false;
+
+        private bool LoadCombined(Dictionary<string, I3dWorldObject> linkedObjsByID)
+        {
+            string fileName = $"{Directory}\\{LevelName}.szs";
+
+            if (!File.Exists(fileName))
+                return false;
+
+            SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+
+            byteOrder = sarc.byteOrder;
+
+            string stageFileNameMap = LevelName + "Map.byml";
+            string stageFileNameDesign = LevelName + "Design.byml";
+            string stageFileNameSound = LevelName + "Sound.byml";
+
+            foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
+            {
+                if (keyValuePair.Key == stageFileNameMap)
+                {
+                    Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
+
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    LoadStageByml(byamlIter, MAP_PREFIX, linkedObjsByID, objectsByReference);
+                    HasCategoryMap = true;
+                }
+                else if (keyValuePair.Key == stageFileNameDesign)
+                {
+                    Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
+
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    LoadStageByml(byamlIter, DESIGN_PREFIX, linkedObjsByID, objectsByReference);
+                    HasCategoryDesign = true;
+                }
+                else if (keyValuePair.Key == stageFileNameSound)
+                {
+                    Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
+
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    LoadStageByml(byamlIter, SOUND_PREFIX, linkedObjsByID, objectsByReference);
+                    HasCategorySound = true;
+                }
+                else
+                {
+                    int extraFilesIndex;
+                    switch (keyValuePair.Key)
+                    {
+                        case "CameraParam.byml":
+                        case "InterpoleParam.byml":
+                            extraFilesIndex = 0; //Map
+                            break;
+                        default:
+                            extraFilesIndex = 1; //Design
+                            break;
+                    }
+
+                    if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
+                        extraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                    else
+                        extraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                }
+            }
+
+            IsCombined = true;
+
+            return true;
+        }
+
+        private void LoadStageByml(ByamlIterator byamlIter, string prefix, Dictionary<string, I3dWorldObject> linkedObjsByID, Dictionary<long, I3dWorldObject> objectsByReference)
+        {
+            foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
+            {
+                if (entry.Key == "FilePath" || entry.Key == "Objs")
+                    continue;
+
+                if (entry.Key == "ZoneList")
+                {
+                    foreach (ArrayEntry obj in entry.IterArray())
+                    {
+                        Vector3 position = Vector3.Zero;
+                        Vector3 rotation = Vector3.Zero;
+                        Vector3 scale = Vector3.One;
+                        SM3DWorldZone zone = null;
+                        foreach (DictionaryEntry _entry in obj.IterDictionary())
+                        {
+                            if (_entry.Key == "UnitConfigName")
+                            {
+                                if (!TryOpen($"{Directory}\\{_entry.Parse()}{MAP_SUFFIX}", out zone))
+                                    TryOpen($"{Directory}\\{_entry.Parse()}", out zone);
+                            }
+                            else if (_entry.Key == "Translate")
+                            {
+                                dynamic data = _entry.Parse();
+                                position = new Vector3(
+                                    data["X"] / 100f,
+                                    data["Y"] / 100f,
+                                    data["Z"] / 100f
+                                );
+                            }
+                            else if (_entry.Key == "Rotate")
+                            {
+                                dynamic data = _entry.Parse();
+                                rotation = new Vector3(
+                                    data["X"],
+                                    data["Y"],
+                                    data["Z"]
+                                );
+                            }
+                            else if (_entry.Key == "Scale")
+                            {
+                                dynamic data = _entry.Parse();
+                                scale = new Vector3(
+                                    data["X"],
+                                    data["Y"],
+                                    data["Z"]
+                                );
+                            }
+                        }
+
+                        if (zone != null)
+                        {
+                            ZonePlacements.Add(new ZonePlacement(position, rotation, scale, zone));
+                        }
+                    }
+
+                    continue;
+                }
+
+                ObjLists.Add(prefix + entry.Key, new ObjectList());
+
+                foreach (ArrayEntry obj in entry.IterArray())
+                {
+                    I3dWorldObject _obj = LevelIO.ParseObject(obj, this, objectsByReference, out bool alreadyReferenced, Properties.Settings.Default.UniqueIDs ? linkedObjsByID : null);
+                    if (!alreadyReferenced)
+                        ObjLists[prefix + entry.Key].Add(_obj);
+                }
+            }
+        }
+
         /// <summary>
         /// Saves the level as a new file
         /// </summary>
@@ -371,6 +465,14 @@ namespace SpotLight.Level
         /// <returns>true if the save succeeded, false if it failed</returns>
         public bool Save()
         {
+            if (IsCombined)
+            {
+                if (SaveCombined())
+                    goto SAVED;
+                else
+                    return false;
+            }
+
             if (HasCategoryMap && !SaveCategory(MAP_PREFIX, "Map", 0, true))
                 return false;
             if (HasCategoryDesign && !SaveCategory(DESIGN_PREFIX, "Design", 1))
@@ -378,6 +480,7 @@ namespace SpotLight.Level
             if (HasCategorySound && !SaveCategory(SOUND_PREFIX, "Sound", 2))
                 return false;
 
+            SAVED:
             IsSaved = true;
 
             lastSaveTime = DateTime.Now;
@@ -390,111 +493,16 @@ namespace SpotLight.Level
             SarcData sarcData = new SarcData()
             {
                 HashOnly = false,
-                endianness = Endian.Big,
+                byteOrder = byteOrder,
                 Files = new Dictionary<string, byte[]>()
             };
 
             foreach (KeyValuePair<string, dynamic> keyValuePair in extraFiles[extraFilesIndex])
-            {
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    if (keyValuePair.Value is BymlFileData)
-                    {
-                        ByamlFile.FastSaveN(stream, keyValuePair.Value);
-                        sarcData.Files.Add(keyValuePair.Key, stream.ToArray());
-                    }
-                    else if (keyValuePair.Value is byte[])
-                    {
-                        sarcData.Files.Add(keyValuePair.Key, keyValuePair.Value);
-                    }
-                    else
-                        throw new Exception("The extra file " + keyValuePair.Key + "has no way to save");
-                }
-            }
+                SaveExtraFile(sarcData, keyValuePair);
 
             using (MemoryStream stream = new MemoryStream())
             {
-                ByamlNodeWriter writer = new ByamlNodeWriter(stream, false, Endian.Big, 1);
-
-                ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(ObjLists);
-
-                ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
-
-                HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
-
-                rootNode.AddDynamicValue("FilePath", "N/A");
-
-                foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
-                {
-                    if (!keyValuePair.Key.StartsWith(prefix)) //ObjList is not part of the Category
-                        continue;
-
-                    ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode(keyValuePair.Value);
-
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
-                    {
-                        if (!alreadyWrittenObjs.Contains(obj))
-                        {
-                            ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
-                            obj.Save(alreadyWrittenObjs, writer, objNode, false);
-                            categoryNode.AddDictionaryNodeRef(objNode);
-                            objsNode.AddDictionaryNodeRef(objNode);
-                        }
-                        else
-                        {
-                            categoryNode.AddDictionaryRef(obj);
-                            objsNode.AddDictionaryRef(obj);
-                        }
-                    }
-                    rootNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), categoryNode, true);
-                }
-
-                rootNode.AddArrayNodeRef("Objs", objsNode);
-
-                ByamlNodeWriter.ArrayNode zonesNode = writer.CreateArrayNode();
-
-                if (saveZonePlacements)
-                {
-                    int zoneID = 0;
-
-                    foreach (var zonePlacement in ZonePlacements)
-                    {
-                        ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode();
-
-                        objNode.AddDynamicValue("Comment", null);
-                        objNode.AddDynamicValue("Id", "zone" + zoneID++);
-                        objNode.AddDynamicValue("IsLinkDest", false);
-                        objNode.AddDynamicValue("LayerConfigName", "Common");
-
-                        {
-                            objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
-                        }
-
-                        objNode.AddDynamicValue("ModelName", null);
-                        objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(zonePlacement.Rotation), true);
-                        objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(zonePlacement.Scale), true);
-                        objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(zonePlacement.Position, 100f), true);
-
-                        objNode.AddDynamicValue("UnitConfig", new Dictionary<string, dynamic>
-                        {
-                            ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
-                            ["DisplayRotate"] = LevelIO.Vector3ToDict(Vector3.Zero),
-                            ["DisplayScale"] = LevelIO.Vector3ToDict(Vector3.One),
-                            ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero),
-                            ["GenerateCategory"] = "",
-                            ["ParameterConfigName"] = "Zone",
-                            ["PlacementTargetFile"] = "Map"
-                        }, true);
-
-                        objNode.AddDynamicValue("UnitConfigName", zonePlacement.Zone.LevelName);
-
-                        zonesNode.AddDictionaryNodeRef(objNode, true);
-                    }
-                }
-
-                rootNode.AddArrayNodeRef("ZoneList", zonesNode);
-
-                writer.Write(rootNode, true);
+                WriteStageByml(stream, prefix, saveZonePlacements);
 
                 sarcData.Files.Add(LevelName + categoryName + ".byml", stream.ToArray());
             }
@@ -502,6 +510,158 @@ namespace SpotLight.Level
             File.WriteAllBytes(Path.Combine(Directory,LevelName + categoryName + COMMON_SUFFIX), YAZ0.Compress(SARC.PackN(sarcData).Item2));
 
             return true;
+        }
+
+        private static void SaveExtraFile(SarcData sarcData, KeyValuePair<string, dynamic> keyValuePair)
+        {
+            if (keyValuePair.Value is BymlFileData)
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    ByamlFile.FastSaveN(stream, keyValuePair.Value);
+                    sarcData.Files.Add(keyValuePair.Key, stream.ToArray());
+                }
+            }
+            else if (keyValuePair.Value is byte[])
+            {
+                sarcData.Files.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+            else
+                throw new Exception("The extra file " + keyValuePair.Key + "has no way to save");
+        }
+
+        private bool SaveCombined()
+        {
+            SarcData sarcData = new SarcData()
+            {
+                HashOnly = false,
+                byteOrder = byteOrder,
+                Files = new Dictionary<string, byte[]>()
+            };
+            for (int extraFilesIndex = 0; extraFilesIndex < 3; extraFilesIndex++)
+            {
+                foreach (KeyValuePair<string, dynamic> keyValuePair in extraFiles[extraFilesIndex])
+                    SaveExtraFile(sarcData, keyValuePair);
+            }
+
+            if(HasCategoryMap)
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    WriteStageByml(stream, MAP_PREFIX, true);
+
+                    sarcData.Files.Add(LevelName + "Map.byml", stream.ToArray());
+                }
+            }
+
+            if (HasCategoryDesign)
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    WriteStageByml(stream, DESIGN_PREFIX, true);
+
+                    sarcData.Files.Add(LevelName + "Design.byml", stream.ToArray());
+                }
+            }
+
+            if (HasCategorySound)
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    WriteStageByml(stream, SOUND_PREFIX, true);
+
+                    sarcData.Files.Add(LevelName + "Sound.byml", stream.ToArray());
+                }
+            }
+
+            File.WriteAllBytes(Path.Combine(Directory, LevelName + COMBINED_SUFFIX), YAZ0.Compress(SARC.PackN(sarcData).Item2));
+
+            return true;
+        }
+
+        private void WriteStageByml(MemoryStream stream, string prefix, bool saveZonePlacements)
+        {
+            ByamlNodeWriter writer = new ByamlNodeWriter(stream, false, byteOrder, 1);
+
+            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(ObjLists);
+
+            ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
+
+            HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
+
+            rootNode.AddDynamicValue("FilePath", "N/A");
+
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
+            {
+                if (!keyValuePair.Key.StartsWith(prefix)) //ObjList is not part of the Category
+                    continue;
+
+                ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode(keyValuePair.Value);
+
+                foreach (I3dWorldObject obj in keyValuePair.Value)
+                {
+                    if (!alreadyWrittenObjs.Contains(obj))
+                    {
+                        ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
+                        obj.Save(alreadyWrittenObjs, writer, objNode, false);
+                        categoryNode.AddDictionaryNodeRef(objNode);
+                        objsNode.AddDictionaryNodeRef(objNode);
+                    }
+                    else
+                    {
+                        categoryNode.AddDictionaryRef(obj);
+                        objsNode.AddDictionaryRef(obj);
+                    }
+                }
+                rootNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), categoryNode, true);
+            }
+
+            rootNode.AddArrayNodeRef("Objs", objsNode);
+
+            ByamlNodeWriter.ArrayNode zonesNode = writer.CreateArrayNode();
+
+            if (saveZonePlacements)
+            {
+                int zoneID = 0;
+
+                foreach (var zonePlacement in ZonePlacements)
+                {
+                    ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode();
+
+                    objNode.AddDynamicValue("Comment", null);
+                    objNode.AddDynamicValue("Id", "zone" + zoneID++);
+                    objNode.AddDynamicValue("IsLinkDest", false);
+                    objNode.AddDynamicValue("LayerConfigName", "Common");
+
+                    {
+                        objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
+                    }
+
+                    objNode.AddDynamicValue("ModelName", null);
+                    objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(zonePlacement.Rotation), true);
+                    objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(zonePlacement.Scale), true);
+                    objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(zonePlacement.Position, 100f), true);
+
+                    objNode.AddDynamicValue("UnitConfig", new Dictionary<string, dynamic>
+                    {
+                        ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
+                        ["DisplayRotate"] = LevelIO.Vector3ToDict(Vector3.Zero),
+                        ["DisplayScale"] = LevelIO.Vector3ToDict(Vector3.One),
+                        ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero),
+                        ["GenerateCategory"] = "",
+                        ["ParameterConfigName"] = "Zone",
+                        ["PlacementTargetFile"] = "Map"
+                    }, true);
+
+                    objNode.AddDynamicValue("UnitConfigName", zonePlacement.Zone.LevelName);
+
+                    zonesNode.AddDictionaryNodeRef(objNode, true);
+                }
+            }
+
+            rootNode.AddArrayNodeRef("ZoneList", zonesNode);
+
+            writer.Write(rootNode, true);
         }
 
         public void Unload()

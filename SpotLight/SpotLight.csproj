@@ -73,6 +73,9 @@
     <ApplicationIcon>SpotLightIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BfresLibrary">
+      <HintPath>..\DLLs\BfresLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.WindowsAPICodePack-Core.1.1.0.0\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
     </Reference>
@@ -89,14 +92,14 @@
       <HintPath>..\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
-    <Reference Include="Syroot.BinaryData, Version=5.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Syroot.BinaryData.5.1.0\lib\net452\Syroot.BinaryData.dll</HintPath>
+    <Reference Include="Syroot.BinaryData, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syroot.IO.BinaryData.2.0.1\lib\net45\Syroot.BinaryData.dll</HintPath>
     </Reference>
-    <Reference Include="Syroot.Maths, Version=1.5.1.0, Culture=neutral, PublicKeyToken=e866065c85b083b5, processorArchitecture=MSIL">
-      <HintPath>..\packages\Syroot.Maths.1.5.1\lib\net45\Syroot.Maths.dll</HintPath>
+    <Reference Include="Syroot.Maths, Version=1.5.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syroot.Maths.1.5.3\lib\net46\Syroot.Maths.dll</HintPath>
     </Reference>
-    <Reference Include="Syroot.NintenTools.Bfres, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Syroot.NintenTools.Bfres.1.5.0\lib\net46\Syroot.NintenTools.Bfres.dll</HintPath>
+    <Reference Include="Syroot.NintenTools.NSW.Bntx">
+      <HintPath>..\DLLs\Syroot.NintenTools.NSW.Bntx.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

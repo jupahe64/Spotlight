@@ -390,7 +390,7 @@ namespace SpotLight
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter =
-                string.Format("{0}|*StageMap1.szs|{0}|*Map1.szs|{1}|*Design1.szs|{2}|*Sound1.szs|{3}|*Map1.szs;*Design1.szs;*Sound1.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3]),
+                string.Format("{0}|*StageMap1.szs|{0}|*Map1.szs|{1}|*Design1.szs|{2}|*Sound1.szs|{3}|*.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3]),
                 InitialDirectory = currentScene?.EditZone.Directory ?? (Program.ProjectPath.Equals("") ? Program.BaseStageDataPath : System.IO.Path.Combine(Program.ProjectPath, "StageData")) };
 
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;

@@ -30,8 +30,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Syroot.BinaryData" Version="5.1.0" />
-    <PackageReference Include="Syroot.Maths" Version="1.5.1" />
+    <PackageReference Include="Syroot.IO.BinaryData" Version="2.0.1" />
+    <PackageReference Include="Syroot.Maths" Version="1.5.3" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BYAML;
+using Syroot.BinaryData;
 using SZS;
 
 namespace SpotLight
@@ -208,7 +209,7 @@ namespace SpotLight
             BymlFileData Input;
             SarcData Data = SARC.UnpackRamN(YAZ0.Decompress(input));
             if (Data.Files.ContainsKey("StageList.byml"))
-                Input = ByamlFile.LoadN(new MemoryStream(Data.Files["StageList.byml"]), true, Syroot.BinaryData.Endian.Big);
+                Input = ByamlFile.LoadN(new MemoryStream(Data.Files["StageList.byml"]), true, ByteOrder.BigEndian);
             else
                 throw new Exception("Failed to find the StageList");
 
@@ -248,7 +249,7 @@ namespace SpotLight
 
             //FinalRoot.Add("WorldList",worlds);
             //Output.RootNode = FinalRoot;
-            SarcData Data = new SarcData() { endianness = Syroot.BinaryData.Endian.Big, Files = new Dictionary<string, byte[]>() };
+            SarcData Data = new SarcData() { byteOrder = ByteOrder.BigEndian, Files = new Dictionary<string, byte[]>() };
             
             Data.Files.Add("StageList.byml", tmp);
             Tuple<int, byte[]> x = SARC.PackN(Data);

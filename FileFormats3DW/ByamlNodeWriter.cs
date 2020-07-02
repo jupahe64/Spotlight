@@ -13,7 +13,7 @@ namespace BYAML
 {
     public class ByamlNodeWriter : ByamlWriter
     {
-        public ByamlNodeWriter(Stream stream, bool supportPaths, Endian byteOrder, ushort version) 
+        public ByamlNodeWriter(Stream stream, bool supportPaths, ByteOrder byteOrder, ushort version) 
             : base(stream, supportPaths, byteOrder, version)
         {
             
@@ -149,7 +149,7 @@ namespace BYAML
                 }
 
                 _byamlNodeWriter._dictionaries.Add(_valueRepresentation, new ByamlDict(_byamlNodeWriter._valStackPointer, entries));
-                _byamlNodeWriter._valStackPointer += (uint)(4 + entries.Length * 8);
+                _byamlNodeWriter._valStackPointer += 4 + entries.Length * 8;
 
                 return _valueRepresentation;
             }
@@ -269,7 +269,7 @@ namespace BYAML
                 }
 
                 _byamlNodeWriter._arrays.Add(_valueRepresentation, new ByamlArr(_byamlNodeWriter._valStackPointer, entries));
-                _byamlNodeWriter._valStackPointer += (uint)(4 + (Math.Ceiling(entries.Length / 4f) + entries.Length) * 4);
+                _byamlNodeWriter._valStackPointer += (int)(4 + (Math.Ceiling(entries.Length / 4f) + entries.Length) * 4);
 
                 return _valueRepresentation;
             }

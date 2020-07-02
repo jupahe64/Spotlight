@@ -30,34 +30,34 @@ namespace BYAML
                 if (_iterator._alreadyReadNodes.ContainsKey((uint)Position))
                     return _iterator._alreadyReadNodes[(uint)Position];
 
-                _iterator._binaryStream.Position = Position;
-                return _iterator.ReadNodeValue(_iterator._binaryStream, NodeType);
+                _iterator._reader.Position = Position;
+                return _iterator.ReadNodeValue(_iterator._reader, NodeType);
             }
 
             public IEnumerable<DictionaryEntry> IterDictionary()
             {
-                _iterator._binaryStream.Position = Position;
-                uint lengthAndType = _iterator._binaryStream.ReadUInt32();
+                _iterator._reader.Position = Position;
+                uint lengthAndType = _iterator._reader.ReadUInt32();
 
                 if (NodeType != ByamlNodeType.Dictionary)
                     throw new Exception("This entry is not a Dictionary");
 
                 foreach ((string, ByamlNodeType, long) entry in _iterator.IterDictionaryNode(
-                        _iterator._binaryStream, (int)_iterator.Get3LsbBytes(lengthAndType))
+                        _iterator._reader, (int)_iterator.Get3LsbBytes(lengthAndType))
                     )
                     yield return new DictionaryEntry(_iterator, entry);
             }
 
             public IEnumerable<ArrayEntry> IterArray()
             {
-                _iterator._binaryStream.Position = Position;
-                uint length = _iterator._binaryStream.ReadUInt32();
+                _iterator._reader.Position = Position;
+                uint length = _iterator._reader.ReadUInt32();
 
                 if (NodeType != ByamlNodeType.Array)
                     throw new Exception("This entry is not an Array");
 
                 foreach ((int, ByamlNodeType, long) entry in _iterator.IterArrayNode(
-                        _iterator._binaryStream, (int)_iterator.Get3LsbBytes(length))
+                        _iterator._reader, (int)_iterator.Get3LsbBytes(length))
                     )
                     yield return new ArrayEntry(_iterator, entry);
             }
@@ -81,34 +81,34 @@ namespace BYAML
 
             public dynamic Parse()
             {
-                _iterator._binaryStream.Position = Position;
-                return _iterator.ReadNodeValue(_iterator._binaryStream, NodeType);
+                _iterator._reader.Position = Position;
+                return _iterator.ReadNodeValue(_iterator._reader, NodeType);
             }
 
             public IEnumerable<DictionaryEntry> IterDictionary()
             {
-                _iterator._binaryStream.Position = Position;
-                uint length = _iterator._binaryStream.ReadUInt32();
+                _iterator._reader.Position = Position;
+                uint length = _iterator._reader.ReadUInt32();
 
                 if (NodeType != ByamlNodeType.Dictionary)
                     throw new Exception("This entry is not a Dictionary");
 
                 foreach ((string, ByamlNodeType, long) entry in _iterator.IterDictionaryNode(
-                        _iterator._binaryStream, (int)_iterator.Get3LsbBytes(length))
+                        _iterator._reader, (int)_iterator.Get3LsbBytes(length))
                     )
                     yield return new DictionaryEntry(_iterator, entry);
             }
 
             public IEnumerable<ArrayEntry> IterArray()
             {
-                _iterator._binaryStream.Position = Position;
-                uint length = _iterator._binaryStream.ReadUInt32();
+                _iterator._reader.Position = Position;
+                uint length = _iterator._reader.ReadUInt32();
 
                 if (NodeType != ByamlNodeType.Array)
                     throw new Exception("This entry is not an Array");
 
                 foreach ((int, ByamlNodeType, long) entry in _iterator.IterArrayNode(
-                        _iterator._binaryStream, (int)_iterator.Get3LsbBytes(length))
+                        _iterator._reader, (int)_iterator.Get3LsbBytes(length))
                     )
                     yield return new ArrayEntry(_iterator, entry);
             }
@@ -116,10 +116,10 @@ namespace BYAML
         
         bool _isClosed = false;
 
-        public ByamlIterator(Stream stream, Endian byteOrder = Endian.Little, ushort version = 3, bool fastLoad = true)
+        public ByamlIterator(Stream stream, ByteOrder byteOrder = ByteOrder.LittleEndian, ushort version = 3, bool fastLoad = true)
             : base(stream, false, byteOrder, version, fastLoad)
         {
-            _binaryStream = new BinaryStream(stream, ByteConverter.GetConverter(byteOrder));
+            _reader = new BinaryDataReader(stream);
         }
 
         public IEnumerable<DictionaryEntry> IterRootDictionary()
@@ -127,18 +127,18 @@ namespace BYAML
             if (_isClosed)
                 throw new Exception("Can't iterate more than once");
 
-            using (_binaryStream)
+            using (_reader)
             {
 
                 if (!TryStartLoading())
                     yield break;
 
-                uint lengthAndType = _binaryStream.ReadUInt32();
+                uint lengthAndType = _reader.ReadUInt32();
 
                 if ((ByamlNodeType)Get1MsbByte(lengthAndType) != ByamlNodeType.Dictionary)
                     throw new Exception("Root is not a Dictionary");
 
-                foreach ((string, ByamlNodeType, long) entry in IterDictionaryNode(_binaryStream, (int)Get3LsbBytes(lengthAndType)))
+                foreach ((string, ByamlNodeType, long) entry in IterDictionaryNode(_reader, (int)Get3LsbBytes(lengthAndType)))
                     yield return new DictionaryEntry(this, entry);
             }
         }
@@ -148,17 +148,17 @@ namespace BYAML
             if (_isClosed)
                 throw new Exception("Can't iterate more than once");
 
-            using (_binaryStream)
+            using (_reader)
             {
                 if (!TryStartLoading())
                     yield break;
 
-                uint lengthAndType = _binaryStream.ReadUInt32();
+                uint lengthAndType = _reader.ReadUInt32();
 
                 if ((ByamlNodeType)Get1MsbByte(lengthAndType) != ByamlNodeType.Array)
                     throw new Exception("Root is not an Array");
 
-                foreach ((int, ByamlNodeType, long) entry in IterArrayNode(_binaryStream, (int)Get3LsbBytes(lengthAndType)))
+                foreach ((int, ByamlNodeType, long) entry in IterArrayNode(_reader, (int)Get3LsbBytes(lengthAndType)))
                     yield return new ArrayEntry(this, entry);
 
                 _isClosed = true;
@@ -166,43 +166,43 @@ namespace BYAML
         }
 
 
-        private IEnumerable<(int, ByamlNodeType, long)> IterArrayNode(BinaryStream binaryStream, int length, uint offset = 0)
+        private IEnumerable<(int, ByamlNodeType, long)> IterArrayNode(BinaryDataReader reader, int length, uint offset = 0)
         {
             // Read the element types of the array.
-            byte[] nodeTypes = binaryStream.ReadBytes(length);
+            byte[] nodeTypes = reader.ReadBytes(length);
             // Read the elements, which begin after a padding to the next 4 bytes.
-            binaryStream.Align(4);
+            reader.Align(4);
             for (int i = 0; i < length; i++)
             {
-                long pos = binaryStream.Position;
+                long pos = reader.Position;
                 ByamlNodeType nodeType = (ByamlNodeType)nodeTypes[i];
                 if (IsReferenceType(nodeType))
-                    yield return (i, nodeType, binaryStream.ReadUInt32());
+                    yield return (i, nodeType, reader.ReadUInt32());
                 else
                     yield return (i, nodeType, pos);
 
-                binaryStream.Position = pos + 4;
+                reader.Position = pos + 4;
             }
         }
 
-        private IEnumerable<(string, ByamlNodeType, long)> IterDictionaryNode(BinaryStream binaryStream, int length, uint offset = 0)
+        private IEnumerable<(string, ByamlNodeType, long)> IterDictionaryNode(BinaryDataReader reader, int length, uint offset = 0)
         {
             // Read the elements of the dictionary.
             for (int i = 0; i < length; i++)
             {
-                uint indexAndType = binaryStream.ReadUInt32();
+                uint indexAndType = reader.ReadUInt32();
                 int nodeNameIndex = (int)Get3MsbBytes(indexAndType);
                 ByamlNodeType nodeType = (ByamlNodeType)Get1LsbByte(indexAndType);
                 string nodeName = _nameArray[nodeNameIndex];
 
-                long pos = binaryStream.Position;
+                long pos = reader.Position;
 
                 if (IsReferenceType(nodeType))
-                    yield return (nodeName, nodeType, binaryStream.ReadUInt32());
+                    yield return (nodeName, nodeType, reader.ReadUInt32());
                 else
                     yield return (nodeName, nodeType, pos);
 
-                binaryStream.Position = pos + 4;
+                reader.Position = pos + 4;
             }
         }
     }

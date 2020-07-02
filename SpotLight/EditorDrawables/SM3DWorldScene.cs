@@ -5,7 +5,6 @@ using GL_EditorFramework.Interfaces;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using SpotLight.Level;
-using Syroot.BinaryData;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -1138,7 +1137,7 @@ namespace SpotLight.EditorDrawables
                     "Level Files (Map)|*Map1.szs|" +
                     "Level Files (Design)|*Design1.szs|" +
                     "Level Files (Sound)|*Sound1.szs|" +
-                    "All Level Files|*Map1.szs;*Design1.szs;*Sound1.szs",
+                    "All Level Files|*.szs",
                     InitialDirectory = currentDirectory,
                     FileName = _zone.LevelFileName
                 };

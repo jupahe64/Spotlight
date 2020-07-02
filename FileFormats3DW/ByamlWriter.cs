@@ -13,9 +13,9 @@ namespace BYAML
     {
         protected ushort _version;
         protected bool _supportPaths;
-        protected Endian _byteOrder;
+        protected ByteOrder _byteOrder;
         
-        protected BinaryStream _binaryStream;
+        protected BinaryDataWriter _writer;
 
         protected string[] _nameArray;
         protected string[] _stringArray;
@@ -26,16 +26,19 @@ namespace BYAML
         protected List<List<ByamlPathPoint>> _pathArray = new List<List<ByamlPathPoint>>();
         protected Dictionary<object, ByamlArr> _arrays = new Dictionary<object, ByamlArr>();
         protected Dictionary<object, ByamlDict> _dictionaries = new Dictionary<object, ByamlDict>();
-        protected Dictionary<dynamic, uint> _eightByteValues = new Dictionary<dynamic, uint>();
+        protected Dictionary<dynamic, int> _eightByteValues = new Dictionary<dynamic, int>();
         
-        protected uint _valStackPointer = 0;
+        protected int _valStackPointer = 0;
 
-        public ByamlWriter(Stream stream, bool supportPaths, Endian byteOrder, ushort version)
+        public ByamlWriter(Stream stream, bool supportPaths, ByteOrder byteOrder, ushort version)
         {
             _version = version;
             _supportPaths = supportPaths;
             _byteOrder = byteOrder;
-            _binaryStream = new BinaryStream(stream, ByteConverter.GetConverter(_byteOrder), Encoding.UTF8, leaveOpen: true);
+            _writer = new BinaryDataWriter(stream, Encoding.UTF8, true)
+            {
+                ByteOrder = _byteOrder
+            };
         }
 
         public void Write(object root, bool fastWrite = false)
@@ -60,29 +63,29 @@ namespace BYAML
 
         protected void WriteContent(object rootReferenceKey)
         {
-            using (_binaryStream)
+            using (_writer)
             {
                 // Write the header, specifying magic bytes, version and main node offsets.
-                _binaryStream.Write(BYAML_MAGIC);
-                _binaryStream.Write(_version);
-                Offset nameArrayOffset = _binaryStream.ReserveOffset();
-                Offset stringArrayOffset = _binaryStream.ReserveOffset();
-                Offset pathArrayOffset = _supportPaths ? _binaryStream.ReserveOffset() : null;
-                Offset rootOffset = _binaryStream.ReserveOffset();
+                _writer.Write(BYAML_MAGIC);
+                _writer.Write(_version);
+                Offset nameArrayOffset = _writer.ReserveOffset();
+                Offset stringArrayOffset = _writer.ReserveOffset();
+                Offset pathArrayOffset = _supportPaths ? _writer.ReserveOffset() : null;
+                Offset rootOffset = _writer.ReserveOffset();
 
                 // Write the main nodes.
-                _binaryStream.Align(4);
+                _writer.Align(4);
                 nameArrayOffset.Satisfy();
-                WriteStringArrayNode(_binaryStream, _nameArray);
+                WriteStringArrayNode(_writer, _nameArray);
                 if (_stringArray.Length == 0)
                 {
                     stringArrayOffset.Satisfy(0);
                 }
                 else
                 {
-                    _binaryStream.Align(4);
+                    _writer.Align(4);
                     stringArrayOffset.Satisfy();
-                    WriteStringArrayNode(_binaryStream, _stringArray);
+                    WriteStringArrayNode(_writer, _stringArray);
                 }
 
                 // Include a path array offset if requested.
@@ -94,36 +97,36 @@ namespace BYAML
                     }
                     else
                     {
-                        _binaryStream.Align(4);
+                        _writer.Align(4);
                         pathArrayOffset.Satisfy();
-                        WritePathArrayNode(_binaryStream, _pathArray);
+                        WritePathArrayNode(_writer, _pathArray);
                     }
                 }
 
-                _binaryStream.Align(4);
+                _writer.Align(4);
 
                 //write value stack (Dictionary, Array, long, uint, double)
-                uint valStackPos = (uint)_binaryStream.Position;
+                int valStackPos = (int)_writer.BaseStream.Position;
 
                 //write all dictionaries
                 foreach (KeyValuePair<object, ByamlDict> keyValuePair in _dictionaries)
                 {
-                    _binaryStream.Seek(valStackPos + keyValuePair.Value.offset, SeekOrigin.Begin);
+                    _writer.Seek(valStackPos + keyValuePair.Value.offset, SeekOrigin.Begin);
 
                     if (keyValuePair.Key == rootReferenceKey)
                         rootOffset.Satisfy();
 
-                    if (_byteOrder == Endian.Big)
-                        _binaryStream.Write((uint)ByamlNodeType.Dictionary << 24 | (uint)keyValuePair.Value.entries.Length);
+                    if (_byteOrder == ByteOrder.BigEndian)
+                        _writer.Write((uint)ByamlNodeType.Dictionary << 24 | (uint)keyValuePair.Value.entries.Length);
                     else
-                        _binaryStream.Write((uint)ByamlNodeType.Dictionary | (uint)keyValuePair.Value.entries.Length << 8);
+                        _writer.Write((uint)ByamlNodeType.Dictionary | (uint)keyValuePair.Value.entries.Length << 8);
 
                     foreach ((string key, Entry entry) in keyValuePair.Value.entries)
                     {
-                        if (_byteOrder == Endian.Big)
-                            _binaryStream.Write(Array.IndexOf(_nameArray, key) << 8 | (byte)entry.type);
+                        if (_byteOrder == ByteOrder.BigEndian)
+                            _writer.Write(Array.IndexOf(_nameArray, key) << 8 | (byte)entry.type);
                         else
-                            _binaryStream.Write(Array.IndexOf(_nameArray, key) | (byte)entry.type << 24);
+                            _writer.Write(Array.IndexOf(_nameArray, key) | (byte)entry.type << 24);
 
                         WriteValue(entry);
                     }
@@ -132,21 +135,21 @@ namespace BYAML
                 //write all arrays
                 foreach (KeyValuePair<object, ByamlArr> keyValuePair in _arrays)
                 {
-                    _binaryStream.Seek(valStackPos + keyValuePair.Value.offset, SeekOrigin.Begin);
+                    _writer.Seek(valStackPos + keyValuePair.Value.offset, SeekOrigin.Begin);
 
                     if (keyValuePair.Key == rootReferenceKey)
                         rootOffset.Satisfy();
 
-                    if (_byteOrder == Endian.Big)
-                        _binaryStream.Write((uint)ByamlNodeType.Array << 24 | (uint)keyValuePair.Value.entries.Length);
+                    if (_byteOrder == ByteOrder.BigEndian)
+                        _writer.Write((uint)ByamlNodeType.Array << 24 | (uint)keyValuePair.Value.entries.Length);
                     else
-                        _binaryStream.Write((uint)ByamlNodeType.Array | (uint)keyValuePair.Value.entries.Length << 8);
+                        _writer.Write((uint)ByamlNodeType.Array | (uint)keyValuePair.Value.entries.Length << 8);
 
 
                     foreach (Entry entry in keyValuePair.Value.entries)
-                        _binaryStream.Write((byte)entry.type);
+                        _writer.Write((byte)entry.type);
 
-                    _binaryStream.Align(4);
+                    _writer.Align(4);
 
                     foreach (Entry entry in keyValuePair.Value.entries)
                     {
@@ -157,8 +160,8 @@ namespace BYAML
                 //write all 8 byte values
                 foreach (var keyValuePair in _eightByteValues)
                 {
-                    _binaryStream.Seek(valStackPos + keyValuePair.Value, SeekOrigin.Begin);
-                    _binaryStream.Write(keyValuePair.Key);
+                    _writer.Seek(valStackPos + keyValuePair.Value, SeekOrigin.Begin);
+                    _writer.Write(keyValuePair.Key);
                 }
 
                 void WriteValue(Entry entry)
@@ -167,32 +170,32 @@ namespace BYAML
                     switch (entry.type)
                     {
                         case ByamlNodeType.StringIndex:
-                            _binaryStream.Write((uint)Array.IndexOf(_stringArray, entry.value));
+                            _writer.Write((uint)Array.IndexOf(_stringArray, entry.value));
                             break;
                         case ByamlNodeType.PathIndex:
-                            _binaryStream.Write(_pathArray.IndexOf(entry.value));
+                            _writer.Write(_pathArray.IndexOf(entry.value));
                             break;
                         case ByamlNodeType.Dictionary:
-                            _binaryStream.Write(valStackPos + _dictionaries[(object)entry.value].offset);
+                            _writer.Write(valStackPos + _dictionaries[(object)entry.value].offset);
                             break;
                         case ByamlNodeType.Array:
-                            _binaryStream.Write(valStackPos + _arrays[(object)entry.value].offset);
+                            _writer.Write(valStackPos + _arrays[(object)entry.value].offset);
                             break;
                         case ByamlNodeType.Boolean:
-                            _binaryStream.Write(entry.value ? 1 : 0);
+                            _writer.Write(entry.value ? 1 : 0);
                             break;
                         case ByamlNodeType.Integer:
                         case ByamlNodeType.Float:
                         case ByamlNodeType.UInteger:
-                            _binaryStream.Write(entry.value);
+                            _writer.Write(entry.value);
                             break;
                         case ByamlNodeType.Double:
                         case ByamlNodeType.ULong:
                         case ByamlNodeType.Long:
-                            _binaryStream.Write(valStackPos + _eightByteValues[entry.value]);
+                            _writer.Write(valStackPos + _eightByteValues[entry.value]);
                             return;
                         case ByamlNodeType.Null:
-                            _binaryStream.Write(0);
+                            _writer.Write(0);
                             break;
                     }
                 }
@@ -218,10 +221,10 @@ namespace BYAML
 
         protected struct ByamlDict
         {
-            public uint offset;
+            public int offset;
             public (string, Entry)[] entries;
 
-            public ByamlDict(uint offset, (string, Entry)[] entries)
+            public ByamlDict(int offset, (string, Entry)[] entries)
             {
                 this.offset = offset;
                 this.entries = entries;
@@ -230,10 +233,10 @@ namespace BYAML
 
         protected struct ByamlArr
         {
-            public uint offset;
+            public int offset;
             public Entry[] entries;
 
-            public ByamlArr(uint offset, Entry[] entries)
+            public ByamlArr(int offset, Entry[] entries)
             {
                 this.offset = offset;
                 this.entries = entries;
@@ -299,7 +302,7 @@ namespace BYAML
 
                 //Submit
                 _dictionaries.Add(value, new ByamlDict(_valStackPointer, entries));
-                _valStackPointer += (uint)(4 + entries.Length * 8);
+                _valStackPointer += 4 + entries.Length * 8;
             }
             else if (type == ByamlNodeType.Array)
             {
@@ -354,7 +357,7 @@ namespace BYAML
 
                 //Submit
                 _arrays.Add(value, new ByamlArr(_valStackPointer, entries));
-                _valStackPointer += (uint)(4 + (Math.Ceiling(entries.Length / 4f) + entries.Length) * 4);
+                _valStackPointer += (int)(4 + (Math.Ceiling(entries.Length / 4f) + entries.Length) * 4);
             }
             else if (type == ByamlNodeType.StringIndex)
             {
@@ -376,71 +379,71 @@ namespace BYAML
             return new Entry(type, value);
         }
 
-        private void WriteStringArrayNode(BinaryStream _binaryStream, IEnumerable<string> node)
+        private void WriteStringArrayNode(BinaryDataWriter _writer, IEnumerable<string> node)
         {
-            uint NodeStartPos = (uint)_binaryStream.BaseStream.Position;
+            uint NodeStartPos = (uint)_writer.BaseStream.Position;
 
-            if (_byteOrder == Endian.Big)
-                _binaryStream.Write((uint)ByamlNodeType.StringArray << 24 | (uint)Enumerable.Count(node));
+            if (_byteOrder == ByteOrder.BigEndian)
+                _writer.Write((uint)ByamlNodeType.StringArray << 24 | (uint)Enumerable.Count(node));
             else
-                _binaryStream.Write((uint)ByamlNodeType.StringArray | (uint)Enumerable.Count(node) << 8);
+                _writer.Write((uint)ByamlNodeType.StringArray | (uint)Enumerable.Count(node) << 8);
 
-            for (int i = 0; i <= node.Count(); i++) _binaryStream.Write(new byte[4]); //Space for offsets
+            for (int i = 0; i <= node.Count(); i++) _writer.Write(new byte[4]); //Space for offsets
             List<uint> offsets = new List<uint>();
             foreach (string str in node)
             {
-                offsets.Add((uint)_binaryStream.BaseStream.Position - NodeStartPos);
-                _binaryStream.Write(str, StringCoding.ZeroTerminated);
+                offsets.Add((uint)_writer.BaseStream.Position - NodeStartPos);
+                _writer.Write(str, BinaryStringFormat.ZeroTerminated);
             }
-            offsets.Add((uint)_binaryStream.BaseStream.Position - NodeStartPos);
-            _binaryStream.Align(4);
-            uint backHere = (uint)_binaryStream.BaseStream.Position;
-            _binaryStream.BaseStream.Position = NodeStartPos + 4;
-            foreach (uint off in offsets) _binaryStream.Write(off);
-            _binaryStream.BaseStream.Position = backHere;
+            offsets.Add((uint)_writer.BaseStream.Position - NodeStartPos);
+            _writer.Align(4);
+            uint backHere = (uint)_writer.BaseStream.Position;
+            _writer.BaseStream.Position = NodeStartPos + 4;
+            foreach (uint off in offsets) _writer.Write(off);
+            _writer.BaseStream.Position = backHere;
         }
 
 
-        private void WritePathArrayNode(BinaryStream _binaryStream, IEnumerable<List<ByamlPathPoint>> node)
+        private void WritePathArrayNode(BinaryDataWriter _writer, IEnumerable<List<ByamlPathPoint>> node)
         {
-            if (_byteOrder == Endian.Big)
-                _binaryStream.Write((uint)ByamlNodeType.StringArray << 24 | (uint)Enumerable.Count(node));
+            if (_byteOrder == ByteOrder.BigEndian)
+                _writer.Write((uint)ByamlNodeType.StringArray << 24 | (uint)Enumerable.Count(node));
             else
-                _binaryStream.Write((uint)ByamlNodeType.StringArray | (uint)Enumerable.Count(node) << 8);
+                _writer.Write((uint)ByamlNodeType.StringArray | (uint)Enumerable.Count(node) << 8);
 
             // Write the offsets to the paths, where the last one points to the end of the last path.
             long offset = 4 + 4 * (node.Count() + 1); // Relative to node start + all uint32 offsets.
             foreach (List<ByamlPathPoint> path in node)
             {
-                _binaryStream.Write((uint)offset);
+                _writer.Write((uint)offset);
                 offset += path.Count * 28; // 28 bytes are required for a single point.
             }
-            _binaryStream.Write((uint)offset);
+            _writer.Write((uint)offset);
 
             // Write the paths.
             foreach (List<ByamlPathPoint> path in node)
             {
-                WritePathNode(_binaryStream, path);
+                WritePathNode(_writer, path);
             }
         }
 
-        private void WritePathNode(BinaryStream _binaryStream, List<ByamlPathPoint> node)
+        private void WritePathNode(BinaryDataWriter _writer, List<ByamlPathPoint> node)
         {
             foreach (ByamlPathPoint point in node)
             {
-                WritePathPoint(_binaryStream, point);
+                WritePathPoint(_writer, point);
             }
         }
 
-        private void WritePathPoint(BinaryStream _binaryStream, ByamlPathPoint point)
+        private void WritePathPoint(BinaryDataWriter _writer, ByamlPathPoint point)
         {
-            _binaryStream.Write(point.Position[0]);
-            _binaryStream.Write(point.Position[1]);
-            _binaryStream.Write(point.Position[2]);
-            _binaryStream.Write(point.Normal[0]);
-            _binaryStream.Write(point.Normal[1]);
-            _binaryStream.Write(point.Normal[2]);
-            _binaryStream.Write(point.Unknown);
+            _writer.Write(point.Position[0]);
+            _writer.Write(point.Position[1]);
+            _writer.Write(point.Position[2]);
+            _writer.Write(point.Normal[0]);
+            _writer.Write(point.Normal[1]);
+            _writer.Write(point.Normal[2]);
+            _writer.Write(point.Unknown);
         }
 
         // ---- Helper methods ----

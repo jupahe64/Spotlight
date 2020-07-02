@@ -6,6 +6,8 @@ using GL_EditorFramework.Interfaces;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using SpotLight.Level;
+using SpotLight.ObjectParamDatabase;
+using Syroot.BinaryData;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -361,7 +363,7 @@ namespace SpotLight.EditorDrawables
 
             if (!Selected)
             {
-                if ((!SpotLight.Properties.Settings.Default.DrawAreas && ClassName.Contains("Area")) ||
+                if ((!SpotLight.Properties.Settings.Default.DrawAreas && ModelName.StartsWith("Area")) ||
                     (!SpotLight.Properties.Settings.Default.DrawSkyBoxes && ClassName == "SkyProjection"))
                 {
                     control.SkipPickingColors(1);
@@ -459,7 +461,7 @@ namespace SpotLight.EditorDrawables
                 {
                     if (objArc.Files.ContainsKey("InitModel.byml"))
                     {
-                        dynamic initModel = ByamlFile.FastLoadN(new MemoryStream(objArc.Files["InitModel.byml"]), false, Syroot.BinaryData.Endian.Big).RootNode;
+                        dynamic initModel = ByamlFile.FastLoadN(new MemoryStream(objArc.Files["InitModel.byml"]), false, ByteOrder.BigEndian).RootNode;
 
                         if (initModel is Dictionary<string, dynamic>)
                         {

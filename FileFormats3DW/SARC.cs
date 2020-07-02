@@ -9,7 +9,7 @@ namespace SZS
     public class SarcData
     {
         public Dictionary<string, byte[]> Files;
-        public Endian endianness;
+        public ByteOrder byteOrder;
         public bool HashOnly;
     }
 
@@ -127,15 +127,16 @@ namespace SZS
             int align = _align >= 0 ? _align : (int)GuessAlignment(data.Files);
 
             MemoryStream o = new MemoryStream();
-            BinaryStream bs = new BinaryStream(o, ByteConverter.GetConverter(data.endianness), leaveOpen: false);
-            bs.Write("SARC", StringCoding.Raw);
+            BinaryDataWriter bs = new BinaryDataWriter(o, false);
+            bs.ByteOrder = data.byteOrder;
+            bs.Write("SARC", BinaryStringFormat.NoPrefixOrTermination);
             bs.Write((UInt16)0x14); // Chunk length
             bs.Write((UInt16)0xFEFF); // BOM
             bs.Write((UInt32)0x00); //filesize update later
             bs.Write((UInt32)0x00); //Beginning of data
             bs.Write((UInt16)0x100);
             bs.Write((UInt16)0x00);
-            bs.Write("SFAT", StringCoding.Raw);
+            bs.Write("SFAT", BinaryStringFormat.NoPrefixOrTermination);
             bs.Write((UInt16)0xc);
             bs.Write((UInt16)data.Files.Keys.Count);
             bs.Write((UInt32)0x00000065);
@@ -154,14 +155,14 @@ namespace SZS
                 bs.Write((UInt32)0);
                 bs.Write((UInt32)0);
             }
-            bs.Write("SFNT", StringCoding.Raw);
+            bs.Write("SFNT", BinaryStringFormat.NoPrefixOrTermination);
             bs.Write((UInt16)0x8);
             bs.Write((UInt16)0);
             List<uint> StringOffsets = new List<uint>();
             foreach (string k in Keys)
             {
                 StringOffsets.Add((uint)bs.BaseStream.Position);
-                bs.Write(k, StringCoding.ZeroTerminated);
+                bs.Write(k, BinaryStringFormat.ZeroTerminated);
                 bs.Align(4);
             }
             bs.Align(0x1000); //TODO: check if works in odyssey
@@ -195,10 +196,11 @@ namespace SZS
         public static SarcData UnpackRamN(Stream src)
         {
             Dictionary<string, byte[]> res = new Dictionary<string, byte[]>();
-            BinaryStream bs = new BinaryStream(src, ByteConverter.Little, leaveOpen: false);
+            BinaryDataReader bs = new BinaryDataReader(src, leaveOpen: false);
+            bs.ByteOrder = ByteOrder.LittleEndian;
             bs.BaseStream.Position = 6;
             if (bs.ReadUInt16() == 0xFFFE)
-                bs.ByteConverter = ByteConverter.Big;
+                bs.ByteOrder = ByteOrder.BigEndian;
             bs.BaseStream.Position = 0;
             if (bs.ReadString(4) != "SARC")
                 throw new Exception("Wrong magic");
@@ -238,12 +240,12 @@ namespace SZS
                     res.Add(sfat.nodes[m].hash.ToString("X8") + GuessFileExtension(temp), temp);
             }
 
-            return new SarcData() { endianness = bs.ByteConverter.Endian, HashOnly = HashOnly, Files = res };
+            return new SarcData() { byteOrder = bs.ByteOrder, HashOnly = HashOnly, Files = res };
         }
 
         [Obsolete("This has been kept for compatibility, use PackN instead")]
-        public static byte[] Pack(Dictionary<string, byte[]> files, int align = -1, Endian endianness = Endian.Little) =>
-            PackN(new SarcData() { Files = files, endianness = endianness, HashOnly = false }, align).Item2;
+        public static byte[] Pack(Dictionary<string, byte[]> files, int align = -1, ByteOrder byteOrder = ByteOrder.LittleEndian) =>
+            PackN(new SarcData() { Files = files, byteOrder = byteOrder, HashOnly = false }, align).Item2;
 
         [Obsolete("This has been kept for compatibility, use UnpackRamN instead")]
         public static Dictionary<string, byte[]> UnpackRam(byte[] src) =>
@@ -271,7 +273,7 @@ namespace SZS
                 public UInt32 EON;
             }
 
-            public void Parse(BinaryStream bs, int pos)
+            public void Parse(BinaryDataReader bs, int pos)
             {
                 bs.ReadUInt32(); // Header;
                 chunkSize = bs.ReadUInt16();
@@ -304,7 +306,7 @@ namespace SZS
             public UInt16 chunkSize;
             public UInt16 unknown1;
 
-            public void Parse(BinaryStream bs, int pos, SFAT sfat, int start)
+            public void Parse(BinaryDataReader bs, int pos, SFAT sfat, int start)
             {
                 chunkID = bs.ReadUInt32();
                 chunkSize = bs.ReadUInt16();
