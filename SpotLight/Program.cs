@@ -78,11 +78,20 @@ namespace SpotLight
         /// <summary>
         /// Returns the ObjectData path
         /// </summary>
-        public static string BaseObjectDataPath => Properties.Settings.Default.GamePath + "\\ObjectData\\";
+        public static string BaseObjectDataPath => Properties.Settings.Default.GamePath + "\\ObjectData";
         /// <summary>
         /// Returns the StageData path
         /// </summary>
-        public static string BaseStageDataPath => Properties.Settings.Default.GamePath + "\\StageData\\";
+        public static string BaseStageDataPath => Properties.Settings.Default.GamePath + "\\StageData";
+
+        /// <summary>
+        /// Returns the ObjectData path in the project directory
+        /// </summary>
+        public static string ProjectObjectDataPath => Properties.Settings.Default.ProjectPath + "\\ObjectData";
+        /// <summary>
+        /// Returns the StageData path in the project directory
+        /// </summary>
+        public static string ProjectStageDataPath => Properties.Settings.Default.ProjectPath + "\\StageData";
 
         public static ObjectParameterDatabase ParameterDB;
 

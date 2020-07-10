@@ -415,27 +415,10 @@ namespace SpotLight
             StageList STGLST = new StageList(stagelistpath);
             LevelSelectForm LPSF = new LevelSelectForm(STGLST, true);
             LPSF.ShowDialog();
-            if (LPSF.levelname.Equals(""))
+            if (string.IsNullOrEmpty(LPSF.levelname))
             {
                 SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
                 return;
-            }
-            if (!Program.ProjectPath.Equals("") && !File.Exists(System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs")))
-            {
-                DialogResult DR = MessageBox.Show(string.Format(LevelSelectCopyText,LPSF.levelname), LevelSelectCopyHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-                if (DR == DialogResult.Yes)
-                {
-                    File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Map1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Map1.szs"));
-                    if (File.Exists(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Design1.szs")))
-                        File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Design1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Design1.szs"), true);
-                    if (File.Exists(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Sound1.szs")))
-                        File.Copy(System.IO.Path.Combine(Program.GamePath, "StageData", $"{LPSF.levelname}Sound1.szs"), System.IO.Path.Combine(Program.ProjectPath, "StageData", $"{LPSF.levelname}Sound1.szs"), true);
-                }
-                else if (DR == DialogResult.Cancel)
-                {
-                    SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
-                    return;
-                }
             }
             OpenLevel(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}Map1.szs"));
         }
@@ -446,6 +429,7 @@ namespace SpotLight
                 return;
 
             currentScene.Save();
+            Scene_IsSavedChanged(null, null);
             SpotlightToolStripStatusLabel.Text = StatusLevelSavedMessage;
         }
 
@@ -456,8 +440,8 @@ namespace SpotLight
 
             if (currentScene.SaveAs())
             {
+                Scene_IsSavedChanged(null, null);
                 SpotlightToolStripStatusLabel.Text = StatusLevelSavedMessage;
-                ZoneDocumentTabControl.SelectedTab.Name = currentScene.ToString(); //level name might have changed
             }
             else
                 SpotlightToolStripStatusLabel.Text = StatusSaveCancelledOrFailedMessage;
@@ -855,7 +839,9 @@ namespace SpotLight
             {
                 SM3DWorldScene scene = (SM3DWorldScene)tab.Document;
 
-                tab.Name = scene.ToString() + (scene.IsSaved ? string.Empty : "*");
+                tab.Name = ((!string.IsNullOrEmpty(Program.ProjectPath) && scene.MainZone.Directory==Program.BaseStageDataPath) ? "[GamePath]" : string.Empty) +
+                    scene.ToString() + 
+                    (scene.IsSaved ? string.Empty : "*");
             }
 
             ZoneDocumentTabControl.Invalidate();
@@ -1025,6 +1011,7 @@ namespace SpotLight
                 SetAppStatus(false);
                 string levelname = currentScene.EditZone.LevelName;
                 currentScene = null;
+                LevelGLControlModern.MainDrawable = null;
                 SpotlightToolStripStatusLabel.Text = string.Format(StatusLevelClosed, levelname);
             }
             #endregion
@@ -1206,8 +1193,6 @@ Would you like to rebuild the database from your 3DW Files?";
             DuplicateSuccessMessage = Program.CurrentLanguage.GetTranslation("DuplicateSuccessMessage") ?? "Duplicated {0}";
 
             LevelSelectMissing = Program.CurrentLanguage.GetTranslation("LevelSelectMissing") ?? "StageList.szs Could not be found inside {0}, so this feature cannot be used.";
-            LevelSelectCopyText = Program.CurrentLanguage.GetTranslation("LevelSelectCopyText") ?? "{0} isn't inside your project directory. Would you like to create a copy in your project directory?";
-            LevelSelectCopyHeader = Program.CurrentLanguage.GetTranslation("LevelSelectCopyHeader") ?? "Confirmation";
 
             StatusObjectsDeletedMessage = Program.CurrentLanguage.GetTranslation("StatusObjectsDeletedMessage") ?? "Deleted {0}";
             DatabaseInvalidText = Program.CurrentLanguage.GetTranslation("DatabaseInvalidText") ?? "The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?";
@@ -1310,8 +1295,6 @@ Would you like to rebuild the database from your 3DW Files?";
         private string DuplicateSuccessMessage { get; set; }
 
         private string LevelSelectMissing { get; set; }
-        private string LevelSelectCopyHeader { get; set; }
-        private string LevelSelectCopyText { get; set; }
 
         private string StatusObjectsDeletedMessage { get; set; }
         private string DatabaseInvalidHeader { get; set; }

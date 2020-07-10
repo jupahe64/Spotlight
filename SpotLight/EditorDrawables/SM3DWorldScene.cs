@@ -153,7 +153,7 @@ namespace SpotLight.EditorDrawables
         /// </summary>
         public SM3DWorldScene(SM3DWorldZone zone)
         {
-            mainZone = zone;
+            MainZone = zone;
 
             multiSelect = true;
 
@@ -204,7 +204,7 @@ namespace SpotLight.EditorDrawables
 
         public T ConvertToOtherSceneType<T>() where T : SM3DWorldScene, new() => new T
         {
-            mainZone = mainZone,
+            MainZone = MainZone,
             EditZone = EditZone,
             editZoneIndex = editZoneIndex,
             EditZoneTransform = EditZoneTransform,
@@ -272,7 +272,7 @@ namespace SpotLight.EditorDrawables
 
         public override string ToString()
         {
-            return mainZone.LevelName;
+            return MainZone.LevelName;
         }
 
         
@@ -423,11 +423,11 @@ namespace SpotLight.EditorDrawables
 
                 if (value == 0)
                 {
-                    EditZone = mainZone;
+                    EditZone = MainZone;
 
                     EditZoneTransform = ZoneTransform.Identity;
 
-                    ZonePlacements = mainZone.ZonePlacements;
+                    ZonePlacements = MainZone.ZonePlacements;
                 }
                 else
                 {
@@ -436,20 +436,20 @@ namespace SpotLight.EditorDrawables
 
                     ZonePlacements = new List<ZonePlacement>();
 
-                    EditZone = mainZone.ZonePlacements[value - 1].Zone;
+                    EditZone = MainZone.ZonePlacements[value - 1].Zone;
 
-                    EditZoneTransform = mainZone.ZonePlacements[value - 1].GetTransform();
+                    EditZoneTransform = MainZone.ZonePlacements[value - 1].GetTransform();
 
-                    for (int i = 0; i < mainZone.ZonePlacements.Count; i++)
+                    for (int i = 0; i < MainZone.ZonePlacements.Count; i++)
                     {
                         if (i == value - 1)
                             continue;
 
-                        ZonePlacement zonePlacement = mainZone.ZonePlacements[i];
+                        ZonePlacement zonePlacement = MainZone.ZonePlacements[i];
                         ZonePlacements.Add(zonePlacement);
                     }
 
-                    ZonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, mainZone));
+                    ZonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, MainZone));
                 }
 
                 SceneDrawState.ZoneTransform = EditZoneTransform;
@@ -464,13 +464,13 @@ namespace SpotLight.EditorDrawables
 
         protected ZoneTransform EditZoneTransform { get; private set; }
 
-        private SM3DWorldZone mainZone;
+        public SM3DWorldZone MainZone { get; private set; }
 
         public IEnumerable<SM3DWorldZone> GetZones()
         {
-            yield return mainZone;
+            yield return MainZone;
 
-            foreach (ZonePlacement zonePlacement in mainZone.ZonePlacements)
+            foreach (ZonePlacement zonePlacement in MainZone.ZonePlacements)
             {
                 yield return zonePlacement.Zone;
             }
@@ -1093,11 +1093,49 @@ namespace SpotLight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed</returns>
         public bool Save()
         {
-            EditZone.Save();
+            bool showPromt = false;
+            string overwrites = "";
 
-            foreach (var zonePlacement in ZonePlacements)
+            foreach (var zone in GetZones())
             {
-                zonePlacement.Zone.Save();
+                if (!string.IsNullOrEmpty(Program.ProjectPath) && zone.Directory == Program.BaseStageDataPath)
+                    showPromt = true;
+
+                if (zone.HasCategoryMap && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.MAP_SUFFIX)))
+                    overwrites += zone.LevelName + SM3DWorldZone.MAP_SUFFIX + '\n';
+
+                if (zone.HasCategoryDesign && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.DESIGN_SUFFIX)))
+                    overwrites += zone.LevelName + SM3DWorldZone.DESIGN_SUFFIX + '\n';
+
+                if (zone.HasCategorySound && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.SOUND_SUFFIX)))
+                    overwrites += zone.LevelName + SM3DWorldZone.SOUND_SUFFIX + '\n';
+            }
+            bool changeDirectory = false;
+
+            if (showPromt)
+            {
+                //TODO localize
+                string message = $"Should the level files be saved to {Program.ProjectStageDataPath} so the BaseGame is preserved?";
+
+                if (!string.IsNullOrEmpty(overwrites))
+                    message += "\n\nFollowing files will be overwritten:\n" + overwrites.Trim('\n');
+
+                DialogResult result = MessageBox.Show(
+                        message,
+                        "Save file in ProjectPath?", MessageBoxButtons.YesNoCancel);
+
+                if (result == DialogResult.Cancel)
+                    return false;
+
+                changeDirectory = result == DialogResult.Yes;
+            }
+
+            foreach (var zone in GetZones())
+            {
+                if (changeDirectory)
+                    zone.Directory = Program.ProjectStageDataPath;
+
+                zone.Save();
             }
 
             return IsSaved = IsSaved; //seems dumb but it's the only way to make sure the IsSavedChanged event is triggered

@@ -23,9 +23,38 @@ namespace SpotLight.Level
 
     public class SM3DWorldZone
     {
+        #region Constants
+        public const string MAP_SUFFIX = "Map1.szs";
+        public const string DESIGN_SUFFIX = "Design1.szs";
+        public const string SOUND_SUFFIX = "Sound1.szs";
+
+        public const string COMBINED_SUFFIX = ".szs";
+
+        public const string COMMON_SUFFIX = "1.szs";
+
+        private const string CATEGORY_MAP = "Map";
+        private const string CATEGORY_DESIGN = "Design";
+        private const string CATEGORY_SOUND = "Sound";
+
+        static readonly string[] extensionsToReplace = new string[]
+        {
+            MAP_SUFFIX,
+            DESIGN_SUFFIX,
+            SOUND_SUFFIX,
+            "Map.szs",
+            "Design.szs",
+            "Sound.szs",
+            COMBINED_SUFFIX
+        };
+
+        public const string MAP_PREFIX = "Map_";
+        public const string DESIGN_PREFIX = "Design_";
+        public const string SOUND_PREFIX = "Sound_";
+        #endregion
+
         public ByteOrder byteOrder;
 
-        public static Dictionary<string, WeakReference<SM3DWorldZone>> loadedZones = new Dictionary<string, WeakReference<SM3DWorldZone>>();
+        public static Dictionary<string, SM3DWorldZone> loadedZones = new Dictionary<string, SM3DWorldZone>();
 
         public override string ToString() => LevelName;
 
@@ -60,11 +89,43 @@ namespace SpotLight.Level
         /// <summary>
         /// Name of the Level
         /// </summary>
-        public string LevelName { get; private set; }
+        public string LevelName
+        {
+            get => levelName;
+            private set
+            {
+                levelName = value;
+                if(LevelFileName != null && Directory != null)
+                    loadedZones.Remove(Path.Combine(Directory, LevelFileName));
+
+                LevelFileName = levelName + fileSuffix;
+
+                if (Directory != null)
+                    loadedZones.Add(Path.Combine(Directory, LevelFileName), this);
+            }
+        }
         /// <summary>
         /// The Directory this File is stored in
         /// </summary>
-        public string Directory { get; private set; }
+        public string Directory
+        {
+            get => directory;
+            internal set
+            {
+                if (LevelFileName != null && Directory != null)
+                    loadedZones.Remove(Path.Combine(Directory, LevelFileName));
+                directory = value;
+                if (LevelFileName != null)
+                    loadedZones.Add(Path.Combine(Directory, LevelFileName), this);
+            }
+        }
+
+        private readonly string fileSuffix;
+
+        public bool HasCategoryMap { get; private set; }
+        public bool HasCategoryDesign { get; private set; }
+        public bool HasCategorySound { get; private set; }
+
         /// <summary>
         /// Name of the Level File
         /// </summary>
@@ -114,82 +175,52 @@ namespace SpotLight.Level
 
         public static bool TryOpen(string fileName, out SM3DWorldZone zone)
         {
-            if (loadedZones.TryGetValue(fileName, out var reference))
+            if (loadedZones.TryGetValue(fileName, out zone))
             {
-                if (reference.TryGetTarget(out zone))
-                    return true;
+                return true;
             }
 
-            if (!File.Exists(fileName))
+            string levelFileName = Path.GetFileName(fileName);
+
+            if (!File.Exists(fileName) && !File.Exists(Path.Combine(Program.BaseStageDataPath, levelFileName)))
             {
                 zone = null;
                 return false;
             }
 
             string levelName;
-            string categoryName;
+            string suffix;
 
-            string fileNameWithoutPath = Path.GetFileName(fileName);
-
-            if (fileNameWithoutPath.EndsWith(MAP_SUFFIX))
+            if (levelFileName.EndsWith(MAP_SUFFIX))
             {
-                levelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - MAP_SUFFIX.Length);
-                categoryName = "Map";
+                levelName = levelFileName.Remove(levelFileName.Length - MAP_SUFFIX.Length);
+                suffix = MAP_SUFFIX;
             }
-            else if (fileNameWithoutPath.EndsWith(DESIGN_SUFFIX))
+            else if (levelFileName.EndsWith(DESIGN_SUFFIX))
             {
-                levelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - DESIGN_SUFFIX.Length);
-                categoryName = "Design";
+                levelName = levelFileName.Remove(levelFileName.Length - DESIGN_SUFFIX.Length);
+                suffix = DESIGN_SUFFIX;
             }
-            else if (fileNameWithoutPath.EndsWith(SOUND_SUFFIX))
+            else if (levelFileName.EndsWith(SOUND_SUFFIX))
             {
-                levelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - DESIGN_SUFFIX.Length);
-                categoryName = "Sound";
+                levelName = levelFileName.Remove(levelFileName.Length - SOUND_SUFFIX.Length);
+                suffix = SOUND_SUFFIX;
             }
-            else if (fileNameWithoutPath.EndsWith(COMBINED_SUFFIX))
+            else if (levelFileName.EndsWith(COMBINED_SUFFIX))
             {
-                levelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - COMBINED_SUFFIX.Length);
-                categoryName = null;
+                levelName = levelFileName.Remove(levelFileName.Length - COMBINED_SUFFIX.Length);
+                suffix = COMBINED_SUFFIX;
             }
             else
             {
                 zone = null;
                 return false;
             }
-            
-            zone = new SM3DWorldZone(Path.GetDirectoryName(fileName), levelName, categoryName, fileNameWithoutPath);
 
-            loadedZones[fileName] = new WeakReference<SM3DWorldZone>(zone);
+            zone = new SM3DWorldZone(Path.GetDirectoryName(fileName), levelName, suffix);
 
             return true;
         }
-
-        public const string MAP_SUFFIX = "Map1.szs";
-        public const string DESIGN_SUFFIX = "Design1.szs";
-        public const string SOUND_SUFFIX = "Sound1.szs";
-
-        public const string COMBINED_SUFFIX = ".szs";
-
-        const string COMMON_SUFFIX = "1.szs";
-
-        static readonly string[] extensionsToReplace = new string[]
-        {
-            MAP_SUFFIX,
-            DESIGN_SUFFIX,
-            SOUND_SUFFIX,
-            "Map.szs",
-            "Design.szs",
-            "Sound.szs",
-            COMBINED_SUFFIX
-        };
-
-        public const string MAP_PREFIX = "Map_";
-        public const string DESIGN_PREFIX = "Design_";
-        public const string SOUND_PREFIX = "Sound_";
-
-        public bool HasCategoryMap { get; private set; }
-        public bool HasCategoryDesign { get; private set; }
-        public bool HasCategorySound { get; private set; }
 
         public string GetPreferredSuffix() => IsCombined ? COMBINED_SUFFIX : (HasCategoryMap ? MAP_SUFFIX : (HasCategoryDesign ? DESIGN_SUFFIX : SOUND_SUFFIX));
 
@@ -218,39 +249,40 @@ namespace SpotLight.Level
         /// </summary>
         /// <param name="directory">StageData folder path</param>
         /// <param name="levelName">Internal name of the level</param>
-        /// <param name="categoryName">File Category. Should be MAP|DESIGN|SOUND</param>
+        /// <param name="suffix">File Suffix </param>
         /// <param name="levelFileName">Name of the level file (Excludes the path, includes extension)</param>
-        private SM3DWorldZone(string directory, string levelName, string categoryName, string levelFileName)
+        private SM3DWorldZone(string directory, string levelName, string suffix)
         {
             undoStack = new Stack<IRevertable>();
             redoStack = new Stack<RedoEntry>();
 
+            fileSuffix = suffix;
             LevelName = levelName;
             Directory = directory;
-            LevelFileName = levelFileName;
+            //will also add this zone to loadedZones
 
             Dictionary<string, I3dWorldObject> objectsByID = new Dictionary<string, I3dWorldObject>();
 
-            if(categoryName == null)
+            if (suffix == COMBINED_SUFFIX)
             {
                 LoadCombined(objectsByID);
             }
-            if (categoryName == "Map")
+            if (suffix == MAP_SUFFIX)
             {
                 HasCategoryMap = true;
-                LoadCategory(MAP_PREFIX, "Map", 0, objectsByID);
-                HasCategoryDesign = LoadCategory(DESIGN_PREFIX, "Design", 1, objectsByID);
-                HasCategorySound = LoadCategory(SOUND_PREFIX, "Sound", 2, objectsByID);
+                LoadCategory(MAP_PREFIX, CATEGORY_MAP, 0, objectsByID);
+                HasCategoryDesign = LoadCategory(DESIGN_PREFIX, CATEGORY_DESIGN, 1, objectsByID);
+                HasCategorySound = LoadCategory(SOUND_PREFIX, CATEGORY_SOUND, 2, objectsByID);
             }
-            else if (categoryName == "Design")
+            else if (suffix == DESIGN_SUFFIX)
             {
                 HasCategoryDesign = true;
-                LoadCategory(DESIGN_PREFIX, "Design", 1, objectsByID);
+                LoadCategory(DESIGN_PREFIX, CATEGORY_DESIGN, 1, objectsByID);
             }
-            else //if (categoryName == "Sound")
+            else //if (suffix == SOUND_SUFFIX)
             {
                 HasCategorySound = true;
-                LoadCategory(SOUND_PREFIX, "Sound", 2, objectsByID);
+                LoadCategory(SOUND_PREFIX, CATEGORY_SOUND, 2, objectsByID);
             }
 
             lastSaveTime = DateTime.Now;
@@ -258,7 +290,7 @@ namespace SpotLight.Level
 
         private bool LoadCategory(string prefix, string categoryName, int extraFilesIndex, Dictionary<string, I3dWorldObject> linkedObjsByID)
         {
-            string fileName = $"{Directory}\\{LevelName}{categoryName}1.szs";
+            string fileName = Path.Combine(Directory, $"{LevelName}{categoryName}1.szs");
 
             if (!File.Exists(fileName))
                 return false;
@@ -291,6 +323,8 @@ namespace SpotLight.Level
         }
 
         private bool IsCombined = false;
+        private string levelName;
+        private string directory;
 
         private bool LoadCombined(Dictionary<string, I3dWorldObject> linkedObjsByID)
         {
@@ -449,10 +483,8 @@ namespace SpotLight.Level
             }
             else if (fileNameWithoutPath.EndsWith(SOUND_SUFFIX))
             {
-                LevelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - DESIGN_SUFFIX.Length);
+                LevelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - SOUND_SUFFIX.Length);
             }
-
-            LevelFileName = fileNameWithoutPath;
 
             Directory = Path.GetDirectoryName(fileName);
 
@@ -473,11 +505,11 @@ namespace SpotLight.Level
                     return false;
             }
 
-            if (HasCategoryMap && !SaveCategory(MAP_PREFIX, "Map", 0, true))
+            if (HasCategoryMap && !SaveCategory(MAP_PREFIX, CATEGORY_MAP, 0, true))
                 return false;
-            if (HasCategoryDesign && !SaveCategory(DESIGN_PREFIX, "Design", 1))
+            if (HasCategoryDesign && !SaveCategory(DESIGN_PREFIX, CATEGORY_DESIGN, 1))
                 return false;
-            if (HasCategorySound && !SaveCategory(SOUND_PREFIX, "Sound", 2))
+            if (HasCategorySound && !SaveCategory(SOUND_PREFIX, CATEGORY_SOUND, 2))
                 return false;
 
             SAVED:
@@ -487,7 +519,7 @@ namespace SpotLight.Level
 
             return true;
         }
-        
+
         private bool SaveCategory(string prefix, string categoryName, int extraFilesIndex, bool saveZonePlacements = false)
         {
             SarcData sarcData = new SarcData()
@@ -507,7 +539,7 @@ namespace SpotLight.Level
                 sarcData.Files.Add(LevelName + categoryName + ".byml", stream.ToArray());
             }
 
-            File.WriteAllBytes(Path.Combine(Directory,LevelName + categoryName + COMMON_SUFFIX), YAZ0.Compress(SARC.PackN(sarcData).Item2));
+            File.WriteAllBytes(Path.Combine(Directory, LevelName + categoryName + COMMON_SUFFIX), YAZ0.Compress(SARC.PackN(sarcData).Item2));
 
             return true;
         }
@@ -544,7 +576,7 @@ namespace SpotLight.Level
                     SaveExtraFile(sarcData, keyValuePair);
             }
 
-            if(HasCategoryMap)
+            if (HasCategoryMap)
             {
                 using (MemoryStream stream = new MemoryStream())
                 {
@@ -650,7 +682,7 @@ namespace SpotLight.Level
                         ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero),
                         ["GenerateCategory"] = "",
                         ["ParameterConfigName"] = "Zone",
-                        ["PlacementTargetFile"] = "Map"
+                        ["PlacementTargetFile"] = CATEGORY_MAP
                     }, true);
 
                     objNode.AddDynamicValue("UnitConfigName", zonePlacement.Zone.LevelName);
@@ -677,8 +709,8 @@ namespace SpotLight.Level
 
                 if (File.GetLastWriteTime(fileName) > lastSaveTime && MessageBox.Show(
                     /*Todo localize*/
-                    fileName + " was modified outside of Spotlight. Should all extra files be reloaded?", 
-                    "File Modified", 
+                    fileName + " was modified outside of Spotlight. Should all extra files be reloaded?",
+                    "File Modified",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     extraFiles[extraFilesIndex].Clear();
@@ -701,11 +733,11 @@ namespace SpotLight.Level
             }
 
             if (HasCategoryMap)
-                CheckCategory(0, "Map");
+                CheckCategory(0, CATEGORY_MAP);
             if (HasCategoryDesign)
-                CheckCategory(1, "Design");
+                CheckCategory(1, CATEGORY_DESIGN);
             if (HasCategorySound)
-                CheckCategory(2, "Sound");
+                CheckCategory(2, CATEGORY_SOUND);
 
             lastSaveTime = DateTime.Now;
         }
