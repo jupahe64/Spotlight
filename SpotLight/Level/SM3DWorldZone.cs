@@ -707,10 +707,11 @@ namespace SpotLight.Level
             {
                 string fileName = Path.Combine(Directory, LevelName + categoryName + COMMON_SUFFIX);
 
+                string dialogText = Program.CurrentLanguage.GetTranslation("ModifiedOutsideText") ?? "{0} was modified outside of Spotlight. Should all extra files be reloaded?";
+
                 if (File.GetLastWriteTime(fileName) > lastSaveTime && MessageBox.Show(
-                    /*Todo localize*/
-                    fileName + " was modified outside of Spotlight. Should all extra files be reloaded?",
-                    "File Modified",
+                    string.Format(dialogText, fileName),
+                    Program.CurrentLanguage.GetTranslation("ModifiedOutsideHeader") ?? "File Modified",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     extraFiles[extraFilesIndex].Clear();

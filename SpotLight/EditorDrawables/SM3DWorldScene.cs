@@ -1114,15 +1114,17 @@ namespace SpotLight.EditorDrawables
 
             if (showPromt)
             {
-                //TODO localize
-                string message = $"Should the level files be saved to {Program.ProjectStageDataPath} so the BaseGame is preserved?";
+                string part1 = Program.CurrentLanguage.GetTranslation("SaveInProjectTextPart1") ?? "Should the level files be saved to {0} so the BaseGame is preserved?";
+                string part2 = Program.CurrentLanguage.GetTranslation("SaveInProjectTextPart2") ?? "Following files will be overwritten:";
+
+                string message = string.Format(part1, Program.ProjectStageDataPath);
 
                 if (!string.IsNullOrEmpty(overwrites))
-                    message += "\n\nFollowing files will be overwritten:\n" + overwrites.Trim('\n');
+                    message += $"\n\n{part2}\n" + overwrites.Trim('\n');
 
                 DialogResult result = MessageBox.Show(
                         message,
-                        "Save file in ProjectPath?", MessageBoxButtons.YesNoCancel);
+                        Program.CurrentLanguage.GetTranslation("SaveInProjectHeader") ?? "Save file in ProjectPath?", MessageBoxButtons.YesNoCancel);
 
                 if (result == DialogResult.Cancel)
                     return false;
