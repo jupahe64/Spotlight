@@ -227,11 +227,11 @@ namespace SpotLight.EditorDrawables
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
             {
-                var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, control.PickingDepth), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
+                var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, Math.Min(100,control.PickingDepth)), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
 
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
 
-
+                SelectedObjects.Clear();
 
                 for (int i = 0; i < placements.Length; i++)
                 {
@@ -241,7 +241,7 @@ namespace SpotLight.EditorDrawables
                     objsByLists[placements[i].objList].Add(placements[i].obj);
 
                     placements[i].objList.Add(placements[i].obj);
-
+                    placements[i].obj.SelectDefault(control);
                 }
 
                 List<Revertable3DWorldObjAddition.ObjListInfo> objListInfos = new List<Revertable3DWorldObjAddition.ObjListInfo>(objsByLists.Count);
