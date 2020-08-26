@@ -500,7 +500,11 @@ namespace SpotLight
             form.ShowDialog(this);
 
             if(form.SomethingWasSelected)
+            {
                 SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
+
+                CancelButton.Visible = true;
+            }
         }
 
         private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1099,6 +1103,7 @@ namespace SpotLight
             {
                 SpotlightToolStripStatusLabel.Text = "";
                 QuickFavoriteControl.Deselect();
+                CancelButton.Visible = false;
             }
         }
 
@@ -1260,6 +1265,7 @@ Would you like to rebuild the database from your 3DW Files?";
             ZonesTabPage.Text = Program.CurrentLanguage.GetTranslation("ZonesTabPage") ?? "Zones";
             ObjectsTabPage.Text = Program.CurrentLanguage.GetTranslation("ObjectsTabPage") ?? "Objects";
             EditIndividualButton.Text = Program.CurrentLanguage.GetTranslation("EditIndividualButton") ?? "Edit Individual";
+            CancelButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
             CurrentObjectLabel.Text = NothingSelected;
             #endregion
         }
@@ -1324,38 +1330,39 @@ Would you like to rebuild the database from your 3DW Files?";
 
         #endregion
 
-        private void LevelGLControlModern_MouseClick(object sender, MouseEventArgs e)
-        {
-            if(e.Button==MouseButtons.Right)
-            {
-                if(currentScene?.ObjectPlaceDelegate != null)
-                {
-                    currentScene.ResetObjectPlaceDelegate();
-
-                    QuickFavoriteControl.Deselect();
-
-                    SpotlightToolStripStatusLabel.Text = "";
-                }
-            }
-        }
-
         private void QuickFavoriteControl_SelectedFavoriteChanged(object sender, EventArgs e)
         {
             if(currentScene!=null && QuickFavoriteControl.SelectedFavorite!=null)
             {
                 currentScene.ObjectPlaceDelegate = QuickFavoriteControl.SelectedFavorite.PlacementHandler;
                 SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
+                CancelButton.Visible = true;
             }
             else
             {
                 currentScene?.ResetObjectPlaceDelegate();
                 SpotlightToolStripStatusLabel.Text = "";
+                CancelButton.Visible = false;
             }
         }
 
         private void LevelGLControlModern_Load(object sender, EventArgs e)
         {
             BfresModelCache.Initialize();
+        }
+
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            if (currentScene?.ObjectPlaceDelegate != null)
+            {
+                currentScene.ResetObjectPlaceDelegate();
+
+                QuickFavoriteControl.Deselect();
+
+                SpotlightToolStripStatusLabel.Text = "";
+            }
+
+            CancelButton.Visible = false;
         }
     }
 }
