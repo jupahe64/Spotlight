@@ -240,7 +240,7 @@
             // 
             this.GreenStarsNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarsNumericUpDown.Enabled = false;
-            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(573, 253);
+            this.GreenStarsNumericUpDown.Location = new System.Drawing.Point(573, 279);
             this.GreenStarsNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
@@ -274,7 +274,7 @@
             // 
             this.GreenStarLockNumericUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.GreenStarLockNumericUpDown.Enabled = false;
-            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(573, 279);
+            this.GreenStarLockNumericUpDown.Location = new System.Drawing.Point(573, 253);
             this.GreenStarLockNumericUpDown.Maximum = new decimal(new int[] {
             2147483647,
             0,
