@@ -42,15 +42,21 @@ namespace SpotLight
         }
 
         /// <summary>
-        /// Checks the game path to see if it is a valid SM3DW path
+        /// Checks the current GamePath to see if it is a valid SM3DW path
         /// </summary>
         /// <returns>true if the path is valid, false if it's invalid</returns>
-        public static bool GamePathIsValid() => Directory.Exists(Properties.Settings.Default.GamePath + "\\ObjectData") && Directory.Exists(Properties.Settings.Default.GamePath + "\\StageData");
+        public static bool GamePathIsValid() => IsGamePathValid(Properties.Settings.Default.GamePath);
         /// <summary>
-        /// Checks the game path to see if it is a valid SM3DW path
+        /// Checks the current ProgramPath to see if it is a valid SM3DW path
         /// </summary>
         /// <returns>true if the path is valid, false if it's invalid</returns>
-        public static bool ProjectPathIsValid() => Directory.Exists(Properties.Settings.Default.ProjectPath + "\\ObjectData") && Directory.Exists(Properties.Settings.Default.ProjectPath + "\\StageData");
+        public static bool ProjectPathIsValid() => IsGamePathValid(Properties.Settings.Default.ProjectPath);
+        /// <summary>
+        /// Checks the given path to see if it is a valid SM3DW path
+        /// </summary>
+        /// <returns>true if the path is valid, false if it's invalid</returns>
+        public static bool IsGamePathValid(string path) => Directory.Exists(path + "\\ObjectData") && Directory.Exists(path + "\\StageData");
+
         /// <summary>
         /// The path that the game files are kept at.<para/>This is the path that should contain the StageData and ObjectData folders.
         /// </summary>

@@ -2,6 +2,7 @@
 using SpotLight.ObjectParamDatabase;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -22,8 +23,26 @@ namespace SpotLight
             InitializeComponent();
             CenterToParent();
             Localize();
+
+            if (Properties.Settings.Default.GamePaths == null)
+                Properties.Settings.Default.GamePaths = new StringCollection();
+
+            if (Properties.Settings.Default.ProjectPaths == null)
+                Properties.Settings.Default.ProjectPaths = new StringCollection();
+
+            if (!string.IsNullOrEmpty(Program.GamePath))
+                Properties.Settings.Default.GamePaths.AddUnique(Program.GamePath);
+
+            if (!string.IsNullOrEmpty(Program.ProjectPath))
+                Properties.Settings.Default.ProjectPaths.AddUnique(Program.ProjectPath);
+
+            Properties.Settings.Default.Save();
+
             GamePathTextBox.Text = Program.GamePath;
+            GamePathTextBox.PossibleSuggestions = Properties.Settings.Default.GamePaths.ToArray();
+
             ProjectPathTextBox.Text = Program.ProjectPath;
+            ProjectPathTextBox.PossibleSuggestions = Properties.Settings.Default.ProjectPaths.ToArray();
 
             #region Databases
 
@@ -100,7 +119,7 @@ namespace SpotLight
                 for (int i = 0; i < langcount; i++)
                 {
                     if (!LanguageComboBox.Items.Contains(Files[i].Replace(Program.LanguagePath + "\\", "").Replace(".txt", "")))
-                        LanguageComboBox.Items.Add(Files[i].Replace(Program.LanguagePath+"\\", "").Replace(".txt", ""));
+                        LanguageComboBox.Items.Add(Files[i].Replace(Program.LanguagePath + "\\", "").Replace(".txt", ""));
                 }
 
                 if (File.Exists(Path.Combine(Program.LanguagePath, Properties.Settings.Default.Language + ".txt")))
@@ -122,45 +141,6 @@ namespace SpotLight
 
         private LevelEditorForm Home;
         private bool Loading = false;
-
-        private void GamePathButton_Click(object sender, EventArgs e)
-        {
-            CommonOpenFileDialog ofd = new CommonOpenFileDialog()
-            {
-                Title = DatabasePickerTitle,
-                IsFolderPicker = true
-            };
-            Program.GamePath = "";
-            while (!Program.GamePathIsValid())
-            {
-                if (Program.GamePath != "")
-                    MessageBox.Show(InvalidFolder, InvalidGamePath);
-
-                if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
-                {
-                    Program.GamePath = ofd.FileName;
-                }
-                else
-                    Program.GamePath = GamePathTextBox.Text;
-            }
-            GamePathTextBox.Text = Program.GamePath;
-        }
-
-        private void GamePathTextBox_TextChanged(object sender, EventArgs e) => Program.GamePath = GamePathTextBox.Text;
-
-        private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (!Program.GamePathIsValid())
-            {
-                e.Cancel = true;
-                MessageBox.Show(InvalidFolder, InvalidGamePath, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            if (!Program.ProjectPath.Equals("") && !Program.ProjectPathIsValid())
-            {
-                e.Cancel = true;
-                MessageBox.Show(InvalidFolder, InvalidProjectPath, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         private void RebuildDatabaseButton_Click(object sender, EventArgs e)
         {
@@ -263,6 +243,59 @@ namespace SpotLight
             Properties.Settings.Default.Save();
         }
 
+        private void GamePathButton_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog ofd = new CommonOpenFileDialog()
+            {
+                Title = DatabasePickerTitle,
+                IsFolderPicker = true
+            };
+
+            while (true)
+            {
+                if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    if (Program.IsGamePathValid(ofd.FileName))
+                    {
+                        Program.GamePath = ofd.FileName;
+                        GamePathTextBox.Text = ofd.FileName;
+
+                        Properties.Settings.Default.GamePaths.AddUnique(ofd.FileName);
+
+                        GamePathTextBox.PossibleSuggestions = Properties.Settings.Default.GamePaths.ToArray();
+
+                        Properties.Settings.Default.Save();
+
+                        return;
+                    }
+                    else
+                        MessageBox.Show(InvalidFolder, InvalidGamePath);
+                    
+                }
+                else
+                    return;
+            }
+        }
+
+        private void GamePathTextBox_ValueEntered(object sender, CancelEventArgs e)
+        {
+            string path = GamePathTextBox.Text;
+
+            if (!Program.IsGamePathValid(path))
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            Program.GamePath = path;
+
+            Properties.Settings.Default.GamePaths.AddUnique(GamePathTextBox.Text);
+
+            GamePathTextBox.PossibleSuggestions = Properties.Settings.Default.GamePaths.ToArray();
+
+            Properties.Settings.Default.Save();
+        }
+
         private void ProjectPathButton_Click(object sender, EventArgs e)
         {
             CommonOpenFileDialog ofd = new CommonOpenFileDialog()
@@ -270,28 +303,51 @@ namespace SpotLight
                 Title = DatabasePickerTitle,
                 IsFolderPicker = true
             };
-            Program.ProjectPath = "";
-            while (!Program.ProjectPathIsValid())
+
+            while (true)
             {
-                if (Program.ProjectPath != "")
-                    MessageBox.Show(InvalidFolder, InvalidProjectPath);
-                CommonFileDialogResult DR = ofd.ShowDialog();
-                if (DR == CommonFileDialogResult.Ok)
+                if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
                 {
-                    Program.ProjectPath = ofd.FileName;
-                }
-                else if (DR == CommonFileDialogResult.Cancel)
-                {
-                    Program.ProjectPath = ProjectPathTextBox.Text;
-                    return;
+                    if (Program.IsGamePathValid(ofd.FileName))
+                    {
+                        Program.ProjectPath = ofd.FileName;
+                        ProjectPathTextBox.Text = ofd.FileName;
+
+                        Properties.Settings.Default.ProjectPaths.AddUnique(ofd.FileName);
+
+                        ProjectPathTextBox.PossibleSuggestions = Properties.Settings.Default.ProjectPaths.ToArray();
+
+                        Properties.Settings.Default.Save();
+
+                        return;
+                    }
+                    else
+                        MessageBox.Show(InvalidFolder, InvalidGamePath);
                 }
                 else
-                    Program.ProjectPath = ProjectPathTextBox.Text;
+                    return;
             }
-            ProjectPathTextBox.Text = Program.ProjectPath;
         }
 
-        private void ProjectPathTextBox_TextChanged(object sender, EventArgs e) => Program.ProjectPath = ProjectPathTextBox.Text;
+        private void ProjectPathTextBox_ValueEntered(object sender, CancelEventArgs e)
+        {
+            string path = ProjectPathTextBox.Text;
+
+            if (!string.IsNullOrEmpty(path) && !Program.IsGamePathValid(path))
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            Program.ProjectPath = path;
+
+            if(!string.IsNullOrEmpty(path)) //we don't want to add an empty string to the ProjectPaths
+                Properties.Settings.Default.ProjectPaths.AddUnique(path);
+
+            ProjectPathTextBox.PossibleSuggestions = Properties.Settings.Default.ProjectPaths.ToArray();
+
+            Properties.Settings.Default.Save();
+        }
 
         private void LanguageComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -397,5 +453,26 @@ namespace SpotLight
         private string ResetWarningText { get; set; }
 
         #endregion
+    }
+
+    public static class StringCollectionExtensions
+    {
+        public static void AddUnique(this StringCollection collection, string value)
+        {
+            if (!collection.Contains(value))
+                collection.Add(value);
+        }
+
+        public static string[] ToArray(this StringCollection collection)
+        {
+            string[] arr = new string[collection.Count];
+
+            for (int i = 0; i < collection.Count; i++)
+            {
+                arr[i] = collection[i];
+            }
+
+            return arr;
+        }
     }
 }

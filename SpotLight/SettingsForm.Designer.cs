@@ -30,7 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
             this.GamePathLabel = new System.Windows.Forms.Label();
-            this.GamePathTextBox = new System.Windows.Forms.TextBox();
             this.GamePathButton = new System.Windows.Forms.Button();
             this.RebuildDatabaseButton = new System.Windows.Forms.Button();
             this.ObjectParameterGroupBox = new System.Windows.Forms.GroupBox();
@@ -48,11 +47,12 @@
             this.IDEditingCheckBox = new System.Windows.Forms.CheckBox();
             this.EditingGroupBox = new System.Windows.Forms.GroupBox();
             this.ProjectPathButton = new System.Windows.Forms.Button();
-            this.ProjectPathTextBox = new System.Windows.Forms.TextBox();
             this.ProjectPathLabel = new System.Windows.Forms.Label();
             this.MiscellaneousGroupBox = new System.Windows.Forms.GroupBox();
             this.LanguageComboBox = new System.Windows.Forms.ComboBox();
             this.LanguageLabel = new System.Windows.Forms.Label();
+            this.ProjectPathTextBox = new SpotLight.SuggestingTextBox();
+            this.GamePathTextBox = new SpotLight.SuggestingTextBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
@@ -68,15 +68,6 @@
             this.GamePathLabel.Size = new System.Drawing.Size(83, 13);
             this.GamePathLabel.TabIndex = 0;
             this.GamePathLabel.Text = "Game Directory:";
-            // 
-            // GamePathTextBox
-            // 
-            this.GamePathTextBox.Location = new System.Drawing.Point(135, 12);
-            this.GamePathTextBox.Name = "GamePathTextBox";
-            this.GamePathTextBox.Size = new System.Drawing.Size(434, 20);
-            this.GamePathTextBox.TabIndex = 1;
-            this.GamePathTextBox.Text = "3DW/Content";
-            this.GamePathTextBox.TextChanged += new System.EventHandler(this.GamePathTextBox_TextChanged);
             // 
             // GamePathButton
             // 
@@ -269,15 +260,6 @@
             this.ProjectPathButton.UseVisualStyleBackColor = true;
             this.ProjectPathButton.Click += new System.EventHandler(this.ProjectPathButton_Click);
             // 
-            // ProjectPathTextBox
-            // 
-            this.ProjectPathTextBox.Location = new System.Drawing.Point(135, 38);
-            this.ProjectPathTextBox.Name = "ProjectPathTextBox";
-            this.ProjectPathTextBox.Size = new System.Drawing.Size(434, 20);
-            this.ProjectPathTextBox.TabIndex = 11;
-            this.ProjectPathTextBox.Text = "Project/Content";
-            this.ProjectPathTextBox.TextChanged += new System.EventHandler(this.ProjectPathTextBox_TextChanged);
-            // 
             // ProjectPathLabel
             // 
             this.ProjectPathLabel.AutoSize = true;
@@ -320,21 +302,43 @@
             this.LanguageLabel.TabIndex = 8;
             this.LanguageLabel.Text = "Language:";
             // 
+            // ProjectPathTextBox
+            // 
+            this.ProjectPathTextBox.FilterSuggestions = false;
+            this.ProjectPathTextBox.Location = new System.Drawing.Point(135, 38);
+            this.ProjectPathTextBox.Name = "ProjectPathTextBox";
+            this.ProjectPathTextBox.PossibleSuggestions = new string[0];
+            this.ProjectPathTextBox.Size = new System.Drawing.Size(434, 20);
+            this.ProjectPathTextBox.SuggestClear = true;
+            this.ProjectPathTextBox.TabIndex = 14;
+            this.ProjectPathTextBox.ValueEntered += new System.ComponentModel.CancelEventHandler(this.ProjectPathTextBox_ValueEntered);
+            // 
+            // GamePathTextBox
+            // 
+            this.GamePathTextBox.FilterSuggestions = false;
+            this.GamePathTextBox.Location = new System.Drawing.Point(135, 13);
+            this.GamePathTextBox.Name = "GamePathTextBox";
+            this.GamePathTextBox.PossibleSuggestions = new string[0];
+            this.GamePathTextBox.Size = new System.Drawing.Size(434, 20);
+            this.GamePathTextBox.SuggestClear = false;
+            this.GamePathTextBox.TabIndex = 8;
+            this.GamePathTextBox.ValueEntered += new System.ComponentModel.CancelEventHandler(this.GamePathTextBox_ValueEntered);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(622, 413);
+            this.Controls.Add(this.ProjectPathTextBox);
+            this.Controls.Add(this.GamePathTextBox);
             this.Controls.Add(this.MiscellaneousGroupBox);
             this.Controls.Add(this.ProjectPathButton);
-            this.Controls.Add(this.ProjectPathTextBox);
             this.Controls.Add(this.ProjectPathLabel);
             this.Controls.Add(this.EditingGroupBox);
             this.Controls.Add(this.LoadingAndSavingGroupBox);
             this.Controls.Add(this.RenderingGroupBox);
             this.Controls.Add(this.ObjectParameterGroupBox);
             this.Controls.Add(this.GamePathButton);
-            this.Controls.Add(this.GamePathTextBox);
             this.Controls.Add(this.GamePathLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -342,7 +346,6 @@
             this.MinimizeBox = false;
             this.Name = "SettingsForm";
             this.Text = "Spotlight - Settings";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsForm_FormClosing);
             this.ObjectParameterGroupBox.ResumeLayout(false);
             this.ObjectParameterGroupBox.PerformLayout();
             this.RenderingGroupBox.ResumeLayout(false);
@@ -361,7 +364,6 @@
         #endregion
 
         private System.Windows.Forms.Label GamePathLabel;
-        private System.Windows.Forms.TextBox GamePathTextBox;
         private System.Windows.Forms.Button GamePathButton;
         private System.Windows.Forms.Button RebuildDatabaseButton;
         private System.Windows.Forms.GroupBox ObjectParameterGroupBox;
@@ -379,10 +381,11 @@
         private System.Windows.Forms.CheckBox IDEditingCheckBox;
         private System.Windows.Forms.GroupBox EditingGroupBox;
         private System.Windows.Forms.Button ProjectPathButton;
-        private System.Windows.Forms.TextBox ProjectPathTextBox;
         private System.Windows.Forms.Label ProjectPathLabel;
         private System.Windows.Forms.GroupBox MiscellaneousGroupBox;
         private System.Windows.Forms.ComboBox LanguageComboBox;
         private System.Windows.Forms.Label LanguageLabel;
+        private SuggestingTextBox GamePathTextBox;
+        private SuggestingTextBox ProjectPathTextBox;
     }
 }
