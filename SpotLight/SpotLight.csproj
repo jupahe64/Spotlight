@@ -145,9 +145,6 @@
     </Compile>
     <Compile Include="QuickFavoritesControl.cs" />
     <Compile Include="SceneStates.cs" />
-    <Compile Include="SuggestingTextBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <None Include="Clear Pipes.cs" />
     <Compile Include="EditorDrawables\General3dWorldObject.cs" />
     <Compile Include="EditorDrawables\I3dWorldObject.cs" />

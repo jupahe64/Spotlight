@@ -51,8 +51,8 @@
             this.MiscellaneousGroupBox = new System.Windows.Forms.GroupBox();
             this.LanguageComboBox = new System.Windows.Forms.ComboBox();
             this.LanguageLabel = new System.Windows.Forms.Label();
-            this.ProjectPathTextBox = new SpotLight.SuggestingTextBox();
-            this.GamePathTextBox = new SpotLight.SuggestingTextBox();
+            this.ProjectPathTextBox = new GL_EditorFramework.SuggestingTextBox();
+            this.GamePathTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
@@ -385,7 +385,7 @@
         private System.Windows.Forms.GroupBox MiscellaneousGroupBox;
         private System.Windows.Forms.ComboBox LanguageComboBox;
         private System.Windows.Forms.Label LanguageLabel;
-        private SuggestingTextBox GamePathTextBox;
-        private SuggestingTextBox ProjectPathTextBox;
+        private GL_EditorFramework.SuggestingTextBox GamePathTextBox;
+        private GL_EditorFramework.SuggestingTextBox ProjectPathTextBox;
     }
 }
