@@ -384,7 +384,7 @@ namespace SpotLight.EditorDrawables
             {
                 control.PlainText(scene.SelectedConnection.Source + " to " + scene.SelectedConnection.Dest);
 
-                connectionName = control.DropDownTextInput("Connection Name", connectionName, scene.SelectedConnection.PossibleNames);
+                connectionName = control.DropDownTextInput("Connection Name", connectionName, scene.SelectedConnection.PossibleNames, false);
                 if(control.Button("Reverse Connection"))
                 {
                     scene.BeginUndoCollection();

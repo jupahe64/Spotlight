@@ -40,6 +40,7 @@
             this.CurrentObjectLabel = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
             this.ZoneDocumentTabControl = new GL_EditorFramework.DocumentTabControl();
+            this.QuickFavoriteControl = new SpotLight.QuickFavoriteControl();
             this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,7 +77,6 @@
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.CancelButton = new System.Windows.Forms.Button();
-            this.QuickFavoriteControl = new SpotLight.QuickFavoriteControl();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -229,6 +229,16 @@
             this.ZoneDocumentTabControl.TabIndex = 1;
             this.ZoneDocumentTabControl.SelectedTabChanged += new System.EventHandler(this.ZoneDocumentTabControl_SelectedTabChanged);
             this.ZoneDocumentTabControl.TabClosing += new GL_EditorFramework.DocumentTabClosingEventHandler(this.ZoneDocumentTabControl_TabClosing);
+            // 
+            // QuickFavoriteControl
+            // 
+            this.QuickFavoriteControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.QuickFavoriteControl.Location = new System.Drawing.Point(3, 457);
+            this.QuickFavoriteControl.Name = "QuickFavoriteControl";
+            this.QuickFavoriteControl.Size = new System.Drawing.Size(517, 53);
+            this.QuickFavoriteControl.TabIndex = 1;
+            this.QuickFavoriteControl.SelectedFavoriteChanged += new System.EventHandler(this.QuickFavoriteControl_SelectedFavoriteChanged);
             // 
             // LevelGLControlModern
             // 
@@ -571,6 +581,7 @@
             // 
             // CancelButton
             // 
+            this.CancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.CancelButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.CancelButton.Location = new System.Drawing.Point(716, 543);
             this.CancelButton.Name = "CancelButton";
@@ -580,16 +591,6 @@
             this.CancelButton.UseVisualStyleBackColor = true;
             this.CancelButton.Visible = false;
             this.CancelButton.Click += new System.EventHandler(this.CancelButton_Click);
-            // 
-            // QuickFavoriteControl
-            // 
-            this.QuickFavoriteControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.QuickFavoriteControl.Location = new System.Drawing.Point(3, 457);
-            this.QuickFavoriteControl.Name = "QuickFavoriteControl";
-            this.QuickFavoriteControl.Size = new System.Drawing.Size(517, 53);
-            this.QuickFavoriteControl.TabIndex = 1;
-            this.QuickFavoriteControl.SelectedFavoriteChanged += new System.EventHandler(this.QuickFavoriteControl_SelectedFavoriteChanged);
             // 
             // LevelEditorForm
             // 
