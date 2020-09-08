@@ -175,16 +175,31 @@ namespace SpotLight.Level
 
         public static bool TryOpen(string fileName, out SM3DWorldZone zone)
         {
-            if (loadedZones.TryGetValue(fileName, out zone))
+            if (TryGetLoadedZone(fileName, out zone))
             {
                 return true;
             }
+            else if (TryGetLoadingInfo(fileName, out var loadingInfo))
+            {
+                zone = new SM3DWorldZone(loadingInfo.Value);
+                return true;
+            }
+            else
+            {
+                zone = null;
+                return false;
+            }
+        }
 
+        public static bool TryGetLoadedZone(string fileName, out SM3DWorldZone zone) => loadedZones.TryGetValue(fileName, out zone);
+
+        public static bool TryGetLoadingInfo(string fileName, out (string directory, string levelName, string suffix)? loadingInfo)
+        {
             string levelFileName = Path.GetFileName(fileName);
 
             if (!File.Exists(fileName) && !File.Exists(Path.Combine(Program.BaseStageDataPath, levelFileName)))
             {
-                zone = null;
+                loadingInfo = null;
                 return false;
             }
 
@@ -213,11 +228,11 @@ namespace SpotLight.Level
             }
             else
             {
-                zone = null;
+                loadingInfo = null;
                 return false;
             }
 
-            zone = new SM3DWorldZone(Path.GetDirectoryName(fileName), levelName, suffix);
+            loadingInfo = (Path.GetDirectoryName(fileName), levelName, suffix);
 
             return true;
         }
@@ -251,30 +266,30 @@ namespace SpotLight.Level
         /// <param name="levelName">Internal name of the level</param>
         /// <param name="suffix">File Suffix </param>
         /// <param name="levelFileName">Name of the level file (Excludes the path, includes extension)</param>
-        private SM3DWorldZone(string directory, string levelName, string suffix)
+        public SM3DWorldZone((string directory, string levelName, string suffix) loadingInfo)
         {
             undoStack = new Stack<IRevertable>();
             redoStack = new Stack<RedoEntry>();
 
-            fileSuffix = suffix;
-            LevelName = levelName;
-            Directory = directory;
+            fileSuffix = loadingInfo.suffix;
+            LevelName = loadingInfo.levelName;
+            Directory = loadingInfo.directory;
             //will also add this zone to loadedZones
 
             Dictionary<string, I3dWorldObject> objectsByID = new Dictionary<string, I3dWorldObject>();
 
-            if (suffix == COMBINED_SUFFIX)
+            if (loadingInfo.suffix == COMBINED_SUFFIX)
             {
                 LoadCombined(objectsByID);
             }
-            if (suffix == MAP_SUFFIX)
+            if (loadingInfo.suffix == MAP_SUFFIX)
             {
                 HasCategoryMap = true;
                 LoadCategory(MAP_PREFIX, CATEGORY_MAP, 0, objectsByID);
                 HasCategoryDesign = LoadCategory(DESIGN_PREFIX, CATEGORY_DESIGN, 1, objectsByID);
                 HasCategorySound = LoadCategory(SOUND_PREFIX, CATEGORY_SOUND, 2, objectsByID);
             }
-            else if (suffix == DESIGN_SUFFIX)
+            else if (loadingInfo.suffix == DESIGN_SUFFIX)
             {
                 HasCategoryDesign = true;
                 LoadCategory(DESIGN_PREFIX, CATEGORY_DESIGN, 1, objectsByID);

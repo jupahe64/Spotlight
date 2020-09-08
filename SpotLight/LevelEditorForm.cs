@@ -520,7 +520,7 @@ namespace SpotLight
             if (azf.SelectedFileName == null)
                 return;
 
-            if (SM3DWorldZone.TryOpen(System.IO.Path.Combine(Program.BaseStageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
+            if (TryOpenZoneWithLoadingBar(System.IO.Path.Combine(Program.BaseStageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
             {
                 var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, zone);
                 currentScene.ZonePlacements.Add(zonePlacement);
@@ -781,21 +781,40 @@ namespace SpotLight
         
         private void OpenLevel(string Filename)
         {
+            if (TryOpenZoneWithLoadingBar(Filename, out var zone))
+                OpenZone(zone);
+        }
 
-            if (SM3DWorldZone.TryOpen(Filename, out SM3DWorldZone zone))
+        public bool TryOpenZoneWithLoadingBar(string fileName, out SM3DWorldZone zone)
+        {
+            if (SM3DWorldZone.TryGetLoadedZone(fileName, out zone))
+            {
+                return true;
+            }
+            else if (SM3DWorldZone.TryGetLoadingInfo(fileName, out var loadingInfo))
             {
                 Thread LoadingThread = new Thread((n) =>
                 {
                     LoadLevelForm LLF = new LoadLevelForm(n.ToString(), "LoadLevel");
                     LLF.ShowDialog();
                 });
-                LoadingThread.Start(zone.LevelName);
-                OpenZone(zone);
+                LoadingThread.Start(loadingInfo?.levelName);
+
+                zone = new SM3DWorldZone(loadingInfo.Value);
+
                 if (LoadingThread.IsAlive)
                     LoadLevelForm.DoClose = true;
-                SpotlightToolStripStatusLabel.Text = string.Format(StatusOpenSuccessMessage, zone.LevelName);
+
+                SpotlightToolStripStatusLabel.Text = string.Format(StatusOpenSuccessMessage, loadingInfo?.levelName);
 
                 SetAppStatus(true);
+
+                return true;
+            }
+            else
+            {
+                zone = null;
+                return false;
             }
         }
 
