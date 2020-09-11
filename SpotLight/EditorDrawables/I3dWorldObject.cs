@@ -29,5 +29,7 @@ namespace SpotLight.EditorDrawables
         Dictionary<string, List<I3dWorldObject>> Links { get; set; }
         void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);
         Vector3 GetLinkingPoint(SM3DWorldScene editorScene);
+
+        void AddToZoneBatch(ZonePlacement zonePlacement);
     }
 }

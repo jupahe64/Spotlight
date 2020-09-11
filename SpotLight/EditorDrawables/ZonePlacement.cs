@@ -19,6 +19,8 @@ namespace SpotLight.EditorDrawables
             : base(pos, rot, scale)
         {
             Zone = zone;
+
+            UpdateBatch();
         }
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
@@ -26,14 +28,16 @@ namespace SpotLight.EditorDrawables
             if (!Visible)
                 return;
 
+            Vector4 hightlightColor;
+
             if (Selected && editorScene.Hovered == this)
-                SceneDrawState.HighlightColorOverride = General3dWorldObject.hoverSelectColor;
+                hightlightColor = General3dWorldObject.hoverSelectColor;
             else if (Selected)
-                SceneDrawState.HighlightColorOverride = General3dWorldObject.selectColor;
+                hightlightColor = General3dWorldObject.selectColor;
             else if (editorScene.Hovered == this)
-                SceneDrawState.HighlightColorOverride = General3dWorldObject.hoverColor;
+                hightlightColor = General3dWorldObject.hoverColor;
             else
-                SceneDrawState.HighlightColorOverride = Vector4.Zero;
+                hightlightColor = Vector4.Zero;
 
             Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
 
@@ -41,29 +45,44 @@ namespace SpotLight.EditorDrawables
 
             ZoneTransform transformBackup = SceneDrawState.ZoneTransform;
 
-            SceneDrawState.ZoneTransform = new ZoneTransform(
-                new Matrix4(rotMat) * Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(Position) : Position),
-                rotMat);
+            Matrix4 transform = new Matrix4(rotMat) * Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(Position) : Position);
 
-            var actionBackup = editorScene.SelectionTransformAction;
+            Vector4 pickingColor = control.NextPickingColor();
 
-            editorScene.SelectionTransformAction = EditorSceneBase.NoAction;
+            foreach (var renderer in batchRenderers.Values)
+            {
+                renderer.Draw(control, pass, hightlightColor, transform, pickingColor);
+            }
+
+            SceneDrawState.ZoneTransform = transformBackup;
+        }
+
+        Dictionary<Type, IBatchRenderer> batchRenderers = new Dictionary<Type, IBatchRenderer>();
+
+        public IBatchRenderer GetBatchRenderer(Type batchType)
+        {
+            if (!batchRenderers.ContainsKey(batchType) && typeof(IBatchRenderer).IsAssignableFrom(batchType))
+                batchRenderers.Add(batchType, (IBatchRenderer)Activator.CreateInstance(batchType));
+
+            return batchRenderers[batchType];
+        }
+
+        public void UpdateBatch()
+        {
+            batchRenderers.Clear();
 
             SceneObjectIterState.InLinks = false;
-            foreach (ObjectList objects in Zone.ObjLists.Values)
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in Zone.ObjLists)
             {
-                foreach (I3dWorldObject obj in objects)
-                    obj.Draw(control, pass, editorScene);
+                if (keyValuePair.Key == SM3DWorldZone.MAP_PREFIX + "SkyList")
+                    continue;
+
+                foreach (I3dWorldObject obj in keyValuePair.Value)
+                    obj.AddToZoneBatch(this);
             }
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in Zone.LinkedObjects)
-                obj.Draw(control, pass, editorScene);
-
-            SceneDrawState.HighlightColorOverride = null;
-
-            editorScene.SelectionTransformAction = actionBackup;
-
-            SceneDrawState.ZoneTransform = transformBackup;
+                obj.AddToZoneBatch(this);
         }
 
         public ZoneTransform GetTransform()
@@ -79,30 +98,15 @@ namespace SpotLight.EditorDrawables
         {
             if (!Visible)
                 return 0;
-
-            Matrix3 rotMat = Framework.Mat3FromEulerAnglesDeg(Rotation);
-
-            ZoneTransform transformBackup = SceneDrawState.ZoneTransform;
-
-            SceneDrawState.ZoneTransform = new ZoneTransform(
-                new Matrix4(rotMat) * Matrix4.CreateTranslation(Position),
-                rotMat);
-
-            int count = 0;
-            foreach (ObjectList objList in Zone.ObjLists.Values)
-            {
-                foreach (I3dWorldObject obj in objList)
-                    count += obj.GetPickableSpan();            
-            }
-
-            foreach (I3dWorldObject obj in Zone.LinkedObjects)
-                count += obj.GetPickableSpan();
-
-            SceneDrawState.ZoneTransform = transformBackup;
-
-            return count;
+            else
+                return 1;
         }
 
         public override string ToString() => Zone.LevelName;
+    }
+
+    public interface IBatchRenderer
+    {
+        void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor, Matrix4 zoneTransform, Vector4 pickingColor);
     }
 }

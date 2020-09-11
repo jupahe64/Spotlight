@@ -25,10 +25,10 @@ namespace SpotLight
         private static bool initialized = false;
 
         public static ShaderProgram BfresShaderProgram;
-        private static ShaderProgram ExtraModelShaderProgram;
+        public static ShaderProgram ExtraModelShaderProgram;
         static Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
 
-        struct ExtraModel
+        public class ExtraModel
         {
             public VertexArrayObject Vao { get; set; }
             public int IndexCount { get; set; }
@@ -346,11 +346,23 @@ namespace SpotLight
             catch (Exception) { }
         }
 
+        public static void TryGetModel(string modelName, out CachedModel cachedModel, out ExtraModel extraModel)
+        {
+            if (cache.TryGetValue(modelName, out cachedModel))
+            {
+                extraModel = null;
+            }
+            else if (extraModels.TryGetValue(modelName, out extraModel))
+            {
+                cachedModel = null;
+            }
+        }
+
         public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass, Vector4 highlightColor)
         {
-            if (cache.ContainsKey(modelName))
+            if (cache.TryGetValue(modelName, out CachedModel cachedModel))
             {
-                cache[modelName].Draw(control, pass, highlightColor);
+                cachedModel.Draw(control, pass, highlightColor);
                 return true;
             }
             else if (extraModels.TryGetValue(modelName, out ExtraModel extraModel) && (pass==Pass.PICKING || pass==extraModel.Pass))
@@ -402,7 +414,7 @@ namespace SpotLight
             }
         }
 
-        public struct CachedModel
+        public class CachedModel
         {
             static readonly float white = BitConverter.ToSingle(new byte[] {255, 255, 255, 255},0);
 
@@ -820,6 +832,8 @@ namespace SpotLight
 
                 GL.Disable(EnableCap.Blend);
 
+
+                //Draw highlight/outline
                 if (pass == Pass.OPAQUE && highlightColor.W != 0)
                 {
                     control.CurrentShader = Framework.SolidColorShaderProgram;
@@ -847,6 +861,73 @@ namespace SpotLight
 
                     GL.Disable(EnableCap.StencilTest);
                     GL.LineWidth(2);
+                }
+            }
+
+            public void BatchDrawOpaque(GL_ControlModern control, bool drawHighlight)
+            {
+                for (int i = 0; i < vaos.Length; i++)
+                {
+                    if (passes[i] == Pass.OPAQUE)
+                    {
+                        if (textures[i] == -1)
+                            GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
+                        else if (textures[i] == -2)
+                            GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
+                        else
+                            GL.BindTexture(TextureTarget.Texture2D, textures[i]);
+
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, wrapModes[i].Item1);
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapModes[i].Item2);
+
+                        vaos[i].Use(control);
+
+                        GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+                    }
+                    else if (drawHighlight)
+                    {
+                        GL.ColorMask(false, false, false, false);
+                        GL.DepthMask(false);
+
+                        vaos[i].Use(control);
+
+                        GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+
+                        GL.ColorMask(true, true, true, true);
+                        GL.DepthMask(true);
+                    }
+                }
+            }
+
+            public void BatchDrawTranparent(GL_ControlModern control)
+            {
+                for (int i = 0; i < vaos.Length; i++)
+                {
+                    if (passes[i] == Pass.TRANSPARENT)
+                    {
+                        if (textures[i] == -1)
+                            GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
+                        else if (textures[i] == -2)
+                            GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
+                        else
+                            GL.BindTexture(TextureTarget.Texture2D, textures[i]);
+
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, wrapModes[i].Item1);
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapModes[i].Item2);
+
+                        vaos[i].Use(control);
+
+                        GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+                    }
+                }
+            }
+
+            public void BatchDrawSolidColor(GL_ControlModern control)
+            {
+                for (int i = 0; i < vaos.Length; i++)
+                {
+                    vaos[i].Use(control);
+                    GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
                 }
             }
         }

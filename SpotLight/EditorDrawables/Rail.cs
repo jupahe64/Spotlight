@@ -376,6 +376,11 @@ namespace SpotLight.EditorDrawables
             return zone.ObjLists.TryGetValue("Map_Rails", out objList);
         }
 
+        public void AddToZoneBatch(ZonePlacement zonePlacement)
+        {
+            //TODO figure out if this is needed or not
+        }
+
         public class RailUIContainer : IObjectUIContainer
         {
             PropertyCapture? pathCapture = null;

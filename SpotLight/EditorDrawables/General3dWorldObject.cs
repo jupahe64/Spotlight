@@ -423,15 +423,10 @@ namespace SpotLight.EditorDrawables
                 Vector4 blockColor;
                 Vector4 lineColor;
 
-                if (SceneObjectIterState.InLinks)
-                    blockColor = LinkColor * (1 - highlightColor.W) + highlightColor * highlightColor.W;
-                else
-                    blockColor = Color * (1 - highlightColor.W) + highlightColor * highlightColor.W;
+                blockColor = Color * (1 - highlightColor.W) + highlightColor * highlightColor.W;
 
                 if (highlightColor.W != 0)
                     lineColor = highlightColor;
-                else if (SceneObjectIterState.InLinks)
-                    lineColor = LinkColor;
                 else
                     lineColor = Color;
 
@@ -496,6 +491,116 @@ namespace SpotLight.EditorDrawables
                 objectUIControl.AddObjectUIContainer(new LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
 
             return true;
+        }
+
+        public void AddToZoneBatch(ZonePlacement zonePlacement)
+        {
+            General3dWorldObjectBatch renderer = (General3dWorldObjectBatch)zonePlacement.GetBatchRenderer(typeof(General3dWorldObjectBatch));
+
+            BfresModelCache.TryGetModel(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, out BfresModelCache.CachedModel cachedModel, out BfresModelCache.ExtraModel extraModel);
+
+            if (cachedModel!=null)
+            {
+                renderer.cachedModels.Add((cachedModel,
+                    Matrix4.CreateScale(DisplayScale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
+                    Matrix4.CreateTranslation(DisplayTranslation) *
+                    Matrix4.CreateScale(Scale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(Rotation)) *
+                    Matrix4.CreateTranslation(Position)
+                ));
+            }
+        }
+
+        protected class General3dWorldObjectBatch : IBatchRenderer
+        {
+            public Dictionary<Vector4, List<Matrix4>> colorCubes = new Dictionary<Vector4, List<Matrix4>>();
+
+            public List<(BfresModelCache.CachedModel model, Matrix4 transform)> cachedModels = new List<(BfresModelCache.CachedModel, Matrix4)>();
+
+            //public List<(BfresModelCache.ExtraModel model, Matrix4 transform)> extraModels = new List<(BfresModelCache.ExtraModel, Matrix4)>();
+
+            public void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor, Matrix4 zoneTransform, Vector4 pickingColor)
+            {
+                bool drawHighlight = highlightColor.W != 0;
+
+                if (pass == Pass.OPAQUE)
+                {
+                    control.CurrentShader = BfresModelCache.BfresShaderProgram;
+
+                    control.CurrentShader.SetVector4("highlight_color", highlightColor);
+
+                    GL.ActiveTexture(TextureUnit.Texture0);
+
+                    if (drawHighlight)
+                    {
+                        GL.Enable(EnableCap.StencilTest);
+                        GL.Clear(ClearBufferMask.StencilBufferBit);
+                        GL.ClearStencil(0);
+                        GL.StencilFunc(StencilFunction.Always, 0x1, 0x1);
+                        GL.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
+                    }
+
+                    for (int i = 0; i < cachedModels.Count; i++)
+                    {
+                        control.UpdateModelMatrix(cachedModels[i].transform * zoneTransform);
+                        cachedModels[i].model.BatchDrawOpaque(control, drawHighlight);
+                    }
+
+                    if (drawHighlight)
+                    {
+                        control.CurrentShader = Framework.SolidColorShaderProgram;
+                        control.CurrentShader.SetVector4("color", new Vector4(highlightColor.Xyz, 1));
+
+                        GL.LineWidth(3.0f);
+                        GL.StencilFunc(StencilFunction.Equal, 0x0, 0x1);
+                        GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);
+
+                        GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
+
+                        for (int i = 0; i < cachedModels.Count; i++)
+                        {
+                            control.UpdateModelMatrix(cachedModels[i].transform * zoneTransform);
+                            cachedModels[i].model.BatchDrawSolidColor(control);
+                        }
+
+                        GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill);
+
+                        GL.Disable(EnableCap.StencilTest);
+                        GL.LineWidth(2);
+                    }
+                }
+                else if (pass == Pass.TRANSPARENT)
+                {
+                    control.CurrentShader = BfresModelCache.BfresShaderProgram;
+
+                    control.CurrentShader.SetVector4("highlight_color", highlightColor);
+
+                    GL.ActiveTexture(TextureUnit.Texture0);
+
+                    GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                    GL.Enable(EnableCap.Blend);
+
+                    for (int i = 0; i < cachedModels.Count; i++)
+                    {
+                        control.UpdateModelMatrix(cachedModels[i].transform * zoneTransform);
+                        cachedModels[i].model.BatchDrawTranparent(control);
+                    }
+
+                    GL.Disable(EnableCap.Blend);
+                }
+                else
+                {
+                    control.CurrentShader = Framework.SolidColorShaderProgram;
+                    control.CurrentShader.SetVector4("color", pickingColor);
+
+                    for (int i = 0; i < cachedModels.Count; i++)
+                    {
+                        control.UpdateModelMatrix(cachedModels[i].transform * zoneTransform);
+                        cachedModels[i].model.BatchDrawSolidColor(control);
+                    }
+                }
+            }
         }
 
         public class BasicPropertyUIContainer : IObjectUIContainer
