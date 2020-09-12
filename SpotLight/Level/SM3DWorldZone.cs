@@ -1,5 +1,7 @@
 ﻿using BYAML;
 using GL_EditorFramework;
+using GL_EditorFramework.GL_Core;
+using GL_EditorFramework.Interfaces;
 using OpenTK;
 using SpotLight.EditorDrawables;
 using Syroot.BinaryData;
@@ -19,6 +21,28 @@ namespace SpotLight.Level
     public class ObjectList : List<I3dWorldObject>
     {
 
+    }
+
+    public class ZoneRenderBatch
+    {
+        Dictionary<Type, IBatchRenderer> batchRenderers = new Dictionary<Type, IBatchRenderer>();
+
+        public void Clear() => batchRenderers.Clear();
+
+        public IBatchRenderer GetBatchRenderer(Type batchType)
+        {
+            if (!batchRenderers.ContainsKey(batchType))
+                batchRenderers.Add(batchType, (IBatchRenderer)Activator.CreateInstance(batchType));
+
+            return batchRenderers[batchType];
+        }
+
+        public IEnumerable<IBatchRenderer> BatchRenderers => batchRenderers.Values;
+    }
+
+    public interface IBatchRenderer
+    {
+        void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor, Matrix4 zoneTransform, Vector4 pickingColor);
     }
 
     public class SM3DWorldZone
@@ -79,6 +103,26 @@ namespace SpotLight.Level
                     }
                 }
             }
+        }
+
+        public readonly ZoneRenderBatch ZoneBatch = new ZoneRenderBatch();
+
+        public void UpdateRenderBatch()
+        {
+            ZoneBatch.Clear();
+
+            SceneObjectIterState.InLinks = false;
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
+            {
+                if (keyValuePair.Key == MAP_PREFIX + "SkyList")
+                    continue;
+
+                foreach (I3dWorldObject obj in keyValuePair.Value)
+                    obj.AddToZoneBatch(ZoneBatch);
+            }
+            SceneObjectIterState.InLinks = true;
+            foreach (I3dWorldObject obj in LinkedObjects)
+                obj.AddToZoneBatch(ZoneBatch);
         }
 
         private DateTime lastSaveTime;

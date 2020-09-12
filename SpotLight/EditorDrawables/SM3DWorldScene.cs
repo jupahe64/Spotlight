@@ -227,7 +227,7 @@ namespace SpotLight.EditorDrawables
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
             {
-                var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, Math.Min(100,control.PickingDepth)), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
+                var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, Math.Min(100, control.PickingDepth)), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
 
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
 
@@ -275,7 +275,7 @@ namespace SpotLight.EditorDrawables
             return MainZone.LevelName;
         }
 
-        
+
         class LinkRenderer : AbstractGlDrawable
         {
             static bool Initialized = false;
@@ -287,7 +287,7 @@ namespace SpotLight.EditorDrawables
             public LinkRenderer(SM3DWorldScene scene)
             {
                 this.scene = scene;
-                
+
                 if (!Initialized)
                 {
                     LinksShaderProgram = new ShaderProgram(
@@ -421,6 +421,8 @@ namespace SpotLight.EditorDrawables
                 if (editZoneIndex == value)
                     return;
 
+                EditZone?.UpdateRenderBatch();
+
                 if (value == 0)
                 {
                     EditZone = MainZone;
@@ -449,7 +451,7 @@ namespace SpotLight.EditorDrawables
                         ZonePlacements.Add(zonePlacement);
                     }
 
-                    ZonePlacements.Add(new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, MainZone));
+                    ZonePlacements.Add(mainZonePlacement);
                 }
 
                 SceneDrawState.ZoneTransform = EditZoneTransform;
@@ -464,7 +466,16 @@ namespace SpotLight.EditorDrawables
 
         protected ZoneTransform EditZoneTransform { get; private set; }
 
-        public SM3DWorldZone MainZone { get; private set; }
+        public SM3DWorldZone MainZone { 
+            get => mainZone;
+            private set
+            {
+                mainZone = value;
+                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, value);
+            }
+        }
+
+        private ZonePlacement mainZonePlacement;
 
         public IEnumerable<SM3DWorldZone> GetZones()
         {
@@ -479,7 +490,7 @@ namespace SpotLight.EditorDrawables
         [System.ComponentModel.ReadOnly(true)]
         public override bool IsSaved
         {
-            get => GetZones().All(x=>x.IsSaved);
+            get => GetZones().All(x => x.IsSaved);
             protected set
             {
                 EditZone.IsSaved = value;
@@ -497,7 +508,7 @@ namespace SpotLight.EditorDrawables
             foreach (var obj in Get3DWObjects())
                 yield return obj;
 
-            if(editZoneIndex==0) //zonePlacements can be edited
+            if (editZoneIndex == 0) //zonePlacements can be edited
                 foreach (var zonePlacement in ZonePlacements)
                     yield return zonePlacement;
         }
@@ -585,7 +596,7 @@ namespace SpotLight.EditorDrawables
                         _objsToDelete.Add(obj);
                     }
 
-                    if(_objsToDelete.Count>0)
+                    if (_objsToDelete.Count > 0)
                         objsToDelete.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, _objsToDelete.ToArray()));
                 }
             }
@@ -725,6 +736,7 @@ namespace SpotLight.EditorDrawables
         static SM3DWorldZone copySrcZone = null;
 
         static ZoneTransform copySrcZoneTransform;
+        private SM3DWorldZone mainZone;
 
         /// <summary>
         /// Copies the selected objects for pasting
@@ -755,7 +767,7 @@ namespace SpotLight.EditorDrawables
                 foreach (I3dWorldObject obj in keyValuePair.Value)
                     obj.DuplicateSelected(copies, this, null, false);
 
-                if(copies.Count>0)
+                if (copies.Count > 0)
                     copiedObjects.Add((keyValuePair.Key, copies));
             }
             SceneObjectIterState.InLinks = true;
@@ -770,7 +782,7 @@ namespace SpotLight.EditorDrawables
                     copiedObjects.Add(("Links", copies));
             }
 
-            if(copiedZonePlacements.Count > 0 || copiedObjects.Count > 0)
+            if (copiedZonePlacements.Count > 0 || copiedObjects.Count > 0)
             {
                 copySrcZone = EditZone;
 
@@ -862,7 +874,7 @@ namespace SpotLight.EditorDrawables
 
             List<ZonePlacement> totalDuplicatesOfZonePlacements = new List<ZonePlacement>();
 
-            if (editZoneIndex==0 && copiedZonePlacements?.Count > 0)
+            if (editZoneIndex == 0 && copiedZonePlacements?.Count > 0)
             {
                 foreach (var placement in copiedZonePlacements)
                 {

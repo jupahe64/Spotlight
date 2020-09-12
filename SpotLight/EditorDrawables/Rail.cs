@@ -376,7 +376,7 @@ namespace SpotLight.EditorDrawables
             return zone.ObjLists.TryGetValue("Map_Rails", out objList);
         }
 
-        public void AddToZoneBatch(ZonePlacement zonePlacement)
+        public void AddToZoneBatch(ZoneRenderBatch zoneBatch)
         {
             //TODO figure out if this is needed or not
         }

@@ -493,9 +493,9 @@ namespace SpotLight.EditorDrawables
             return true;
         }
 
-        public void AddToZoneBatch(ZonePlacement zonePlacement)
+        public void AddToZoneBatch(ZoneRenderBatch zoneBatch)
         {
-            General3dWorldObjectBatch renderer = (General3dWorldObjectBatch)zonePlacement.GetBatchRenderer(typeof(General3dWorldObjectBatch));
+            General3dWorldObjectBatch renderer = (General3dWorldObjectBatch)zoneBatch.GetBatchRenderer(typeof(General3dWorldObjectBatch));
 
             BfresModelCache.TryGetModel(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, out BfresModelCache.CachedModel cachedModel, out BfresModelCache.ExtraModel extraModel);
 

@@ -30,6 +30,6 @@ namespace SpotLight.EditorDrawables
         void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);
         Vector3 GetLinkingPoint(SM3DWorldScene editorScene);
 
-        void AddToZoneBatch(ZonePlacement zonePlacement);
+        void AddToZoneBatch(ZoneRenderBatch zoneBatch);
     }
 }

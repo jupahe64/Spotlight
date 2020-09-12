@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 
 namespace SpotLight.EditorDrawables
 {
+    
+
     public class ZonePlacement : TransformableObject
     {
         public readonly SM3DWorldZone Zone;
@@ -20,7 +22,7 @@ namespace SpotLight.EditorDrawables
         {
             Zone = zone;
 
-            UpdateBatch();
+            Zone.UpdateRenderBatch();
         }
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
@@ -49,40 +51,12 @@ namespace SpotLight.EditorDrawables
 
             Vector4 pickingColor = control.NextPickingColor();
 
-            foreach (var renderer in batchRenderers.Values)
+            foreach (var renderer in Zone.ZoneBatch.BatchRenderers)
             {
                 renderer.Draw(control, pass, hightlightColor, transform, pickingColor);
             }
 
             SceneDrawState.ZoneTransform = transformBackup;
-        }
-
-        Dictionary<Type, IBatchRenderer> batchRenderers = new Dictionary<Type, IBatchRenderer>();
-
-        public IBatchRenderer GetBatchRenderer(Type batchType)
-        {
-            if (!batchRenderers.ContainsKey(batchType) && typeof(IBatchRenderer).IsAssignableFrom(batchType))
-                batchRenderers.Add(batchType, (IBatchRenderer)Activator.CreateInstance(batchType));
-
-            return batchRenderers[batchType];
-        }
-
-        public void UpdateBatch()
-        {
-            batchRenderers.Clear();
-
-            SceneObjectIterState.InLinks = false;
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in Zone.ObjLists)
-            {
-                if (keyValuePair.Key == SM3DWorldZone.MAP_PREFIX + "SkyList")
-                    continue;
-
-                foreach (I3dWorldObject obj in keyValuePair.Value)
-                    obj.AddToZoneBatch(this);
-            }
-            SceneObjectIterState.InLinks = true;
-            foreach (I3dWorldObject obj in Zone.LinkedObjects)
-                obj.AddToZoneBatch(this);
         }
 
         public ZoneTransform GetTransform()
@@ -103,10 +77,5 @@ namespace SpotLight.EditorDrawables
         }
 
         public override string ToString() => Zone.LevelName;
-    }
-
-    public interface IBatchRenderer
-    {
-        void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor, Matrix4 zoneTransform, Vector4 pickingColor);
     }
 }
