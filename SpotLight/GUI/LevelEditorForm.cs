@@ -503,7 +503,7 @@ namespace SpotLight
             {
                 SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
 
-                CancelButton.Visible = true;
+                CancelAddObjectButton.Visible = true;
             }
         }
 
@@ -1122,7 +1122,7 @@ namespace SpotLight
             {
                 SpotlightToolStripStatusLabel.Text = "";
                 QuickFavoriteControl.Deselect();
-                CancelButton.Visible = false;
+                CancelAddObjectButton.Visible = false;
             }
         }
 
@@ -1284,7 +1284,7 @@ Would you like to rebuild the database from your 3DW Files?";
             ZonesTabPage.Text = Program.CurrentLanguage.GetTranslation("ZonesTabPage") ?? "Zones";
             ObjectsTabPage.Text = Program.CurrentLanguage.GetTranslation("ObjectsTabPage") ?? "Objects";
             EditIndividualButton.Text = Program.CurrentLanguage.GetTranslation("EditIndividualButton") ?? "Edit Individual";
-            CancelButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
+            CancelAddObjectButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
             CurrentObjectLabel.Text = NothingSelected;
             #endregion
         }
@@ -1355,13 +1355,13 @@ Would you like to rebuild the database from your 3DW Files?";
             {
                 currentScene.ObjectPlaceDelegate = QuickFavoriteControl.SelectedFavorite.PlacementHandler;
                 SpotlightToolStripStatusLabel.Text = StatusObjectPlaceNoticeMessage;
-                CancelButton.Visible = true;
+                CancelAddObjectButton.Visible = true;
             }
             else
             {
                 currentScene?.ResetObjectPlaceDelegate();
                 SpotlightToolStripStatusLabel.Text = "";
-                CancelButton.Visible = false;
+                CancelAddObjectButton.Visible = false;
             }
         }
 
@@ -1370,7 +1370,7 @@ Would you like to rebuild the database from your 3DW Files?";
             BfresModelCache.Initialize();
         }
 
-        private void CancelButton_Click(object sender, EventArgs e)
+        private void CancelAddObjectButton_Click(object sender, EventArgs e)
         {
             if (currentScene?.ObjectPlaceDelegate != null)
             {
@@ -1381,7 +1381,9 @@ Would you like to rebuild the database from your 3DW Files?";
                 SpotlightToolStripStatusLabel.Text = "";
             }
 
-            CancelButton.Visible = false;
+            CancelAddObjectButton.Visible = false;
         }
+
+        private void LevelEditorForm_Paint(object sender, PaintEventArgs e) => QuickFavoriteControl.Refresh();
     }
 }

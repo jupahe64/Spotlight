@@ -76,7 +76,7 @@
             this.SpotlightStatusStrip = new System.Windows.Forms.StatusStrip();
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
-            this.CancelButton = new System.Windows.Forms.Button();
+            this.CancelAddObjectButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -234,9 +234,9 @@
             // 
             this.QuickFavoriteControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.QuickFavoriteControl.Location = new System.Drawing.Point(3, 457);
+            this.QuickFavoriteControl.Location = new System.Drawing.Point(3, 449);
             this.QuickFavoriteControl.Name = "QuickFavoriteControl";
-            this.QuickFavoriteControl.Size = new System.Drawing.Size(517, 53);
+            this.QuickFavoriteControl.Size = new System.Drawing.Size(515, 66);
             this.QuickFavoriteControl.TabIndex = 1;
             this.QuickFavoriteControl.SelectedFavoriteChanged += new System.EventHandler(this.QuickFavoriteControl_SelectedFavoriteChanged);
             // 
@@ -575,29 +575,29 @@
             // 
             // toolStripTextBox1
             // 
-            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 
-            // CancelButton
+            // CancelAddObjectButton
             // 
-            this.CancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CancelButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.CancelButton.Location = new System.Drawing.Point(716, 543);
-            this.CancelButton.Name = "CancelButton";
-            this.CancelButton.Size = new System.Drawing.Size(66, 18);
-            this.CancelButton.TabIndex = 5;
-            this.CancelButton.Text = "Cancel";
-            this.CancelButton.UseVisualStyleBackColor = true;
-            this.CancelButton.Visible = false;
-            this.CancelButton.Click += new System.EventHandler(this.CancelButton_Click);
+            this.CancelAddObjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.CancelAddObjectButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.CancelAddObjectButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+            this.CancelAddObjectButton.Location = new System.Drawing.Point(716, 541);
+            this.CancelAddObjectButton.Name = "CancelAddObjectButton";
+            this.CancelAddObjectButton.Size = new System.Drawing.Size(66, 19);
+            this.CancelAddObjectButton.TabIndex = 5;
+            this.CancelAddObjectButton.Text = "Cancel";
+            this.CancelAddObjectButton.UseVisualStyleBackColor = true;
+            this.CancelAddObjectButton.Visible = false;
+            this.CancelAddObjectButton.Click += new System.EventHandler(this.CancelAddObjectButton_Click);
             // 
             // LevelEditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
-            this.Controls.Add(this.CancelButton);
+            this.Controls.Add(this.CancelAddObjectButton);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.SpotlightMenuStrip);
             this.Controls.Add(this.SpotlightStatusStrip);
@@ -607,6 +607,7 @@
             this.Name = "LevelEditorForm";
             this.Text = "SpotLight";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LevelEditorForm_FormClosing);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.LevelEditorForm_Paint);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -677,7 +678,7 @@
         private System.Windows.Forms.ToolStripMenuItem SelectAllLinkedToolStripMenuItem;
         private QuickFavoriteControl QuickFavoriteControl;
         private System.Windows.Forms.ToolStripMenuItem SelectionToolStripMenuItem;
-        private System.Windows.Forms.Button CancelButton;
+        private System.Windows.Forms.Button CancelAddObjectButton;
     }
 }
 

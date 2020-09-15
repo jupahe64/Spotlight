@@ -126,26 +126,26 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddObjectForm.cs">
+    <Compile Include="GUI\AddObjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AddObjectForm.Designer.cs">
+    <Compile Include="GUI\AddObjectForm.Designer.cs">
       <DependentUpon>AddObjectForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AddZoneForm.cs">
+    <Compile Include="GUI\AddZoneForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BfresModelCache.cs" />
-    <Compile Include="Language.cs" />
-    <Compile Include="LoadLevelForm.cs">
+    <Compile Include="Storage\BfresModelCache.cs" />
+    <Compile Include="Storage\Language.cs" />
+    <Compile Include="GUI\LoadLevelForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LoadLevelForm.Designer.cs">
+    <Compile Include="GUI\LoadLevelForm.Designer.cs">
       <DependentUpon>LoadLevelForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ObjectCamera.cs" />
-    <Compile Include="QuickFavoritesControl.cs" />
-    <Compile Include="SceneStates.cs" />
+    <Compile Include="Storage\ObjectCamera.cs" />
+    <Compile Include="GUI\QuickFavoritesControl.cs" />
+    <Compile Include="Level\SceneStates.cs" />
     <None Include="Clear Pipes.cs" />
     <Compile Include="EditorDrawables\General3dWorldObject.cs" />
     <Compile Include="EditorDrawables\I3dWorldObject.cs" />
@@ -153,63 +153,63 @@
     <Compile Include="EditorDrawables\Rail.cs" />
     <Compile Include="EditorDrawables\SM3DWorldScene.cs" />
     <Compile Include="EditorDrawables\ZonePlacement.cs" />
-    <Compile Include="LevelEditorForm.cs">
+    <Compile Include="GUI\LevelEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LevelEditorForm.Designer.cs">
+    <Compile Include="GUI\LevelEditorForm.Designer.cs">
       <DependentUpon>LevelEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Level\LevelIO.cs" />
-    <Compile Include="LevelParam.cs" />
-    <Compile Include="LevelParameterForm.cs">
+    <Compile Include="Storage\LevelParam.cs" />
+    <Compile Include="GUI\LevelParameterForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LevelParameterForm.Designer.cs">
+    <Compile Include="GUI\LevelParameterForm.Designer.cs">
       <DependentUpon>LevelParameterForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="LevelSelectForm.cs">
+    <Compile Include="GUI\LevelSelectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LevelSelectForm.Designer.cs">
+    <Compile Include="GUI\LevelSelectForm.Designer.cs">
       <DependentUpon>LevelSelectForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Level\SM3DWorldZone.cs" />
-    <Compile Include="ObjectParamDatabase\ObjectParameterDatabase.cs" />
-    <Compile Include="ObjectParameterForm.cs">
+    <Compile Include="Storage\ObjectParameterDatabase.cs" />
+    <Compile Include="GUI\ObjectParameterForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ObjectParameterForm.Designer.cs">
+    <Compile Include="GUI\ObjectParameterForm.Designer.cs">
       <DependentUpon>ObjectParameterForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsForm.cs">
+    <Compile Include="GUI\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SettingsForm.Designer.cs">
+    <Compile Include="GUI\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Level\GlobalZoneHistory.cs" />
-    <EmbeddedResource Include="AddObjectForm.resx">
+    <EmbeddedResource Include="GUI\AddObjectForm.resx">
       <DependentUpon>AddObjectForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AddZoneForm.resx">
+    <EmbeddedResource Include="GUI\AddZoneForm.resx">
       <DependentUpon>AddZoneForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LevelEditorForm.resx">
+    <EmbeddedResource Include="GUI\LevelEditorForm.resx">
       <DependentUpon>LevelEditorForm.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Settings.cs" />
-    <EmbeddedResource Include="LevelParameterForm.resx">
+    <EmbeddedResource Include="GUI\LevelParameterForm.resx">
       <DependentUpon>LevelParameterForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LevelSelectForm.resx">
+    <EmbeddedResource Include="GUI\LevelSelectForm.resx">
       <DependentUpon>LevelSelectForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LoadLevelForm.resx">
+    <EmbeddedResource Include="GUI\LoadLevelForm.resx">
       <DependentUpon>LoadLevelForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ObjectParameterForm.resx">
+    <EmbeddedResource Include="GUI\ObjectParameterForm.resx">
       <DependentUpon>ObjectParameterForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -222,7 +222,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SettingsForm.resx">
+    <EmbeddedResource Include="GUI\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="OpenTK.dll.config" />
@@ -269,6 +269,9 @@
   <ItemGroup>
     <Content Include="LatestVersion.txt" />
     <Content Include="SpotLightIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EditorDrawables\ObjectSpecificDrawables\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

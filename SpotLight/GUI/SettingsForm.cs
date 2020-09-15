@@ -79,7 +79,7 @@ namespace SpotLight
             else
                 ClearDescriptionsButton.Enabled = false;
             date = File.GetLastWriteTime(Program.SODDPath);
-            DescriptionInfoLabel.Text = DescriptionInfoLabel.Text.Replace("[DATABASEGENDATE]", date.Year.CompareTo(new DateTime(2018, 1, 1).Year) < 0 ? FileDoesntExist : date.ToLongDateString()).Replace("[VER]", ver);
+            DescriptionInfoLabel.Text = DescriptionVersionBase.Replace("[DATABASEGENDATE]", date.Year.CompareTo(new DateTime(2018, 1, 1).Year) < 0 ? FileDoesntExist : date.ToLongDateString()).Replace("[VER]", ver);
 
             #endregion
 
@@ -357,6 +357,8 @@ namespace SpotLight
 
             Properties.Settings.Default.Language = LanguageComboBox.SelectedItem.ToString();
             Properties.Settings.Default.Save();
+            Program.CurrentLanguage = File.Exists(Path.Combine(Program.LanguagePath, Properties.Settings.Default.Language + ".txt")) ? new Language(Properties.Settings.Default.Language, Path.Combine(Program.LanguagePath, Properties.Settings.Default.Language + ".txt")) : new Language();
+
             Localize();
             Home.Localize();
         }
@@ -396,6 +398,7 @@ namespace SpotLight
             RenderSkyboxesCheckBox.Text = Program.CurrentLanguage.GetTranslation("RenderSkyboxesCheckBox") ?? "Render Skyboxes";
             PlayerLabel.Text = Program.CurrentLanguage.GetTranslation("PlayerLabel") ?? "Player:";
             Loading = true;
+            int tempplayerid = PlayerComboBox.SelectedIndex;
             PlayerComboBox.Items.Clear();
             PlayerComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("PlayerNone") ?? "None");
             PlayerComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("PlayerMario") ?? "Mario");
@@ -403,6 +406,7 @@ namespace SpotLight
             PlayerComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("PlayerPeach") ?? "Peach");
             PlayerComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("PlayerToad") ?? "Toad");
             PlayerComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("PlayerRosalina") ?? "Rosalina");
+            PlayerComboBox.SelectedIndex = tempplayerid;
             switch (PlayerComboBox.SelectedIndex)
             {
                 case 0:
@@ -432,6 +436,42 @@ namespace SpotLight
             MiscellaneousGroupBox.Text = Program.CurrentLanguage.GetTranslation("MiscellaneousGroupBox") ?? "Miscellaneous";
             LanguageLabel.Text = Program.CurrentLanguage.GetTranslation("LanguageLabel") ?? "Language:";
             ResetSpotlightButton.Text = Program.CurrentLanguage.GetTranslation("ResetSpotlightButton") ?? "Reset";
+
+            #region Databases
+            string ver = SettingsInvalid;
+            if (File.Exists(Program.SOPDPath))
+            {
+                FileStream FS = new FileStream(Program.SOPDPath, FileMode.Open);
+                byte[] Read = new byte[4];
+                FS.Read(Read, 0, 4);
+                if (Encoding.ASCII.GetString(Read) != "SOPD")
+                    throw new Exception("Invalid Database File");
+
+                Version Check = new Version(FS.ReadByte(), FS.ReadByte());
+                ver = Program.ParameterDB != null ? Program.ParameterDB.Version.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
+                FS.Close();
+            }
+            DateTime date = File.GetLastWriteTime(Program.SOPDPath);
+            DatabaseInfoLabel.Text = DatabaseVersionBase.Replace("[DATABASEGENDATE]", date.Year.CompareTo(new DateTime(2018, 1, 1).Year) < 0 ? FileDoesntExist : date.ToLongDateString()).Replace("[VER]", ver);
+
+            ver = SettingsInvalid;
+            if (File.Exists(Program.SODDPath))
+            {
+                FileStream FS = new FileStream(Program.SODDPath, FileMode.Open);
+                byte[] Read = new byte[4];
+                FS.Read(Read, 0, 4);
+                if (Encoding.ASCII.GetString(Read) != "SODD")
+                    throw new Exception("Invalid Description File");
+
+                Version Check = new Version(FS.ReadByte(), FS.ReadByte());
+                ver = Check.Equals(Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion) ? Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
+                FS.Close();
+            }
+            else
+                ClearDescriptionsButton.Enabled = false;
+            date = File.GetLastWriteTime(Program.SODDPath);
+            DescriptionInfoLabel.Text = DescriptionVersionBase.Replace("[DATABASEGENDATE]", date.Year.CompareTo(new DateTime(2018, 1, 1).Year) < 0 ? FileDoesntExist : date.ToLongDateString()).Replace("[VER]", ver);
+            #endregion
         }
 
         private string DatabaseVersionBase { get; set; }

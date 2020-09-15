@@ -35,6 +35,8 @@ namespace SpotLight
 
             if (!showMisc)
                 SectionComboBox.Items.RemoveAt(12);
+            else
+                SectionComboBox.Items[12] = Program.CurrentLanguage.GetTranslation("WorldNameMisc") ?? "Miscellaneous";
 
             SectionComboBox.SelectedIndex = 0;
         }
@@ -82,7 +84,10 @@ namespace SpotLight
             else
             {
                 if (!LevelsListView.Columns.Contains(CourseIDColumnHeader))
+                {
                     LevelsListView.Columns.Insert(0, CourseIDColumnHeader);
+                    CourseIDColumnHeader.Width = 65;
+                }
             }
 
             if (items == null)

@@ -35,9 +35,11 @@ namespace SpotLight
 
         int hoveredIndex = -1;
 
-        bool hoveringOverClose = false;
-
+        int hoveringOverClose = -1;
+        
         Graphics g;
+
+        public override string Text { get => base.Text; set => base.Text = value; }
 
         public event EventHandler SelectedFavoriteChanged;
 
@@ -196,66 +198,45 @@ Closed
             new Point(arrowWidth/2+4, 10)
         };
 
-        static char[] newLineSeperator = new char[] { '\n' };
+        static readonly char[] newLineSeperator = new char[] { '\n' };
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             base.OnPaintBackground(e);
 
             g = e.Graphics;
-
             g.Clear(SystemColors.ControlLightLight);
-
-            hoveredIndex = -1;
-
-            hoveringOverClose = false;
 
             int x = arrowWidth + 5;
 
             Rectangle favoritesArea = new Rectangle(arrowWidth + 5, 0, Width - 10 - arrowWidth * 2, Height);
-
             g.SetClip(favoritesArea);
 
+            if (favorites.Count == 0)
+                g.DrawString(Program.CurrentLanguage?.GetTranslation("NoQuickFavourites") ?? "No Quick Favourites", Font, SystemBrushes.ControlDarkDark, Width /2, Height/2, new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
+            hoveredIndex = -1;
+            hoveringOverClose = -1;
             for (int i = scrollIndexOffset; i < favorites.Count; i++)
             {
                 int width = (int)Math.Ceiling(g.MeasureString(favorites[i].Name, Font).Width);
+                if (favoritesArea.Contains(mousePos) && (mousePos.X > x && mousePos.X < x + width + 25) && (mousePos.Y > 5 && mousePos.Y < Height - 5))
+                    hoveredIndex = i;
+                if ((favoritesArea.Contains(mousePos) && (mousePos.X > x + width && mousePos.X < x + width + 25) && (mousePos.Y > 5 && mousePos.Y < 25)))
+                    hoveringOverClose = i;
 
-                if (i == selectedIndex)
-                    g.FillRectangle(SystemBrushes.Highlight, x, 0, width + 25, Height);
-                else
-                    g.FillRectangle(SystemBrushes.ControlDark, x, 0, width + 25, Height);
+                g.FillRectangle(i == selectedIndex ? SystemBrushes.Highlight : SystemBrushes.ControlDark, x, 5, width + 25, Height - 10);
 
-                g.FillRectangle(SystemBrushes.ControlLightLight, x + 1, 1, width + 23, Height - 2);
+                g.FillRectangle(hoveredIndex == i ? SystemBrushes.ControlLight : SystemBrushes.ControlLightLight, x + 1, 6, width + 23, Height - 12);
 
                 string[] parts = favorites[i].Name.Split(newLineSeperator, 2);
 
-                if (i == selectedIndex)
-                    g.DrawString(parts[0], Font, SystemBrushes.Highlight, x + 5, 2);
-                else
-                    g.DrawString(parts[0], Font, SystemBrushes.ControlText, x + 5, 2);
+                g.DrawString(parts[0], Font, i == selectedIndex ? SystemBrushes.Highlight : SystemBrushes.ControlText, x + 5, 7);
 
                 if (parts.Length>1)
-                    g.DrawString(parts[1], Font, SystemBrushes.ControlDarkDark, x + 5, HeaderFont.Height + 4);
+                    g.DrawString(parts[1], Font, SystemBrushes.ControlDarkDark, x + 5, HeaderFont.Height + 9);
 
-                if (favoritesArea.Contains(mousePos))
-                {
-                    if (mousePos.X > x && mousePos.X < x + width + 25)
-                    {
-                        hoveredIndex = i;
+                g.DrawImage(hoveringOverClose == i ? Resources.CloseTabIconHover : Resources.CloseTabIcon, x + width + 13, 9);
 
-                        if (mousePos.X > x + width + 13)
-                        {
-                            hoveringOverClose = true;
-
-                            g.DrawImage(Resources.CloseTabIconHover, x + width + 13, 4);
-                            goto ICON_HOVERED;
-                        }
-                    }
-                }
-
-                g.DrawImage(Resources.CloseTabIcon, x + width + 13, 4);
-
-                ICON_HOVERED:
                 x += width + 27;
             }
 
@@ -277,9 +258,9 @@ Closed
 
             if (canScrollRight)
             {
-                g.FillRectangle(SystemBrushes.ControlDark, Width - arrowWidth - 5 - 2, 1, 2, Height - 2);
+                g.FillRectangle(SystemBrushes.ControlDark, Width - arrowWidth - 5 - 2, 6, 2, Height - 12);
 
-                if (new Rectangle(Width - arrowWidth - 5, 1, arrowWidth, Height - 2).Contains(mousePos))
+                if (new Rectangle(Width - arrowWidth - 5, 6, arrowWidth, Height - 12).Contains(mousePos))
                     hoveredArrow = HoveredArrow.RIGHT;
 
                 g.TranslateTransform(Width - arrowWidth - 5, 10);
@@ -287,6 +268,7 @@ Closed
                 g.ResetTransform();
             }
 
+            g.DrawRectangle(new Pen(SystemBrushes.ControlDarkDark, 2), 0, 0, Width, Height);
         }
 
         enum HoveredArrow
@@ -321,7 +303,7 @@ Closed
 
             if (hoveredIndex != -1)
             {
-                if (hoveringOverClose)
+                if (hoveringOverClose > -1)
                 {
                     QuickFavoriteClosingEventArgs args = new QuickFavoriteClosingEventArgs(favorites[hoveredIndex]);
 
