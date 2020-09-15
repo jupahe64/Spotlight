@@ -139,7 +139,7 @@ namespace SpotLight.Level
             private set
             {
                 levelName = value;
-                if(LevelFileName != null && Directory != null)
+                if (LevelFileName != null && Directory != null)
                     loadedZones.Remove(Path.Combine(Directory, LevelFileName));
 
                 LevelFileName = levelName + fileSuffix;
@@ -178,7 +178,7 @@ namespace SpotLight.Level
         /// <summary>
         /// Any extra files that may be inside the map
         /// </summary>
-        readonly Dictionary<string, dynamic>[] extraFiles = new Dictionary<string, dynamic>[]
+        public Dictionary<string, dynamic>[] ExtraFiles { get; private set; } = new Dictionary<string, dynamic>[]
         {
             new Dictionary<string, dynamic>(),
             new Dictionary<string, dynamic>(),
@@ -372,9 +372,41 @@ namespace SpotLight.Level
                 else
                 {
                     if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
-                        extraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                    {
+                        if(keyValuePair.Key == "CameraParam.byml")
+                        {
+                            ByamlIterator byamlIterator = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+
+                            Dictionary<string, dynamic> cameraParam = new Dictionary<string, dynamic>();
+
+                            foreach (var entry in byamlIterator.IterRootDictionary())
+                            {
+                                if (entry.Key == "CameraParams")
+                                {
+                                    Dictionary<string, List<ObjectCamera>> cameraParametersByObject = new Dictionary<string, List<ObjectCamera>>();
+
+                                    foreach (var paramsEntry in entry.IterArray())
+                                    {
+                                        var cam = new ObjectCamera(paramsEntry, out string objID);
+
+                                        if(cameraParametersByObject.TryGetValue(objID, out var list))
+                                            list.Add(cam);
+                                        else
+                                            cameraParametersByObject.Add(objID, new List<ObjectCamera>() { cam });
+                                    }
+                                    cameraParam.Add(entry.Key, cameraParametersByObject);
+                                }
+                                else
+                                    cameraParam.Add(entry.Key, entry.Parse());
+                            }
+
+                            ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, cameraParam);
+                        }
+                        else
+                            ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                    }
                     else
-                        extraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                        ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
                 }
             }
 
@@ -441,9 +473,9 @@ namespace SpotLight.Level
                     }
 
                     if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
-                        extraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                        ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
                     else
-                        extraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                        ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
                 }
             }
 
@@ -588,7 +620,7 @@ namespace SpotLight.Level
                 Files = new Dictionary<string, byte[]>()
             };
 
-            foreach (KeyValuePair<string, dynamic> keyValuePair in extraFiles[extraFilesIndex])
+            foreach (KeyValuePair<string, dynamic> keyValuePair in ExtraFiles[extraFilesIndex])
                 SaveExtraFile(sarcData, keyValuePair);
 
             using (MemoryStream stream = new MemoryStream())
@@ -631,7 +663,7 @@ namespace SpotLight.Level
             };
             for (int extraFilesIndex = 0; extraFilesIndex < 3; extraFilesIndex++)
             {
-                foreach (KeyValuePair<string, dynamic> keyValuePair in extraFiles[extraFilesIndex])
+                foreach (KeyValuePair<string, dynamic> keyValuePair in ExtraFiles[extraFilesIndex])
                     SaveExtraFile(sarcData, keyValuePair);
             }
 
@@ -773,7 +805,7 @@ namespace SpotLight.Level
                     Program.CurrentLanguage.GetTranslation("ModifiedOutsideHeader") ?? "File Modified",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
-                    extraFiles[extraFilesIndex].Clear();
+                    ExtraFiles[extraFilesIndex].Clear();
 
                     SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
 
@@ -783,10 +815,11 @@ namespace SpotLight.Level
                     {
                         if (keyValuePair.Key != stageFileName)
                         {
+                            //TODO handle CameraParam
                             if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
-                                extraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                                ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
                             else
-                                extraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                                ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
                         }
                     }
                 }

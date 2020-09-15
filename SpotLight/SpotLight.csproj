@@ -143,6 +143,7 @@
     <Compile Include="LoadLevelForm.Designer.cs">
       <DependentUpon>LoadLevelForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ObjectCamera.cs" />
     <Compile Include="QuickFavoritesControl.cs" />
     <Compile Include="SceneStates.cs" />
     <None Include="Clear Pipes.cs" />
@@ -188,7 +189,7 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Level\SM3DWorldLevel.cs" />
+    <Compile Include="Level\GlobalZoneHistory.cs" />
     <EmbeddedResource Include="AddObjectForm.resx">
       <DependentUpon>AddObjectForm.cs</DependentUpon>
     </EmbeddedResource>

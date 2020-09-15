@@ -183,6 +183,23 @@ namespace SpotLight.EditorDrawables
             camStateSaves[index]?.ApplyTo(control);
         }
 
+
+        protected override void OnUndo(IRevertable revertable)
+        {
+
+        }
+
+        protected override void OnRedo(RedoEntry redoEntry)
+        {
+            
+        }
+
+        protected override void OnSubmitUndoable(IRevertable revertable)
+        {
+            
+        }
+
+
         public override uint KeyDown(KeyEventArgs e, GL_ControlBase control, bool isRepeat)
         {
             int index = e.KeyCode - Keys.D0;
