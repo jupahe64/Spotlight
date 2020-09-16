@@ -6,7 +6,7 @@ using GL_EditorFramework.Interfaces;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using SpotLight.Level;
-using SpotLight.ObjectParamDatabase;
+using SpotLight.Database;
 using Syroot.BinaryData;
 using System;
 using System.Collections;

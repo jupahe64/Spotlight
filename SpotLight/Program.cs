@@ -1,5 +1,4 @@
-﻿using Spotlight.ObjectInformationDatabase;
-using SpotLight.ObjectParamDatabase;
+﻿using SpotLight.Database;
 using System;
 using System.Configuration;
 using System.Collections.Generic;
@@ -21,6 +20,14 @@ namespace SpotLight
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            Task SplashTask = Task.Run(() =>
+            {
+                SplashForm SF = new SplashForm(10);
+                SF.ShowDialog();
+                SF.Dispose();
+            });
+
             string FullfilePath = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
             string VersionDirectoryfilePath = Path.GetFullPath(Path.Combine(FullfilePath, @"..\..\"+Application.ProductVersion));
             string BasePath = Path.GetFullPath(Path.Combine(FullfilePath, @"..\..\"));
@@ -38,7 +45,8 @@ namespace SpotLight
             else
                 CurrentLanguage = new Language();
 
-            Application.Run(new LevelEditorForm());
+            LevelEditorForm LEF = new LevelEditorForm();
+            Application.Run(LEF);
         }
 
         /// <summary>
@@ -104,7 +112,9 @@ namespace SpotLight
         public static string SOPDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ParameterDatabase.sopd");
         public static string SODDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DescriptionDatabase.sodd");
         public static string LanguagePath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Languages");
+        public static string SplashPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Splash");
         public static Language CurrentLanguage { get; set; }
+        public static bool IsProgramReady { get; set; } = false;
 
         public static string TryGetPathViaProject(string Folder, string Filename)
         {

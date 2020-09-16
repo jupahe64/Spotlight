@@ -49,10 +49,13 @@
             this.ProjectPathButton = new System.Windows.Forms.Button();
             this.ProjectPathLabel = new System.Windows.Forms.Label();
             this.MiscellaneousGroupBox = new System.Windows.Forms.GroupBox();
+            this.SplashSizeComboBox = new System.Windows.Forms.ComboBox();
+            this.SplashSizeLabel = new System.Windows.Forms.Label();
             this.LanguageComboBox = new System.Windows.Forms.ComboBox();
             this.LanguageLabel = new System.Windows.Forms.Label();
             this.ProjectPathTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.GamePathTextBox = new GL_EditorFramework.SuggestingTextBox();
+            this.SplashTestButton = new System.Windows.Forms.Button();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
@@ -200,7 +203,7 @@
             this.LoadingAndSavingGroupBox.Controls.Add(this.UniqueIDsCheckBox);
             this.LoadingAndSavingGroupBox.Location = new System.Drawing.Point(12, 229);
             this.LoadingAndSavingGroupBox.Name = "LoadingAndSavingGroupBox";
-            this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(598, 57);
+            this.LoadingAndSavingGroupBox.Size = new System.Drawing.Size(598, 63);
             this.LoadingAndSavingGroupBox.TabIndex = 6;
             this.LoadingAndSavingGroupBox.TabStop = false;
             this.LoadingAndSavingGroupBox.Text = "Loading and Saving";
@@ -219,11 +222,12 @@
             // 
             // ResetSpotlightButton
             // 
-            this.ResetSpotlightButton.BackColor = System.Drawing.Color.DarkRed;
-            this.ResetSpotlightButton.ForeColor = System.Drawing.Color.Silver;
-            this.ResetSpotlightButton.Location = new System.Drawing.Point(501, 22);
+            this.ResetSpotlightButton.BackColor = System.Drawing.Color.Maroon;
+            this.ResetSpotlightButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.ResetSpotlightButton.ForeColor = System.Drawing.Color.OrangeRed;
+            this.ResetSpotlightButton.Location = new System.Drawing.Point(522, 25);
             this.ResetSpotlightButton.Name = "ResetSpotlightButton";
-            this.ResetSpotlightButton.Size = new System.Drawing.Size(91, 23);
+            this.ResetSpotlightButton.Size = new System.Drawing.Size(74, 23);
             this.ResetSpotlightButton.TabIndex = 7;
             this.ResetSpotlightButton.Text = "Reset";
             this.ResetSpotlightButton.UseVisualStyleBackColor = false;
@@ -243,7 +247,7 @@
             // EditingGroupBox
             // 
             this.EditingGroupBox.Controls.Add(this.IDEditingCheckBox);
-            this.EditingGroupBox.Location = new System.Drawing.Point(12, 292);
+            this.EditingGroupBox.Location = new System.Drawing.Point(12, 298);
             this.EditingGroupBox.Name = "EditingGroupBox";
             this.EditingGroupBox.Size = new System.Drawing.Size(598, 52);
             this.EditingGroupBox.TabIndex = 9;
@@ -271,15 +275,41 @@
             // 
             // MiscellaneousGroupBox
             // 
+            this.MiscellaneousGroupBox.Controls.Add(this.SplashTestButton);
+            this.MiscellaneousGroupBox.Controls.Add(this.SplashSizeComboBox);
+            this.MiscellaneousGroupBox.Controls.Add(this.SplashSizeLabel);
             this.MiscellaneousGroupBox.Controls.Add(this.LanguageComboBox);
             this.MiscellaneousGroupBox.Controls.Add(this.LanguageLabel);
             this.MiscellaneousGroupBox.Controls.Add(this.ResetSpotlightButton);
-            this.MiscellaneousGroupBox.Location = new System.Drawing.Point(12, 350);
+            this.MiscellaneousGroupBox.Location = new System.Drawing.Point(12, 356);
             this.MiscellaneousGroupBox.Name = "MiscellaneousGroupBox";
             this.MiscellaneousGroupBox.Size = new System.Drawing.Size(598, 51);
             this.MiscellaneousGroupBox.TabIndex = 13;
             this.MiscellaneousGroupBox.TabStop = false;
             this.MiscellaneousGroupBox.Text = "Miscellaneous";
+            // 
+            // SplashSizeComboBox
+            // 
+            this.SplashSizeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SplashSizeComboBox.FormattingEnabled = true;
+            this.SplashSizeComboBox.Items.AddRange(new object[] {
+            "846x462",
+            "1280x720",
+            "1920x1080"});
+            this.SplashSizeComboBox.Location = new System.Drawing.Point(328, 19);
+            this.SplashSizeComboBox.Name = "SplashSizeComboBox";
+            this.SplashSizeComboBox.Size = new System.Drawing.Size(80, 21);
+            this.SplashSizeComboBox.TabIndex = 11;
+            this.SplashSizeComboBox.SelectedIndexChanged += new System.EventHandler(this.SplashSizeComboBox_SelectedIndexChanged);
+            // 
+            // SplashSizeLabel
+            // 
+            this.SplashSizeLabel.AutoSize = true;
+            this.SplashSizeLabel.Location = new System.Drawing.Point(239, 22);
+            this.SplashSizeLabel.Name = "SplashSizeLabel";
+            this.SplashSizeLabel.Size = new System.Drawing.Size(65, 13);
+            this.SplashSizeLabel.TabIndex = 10;
+            this.SplashSizeLabel.Text = "Splash Size:";
             // 
             // LanguageComboBox
             // 
@@ -324,11 +354,21 @@
             this.GamePathTextBox.TabIndex = 8;
             this.GamePathTextBox.ValueEntered += new System.ComponentModel.CancelEventHandler(this.GamePathTextBox_ValueEntered);
             // 
+            // SplashTestButton
+            // 
+            this.SplashTestButton.Location = new System.Drawing.Point(414, 19);
+            this.SplashTestButton.Name = "SplashTestButton";
+            this.SplashTestButton.Size = new System.Drawing.Size(62, 21);
+            this.SplashTestButton.TabIndex = 12;
+            this.SplashTestButton.Text = "Test";
+            this.SplashTestButton.UseVisualStyleBackColor = true;
+            this.SplashTestButton.Click += new System.EventHandler(this.SplashTestButton_Click);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(622, 413);
+            this.ClientSize = new System.Drawing.Size(622, 421);
             this.Controls.Add(this.ProjectPathTextBox);
             this.Controls.Add(this.GamePathTextBox);
             this.Controls.Add(this.MiscellaneousGroupBox);
@@ -387,5 +427,8 @@
         private System.Windows.Forms.Label LanguageLabel;
         private GL_EditorFramework.SuggestingTextBox GamePathTextBox;
         private GL_EditorFramework.SuggestingTextBox ProjectPathTextBox;
+        private System.Windows.Forms.ComboBox SplashSizeComboBox;
+        private System.Windows.Forms.Label SplashSizeLabel;
+        private System.Windows.Forms.Button SplashTestButton;
     }
 }

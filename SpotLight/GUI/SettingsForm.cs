@@ -1,5 +1,5 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using SpotLight.ObjectParamDatabase;
+using SpotLight.Database;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -10,9 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using GL_EditorFramework;
+using System.Threading.Tasks;
 
 namespace SpotLight
 {
@@ -73,7 +73,7 @@ namespace SpotLight
                     throw new Exception("Invalid Description File");
 
                 Version Check = new Version(FS.ReadByte(), FS.ReadByte());
-                ver = Check.Equals(Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion) ? Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
+                ver = Check.Equals(Database.ObjectInformationDatabase.LatestVersion) ? Database.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
                 FS.Close();
             }
             else
@@ -138,6 +138,8 @@ namespace SpotLight
                     LanguageComboBox.SelectedIndex = 0;
             }
 
+            string tmp = Properties.Settings.Default.SplashSize.Width + "x" + Properties.Settings.Default.SplashSize.Height;
+            SplashSizeComboBox.SelectedItem = tmp;
         }
 
         private LevelEditorForm Home;
@@ -435,6 +437,8 @@ namespace SpotLight
             IDEditingCheckBox.Text = Program.CurrentLanguage.GetTranslation("IDEditingCheckBox") ?? "Enable ID Editing";
             MiscellaneousGroupBox.Text = Program.CurrentLanguage.GetTranslation("MiscellaneousGroupBox") ?? "Miscellaneous";
             LanguageLabel.Text = Program.CurrentLanguage.GetTranslation("LanguageLabel") ?? "Language:";
+            SplashSizeLabel.Text = Program.CurrentLanguage.GetTranslation("SplashSizeLabel") ?? "Splash Size:";
+            SplashTestButton.Text = Program.CurrentLanguage.GetTranslation("SplashTestButton") ?? "Test";
             ResetSpotlightButton.Text = Program.CurrentLanguage.GetTranslation("ResetSpotlightButton") ?? "Reset";
 
             #region Databases
@@ -464,7 +468,7 @@ namespace SpotLight
                     throw new Exception("Invalid Description File");
 
                 Version Check = new Version(FS.ReadByte(), FS.ReadByte());
-                ver = Check.Equals(Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion) ? Spotlight.ObjectInformationDatabase.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
+                ver = Check.Equals(SpotLight.Database.ObjectInformationDatabase.LatestVersion) ? SpotLight.Database.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
                 FS.Close();
             }
             else
@@ -494,6 +498,27 @@ namespace SpotLight
         private string ResetWarningText { get; set; }
 
         #endregion
+
+        private void SplashSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Loading)
+                return;
+            Properties.Settings.Default.SplashSize = new Size(int.Parse(SplashSizeComboBox.SelectedItem.ToString().Split('x')[0]), int.Parse(SplashSizeComboBox.SelectedItem.ToString().Split('x')[1]));
+            Properties.Settings.Default.Save();
+        }
+
+        private void SplashTestButton_Click(object sender, EventArgs e)
+        {
+            Program.IsProgramReady = false;
+            Task SplashTask = Task.Run(() =>
+            {
+                SplashForm SF = new SplashForm(10);
+                SF.ShowDialog();
+                SF.Dispose();
+            });
+            Thread.Sleep(9999);
+            Program.IsProgramReady = true;
+        }
     }
 
     public static class StringCollectionExtensions

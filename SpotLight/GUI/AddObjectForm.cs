@@ -5,10 +5,9 @@ using System.Windows.Forms;
 using GL_EditorFramework.EditorDrawables;
 using GL_EditorFramework.GL_Core;
 using OpenTK;
-using Spotlight.ObjectInformationDatabase;
+using SpotLight.Database;
 using SpotLight.EditorDrawables;
 using SpotLight.Level;
-using SpotLight.ObjectParamDatabase;
 
 
 namespace SpotLight

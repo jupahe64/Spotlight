@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
-using SpotLight.ObjectParamDatabase;
+using SpotLight.Database;
 using SpotLight.Level;
 using System.Threading;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
@@ -1384,6 +1384,10 @@ Would you like to rebuild the database from your 3DW Files?";
             CancelAddObjectButton.Visible = false;
         }
 
-        private void LevelEditorForm_Paint(object sender, PaintEventArgs e) => QuickFavoriteControl.Refresh();
+        private void LevelEditorForm_Shown(object sender, EventArgs e)
+        {
+            Program.IsProgramReady = true;
+            Focus();
+        }
     }
 }

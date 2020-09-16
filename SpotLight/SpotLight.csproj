@@ -135,6 +135,12 @@
     <Compile Include="GUI\AddZoneForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="GUI\SplashForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\SplashForm.designer.cs">
+      <DependentUpon>SplashForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\BfresModelCache.cs" />
     <Compile Include="Storage\Language.cs" />
     <Compile Include="GUI\LoadLevelForm.cs">
@@ -212,6 +218,9 @@
     <EmbeddedResource Include="GUI\ObjectParameterForm.resx">
       <DependentUpon>ObjectParameterForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\SplashForm.resx">
+      <DependentUpon>SplashForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -268,6 +277,17 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="LatestVersion.txt" />
+    <None Include="Resources\BootTvTex.png" />
+    <None Include="Resources\SpotlightCanvas.png" />
+    <None Include="Splash\ArrangeNokonokoBeachStage.png" />
+    <None Include="Splash\ArrangePipePackunDenStage.png" />
+    <None Include="Splash\BombCaveStage.png" />
+    <None Include="Splash\DoubleMarioFieldStage.png" />
+    <None Include="Splash\EnterCatMarioStage.png" />
+    <None Include="Splash\KarakuriCastleStage.png" />
+    <None Include="Splash\KoopaLastStageA.png" />
+    <None Include="Splash\KoopaLastStageB.png" />
+    <None Include="Splash\NokonokoBeachStage.png" />
     <Content Include="SpotLightIcon.ico" />
   </ItemGroup>
   <ItemGroup>

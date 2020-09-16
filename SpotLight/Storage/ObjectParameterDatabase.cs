@@ -1,6 +1,5 @@
 ﻿using SpotLight.EditorDrawables;
 using SpotLight.Level;
-using SpotLight.ObjectParamDatabase;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,7 +44,7 @@ using static SpotLight.Level.LevelIO;
  * ----------------------------------------------End of Dictionary
 */
 
-namespace SpotLight.ObjectParamDatabase
+namespace SpotLight.Database
 {
     /// <summary>
     /// Database of all Object Parameters
@@ -692,7 +691,7 @@ namespace SpotLight.ObjectParamDatabase
  * Property Description
  * -----------
  */
-namespace Spotlight.ObjectInformationDatabase
+namespace SpotLight.Database
 {
     public class ObjectInformationDatabase
     {

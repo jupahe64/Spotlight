@@ -35,5 +35,11 @@
     <Setting Name="ProjectPaths" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="SplashSize" Type="System.Drawing.Size" Scope="User">
+      <Value Profile="(Default)">846, 462</Value>
+    </Setting>
+    <Setting Name="PreviousSplash" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

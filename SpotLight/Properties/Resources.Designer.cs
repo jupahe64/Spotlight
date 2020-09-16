@@ -63,9 +63,29 @@ namespace SpotLight.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap BootTvTex {
+            get {
+                object obj = ResourceManager.GetObject("BootTvTex", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap DefaultTexture {
             get {
                 object obj = ResourceManager.GetObject("DefaultTexture", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SpotlightCanvas {
+            get {
+                object obj = ResourceManager.GetObject("SpotlightCanvas", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

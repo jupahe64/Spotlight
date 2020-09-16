@@ -373,36 +373,36 @@ namespace SpotLight.Level
                 {
                     if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
                     {
-                        if(keyValuePair.Key == "CameraParam.byml")
-                        {
-                            ByamlIterator byamlIterator = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                        //if(keyValuePair.Key == "CameraParam.byml")
+                        //{
+                        //    ByamlIterator byamlIterator = new ByamlIterator(new MemoryStream(keyValuePair.Value));
 
-                            Dictionary<string, dynamic> cameraParam = new Dictionary<string, dynamic>();
+                        //    Dictionary<string, dynamic> cameraParam = new Dictionary<string, dynamic>();
 
-                            foreach (var entry in byamlIterator.IterRootDictionary())
-                            {
-                                if (entry.Key == "CameraParams")
-                                {
-                                    Dictionary<string, List<ObjectCamera>> cameraParametersByObject = new Dictionary<string, List<ObjectCamera>>();
+                        //    foreach (var entry in byamlIterator.IterRootDictionary())
+                        //    {
+                        //        if (entry.Key == "CameraParams")
+                        //        {
+                        //            Dictionary<string, List<ObjectCamera>> cameraParametersByObject = new Dictionary<string, List<ObjectCamera>>();
 
-                                    foreach (var paramsEntry in entry.IterArray())
-                                    {
-                                        var cam = new ObjectCamera(paramsEntry, out string objID);
+                        //            foreach (var paramsEntry in entry.IterArray())
+                        //            {
+                        //                var cam = new ObjectCamera(paramsEntry, out string objID);
 
-                                        if(cameraParametersByObject.TryGetValue(objID, out var list))
-                                            list.Add(cam);
-                                        else
-                                            cameraParametersByObject.Add(objID, new List<ObjectCamera>() { cam });
-                                    }
-                                    cameraParam.Add(entry.Key, cameraParametersByObject);
-                                }
-                                else
-                                    cameraParam.Add(entry.Key, entry.Parse());
-                            }
+                        //                if(cameraParametersByObject.TryGetValue(objID, out var list))
+                        //                    list.Add(cam);
+                        //                else
+                        //                    cameraParametersByObject.Add(objID, new List<ObjectCamera>() { cam });
+                        //            }
+                        //            cameraParam.Add(entry.Key, cameraParametersByObject);
+                        //        }
+                        //        else
+                        //            cameraParam.Add(entry.Key, entry.Parse());
+                        //    }
 
-                            ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, cameraParam);
-                        }
-                        else
+                        //    ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, cameraParam);
+                        //}
+                        //else
                             ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
                     }
                     else

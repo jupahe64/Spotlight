@@ -607,7 +607,7 @@
             this.Name = "LevelEditorForm";
             this.Text = "SpotLight";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LevelEditorForm_FormClosing);
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.LevelEditorForm_Paint);
+            this.Shown += new System.EventHandler(this.LevelEditorForm_Shown);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
