@@ -113,6 +113,7 @@ namespace SpotLight
 
             if (Program.GamePath == "")
             {
+                Program.IsProgramReady = true;
                 DialogResult DR = MessageBox.Show(WelcomeMessageText, WelcomeMessageHeader, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 SpotlightToolStripStatusLabel.Text = StatusWelcomeMessage;
             }
