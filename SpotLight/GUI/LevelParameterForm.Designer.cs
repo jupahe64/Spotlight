@@ -124,7 +124,7 @@
             this.StageNameTextBox.Size = new System.Drawing.Size(249, 20);
             this.StageNameTextBox.TabIndex = 3;
             this.StageNameTextBox.Text = "No Level Selected";
-            this.HelpToolTip.SetToolTip(this.StageNameTextBox, "The name of the Stage.\r\nUsually the name of the archive without \"Map1.szs\"");
+            this.HelpToolTip.SetToolTip(this.StageNameTextBox, $"The name of the Stage.\r\nUsually the name of the archive without \"{Level.SM3DWorldZone.MAP_SUFFIX}\"");
             this.StageNameTextBox.TextChanged += new System.EventHandler(this.StageNameTextBox_TextChanged);
             // 
             // StageNameLabel
@@ -135,7 +135,7 @@
             this.StageNameLabel.Size = new System.Drawing.Size(69, 13);
             this.StageNameLabel.TabIndex = 4;
             this.StageNameLabel.Text = "Stage Name:";
-            this.HelpToolTip.SetToolTip(this.StageNameLabel, "The name of the Stage.\r\nUsually the name of the archive without \"Map1.szs\"");
+            this.HelpToolTip.SetToolTip(this.StageNameLabel, $"The name of the Stage.\r\nUsually the name of the archive without \"{Level.SM3DWorldZone.MAP_SUFFIX}\"");
             // 
             // WorldIDNumericUpDown
             // 

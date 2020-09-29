@@ -140,9 +140,9 @@ namespace SpotLight.Database
         /// </summary>
         public void Create(string StageDataPath)
         {
-            string[] Zones = Directory.GetFiles(StageDataPath,"*Map1.szs");
-            string[] Designs = Directory.GetFiles(StageDataPath, "*Design1.szs");
-            string[] Sounds = Directory.GetFiles(StageDataPath, "*Sound1.szs");
+            string[] Zones = Directory.GetFiles(StageDataPath, $"*{SM3DWorldZone.MAP_SUFFIX}");
+            string[] Designs = Directory.GetFiles(StageDataPath, $"*{SM3DWorldZone.DESIGN_SUFFIX}");
+            string[] Sounds = Directory.GetFiles(StageDataPath, $"*{SM3DWorldZone.SOUND_SUFFIX}");
 
             Dictionary<string, List<ObjectInfo>> MAPinfosByListName = new Dictionary<string, List<ObjectInfo>>()
             {

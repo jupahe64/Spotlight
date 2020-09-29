@@ -48,13 +48,21 @@ namespace SpotLight.Level
     public class SM3DWorldZone
     {
         #region Constants
+        public const string COMBINED_SUFFIX = ".szs"; //Used in the Captain Toad Treasure Tracker Update
+
+#if ODYSSEY
+        public const string MAP_SUFFIX = "Map.szs";
+        public const string DESIGN_SUFFIX = "Design.szs";
+        public const string SOUND_SUFFIX = "Sound.szs";
+
+        public const string COMMON_SUFFIX = ".szs";
+#else
         public const string MAP_SUFFIX = "Map1.szs";
         public const string DESIGN_SUFFIX = "Design1.szs";
         public const string SOUND_SUFFIX = "Sound1.szs";
 
-        public const string COMBINED_SUFFIX = ".szs";
-
         public const string COMMON_SUFFIX = "1.szs";
+#endif
 
         private const string CATEGORY_MAP = "Map";
         private const string CATEGORY_DESIGN = "Design";
@@ -65,9 +73,11 @@ namespace SpotLight.Level
             MAP_SUFFIX,
             DESIGN_SUFFIX,
             SOUND_SUFFIX,
+#if !ODYSSEY
             "Map.szs",
             "Design.szs",
             "Sound.szs",
+#endif
             COMBINED_SUFFIX
         };
 
@@ -349,7 +359,7 @@ namespace SpotLight.Level
 
         private bool LoadCategory(string prefix, string categoryName, int extraFilesIndex, Dictionary<string, I3dWorldObject> linkedObjsByID)
         {
-            string fileName = Path.Combine(Directory, $"{LevelName}{categoryName}1.szs");
+            string fileName = Path.Combine(Directory, $"{LevelName}{categoryName}{COMMON_SUFFIX}");
 
             if (!File.Exists(fileName))
                 return false;
@@ -486,7 +496,13 @@ namespace SpotLight.Level
 
         private void LoadStageByml(ByamlIterator byamlIter, string prefix, Dictionary<string, I3dWorldObject> linkedObjsByID, Dictionary<long, I3dWorldObject> objectsByReference)
         {
+#if ODYSSEY
+            foreach (var scenario in byamlIter.IterRootArray())
+                if(scenario.Index==3) //the scenario of most kingdoms after beating the game, will be replaced by a better aproach soon, hopefully
+            foreach (DictionaryEntry entry in scenario.IterDictionary())
+#else
             foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
+#endif
             {
                 if (entry.Key == "FilePath" || entry.Key == "Objs")
                     continue;

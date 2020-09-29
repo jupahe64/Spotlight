@@ -209,7 +209,7 @@ namespace SpotLight.EditorDrawables
                 objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
             }
 
-            objNode.AddDynamicValue("ModelName", (ModelName == "") ? null : ModelName);
+            objNode.AddDynamicValue("ModelName", string.IsNullOrEmpty(ModelName) ? null : ModelName);
             objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(Rotation), true);
             objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Scale), true);
             objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(Position, 100f), true);
@@ -363,7 +363,7 @@ namespace SpotLight.EditorDrawables
 
             if (!Selected)
             {
-                if ((!SpotLight.Properties.Settings.Default.DrawAreas && ModelName.StartsWith("Area")) ||
+                if ((!SpotLight.Properties.Settings.Default.DrawAreas && (ModelName?.StartsWith("Area")??false)) ||
                     (!SpotLight.Properties.Settings.Default.DrawSkyBoxes && ClassName == "SkyProjection"))
                 {
                     control.SkipPickingColors(1);
@@ -391,7 +391,7 @@ namespace SpotLight.EditorDrawables
             if (SceneObjectIterState.InLinks && linkDestinations.Count == 0)
                 highlightColor = new Vector4(1, 0, 0, 1) * 0.5f + highlightColor * 0.5f;
 
-            if (BfresModelCache.Contains(ModelName == "" ? ObjectName : ModelName))
+            if (BfresModelCache.Contains(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName))
             {
 
 
@@ -444,7 +444,7 @@ namespace SpotLight.EditorDrawables
 
         public void DoModelLoad()
         {
-            string mdlName = ModelName == "" ? ObjectName : ModelName;
+            string mdlName = string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName;
             if (BfresModelCache.Contains(mdlName))
                 return;
             string Result = Program.TryGetPathViaProject("ObjectData", mdlName + ".szs");

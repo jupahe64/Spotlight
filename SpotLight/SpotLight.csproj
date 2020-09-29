@@ -72,6 +72,23 @@
   <PropertyGroup>
     <ApplicationIcon>SpotLightIcon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Odyssey|AnyCPU'">
+    <OutputPath>bin\Debug OdysseySupport\</OutputPath>
+    <DefineConstants>ODYSSEY</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Odyssey|x86'">
+    <OutputPath>bin\x86\Debug Odyssey\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Odyssey|AnyCPU'">
+    <OutputPath>bin\Release OdysseySupport\</OutputPath>
+    <DefineConstants>ODYSSEY</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Odyssey|x86'">
+    <OutputPath>bin\x86\Release Odyssey\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>SpotLight.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="BfresLibrary">
       <HintPath>..\DLLs\BfresLibrary.dll</HintPath>

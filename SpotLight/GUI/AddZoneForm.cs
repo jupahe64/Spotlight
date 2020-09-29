@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpotLight.Level;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -110,7 +111,7 @@ namespace SpotLight
 
             foreach (string filePath in Directory.EnumerateFiles(Program.ProjectPath.Equals("") ? Program.BaseStageDataPath: Path.Combine(Program.ProjectPath, "StageData")))
             {
-                if (!filePath.EndsWith("Map1.szs"))
+                if (!filePath.EndsWith(SM3DWorldZone.MAP_SUFFIX))
                     continue;
                 if (FilterZonesCheckbox.Checked && !filePath.Contains("Zone"))
                     continue;

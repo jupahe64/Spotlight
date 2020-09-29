@@ -1120,7 +1120,6 @@ namespace SpotLight
             }
             else if(textureShared is SwitchTexture textureNSW)
             {
-                return -2;
 
                 int tex = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture2D, tex);
@@ -1156,6 +1155,8 @@ namespace SpotLight
 
                         goto DATA_UPLOADED;
                     }
+
+                    return -2;
                 }
 
                 //#region channel reassign

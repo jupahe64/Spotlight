@@ -391,7 +391,8 @@ namespace SpotLight
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter =
-                string.Format("{0}|*StageMap1.szs|{0}|*Map1.szs|{1}|*Design1.szs|{2}|*Sound1.szs|{3}|*.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3]),
+                string.Format("{0}|*Stage{4}|{0}|*{4}|{1}|*{5}|{2}|*{6}|{3}|*.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3],
+                SM3DWorldZone.MAP_SUFFIX, SM3DWorldZone.DESIGN_SUFFIX, SM3DWorldZone.SOUND_SUFFIX),
                 InitialDirectory = currentScene?.EditZone.Directory ?? (Program.ProjectPath.Equals("") ? Program.BaseStageDataPath : System.IO.Path.Combine(Program.ProjectPath, "StageData")) };
 
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
@@ -421,7 +422,7 @@ namespace SpotLight
                 SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
                 return;
             }
-            OpenLevel(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}Map1.szs"));
+            OpenLevel(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.MAP_SUFFIX}"));
         }
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
