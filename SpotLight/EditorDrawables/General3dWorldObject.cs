@@ -348,6 +348,11 @@ namespace SpotLight.EditorDrawables
                 }
             }
         }
+
+#if ODYSSEY
+        public ushort ScenarioBitField { get; set; } = 0;
+#endif
+
         #endregion
 
         /// <summary>
@@ -632,6 +637,9 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
+#if ODYSSEY
+                control.PlainText(Convert.ToString(obj.ScenarioBitField, 2));
+#endif
                 if (SpotLight.Properties.Settings.Default.AllowIDEdits)
                     obj.ID = control.TextInput(obj.ID, "Object ID");
                 else

@@ -235,6 +235,10 @@ namespace SpotLight
                     objectNameIndex,
                     objectModelIndex);
 
+#if ODYSSEY
+                obj.ScenarioBitField = ushort.MaxValue; //All scenarios
+#endif
+
                 if (objectParameter.TryGetObjectList(zone, out ObjectList objList))
                 {
                     return new (I3dWorldObject, ObjectList)[] {
@@ -259,6 +263,10 @@ namespace SpotLight
                 List<RailPoint> pathPoints = PathPointFormations.GetPathFormation(pos, railFormationFunc(), reverseRail);
 
                 Rail rail = new Rail(pathPoints, zone.NextObjID(), closeRail, false, false, railObjType, zone);
+
+#if ODYSSEY
+                rail.ScenarioBitField = ushort.MaxValue; //All scenarios
+#endif
 
                 if (zone.ObjLists.ContainsKey("Map_Rails"))
                 {

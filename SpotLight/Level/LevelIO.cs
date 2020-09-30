@@ -103,21 +103,21 @@ namespace SpotLight.Level
             string levelName;
             string categoryName;
 
-            string fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+            string levelNameWithSuffix = Path.GetFileName(fileName);
 
-            if (fileNameWithoutExt.EndsWith("Map1"))
+            if (fileName.EndsWith(SM3DWorldZone.MAP_SUFFIX))
             {
-                levelName = fileNameWithoutExt.Remove(fileNameWithoutExt.Length - 4);
+                levelName = levelNameWithSuffix.Remove(levelNameWithSuffix.Length - SM3DWorldZone.MAP_SUFFIX.Length);
                 categoryName = "Map";
             }
-            else if (fileNameWithoutExt.EndsWith("Design1"))
+            else if (fileName.EndsWith(SM3DWorldZone.DESIGN_SUFFIX))
             {
-                levelName = fileNameWithoutExt.Remove(fileNameWithoutExt.Length - 7);
+                levelName = levelNameWithSuffix.Remove(levelNameWithSuffix.Length - SM3DWorldZone.DESIGN_SUFFIX.Length);
                 categoryName = "Design";
             }
-            else if (fileNameWithoutExt.EndsWith("Sound1"))
+            else if (fileName.EndsWith(SM3DWorldZone.SOUND_SUFFIX))
             {
-                levelName = fileNameWithoutExt.Remove(fileNameWithoutExt.Length - 6);
+                levelName = levelNameWithSuffix.Remove(levelNameWithSuffix.Length - SM3DWorldZone.SOUND_SUFFIX.Length);
                 categoryName = "Sound";
             }
             else
@@ -130,6 +130,21 @@ namespace SpotLight.Level
             Dictionary<long, ObjectInfo> objectInfosByReference = new Dictionary<long, ObjectInfo>();
 
             ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(sarc.Files[levelName + categoryName + ".byml"]));
+#if ODYSSEY
+            foreach (ArrayEntry scenario in byamlIter.IterRootArray())
+                foreach (DictionaryEntry entry in scenario.IterDictionary())
+                {
+                    if (!infosByListName.ContainsKey(entry.Key))
+                        continue;
+
+                    List<ObjectInfo> objectInfos = new List<ObjectInfo>();
+
+                    foreach (ArrayEntry obj in entry.IterArray())
+                    {
+                        objectInfos.Add(ParseObjectInfo(obj, objectInfosByReference, infosByListName, entry.Key));
+                    }
+                }
+#else
             foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
             {
                 if (!infosByListName.ContainsKey(entry.Key))
@@ -142,6 +157,7 @@ namespace SpotLight.Level
                     objectInfos.Add(ParseObjectInfo(obj, objectInfosByReference, infosByListName, entry.Key));
                 }
             }
+#endif
         }
 
         const string str_Links = "Links";
@@ -185,6 +201,10 @@ namespace SpotLight.Level
                     case "Comment":
                     case "IsLinkDest":
                     case "LayerConfigName":
+#if ODYSSEY
+                    case "SrcUnitLayerList":
+                    case "PlacementFileName":
+#endif
                         break; //ignore these
                     case "Id":
                         info.ID = entry.Parse();

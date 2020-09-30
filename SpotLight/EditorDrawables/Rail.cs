@@ -331,6 +331,11 @@ namespace SpotLight.EditorDrawables
         {
             //We don't expect Rails to have Links
         }
+
+#if ODYSSEY
+        public ushort ScenarioBitField { get; set; } = 0;
+#endif
+
         #endregion
 
 

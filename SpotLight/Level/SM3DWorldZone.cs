@@ -498,7 +498,6 @@ namespace SpotLight.Level
         {
 #if ODYSSEY
             foreach (var scenario in byamlIter.IterRootArray())
-                if(scenario.Index==3) //the scenario of most kingdoms after beating the game, will be replaced by a better aproach soon, hopefully
             foreach (DictionaryEntry entry in scenario.IterDictionary())
 #else
             foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
@@ -560,13 +559,23 @@ namespace SpotLight.Level
                     continue;
                 }
 
-                ObjLists.Add(prefix + entry.Key, new ObjectList());
+#if ODYSSEY
+                    if (!ObjLists.ContainsKey(prefix + entry.Key))
+#endif
+                        ObjLists.Add(prefix + entry.Key, new ObjectList());
 
                 foreach (ArrayEntry obj in entry.IterArray())
                 {
                     I3dWorldObject _obj = LevelIO.ParseObject(obj, this, objectsByReference, out bool alreadyReferenced, Properties.Settings.Default.UniqueIDs ? linkedObjsByID : null);
                     if (!alreadyReferenced)
-                        ObjLists[prefix + entry.Key].Add(_obj);
+                    {
+#if ODYSSEY
+                            _obj.ScenarioBitField |= (ushort)(1 << scenario.Index);
+                            if (!ObjLists[prefix + entry.Key].Contains(_obj))
+#endif
+                                ObjLists[prefix + entry.Key].Add(_obj);
+                    }
+
                 }
             }
         }
@@ -720,43 +729,12 @@ namespace SpotLight.Level
 
         private void WriteStageByml(MemoryStream stream, string prefix, bool saveZonePlacements)
         {
+            //apologies for the bad code, merging odyssey and 3d world saving code isn't an easy task
+
+
             ByamlNodeWriter writer = new ByamlNodeWriter(stream, false, byteOrder, 1);
 
-            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode(ObjLists);
-
-            ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
-
-            HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
-
-            rootNode.AddDynamicValue("FilePath", "N/A");
-
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
-            {
-                if (!keyValuePair.Key.StartsWith(prefix)) //ObjList is not part of the Category
-                    continue;
-
-                ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode(keyValuePair.Value);
-
-                foreach (I3dWorldObject obj in keyValuePair.Value)
-                {
-                    if (!alreadyWrittenObjs.Contains(obj))
-                    {
-                        ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
-                        obj.Save(alreadyWrittenObjs, writer, objNode, false);
-                        categoryNode.AddDictionaryNodeRef(objNode);
-                        objsNode.AddDictionaryNodeRef(objNode);
-                    }
-                    else
-                    {
-                        categoryNode.AddDictionaryRef(obj);
-                        objsNode.AddDictionaryRef(obj);
-                    }
-                }
-                rootNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), categoryNode, true);
-            }
-
-            rootNode.AddArrayNodeRef("Objs", objsNode);
-
+            #region Create ZoneList
             ByamlNodeWriter.ArrayNode zonesNode = writer.CreateArrayNode();
 
             if (saveZonePlacements)
@@ -797,8 +775,82 @@ namespace SpotLight.Level
                     zonesNode.AddDictionaryNodeRef(objNode, true);
                 }
             }
+            #endregion
 
-            rootNode.AddArrayNodeRef("ZoneList", zonesNode);
+            HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
+
+#if !ODYSSEY
+            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode();
+
+            rootNode.AddDynamicValue("FilePath", "N/A");
+
+            ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
+#else
+            ByamlNodeWriter.ArrayNode rootNode = writer.CreateArrayNode();
+
+            for (int scenario = 0; scenario < 16; scenario++)
+            {
+                ByamlNodeWriter.DictionaryNode scenarioNode = writer.CreateDictionaryNode();
+#endif
+                foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
+                {
+                    if (!keyValuePair.Key.StartsWith(prefix)) //ObjList is not part of the Category
+                        continue;
+
+                    ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode();
+
+#if ODYSSEY
+                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    {
+                        if ((obj.ScenarioBitField & (ushort)(1 << scenario)) == 0)
+                            continue; //the object doesn't appear in this scenario
+
+                        if (!alreadyWrittenObjs.Contains(obj))
+                        {
+                            ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
+                            obj.Save(alreadyWrittenObjs, writer, objNode, false);
+                            categoryNode.AddDictionaryNodeRef(objNode);
+                        }
+                        else
+                        {
+                            categoryNode.AddDictionaryRef(obj);
+                        }
+                    }
+                    scenarioNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), categoryNode, true);
+#else
+                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    {
+                        if (!alreadyWrittenObjs.Contains(obj))
+                        {
+                            ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
+                            obj.Save(alreadyWrittenObjs, writer, objNode, false);
+                            categoryNode.AddDictionaryNodeRef(objNode);
+                            objsNode.AddDictionaryNodeRef(objNode);
+                        }
+                        else
+                        {
+                            categoryNode.AddDictionaryRef(obj);
+                            objsNode.AddDictionaryRef(obj);
+                        }
+                    }
+                    rootNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), categoryNode, true);
+#endif
+                }
+
+#if ODYSSEY
+                if (saveZonePlacements)
+                    scenarioNode.AddArrayNodeRef("ZoneList", zonesNode, true);
+
+                rootNode.AddDictionaryNodeRef(scenarioNode, true);
+            }
+#endif
+
+#if !ODYSSEY
+            rootNode.AddArrayNodeRef("Objs", objsNode, true);
+            if(saveZonePlacements)
+                rootNode.AddArrayNodeRef("ZoneList", zonesNode, true);
+#endif
+
 
             writer.Write(rootNode, true);
         }

@@ -31,5 +31,9 @@ namespace SpotLight.EditorDrawables
         Vector3 GetLinkingPoint(SM3DWorldScene editorScene);
 
         void AddToZoneBatch(ZoneRenderBatch zoneBatch);
+
+#if ODYSSEY
+        ushort ScenarioBitField { get; set; }
+#endif
     }
 }

@@ -74,7 +74,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Odyssey|AnyCPU'">
     <OutputPath>bin\Debug OdysseySupport\</OutputPath>
-    <DefineConstants>ODYSSEY</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ODYSSEY</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Odyssey|x86'">
     <OutputPath>bin\x86\Debug Odyssey\</OutputPath>
@@ -88,6 +92,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>SpotLight.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BfresLibrary">
