@@ -31,7 +31,7 @@ namespace SpotLight.Level
             I3dWorldObject obj;
             bool loadLinks;
 
-            if (Enum.GetNames(typeof(Rail.RailObjType)).Contains(info.ClassName))
+            if (info.PropertyEntries.TryGetValue("RailPoints", out DictionaryEntry railPointEntry) && railPointEntry.NodeType == ByamlFile.ByamlNodeType.Array) //at this point we can be sure it's a rail
                 obj = new Rail(info, zone, out loadLinks);
             else
                 obj = new General3dWorldObject(info, zone, out loadLinks);

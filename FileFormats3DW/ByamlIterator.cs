@@ -122,25 +122,29 @@ namespace BYAML
             _reader = new BinaryDataReader(stream);
         }
 
+        ~ByamlIterator()
+        {
+            _reader.Dispose();
+        }
+
         public IEnumerable<DictionaryEntry> IterRootDictionary()
         {
             if (_isClosed)
                 throw new Exception("Can't iterate more than once");
 
-            using (_reader)
-            {
 
-                if (!TryStartLoading())
-                    yield break;
+            if (!TryStartLoading())
+                yield break;
 
-                uint lengthAndType = _reader.ReadUInt32();
+            uint lengthAndType = _reader.ReadUInt32();
 
-                if ((ByamlNodeType)Get1MsbByte(lengthAndType) != ByamlNodeType.Dictionary)
-                    throw new Exception("Root is not a Dictionary");
+            if ((ByamlNodeType)Get1MsbByte(lengthAndType) != ByamlNodeType.Dictionary)
+                throw new Exception("Root is not a Dictionary");
 
-                foreach ((string, ByamlNodeType, long) entry in IterDictionaryNode(_reader, (int)Get3LsbBytes(lengthAndType)))
-                    yield return new DictionaryEntry(this, entry);
-            }
+            foreach ((string, ByamlNodeType, long) entry in IterDictionaryNode(_reader, (int)Get3LsbBytes(lengthAndType)))
+                yield return new DictionaryEntry(this, entry);
+
+            _isClosed = true;
         }
 
         public IEnumerable<ArrayEntry> IterRootArray()
@@ -148,21 +152,18 @@ namespace BYAML
             if (_isClosed)
                 throw new Exception("Can't iterate more than once");
 
-            using (_reader)
-            {
-                if (!TryStartLoading())
-                    yield break;
+            if (!TryStartLoading())
+                yield break;
 
-                uint lengthAndType = _reader.ReadUInt32();
+            uint lengthAndType = _reader.ReadUInt32();
 
-                if ((ByamlNodeType)Get1MsbByte(lengthAndType) != ByamlNodeType.Array)
-                    throw new Exception("Root is not an Array");
+            if ((ByamlNodeType)Get1MsbByte(lengthAndType) != ByamlNodeType.Array)
+                throw new Exception("Root is not an Array");
 
-                foreach ((int, ByamlNodeType, long) entry in IterArrayNode(_reader, (int)Get3LsbBytes(lengthAndType)))
-                    yield return new ArrayEntry(this, entry);
+            foreach ((int, ByamlNodeType, long) entry in IterArrayNode(_reader, (int)Get3LsbBytes(lengthAndType)))
+                yield return new ArrayEntry(this, entry);
 
-                _isClosed = true;
-            }
+            _isClosed = true;
         }
 
 

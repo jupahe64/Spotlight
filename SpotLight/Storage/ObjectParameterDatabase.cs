@@ -60,6 +60,10 @@ namespace SpotLight.Database
         /// </summary>
         public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
         /// <summary>
+        /// Listing of all the object parameters inside this database
+        /// </summary>
+        public Dictionary<string, RailParam> RailParameters = new Dictionary<string, RailParam>();
+        /// <summary>
         /// The Latest version of this database
         /// </summary>
         public static Version LatestVersion { get; } = new Version(1, 7);
@@ -119,6 +123,26 @@ namespace SpotLight.Database
                 ObjectParameters.Add(param.ClassName, param);
             }
 
+            while (FS.Position % 4 != 0)
+                FS.Position++;
+
+            FS.Read(Read, 0, 4);
+            if (Encoding.ASCII.GetString(Read) != "DICT")
+                goto NO_RAILS;
+
+            FS.Read(Read, 0, 4);
+            ParamCount = BitConverter.ToInt32(Read, 0);
+
+            for (int i = 0; i < ParamCount; i++)
+            {
+                RailParam param = new RailParam();
+
+                param.Read(FS);
+                RailParameters.Add(param.ClassName, param);
+            }
+
+            NO_RAILS:
+
             FS.Close();
         }
         /// <summary>
@@ -132,7 +156,13 @@ namespace SpotLight.Database
             FS.Write(new byte[4] { (byte)'D', (byte)'I', (byte)'C', (byte)'T' }, 0, 4);
             FS.Write(BitConverter.GetBytes(ObjectParameters.Count), 0, 4);
             foreach (Parameter parameter in ObjectParameters.Values)
-                parameter.Write(FS); 
+                parameter.Write(FS);
+
+            FS.Write(new byte[4] { (byte)'D', (byte)'I', (byte)'C', (byte)'T' }, 0, 4);
+            FS.Write(BitConverter.GetBytes(RailParameters.Count), 0, 4);
+            foreach (RailParam railParam in RailParameters.Values)
+                railParam.Write(FS);
+
             FS.Close();
         }
         /// <summary>
@@ -185,12 +215,6 @@ namespace SpotLight.Database
             for (int i = 0; i < Sounds.Length; i++)
                 GetObjectInfos(Sounds[i], SOUNDinfosByListName);
 
-
-            HashSet<string> railClassNames = new HashSet<string>();
-
-            foreach (string name in Enum.GetNames(typeof(Rail.RailObjType)))
-                railClassNames.Add(name);
-
             void GetParameters<T>(Dictionary<string, List<ObjectInfo>> infosByListName) where T : Parameter, new()
             {
                 byte ListID = 0;
@@ -201,12 +225,70 @@ namespace SpotLight.Database
                 {
                     for (int j = 0; j < keyValuePair.Value.Count; j++)
                     {
-                        if (railClassNames.Contains(keyValuePair.Value[j].ClassName))
+                        ObjectInfo Tmp = keyValuePair.Value[j];
+                        
+                        if (Tmp.ID.StartsWith("rail") && !RailParameters.ContainsKey(Tmp.ClassName))
                         {
-                            continue;
+                            RailParameters[Tmp.ClassName] = new RailParam() { ClassName = Tmp.ClassName };
+
+                            foreach (var propertyEntry in Tmp.PropertyEntries)
+                            {
+                                switch(propertyEntry.Key)
+                                {
+#if ODYSSEY
+                                    case "comment":
+#else
+                                    case "Comment":
+#endif
+                                    case "IsLadder":
+                                    case "IsClosed":
+                                    case "RailType":
+                                        continue;
+                                    case "RailPoints":
+                                        //extract all infos from the first RailPoint
+                                        var iter = propertyEntry.Value.IterArray().GetEnumerator();
+                                        iter.MoveNext();
+                                        foreach(var entry in iter.Current.IterDictionary())
+                                        {
+                                            switch (entry.Key)
+                                            {
+#if ODYSSEY
+                                                case "comment":
+#else
+                                                case "Comment":
+#endif
+                                                case "Id":
+                                                case "IsLinkDest":
+                                                case "LayerConfigName":
+                                                case "Links":
+                                                case "ModelName":
+                                                case "Rotate":
+                                                case "Scale":
+                                                case "UnitConfig":
+                                                case "UnitConfigName":
+                                                case "Translate":
+                                                case "ControlPoints":
+                                                    continue;
+                                                default:
+                                                    ByamlNodeType _type = entry.NodeType;
+                                                    if (_type == ByamlNodeType.Null)
+                                                        _type = ByamlNodeType.StringIndex;
+                                                    RailParameters[Tmp.ClassName].PointProperties.Add(new KeyValuePair<string, string>(entry.Key, _type == ByamlNodeType.StringIndex ? "String" : _type.ToString()));
+                                                    continue;
+
+                                            }
+                                        }
+                                        continue;
+                                    default:
+                                        ByamlNodeType type = propertyEntry.Value.NodeType;
+                                        if (type == ByamlNodeType.Null)
+                                            type = ByamlNodeType.StringIndex;
+                                        RailParameters[Tmp.ClassName].Properties.Add(new KeyValuePair<string, string>(propertyEntry.Key, type == ByamlNodeType.StringIndex ? "String" : type.ToString()));
+                                        continue;
+                                }
+                            }
                         }
 
-                        ObjectInfo Tmp = keyValuePair.Value[j];
                         if (ObjectParameters.ContainsKey(Tmp.ClassName))
                         {
                             if (Tmp.ObjectName != "" && !ObjectParameters[Tmp.ClassName].ObjectNames.Any(O => O == Tmp.ObjectName))
@@ -265,6 +347,32 @@ namespace SpotLight.Database
         }
 
         public override string ToString() => $"Object Database Version {Version.Major}.{Version.Minor} [{ObjectParameters.Count} Parameters]";
+
+        /// <summary>
+        /// Adds new Properties to the <paramref name="propertyDict"/> as specified in the <paramref name="propertiesFromDB"/>
+        /// </summary>
+        public static void AddToProperties(List<KeyValuePair<string, string>> propertiesFromDB, Dictionary<string, dynamic> propertyDict)
+        {
+            for (int i = 0; i < propertiesFromDB.Count; i++)
+            {
+                switch (propertiesFromDB[i].Value)
+                {
+                    case "Integer":
+                        propertyDict.Add(propertiesFromDB[i].Key, 0);
+                        break;
+                    case "Float":
+                        propertyDict.Add(propertiesFromDB[i].Key, 0.0f);
+                        break;
+                    case "Boolean":
+                        propertyDict.Add(propertiesFromDB[i].Key, false);
+                        break;
+                    case "Null":
+                    case "String":
+                        propertyDict.Add(propertiesFromDB[i].Key, "");
+                        break;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -399,25 +507,8 @@ namespace SpotLight.Database
         public virtual General3dWorldObject ToGeneral3DWorldObject(string ID, SM3DWorldZone zone, OpenTK.Vector3 Position, int ObjectNameID = 0, int ModelNameID = -1)
         {
             Dictionary<string, dynamic> Params = new Dictionary<string, dynamic>();
-            for (int i = 0; i < Properties.Count; i++)
-            {
-                switch (Properties[i].Value)
-                {
-                    case "Integer":
-                        Params.Add(Properties[i].Key, 0);
-                        break;
-                    case "Float":
-                        Params.Add(Properties[i].Key, 0.0f);
-                        break;
-                    case "Boolean":
-                        Params.Add(Properties[i].Key, false);
-                        break;
-                    case "Null":
-                    case "String":
-                        Params.Add(Properties[i].Key, "");
-                        break;
-                }
-            }
+
+            ObjectParameterDatabase.AddToProperties(Properties, Params);
 
             Dictionary<string, List<I3dWorldObject>> Links = new Dictionary<string, List<I3dWorldObject>>();
             for (int i = 0; i < LinkNames.Count; i++)
@@ -466,6 +557,86 @@ namespace SpotLight.Database
         }
         public override int GetHashCode() => base.GetHashCode();
     }
+
+    public class RailParam
+    {
+        public virtual string ClassName { get; set; }
+        public virtual List<KeyValuePair<string, string>> Properties { get; set; }
+        public virtual List<KeyValuePair<string, string>> PointProperties { get; set; }
+
+        public RailParam() => InitLists();
+
+        /// <summary>
+        /// Read a parameter from a file
+        /// </summary>
+        /// <param name="FS"></param>
+        public virtual void Read(Stream FS)
+        {
+            byte[] Read = new byte[4];
+            FS.Read(Read, 0, 4);
+            ClassName = FS.ReadString();
+
+            FS.Read(Read, 0, 2);
+            int ParamNameCount = BitConverter.ToInt16(Read, 0);
+
+            for (int i = 0; i < ParamNameCount; i++)
+                Properties.Add(new KeyValuePair<string, string>(FS.ReadString(), FS.ReadString()));
+            while (FS.Position % 4 != 0)
+                FS.Position++;
+
+            FS.Read(Read, 0, 2);
+            int PointParamNameCount = BitConverter.ToInt16(Read, 0);
+
+            for (int i = 0; i < PointParamNameCount; i++)
+                PointProperties.Add(new KeyValuePair<string, string>(FS.ReadString(), FS.ReadString()));
+            while (FS.Position % 4 != 0)
+                FS.Position++;
+        }
+        /// <summary>
+        /// Write this parameter
+        /// </summary>
+        /// <param name="FS"></param>
+        public virtual void Write(FileStream FS)
+        {
+            List<byte> ByteList = new List<byte>() { (byte)'R', (byte)'A', (byte)'L' };
+            ByteList.Add(0x00);
+            ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(ClassName));
+            ByteList.Add(0x00);
+
+            ByteList.AddRange(BitConverter.GetBytes((ushort)Properties.Count));
+            for (int i = 0; i < Properties.Count; i++)
+            {
+                ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(Properties[i].Key));
+                ByteList.Add(0x00);
+                ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(Properties[i].Value));
+                ByteList.Add(0x00);
+            }
+            while (ByteList.Count % 4 != 0)
+                ByteList.Add(0x00);
+
+            ByteList.AddRange(BitConverter.GetBytes((ushort)PointProperties.Count));
+            for (int i = 0; i < PointProperties.Count; i++)
+            {
+                ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(PointProperties[i].Key));
+                ByteList.Add(0x00);
+                ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(PointProperties[i].Value));
+                ByteList.Add(0x00);
+            }
+            while (ByteList.Count % 4 != 0)
+                ByteList.Add(0x00);
+
+            FS.Write(ByteList.ToArray(), 0, ByteList.Count);
+        }
+
+        internal void InitLists()
+        {
+            Properties = new List<KeyValuePair<string, string>>();
+            PointProperties = new List<KeyValuePair<string, string>>();
+        }
+
+        public override string ToString() => $"Rail Type:{ClassName} | {Properties.Count} Properties | {PointProperties.Count} Point Properties";
+    }
+
     /// <summary>
     /// Enum of the object Lists in SM3DW
     /// </summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using GL_EditorFramework.EditorDrawables;
@@ -50,7 +51,9 @@ namespace SpotLight
 
         private void AddObjectForm_Load(object sender, EventArgs e)
         {
-            RailTypeComboBox.SelectedIndex = 0;
+            RailTypeTextBox.Text = "Rail";
+            RailTypeTextBox.PossibleSuggestions = Program.ParameterDB.RailParameters.Keys.ToArray();
+
             RailFormationListView.Items.Add(new ListViewItem(new string[] { "Line [2-Points]", "A Basic Line consisting of 2 path points." }) 
             { Tag = new Func<List<RailPoint>>(PathPointFormations.BasicPath) });
             RailFormationListView.Items.Add(new ListViewItem(new string[] { "Circle [4-Points]", "A Basic Circle consisting of 4 path points. Recommended to be closed." }) 
@@ -253,7 +256,7 @@ namespace SpotLight
                 }
             }
 
-            Rail.RailObjType railObjType;
+            RailParam railParam;
             Func<List<RailPoint>> railFormationFunc;
             bool reverseRail;
             bool closeRail;
@@ -262,7 +265,12 @@ namespace SpotLight
             {
                 List<RailPoint> pathPoints = PathPointFormations.GetPathFormation(pos, railFormationFunc(), reverseRail);
 
-                Rail rail = new Rail(pathPoints, zone.NextObjID(), closeRail, false, false, railObjType, zone);
+                var properties = new Dictionary<string, dynamic>();
+
+                if (railParam != null)
+                    ObjectParameterDatabase.AddToProperties(railParam.Properties, properties);
+
+                Rail rail = new Rail(pathPoints, zone.NextObjID(), closeRail, false, properties, railParam.ClassName, zone);
 
 #if ODYSSEY
                 rail.ScenarioBitField = ushort.MaxValue; //All scenarios
@@ -317,11 +325,13 @@ namespace SpotLight
                     return false;
 
                 railFormationFunc = (Func<List<RailPoint>>)RailFormationListView.SelectedItems[0].Tag;
-                railObjType = (Rail.RailObjType)RailTypeComboBox.SelectedIndex;
+
+                Program.ParameterDB.RailParameters.TryGetValue(RailTypeTextBox.Text, out railParam);
+
                 reverseRail = ReverseRailCheckBox.Checked;
                 closeRail = CloseRailCheckBox.Checked;
 
-                text = RailFormationListView.SelectedItems[0].Text + '\n' + railObjType.ToString() + '\n' + (closeRail ? "Closed" : "Open");
+                text = RailFormationListView.SelectedItems[0].Text + '\n' + RailTypeTextBox.Text + '\n' + (closeRail ? "Closed" : "Open");
 
                 placementHandler = PlaceRail;
                 return true;

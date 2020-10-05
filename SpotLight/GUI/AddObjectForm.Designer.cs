@@ -59,6 +59,7 @@
             this.SelectObjectListView = new System.Windows.Forms.ListView();
             this.ObjectNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SelectObjectLabel = new System.Windows.Forms.Label();
+            this.DeselectModelButton = new System.Windows.Forms.Button();
             this.SelectModelListView = new System.Windows.Forms.ListView();
             this.ModelNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SelectModelLabel = new System.Windows.Forms.Label();
@@ -78,11 +79,10 @@
             this.ReverseRailCheckBox = new System.Windows.Forms.CheckBox();
             this.CloseRailCheckBox = new System.Windows.Forms.CheckBox();
             this.RailTypePanel = new System.Windows.Forms.Panel();
-            this.RailTypeComboBox = new System.Windows.Forms.ComboBox();
+            this.RailTypeTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.RailTypeLabel = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ToQuickFavoritesButton = new System.Windows.Forms.Button();
-            this.DeselectModelButton = new System.Windows.Forms.Button();
             this.ObjectTypeTabControl.SuspendLayout();
             this.ObjectFromDBTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
@@ -356,6 +356,17 @@
             this.SelectObjectLabel.TabIndex = 3;
             this.SelectObjectLabel.Text = "Select Object:";
             // 
+            // DeselectModelButton
+            // 
+            this.DeselectModelButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.DeselectModelButton.Location = new System.Drawing.Point(236, -1);
+            this.DeselectModelButton.Name = "DeselectModelButton";
+            this.DeselectModelButton.Size = new System.Drawing.Size(18, 17);
+            this.DeselectModelButton.TabIndex = 7;
+            this.DeselectModelButton.Text = "X";
+            this.DeselectModelButton.UseVisualStyleBackColor = true;
+            this.DeselectModelButton.Click += new System.EventHandler(this.DeselectModelButton_Click);
+            // 
             // SelectModelListView
             // 
             this.SelectModelListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -537,7 +548,7 @@
             // 
             // RailTypePanel
             // 
-            this.RailTypePanel.Controls.Add(this.RailTypeComboBox);
+            this.RailTypePanel.Controls.Add(this.RailTypeTextBox);
             this.RailTypePanel.Controls.Add(this.RailTypeLabel);
             this.RailTypePanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.RailTypePanel.Location = new System.Drawing.Point(3, 3);
@@ -545,19 +556,15 @@
             this.RailTypePanel.Size = new System.Drawing.Size(770, 23);
             this.RailTypePanel.TabIndex = 7;
             // 
-            // RailTypeComboBox
+            // RailTypeTextBox
             // 
-            this.RailTypeComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RailTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.RailTypeComboBox.FormattingEnabled = true;
-            this.RailTypeComboBox.Items.AddRange(new object[] {
-            "Rail",
-            "RailWithMoveParameter",
-            "RailWithEffect"});
-            this.RailTypeComboBox.Location = new System.Drawing.Point(55, 0);
-            this.RailTypeComboBox.Name = "RailTypeComboBox";
-            this.RailTypeComboBox.Size = new System.Drawing.Size(715, 21);
-            this.RailTypeComboBox.TabIndex = 0;
+            this.RailTypeTextBox.FilterSuggestions = true;
+            this.RailTypeTextBox.Location = new System.Drawing.Point(61, 0);
+            this.RailTypeTextBox.Name = "RailTypeTextBox";
+            this.RailTypeTextBox.PossibleSuggestions = new string[0];
+            this.RailTypeTextBox.Size = new System.Drawing.Size(704, 20);
+            this.RailTypeTextBox.SuggestClear = false;
+            this.RailTypeTextBox.TabIndex = 2;
             // 
             // RailTypeLabel
             // 
@@ -590,17 +597,6 @@
             this.ToQuickFavoritesButton.Text = "To QuickFavorites";
             this.ToQuickFavoritesButton.UseVisualStyleBackColor = true;
             this.ToQuickFavoritesButton.Click += new System.EventHandler(this.ToQuickFavoritesButton_Click);
-            // 
-            // DeselectModelButton
-            // 
-            this.DeselectModelButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.DeselectModelButton.Location = new System.Drawing.Point(236, -1);
-            this.DeselectModelButton.Name = "DeselectModelButton";
-            this.DeselectModelButton.Size = new System.Drawing.Size(18, 17);
-            this.DeselectModelButton.TabIndex = 7;
-            this.DeselectModelButton.Text = "X";
-            this.DeselectModelButton.UseVisualStyleBackColor = true;
-            this.DeselectModelButton.Click += new System.EventHandler(this.DeselectModelButton_Click);
             // 
             // AddObjectForm
             // 
@@ -658,7 +654,6 @@
         private System.Windows.Forms.TabPage ObjectFromDBTab;
         private System.Windows.Forms.TabPage RailTab;
         private System.Windows.Forms.Label RailTypeLabel;
-        private System.Windows.Forms.ComboBox RailTypeComboBox;
         private System.Windows.Forms.TextBox SearchTextBox;
         private System.Windows.Forms.Label SearchLabel;
         private System.Windows.Forms.ColumnHeader ObjectCountColumnHeader;
@@ -693,5 +688,6 @@
         private System.Windows.Forms.Button ToQuickFavoritesButton;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Button DeselectModelButton;
+        private GL_EditorFramework.SuggestingTextBox RailTypeTextBox;
     }
 }

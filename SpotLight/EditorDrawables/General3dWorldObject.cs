@@ -308,6 +308,10 @@ namespace SpotLight.EditorDrawables
             duplicates[this] = new General3dWorldObject(position, rotation, Scale, scene.EditZone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
                 newLinks, newProperties, scene.EditZone);
 
+#if ODYSSEY
+            duplicates[this].ScenarioBitField = ScenarioBitField;
+#endif
+
             duplicates[this].SelectDefault(scene.GL_Control);
         }
 
