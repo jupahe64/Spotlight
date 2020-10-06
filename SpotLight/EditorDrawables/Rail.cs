@@ -395,6 +395,9 @@ namespace SpotLight.EditorDrawables
                 objectUIControl.AddObjectUIContainer(pointPropertyContainer, "Point Properties");
             }
 
+            if (LinkDestinations.Count > 0)
+                objectUIControl.AddObjectUIContainer(new General3dWorldObject.LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
+
             return true;
         }
 

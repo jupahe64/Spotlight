@@ -750,7 +750,7 @@ namespace SpotLight.EditorDrawables
                 {
                     string key = propertyDictKeys[i];
 
-                    if(propertyInfos.TryGetValue(key, out string desc))
+                    if(propertyInfos != null && propertyInfos.TryGetValue(key, out string desc))
                         control.SetTooltip(desc);
                     else
                         control.SetTooltip("No info for " + key);
@@ -950,10 +950,10 @@ namespace SpotLight.EditorDrawables
 
         public class LinkDestinationsUIContainer : IObjectUIContainer
         {
-            General3dWorldObject obj;
+            I3dWorldObject obj;
             SM3DWorldScene scene;
 
-            public LinkDestinationsUIContainer(General3dWorldObject obj, SM3DWorldScene scene)
+            public LinkDestinationsUIContainer(I3dWorldObject obj, SM3DWorldScene scene)
             {
                 this.obj = obj;
                 this.scene = scene;
@@ -961,7 +961,7 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
-                foreach ((string name, I3dWorldObject _obj) in obj.linkDestinations)
+                foreach ((string name, I3dWorldObject _obj) in obj.LinkDestinations)
                 {
                     if (control.Link($"{_obj.ToString()} ({name})"))
                         scene.FocusOn(_obj);
