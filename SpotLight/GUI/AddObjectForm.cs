@@ -22,8 +22,6 @@ namespace SpotLight
             Localize();
             DBEntryListView.ShowGroups = true;
             DBEntryListView.DoubleBuffering(true);
-            if (System.IO.File.Exists(Program.SODDPath))
-                OID = new ObjectInformationDatabase(Program.SODDPath);
             FullItems = new ListViewItem[Program.ParameterDB.ObjectParameters.Count];
             int i = 0;
             foreach(var parameter in Program.ParameterDB.ObjectParameters.Values)
@@ -78,7 +76,7 @@ namespace SpotLight
         public string SelectedClassName => DBEntryListView.SelectedItems[0].SubItems[0].Text;
         bool Loading = false;
         bool Edited = false;
-        readonly ObjectInformationDatabase OID = new ObjectInformationDatabase();
+        readonly ObjectInformationDatabase OID = Program.InformationDB;
         private void ObjectSelectListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             SelectObjectListView.Items.Clear();

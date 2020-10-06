@@ -236,6 +236,11 @@ namespace SpotLight
                         }
                     }
                 }
+
+                if (File.Exists(Program.SODDPath))
+                    Program.InformationDB = new ObjectInformationDatabase(Program.SODDPath);
+                else
+                    Program.InformationDB = new ObjectInformationDatabase();
             }
 
             if (CheckForUpdates(out Version useless, false))

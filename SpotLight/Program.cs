@@ -108,6 +108,7 @@ namespace SpotLight
         public static string ProjectStageDataPath => Properties.Settings.Default.ProjectPath + "\\StageData";
 
         public static ObjectParameterDatabase ParameterDB;
+        public static ObjectInformationDatabase InformationDB;
 
         public static string SOPDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ParameterDatabase.sopd");
         public static string SODDPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DescriptionDatabase.sodd");

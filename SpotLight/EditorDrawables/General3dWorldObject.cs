@@ -491,7 +491,10 @@ namespace SpotLight.EditorDrawables
             objectUIControl.AddObjectUIContainer(new BasicPropertyUIContainer(this, scene), "General");
 
             if (Properties.Count > 0)
-                objectUIControl.AddObjectUIContainer(new ExtraPropertiesUIContainer(Properties, scene), "Properties");
+            {
+                var info = Program.InformationDB.GetInformation(ClassName);
+                objectUIControl.AddObjectUIContainer(new ExtraPropertiesUIContainer(Properties, scene, info), "Properties");
+            }
 
             if (Links != null)
                 objectUIControl.AddObjectUIContainer(new LinksUIContainer(this, scene), "Links");
@@ -723,11 +726,16 @@ namespace SpotLight.EditorDrawables
 
             List<KeyValuePair<string, dynamic>> capture = null;
 
-            public ExtraPropertiesUIContainer(Dictionary<string, dynamic> propertyDict, EditorSceneBase scene)
+            Dictionary<string, string> propertyInfos;
+
+            public ExtraPropertiesUIContainer(Dictionary<string, dynamic> propertyDict, EditorSceneBase scene, Information information = null)
             {
                 this.propertyDict = propertyDict;
                 this.scene = scene;
                 propertyDictKeys = propertyDict.Keys.ToArray();
+
+                if (information != null)
+                    propertyInfos = information.Properties;
             }
 
             public void UpdateKeys()
@@ -741,6 +749,13 @@ namespace SpotLight.EditorDrawables
                 for (int i = 0; i < propertyDictKeys.Length; i++)
                 {
                     string key = propertyDictKeys[i];
+
+                    if(propertyInfos.TryGetValue(key, out string desc))
+                        control.SetTooltip(desc);
+                    else
+                        control.SetTooltip("No info for " + key);
+
+
                     if (propertyDict[key] is int)
                         propertyDict[key] = (int)control.NumberInput(propertyDict[key], key);
                     else if (propertyDict[key] is float)
@@ -750,6 +765,9 @@ namespace SpotLight.EditorDrawables
                     else if (propertyDict[key] is bool)
                         propertyDict[key] = control.CheckBox(key, propertyDict[key]);
                 }
+                
+                control.SetTooltip(null);
+
 
                 if (control.Button("Edit"))
                 {
