@@ -400,17 +400,17 @@ namespace SpotLight.EditorDrawables
             if (SceneObjectIterState.InLinks && linkDestinations.Count == 0)
                 highlightColor = new Vector4(1, 0, 0, 1) * 0.5f + highlightColor * 0.5f;
 
-            if (BfresModelCache.Contains(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName))
-            {
-
-
-                control.UpdateModelMatrix(
+            control.UpdateModelMatrix(
                     Matrix4.CreateScale(DisplayScale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
                     Matrix4.CreateScale((Selected ? editorScene.SelectionTransformAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
                     new Matrix4(Selected ? editorScene.SelectionTransformAction.NewRot(rotMtx) : rotMtx) *
                     Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition));
+
+
+            if (BfresModelCache.Contains(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName))
+            {
 
                 BfresModelCache.TryDraw(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, control, pass, highlightColor);
             }
@@ -420,14 +420,6 @@ namespace SpotLight.EditorDrawables
                     return;
 
 
-
-                control.UpdateModelMatrix(
-                    Matrix4.CreateScale(DisplayScale * 0.5f) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
-                    Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale((Selected ? editorScene.SelectionTransformAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
-                    new Matrix4(Selected ? editorScene.SelectionTransformAction.NewRot(rotMtx) : rotMtx) *
-                    Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition));
 
                 Vector4 blockColor;
                 Vector4 lineColor;
@@ -441,7 +433,7 @@ namespace SpotLight.EditorDrawables
 
                 lineColor.W = 1;
 
-                Renderers.ColorBlockRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
+                Renderers.ColorCubeRenderer.Draw(control, pass, blockColor, lineColor, control.NextPickingColor());
             }
         }
 
