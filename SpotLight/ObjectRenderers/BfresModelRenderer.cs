@@ -18,35 +18,17 @@ using BfresLibrary.Helpers;
 using Syroot.BinaryData;
 using Syroot.NintenTools.NSW.Bntx.GFX;
 
-namespace SpotLight
+namespace SpotLight.ObjectRenderers
 {
-    public static class BfresModelCache
+    public static class BfresModelRenderer
     {
         private static bool initialized = false;
 
         public static ShaderProgram BfresShaderProgram;
-        public static ShaderProgram ExtraModelShaderProgram;
-        static Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
+        
+        private static readonly Dictionary<string, CachedModel> cache = new Dictionary<string, CachedModel>();
 
-        public class ExtraModel
-        {
-            public VertexArrayObject Vao { get; set; }
-            public int IndexCount { get; set; }
-            public PrimitiveType PrimitiveType { get; set; }
-            public Pass Pass { get; set; }
-
-            public ExtraModel(VertexArrayObject vao, int indexCount, PrimitiveType primitiveType, Pass pass)
-            {
-                Vao = vao;
-                IndexCount = indexCount;
-                PrimitiveType = primitiveType;
-                Pass = pass;
-            }
-        }
-
-        static Dictionary<string, ExtraModel> extraModels = new Dictionary<string, ExtraModel>();
-
-        static Dictionary<string, Dictionary<string, int>> texArcCache = new Dictionary<string, Dictionary<string, int>>();
+        private static readonly Dictionary<string, Dictionary<string, int>> texArcCache = new Dictionary<string, Dictionary<string, int>>();
 
         public static int DefaultTetxure;
 
@@ -86,206 +68,6 @@ namespace SpotLight
                         fragColor = color;
                         gl_Position = mtxCam*mtxMdl*position;
                     }"));
-
-            ExtraModelShaderProgram = new ShaderProgram(
-                    new FragmentShader(
-                        @"#version 330
-                    uniform sampler2D tex;
-                    uniform vec4 highlight_color;
-                    in vec4 fragColor;
-                    void main(){
-                        float hc_a   = highlight_color.w;
-                        vec4 color = fragColor;
-                        gl_FragColor = vec4(color.rgb * (1-hc_a) + highlight_color.rgb * hc_a, color.a);
-                    }"),
-                    new VertexShader(
-                        @"#version 330
-                    layout(location = 0) in vec4 position;
-                    layout(location = 1) in vec4 color;
-                    uniform mat4 mtxMdl;
-                    uniform mat4 mtxCam;
-                    out vec4 fragColor;
-
-                    void main(){
-                        fragColor = color;
-                        gl_Position = mtxCam*mtxMdl*position;
-                    }"));
-            #endregion
-
-
-            #region Create Extra Models
-
-            #region AreaCubeBase
-            List<int> indices = new List<int>();
-
-            float r = 5;
-            float t = 10;
-            float b = 0;
-
-            float[] data = new float[]
-            {
-                -r, t, -r,  0, 0.5f, 1, 1,
-                 r, t, -r,  0, 0.5f, 1, 1,
-                -r, t,  r,  0, 0.5f, 1, 1,
-                 r, t,  r,  0, 0.5f, 1, 1,
-
-                -r, b, -r,  0, 0, 1, 1,
-                 r, b, -r,  0, 0, 1, 1,
-                -r, b,  r,  0, 0, 1, 1,
-                 r, b,  r,  0, 0, 1, 1,
-
-                 0, b,  0,  0, 0, 0.5f, 1,
-            };
-
-            //-x to x
-            indices.Add(0b000);
-            indices.Add(0b001);
-            indices.Add(0b010);
-            indices.Add(0b011);
-            indices.Add(0b100);
-            indices.Add(0b101);
-            indices.Add(0b110);
-            indices.Add(0b111);
-
-            //-z to z
-            indices.Add(0b000);
-            indices.Add(0b010);
-            indices.Add(0b001);
-            indices.Add(0b011);
-            indices.Add(0b100);
-            indices.Add(0b110);
-            indices.Add(0b101);
-            indices.Add(0b111);
-
-            //-y to y
-            indices.Add(0b000);
-            indices.Add(0b100);
-            indices.Add(0b001);
-            indices.Add(0b101);
-            indices.Add(0b010);
-            indices.Add(0b110);
-            indices.Add(0b011);
-            indices.Add(0b111);
-
-            //floor
-            indices.Add(8);
-            indices.Add(0b100);
-            indices.Add(8);
-            indices.Add(0b101);
-            indices.Add(8);
-            indices.Add(0b110);
-            indices.Add(8);
-            indices.Add(0b111);
-
-            //new Vector4(0, 0.5f, 1, 1)
-
-            SubmitExtraModel(PrimitiveType.Lines, "AreaCubeBase", indices, data);
-            #endregion
-
-            #region AreaCylinder
-            indices = new List<int>();
-
-            r = 5;
-            t = 5;
-            b = 0;
-            int v = 16;
-
-            data = new float[(v+1) * 2 * 7];
-
-            int i = 0;
-
-            for (int edgeIndex = 0; edgeIndex < v; edgeIndex++)
-            {
-                float x = (float)Math.Sin(Math.PI * 2 * edgeIndex / v) * r;
-                float z = (float)Math.Cos(Math.PI * 2 * edgeIndex / v) * r;
-
-                //top
-                data[i++] = x;
-                data[i++] = t;
-                data[i++] = z;
-
-                data[i++] = 0;
-                data[i++] = 0.5f;
-                data[i++] = 1;
-                data[i++] = 1;
-
-                //bottom
-                data[i++] = x;
-                data[i++] = b;
-                data[i++] = z;
-
-                data[i++] = 0;
-                data[i++] = 0f;
-                data[i++] = 1;
-                data[i++] = 1;
-
-                //top
-                indices.Add(2 * edgeIndex);
-                indices.Add((2 * edgeIndex + 2) % (v * 2));
-
-                //bottom
-                indices.Add(2 * edgeIndex + 1);
-                indices.Add((2 * edgeIndex + 1 + 2) % (v * 2));
-
-                //top to bottom
-                indices.Add(2 * edgeIndex);
-                indices.Add(2 * edgeIndex + 1);
-
-                indices.Add(2 * edgeIndex + 1);
-                indices.Add(v*2);
-            }
-
-            //floor
-            data[i++] = 0;
-            data[i++] = b;
-            data[i++] = 0;
-
-            data[i++] = 0;
-            data[i++] = 0f;
-            data[i++] = 0.5f;
-            data[i++] = 1;
-
-            SubmitExtraModel(PrimitiveType.Lines, "AreaCylinder", indices, data);
-            #endregion
-
-            #region TransparentWall
-            indices = new List<int>();
-
-            r = 5;
-
-            data = new float[]
-            {
-                -r,  r, 0,  0, 0, 0.75f, 0.5f,
-                 r,  r, 0,  0, 0, 0.75f, 0.5f,
-                -r, -r, 0,  0, 0, 0.75f, 0.5f,
-                 r, -r, 0,  0, 0, 0.75f, 0.5f,
-                            
-                -r,  r, 0,  0.75f, 0, 0.125f, 0.5f,
-                 r,  r, 0,  0.75f, 0, 0.125f, 0.5f,
-                -r, -r, 0,  0.75f, 0, 0.125f, 0.5f,
-                 r, -r, 0,  0.75f, 0, 0.125f, 0.5f,
-            };
-            //front
-            indices.Add(0b00);
-            indices.Add(0b10);
-            indices.Add(0b01);
-
-            indices.Add(0b01);
-            indices.Add(0b10);
-            indices.Add(0b11);
-
-            //back
-            indices.Add(0b101);
-            indices.Add(0b110);
-            indices.Add(0b100);
-
-            indices.Add(0b111);
-            indices.Add(0b110);
-            indices.Add(0b101);
-
-            SubmitExtraModel(PrimitiveType.Triangles, "TransparentWall", indices, data, Pass.TRANSPARENT);
-            #endregion
-
             #endregion
 
 
@@ -312,28 +94,6 @@ namespace SpotLight
             initialized = true;
         }
 
-        private static void SubmitExtraModel(PrimitiveType primitiveType, string modelName, List<int> indices, float[] data, Pass pass = Pass.OPAQUE)
-        {
-            int[] buffers = new int[2];
-            GL.GenBuffers(2, buffers);
-
-            int indexBuffer = buffers[0];
-            int vaoBuffer = buffers[1];
-
-            VertexArrayObject vao = new VertexArrayObject(vaoBuffer, indexBuffer);
-            vao.AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 7, 0);
-            vao.AddAttribute(1, 4, VertexAttribPointerType.Float, false, sizeof(float) * 7, sizeof(float) * 3);
-            vao.Submit();
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(int), indices.ToArray(), BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vaoBuffer);
-            GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * data.Length, data, BufferUsageHint.StaticDraw);
-
-            extraModels.Add(Path.GetFileNameWithoutExtension(modelName), new ExtraModel(vao, indices.Count, primitiveType, pass));
-        }
-
         public static void Submit(string modelName, Stream stream, string textureArc = null)
         {
             try
@@ -343,19 +103,15 @@ namespace SpotLight
                 if (!cache.ContainsKey(modelName) && bfres.Models.Count > 0)
                     cache[modelName] = new CachedModel(bfres, textureArc);
             }
-            catch (Exception) { }
+            catch (Exception e) 
+            {
+                Console.WriteLine($"Error with {modelName}: {e.Message}");
+            }
         }
 
-        public static void TryGetModel(string modelName, out CachedModel cachedModel, out ExtraModel extraModel)
+        public static void TryGetModel(string modelName, out CachedModel cachedModel)
         {
-            if (cache.TryGetValue(modelName, out cachedModel))
-            {
-                extraModel = null;
-            }
-            else if (extraModels.TryGetValue(modelName, out extraModel))
-            {
-                cachedModel = null;
-            }
+            cache.TryGetValue(modelName, out cachedModel);
         }
 
         public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass, Vector4 highlightColor)
@@ -365,43 +121,13 @@ namespace SpotLight
                 cachedModel.Draw(control, pass, highlightColor);
                 return true;
             }
-            else if (extraModels.TryGetValue(modelName, out ExtraModel extraModel) && (pass==Pass.PICKING || pass==extraModel.Pass))
-            {
-                if (pass == Pass.PICKING)
-                {
-                    control.CurrentShader = Framework.SolidColorShaderProgram;
-
-                    GL.LineWidth(5);
-                    control.CurrentShader.SetVector4("color", control.NextPickingColor());
-                }
-                else
-                {
-                    control.CurrentShader = ExtraModelShaderProgram;
-
-                    if (pass == Pass.TRANSPARENT)
-                        GL.Enable(EnableCap.Blend);
-
-                    GL.LineWidth(3);
-                    control.CurrentShader.SetVector4("highlight_color", highlightColor);
-                }
-
-                extraModel.Vao.Use(control);
-                
-                GL.DrawElements(extraModel.PrimitiveType, extraModel.IndexCount, DrawElementsType.UnsignedInt, 0);
-
-                GL.LineWidth(2);
-
-                GL.Disable(EnableCap.Blend);
-
-                return true;
-            }
             else
                 return false;
         }
 
 
 
-        public static bool Contains(string modelName) => cache.ContainsKey(modelName) || extraModels.ContainsKey(modelName);
+        public static bool Contains(string modelName) => cache.ContainsKey(modelName);
 
         public const bool LoadTextures = true;
 
@@ -414,11 +140,11 @@ namespace SpotLight
             }
         }
 
-        public class CachedModel
+        public sealed class CachedModel
         {
             static readonly float white = BitConverter.ToSingle(new byte[] {255, 255, 255, 255},0);
 
-            VertexArrayObject[] vaos;
+            readonly VertexArrayObject[] vaos;
             readonly int[] indexBufferLengths;
             readonly int[] textures;
             readonly (int,int)[] wrapModes;
@@ -766,67 +492,82 @@ namespace SpotLight
 
             public void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor)
             {
-                if (pass == Pass.PICKING)
+                #region model rendering prepare
+                switch (pass)
                 {
-                    control.CurrentShader = Framework.SolidColorShaderProgram;
-                    control.CurrentShader.SetVector4("color", control.NextPickingColor());
-                }
-                else
-                {
-                    if(pass == Pass.TRANSPARENT)
-                    {
+                    case Pass.OPAQUE:
+                        if (highlightColor.W != 0)
+                        {
+                            //prevents the highlight/outline from drawing the whole wireframe
+                            GL.Enable(EnableCap.StencilTest);
+                            GL.Clear(ClearBufferMask.StencilBufferBit);
+                            GL.ClearStencil(0);
+                            GL.StencilFunc(StencilFunction.Always, 0x1, 0x1);
+                            GL.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
+                        }
+
+                        control.CurrentShader = BfresShaderProgram;
+                        control.CurrentShader.SetVector4("highlight_color", highlightColor);
+
+                        GL.ActiveTexture(TextureUnit.Texture0);
+                        break;
+
+                    case Pass.TRANSPARENT:
                         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
                         GL.Enable(EnableCap.Blend);
-                    }
 
-                    control.CurrentShader = BfresShaderProgram;
+                        control.CurrentShader = BfresShaderProgram;
+                        control.CurrentShader.SetVector4("highlight_color", highlightColor);
 
-                    control.CurrentShader.SetVector4("highlight_color", highlightColor);
+                        GL.ActiveTexture(TextureUnit.Texture0);
+                        break;
 
-                    GL.ActiveTexture(TextureUnit.Texture0);
+                    case Pass.PICKING:
+                        control.CurrentShader = Framework.SolidColorShaderProgram;
+                        control.CurrentShader.SetVector4("color", control.NextPickingColor());
+                        break;
                 }
-
-                if (pass == Pass.OPAQUE && highlightColor.W != 0)
-                {
-                    GL.Enable(EnableCap.StencilTest);
-                    GL.Clear(ClearBufferMask.StencilBufferBit);
-                    GL.ClearStencil(0);
-                    GL.StencilFunc(StencilFunction.Always, 0x1, 0x1);
-                    GL.StencilOp(StencilOp.Keep, StencilOp.Replace, StencilOp.Replace);
-                }
+                #endregion
 
                 for (int i = 0; i<vaos.Length; i++)
                 {
-                    if (pass == passes[i])
-                    {
-                        if (textures[i] == -1)
-                            GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
-                        else if (textures[i] == -2)
-                            GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
-                        else
-                            GL.BindTexture(TextureTarget.Texture2D, textures[i]);
-
-                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, wrapModes[i].Item1);
-                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapModes[i].Item2);
-                    }
-
-                    if (pass == passes[i] || pass == Pass.PICKING)
+                    if (pass == Pass.PICKING)
                     {
                         vaos[i].Use(control);
 
                         GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
                     }
-                    else if (pass == Pass.OPAQUE && highlightColor.W != 0)
+                    else
                     {
-                        GL.ColorMask(false, false, false, false);
-                        GL.DepthMask(false);
+                        if (pass == passes[i]) //is up for rendering
+                        {
+                            //prepare for textured drawing
+                            if (textures[i] == -1)
+                                GL.BindTexture(TextureTarget.Texture2D, NoTetxure);
+                            else if (textures[i] == -2)
+                                GL.BindTexture(TextureTarget.Texture2D, DefaultTetxure);
+                            else
+                                GL.BindTexture(TextureTarget.Texture2D, textures[i]);
 
-                        vaos[i].Use(control);
+                            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, wrapModes[i].Item1);
+                            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapModes[i].Item2);
 
-                        GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+                            vaos[i].Use(control);
 
-                        GL.ColorMask(true, true, true, true);
-                        GL.DepthMask(true);
+                            GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+                        }
+                        else if (pass == Pass.OPAQUE && highlightColor.W != 0) //still needs to render (but invisible) for the outline effect to work
+                        {
+                            GL.ColorMask(false, false, false, false);
+                            GL.DepthMask(false);
+
+                            vaos[i].Use(control);
+
+                            GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
+
+                            GL.ColorMask(true, true, true, true);
+                            GL.DepthMask(true);
+                        }
                     }
                 }
 
@@ -931,7 +672,7 @@ namespace SpotLight
                 }
             }
         }
-        
+
         private static void GetPixelFormats(GX2SurfaceFormat Format, out PixelInternalFormat pixelInternalFormat)
         {
             switch (Format)

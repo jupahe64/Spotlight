@@ -168,7 +168,9 @@
     <Compile Include="GUI\SplashForm.designer.cs">
       <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Storage\BfresModelCache.cs" />
+    <Compile Include="ObjectRenderers\GizmoRenderer.cs" />
+    <Compile Include="ObjectRenderers\BfresModelRenderer.cs" />
+    <Compile Include="ObjectRenderers\ExtraModelRenderer.cs" />
     <Compile Include="Storage\Language.cs" />
     <Compile Include="GUI\LoadLevelForm.cs">
       <SubType>Form</SubType>
@@ -315,6 +317,7 @@
     <None Include="Splash\KoopaLastStageA.png" />
     <None Include="Splash\KoopaLastStageB.png" />
     <None Include="Splash\NokonokoBeachStage.png" />
+    <None Include="Resources\Gizmos.png" />
     <Content Include="SpotLightIcon.ico" />
   </ItemGroup>
   <ItemGroup>

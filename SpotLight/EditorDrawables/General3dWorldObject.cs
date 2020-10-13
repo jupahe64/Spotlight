@@ -20,6 +20,7 @@ using SZS;
 using static BYAML.ByamlNodeWriter;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using WinInput = System.Windows.Input;
+using SpotLight.ObjectRenderers;
 
 namespace SpotLight.EditorDrawables
 {
@@ -384,6 +385,8 @@ namespace SpotLight.EditorDrawables
 
             Matrix3 rotMtx = GlobalRotation;
 
+            Vector3 transformedGloablPos = Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition;
+
             Vector4 highlightColor;
 
             if (SceneDrawState.HighlightColorOverride.HasValue)
@@ -400,20 +403,27 @@ namespace SpotLight.EditorDrawables
             if (SceneObjectIterState.InLinks && linkDestinations.Count == 0)
                 highlightColor = new Vector4(1, 0, 0, 1) * 0.5f + highlightColor * 0.5f;
 
+
+            //Gizmos don't need the object transforms
+            //the method constructs a matrix from GlobalPosition and the controls camera
+            if (GizmoRenderer.TryDraw(ClassName, control, pass, transformedGloablPos, highlightColor))
+                return;
+
             control.UpdateModelMatrix(
                     Matrix4.CreateScale(DisplayScale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
                     Matrix4.CreateScale((Selected ? editorScene.SelectionTransformAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
                     new Matrix4(Selected ? editorScene.SelectionTransformAction.NewRot(rotMtx) : rotMtx) *
-                    Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition));
+                    Matrix4.CreateTranslation(transformedGloablPos));
 
 
-            if (BfresModelCache.Contains(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName))
-            {
+            string renderMdlName = string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName;
 
-                BfresModelCache.TryDraw(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, control, pass, highlightColor);
-            }
+            if (BfresModelRenderer.TryDraw(renderMdlName, control, pass, highlightColor))
+                return;
+            else if (ExtraModelRenderer.TryDraw(renderMdlName, control, pass, highlightColor))
+                return;
             else
             {
                 if (pass == Pass.TRANSPARENT)
@@ -421,10 +431,8 @@ namespace SpotLight.EditorDrawables
 
 
 
-                Vector4 blockColor;
+                Vector4 blockColor = Color * (1 - highlightColor.W) + highlightColor * highlightColor.W;
                 Vector4 lineColor;
-
-                blockColor = Color * (1 - highlightColor.W) + highlightColor * highlightColor.W;
 
                 if (highlightColor.W != 0)
                     lineColor = highlightColor;
@@ -446,7 +454,7 @@ namespace SpotLight.EditorDrawables
         public void DoModelLoad()
         {
             string mdlName = string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName;
-            if (BfresModelCache.Contains(mdlName))
+            if (BfresModelRenderer.Contains(mdlName))
                 return;
             string Result = Program.TryGetPathViaProject("ObjectData", mdlName + ".szs");
             if (File.Exists(Result))
@@ -461,12 +469,12 @@ namespace SpotLight.EditorDrawables
 
                         if (initModel is Dictionary<string, dynamic>)
                         {
-                            BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]),
+                            BfresModelRenderer.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]),
                             initModel.TryGetValue("TextureArc", out dynamic texArc) ? texArc : null);
                             return;
                         }
                     }
-                    BfresModelCache.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), null);
+                    BfresModelRenderer.Submit(mdlName, new MemoryStream(objArc.Files[mdlName + ".bfres"]), null);
                 }
             }
         }
@@ -501,7 +509,7 @@ namespace SpotLight.EditorDrawables
         {
             General3dWorldObjectBatch renderer = (General3dWorldObjectBatch)zoneBatch.GetBatchRenderer(typeof(General3dWorldObjectBatch));
 
-            BfresModelCache.TryGetModel(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, out BfresModelCache.CachedModel cachedModel, out BfresModelCache.ExtraModel extraModel);
+            BfresModelRenderer.TryGetModel(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, out BfresModelRenderer.CachedModel cachedModel);
 
             if (cachedModel!=null)
             {
@@ -520,9 +528,7 @@ namespace SpotLight.EditorDrawables
         {
             public Dictionary<Vector4, List<Matrix4>> colorCubes = new Dictionary<Vector4, List<Matrix4>>();
 
-            public List<(BfresModelCache.CachedModel model, Matrix4 transform)> cachedModels = new List<(BfresModelCache.CachedModel, Matrix4)>();
-
-            //public List<(BfresModelCache.ExtraModel model, Matrix4 transform)> extraModels = new List<(BfresModelCache.ExtraModel, Matrix4)>();
+            public List<(BfresModelRenderer.CachedModel model, Matrix4 transform)> cachedModels = new List<(BfresModelRenderer.CachedModel, Matrix4)>();
 
             public void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor, Matrix4 zoneTransform, Vector4 pickingColor)
             {
@@ -530,7 +536,7 @@ namespace SpotLight.EditorDrawables
 
                 if (pass == Pass.OPAQUE)
                 {
-                    control.CurrentShader = BfresModelCache.BfresShaderProgram;
+                    control.CurrentShader = BfresModelRenderer.BfresShaderProgram;
 
                     control.CurrentShader.SetVector4("highlight_color", highlightColor);
 
@@ -576,7 +582,7 @@ namespace SpotLight.EditorDrawables
                 }
                 else if (pass == Pass.TRANSPARENT)
                 {
-                    control.CurrentShader = BfresModelCache.BfresShaderProgram;
+                    control.CurrentShader = BfresModelRenderer.BfresShaderProgram;
 
                     control.CurrentShader.SetVector4("highlight_color", highlightColor);
 

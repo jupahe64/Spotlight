@@ -13,6 +13,7 @@ using System.Threading;
 using System.Windows.Forms;
 using GL_EditorFramework;
 using System.Threading.Tasks;
+using SpotLight.ObjectRenderers;
 
 namespace SpotLight
 {
@@ -214,9 +215,9 @@ namespace SpotLight
                     break;
             }
             Properties.Settings.Default.Save();
-            if (BfresModelCache.Contains("CheckpointFlag"))
+            if (BfresModelRenderer.Contains("CheckpointFlag"))
             {
-                BfresModelCache.ReloadModel("CheckpointFlag");
+                BfresModelRenderer.ReloadModel("CheckpointFlag");
                 Home.LevelGLControlModern.Refresh();
             }
         }

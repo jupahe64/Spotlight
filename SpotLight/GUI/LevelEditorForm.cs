@@ -17,6 +17,7 @@ using SpotLight.Level;
 using System.Threading;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using System.Reflection;
+using SpotLight.ObjectRenderers;
 
 namespace SpotLight
 {
@@ -1374,7 +1375,9 @@ Would you like to rebuild the database from your 3DW Files?";
 
         private void LevelGLControlModern_Load(object sender, EventArgs e)
         {
-            BfresModelCache.Initialize();
+            BfresModelRenderer.Initialize();
+            ExtraModelRenderer.Initialize();
+            GizmoRenderer.Initialize();
         }
 
         private void CancelAddObjectButton_Click(object sender, EventArgs e)
