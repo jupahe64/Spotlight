@@ -138,12 +138,16 @@ namespace SpotLight.ObjectRenderers
                     GL.BindTexture(TextureTarget.Texture2D, TextureSheet);
 
                     GL.Enable(EnableCap.Blend);
+                    GL.Enable(EnableCap.AlphaTest);
+                    GL.AlphaFunc(AlphaFunction.Gequal, 0.25f);
+
                     DefaultShaderProgram.SetVector4("color", color);
                     DefaultShaderProgram.SetVector2("uvTopLeft", uvTopLeft);
 
                     planeVao.Use(control);
                     GL.DrawArrays(PrimitiveType.Quads, 0, 4);
                     GL.Disable(EnableCap.Blend);
+                    GL.Disable(EnableCap.AlphaTest);
                 }
                 else
                 {
