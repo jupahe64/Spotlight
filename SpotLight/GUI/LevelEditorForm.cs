@@ -1378,6 +1378,7 @@ Would you like to rebuild the database from your 3DW Files?";
             BfresModelRenderer.Initialize();
             ExtraModelRenderer.Initialize();
             GizmoRenderer.Initialize();
+            AreaRenderer.Initialize();
         }
 
         private void CancelAddObjectButton_Click(object sender, EventArgs e)

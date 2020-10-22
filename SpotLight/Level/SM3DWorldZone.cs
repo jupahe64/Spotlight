@@ -497,6 +497,7 @@ namespace SpotLight.Level
         private void LoadStageByml(ByamlIterator byamlIter, string prefix, Dictionary<string, I3dWorldObject> linkedObjsByID, Dictionary<long, I3dWorldObject> objectsByReference)
         {
 #if ODYSSEY
+            HashSet<string> zoneIds = new HashSet<string>();
             foreach (var scenario in byamlIter.IterRootArray())
             foreach (DictionaryEntry entry in scenario.IterDictionary())
 #else
@@ -510,6 +511,9 @@ namespace SpotLight.Level
                 {
                     foreach (ArrayEntry obj in entry.IterArray())
                     {
+#if ODYSSEY
+                        string zoneId = "";
+#endif
                         Vector3 position = Vector3.Zero;
                         Vector3 rotation = Vector3.Zero;
                         Vector3 scale = Vector3.One;
@@ -548,12 +552,25 @@ namespace SpotLight.Level
                                     data["Z"]
                                 );
                             }
+#if ODYSSEY
+                            else if (_entry.Key == "Id")
+                            {
+                                zoneId = _entry.Parse();
+
+                                if (zoneIds.Contains(zoneId))
+                                    goto SKIP_ZONE;
+
+                                zoneIds.Add(zoneId);
+                            }
+#endif
                         }
 
                         if (zone != null)
                         {
                             ZonePlacements.Add(new ZonePlacement(position, rotation, scale, zone));
                         }
+
+                        SKIP_ZONE:;
                     }
 
                     continue;

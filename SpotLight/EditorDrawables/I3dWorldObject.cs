@@ -18,9 +18,9 @@ namespace SpotLight.EditorDrawables
     {
         bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList);
 
-        IReadOnlyList<(string, I3dWorldObject)> LinkDestinations { get; }
-        void ClearLinkDestinations();
-        void AddLinkDestinations();
+        List<(string, I3dWorldObject)> LinkDestinations { get; }
+        void UpdateLinkDestinations_Clear();
+        void UpdateLinkDestinations_Populate();
         void AddLinkDestination(string linkName, I3dWorldObject linkingObject);
 
         void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, ZoneTransform? zoneToZoneTransform = null, bool deselectOld = true);

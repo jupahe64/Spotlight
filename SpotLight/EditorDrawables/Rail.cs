@@ -23,17 +23,6 @@ namespace SpotLight.EditorDrawables
             return ClassName.ToString();
         }
 
-        public static Dictionary<string, dynamic> CreateUnitConfig(string className) => new Dictionary<string, dynamic>
-        {
-            ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
-            ["DisplayRotate"] = LevelIO.Vector3ToDict(Vector3.Zero),
-            ["DisplayScale"] = LevelIO.Vector3ToDict(Vector3.One),
-            ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero, 100f),
-            ["GenerateCategory"] = "",
-            ["ParameterConfigName"] = className,
-            ["PlacementTargetFile"] = "Map"
-        };
-
         protected static List<RailPoint> RailPointsFromRailPointsEntry(ByamlIterator.DictionaryEntry railPointsEntry)
         {
             List<RailPoint> pathPoints = new List<RailPoint>();
@@ -106,7 +95,7 @@ namespace SpotLight.EditorDrawables
         [Undoable]
         public string ClassName { get; set; }
 
-        public Rail(LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
+        public Rail(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
         {
             pathPoints = RailPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]);
 
@@ -137,11 +126,6 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-
-            IsLadder = info.PropertyEntries["IsLadder"].Parse();
-
-            Closed = info.PropertyEntries["IsClosed"].Parse();
-
             zone?.SubmitRailID(ID);
 
             loadLinks = false; //We don't expect Rails to have Links
@@ -155,7 +139,7 @@ namespace SpotLight.EditorDrawables
         /// <param name="isLadder">Unknown</param>
         /// <param name="isReverseCoord">Reverses the order the rails are in</param>
         /// <param name="className"></param>
-        public Rail(List<RailPoint> railPoints, string iD, bool isClosed, bool isLadder, Dictionary<string, dynamic> properties, string className, SM3DWorldZone zone)
+        public Rail(List<RailPoint> railPoints, string iD, string className, bool isClosed, bool isLadder, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
         {
             ID = iD;
             Closed = isClosed;
@@ -177,14 +161,11 @@ namespace SpotLight.EditorDrawables
                 Database.ObjectParameterDatabase.AddToProperties(railParam.PointProperties, point.Properties);
         }
 
-#region I3DWorldObject implementation
+        #region I3DWorldObject implementation
         /// <summary>
         /// All places where this object is linked to
         /// </summary>
-        public IReadOnlyList<(string, I3dWorldObject)> LinkDestinations { get => linkDestinations; }
-
-
-        List<(string, I3dWorldObject)> linkDestinations = new List<(string, I3dWorldObject)>();
+        public List<(string, I3dWorldObject)> LinkDestinations { get; } = new List<(string, I3dWorldObject)>();
 
         public Dictionary<string, List<I3dWorldObject>> Links { get => null; set { } } //We don't expect Rails to have Links
 
@@ -232,7 +213,7 @@ namespace SpotLight.EditorDrawables
                 pointNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
                 pointNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(point.Position, 100f), true);
                 
-                pointNode.AddDynamicValue("UnitConfig", CreateUnitConfig("Point"), true);
+                pointNode.AddDynamicValue("UnitConfig", ObjectUtils.CreateUnitConfig("Point"), true);
                 
                 pointNode.AddDynamicValue("UnitConfigName", "Point");
 
@@ -262,7 +243,7 @@ namespace SpotLight.EditorDrawables
             objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(PathPoints[0].Position, 100f), true);
             objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(PathPoints[0].Position, 100f), true);
 
-            objNode.AddDynamicValue("UnitConfig", CreateUnitConfig(ClassName), true);
+            objNode.AddDynamicValue("UnitConfig", ObjectUtils.CreateUnitConfig(ClassName), true);
 
             objNode.AddDynamicValue("UnitConfigName", ClassName);
 
@@ -280,26 +261,28 @@ namespace SpotLight.EditorDrawables
 
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
         {
-            return (PathPoints[0] as RailPoint)?.GetLinkingPoint(editorScene) ?? Vector3.Zero;
+            return PathPoints[0]?.GetLinkingPoint(editorScene) ?? Vector3.Zero;
         }
 
-        public void ClearLinkDestinations()
+        public void UpdateLinkDestinations_Clear()
         {
-            linkDestinations.Clear();
+            LinkDestinations.Clear();
         }
 
-        public void AddLinkDestinations()
+        public void UpdateLinkDestinations_Populate()
         {
             //We don't expect Rails to have Links
         }
 
         public void AddLinkDestination(string linkName, I3dWorldObject linkingObject)
         {
-            linkDestinations.Add((linkName, linkingObject));
+            LinkDestinations.Add((linkName, linkingObject));
         }
 
         public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, ZoneTransform? zoneToZoneTransform = null, bool deselectOld = true)
         {
+            LinkDestinations.Clear();
+
             bool anyPointsSelected = false;
             foreach (PathPoint point in pathPoints)
             {
@@ -333,7 +316,7 @@ namespace SpotLight.EditorDrawables
             foreach (var keyValuePair in Properties)
                 newPathProperties.Add(keyValuePair.Key, keyValuePair.Value);
 
-            duplicates[this] = new Rail(newPoints, scene.EditZone.NextRailID(), Closed, IsLadder, newPathProperties, ClassName, scene.EditZone);
+            duplicates[this] = new Rail(newPoints, scene.EditZone.NextRailID(), ClassName, Closed, IsLadder, newPathProperties, scene.EditZone);
 
 #if ODYSSEY
             duplicates[this].ScenarioBitField = ScenarioBitField;
@@ -348,6 +331,16 @@ namespace SpotLight.EditorDrawables
         public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
         {
             //We don't expect Rails to have Links
+        }
+
+        public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
+        {
+            return zone.ObjLists.TryGetValue("Map_Rails", out objList);
+        }
+
+        public void AddToZoneBatch(ZoneRenderBatch zoneBatch)
+        {
+            //TODO figure out if this is needed or not
         }
 
 #if ODYSSEY
@@ -399,16 +392,6 @@ namespace SpotLight.EditorDrawables
                 objectUIControl.AddObjectUIContainer(new General3dWorldObject.LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
 
             return true;
-        }
-
-        public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
-        {
-            return zone.ObjLists.TryGetValue("Map_Rails", out objList);
-        }
-
-        public void AddToZoneBatch(ZoneRenderBatch zoneBatch)
-        {
-            //TODO figure out if this is needed or not
         }
 
         public class RailUIContainer : IObjectUIContainer

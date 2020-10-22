@@ -48,7 +48,7 @@ namespace SpotLight.ObjectRenderers
             #endregion
 
 
-            #region Create Extra Models
+        #region Create Extra Models
 
             #region AreaCubeBase
             List<int> indices = new List<int>();
@@ -112,10 +112,87 @@ namespace SpotLight.ObjectRenderers
             indices.Add(8);
             indices.Add(0b111);
 
-            //new Vector4(0, 0.5f, 1, 1)
-
             Submit(PrimitiveType.Lines, "AreaCubeBase", indices, data);
             #endregion
+
+#if ODYSSEY
+            #region AreaCubeTop
+
+            r = 5;
+            t = -10;
+            b = 0;
+
+            data = new float[]
+            {
+                -r, t, -r,  0, 0.5f, 1, 1,
+                 r, t, -r,  0, 0.5f, 1, 1,
+                -r, t,  r,  0, 0.5f, 1, 1,
+                 r, t,  r,  0, 0.5f, 1, 1,
+
+                -r, b, -r,  0, 0, 1, 1,
+                 r, b, -r,  0, 0, 1, 1,
+                -r, b,  r,  0, 0, 1, 1,
+                 r, b,  r,  0, 0, 1, 1,
+
+                 0, b,  0,  0, 0, 0.5f, 1,
+            };
+
+            Submit(PrimitiveType.Lines, "AreaCubeTop", indices, data);
+            #endregion
+
+            #region AreaCubeCenter
+            indices = new List<int>();
+
+            r = 2.5f;
+            t = 2.5f;
+            b = -2.5f;
+
+            data = new float[]
+            {
+                -r, t, -r,  0, 0.5f, 1, 1,
+                 r, t, -r,  0, 0.5f, 1, 1,
+                -r, t,  r,  0, 0.5f, 1, 1,
+                 r, t,  r,  0, 0.5f, 1, 1,
+
+                -r, b, -r,  0, 0, 1, 1,
+                 r, b, -r,  0, 0, 1, 1,
+                -r, b,  r,  0, 0, 1, 1,
+                 r, b,  r,  0, 0, 1, 1,
+            };
+
+            //-x to x
+            indices.Add(0b000);
+            indices.Add(0b001);
+            indices.Add(0b010);
+            indices.Add(0b011);
+            indices.Add(0b100);
+            indices.Add(0b101);
+            indices.Add(0b110);
+            indices.Add(0b111);
+
+            //-z to z
+            indices.Add(0b000);
+            indices.Add(0b010);
+            indices.Add(0b001);
+            indices.Add(0b011);
+            indices.Add(0b100);
+            indices.Add(0b110);
+            indices.Add(0b101);
+            indices.Add(0b111);
+
+            //-y to y
+            indices.Add(0b000);
+            indices.Add(0b100);
+            indices.Add(0b001);
+            indices.Add(0b101);
+            indices.Add(0b010);
+            indices.Add(0b110);
+            indices.Add(0b011);
+            indices.Add(0b111);
+
+            Submit(PrimitiveType.Lines, "AreaCubeCenter", indices, data);
+            #endregion
+#endif
 
             #region AreaCylinder
             indices = new List<int>();
@@ -123,16 +200,16 @@ namespace SpotLight.ObjectRenderers
             r = 5;
             t = 5;
             b = 0;
-            int v = 16;
+            int cylinderEdgeCount = 16;
 
-            data = new float[(v + 1) * 2 * 7];
+            data = new float[(cylinderEdgeCount * 2 + 1) * 7];
 
             int i = 0;
 
-            for (int edgeIndex = 0; edgeIndex < v; edgeIndex++)
+            for (int edgeIndex = 0; edgeIndex < cylinderEdgeCount; edgeIndex++)
             {
-                float x = (float)Math.Sin(Math.PI * 2 * edgeIndex / v) * r;
-                float z = (float)Math.Cos(Math.PI * 2 * edgeIndex / v) * r;
+                float x = (float)Math.Sin(Math.PI * 2 * edgeIndex / cylinderEdgeCount) * r;
+                float z = (float)Math.Cos(Math.PI * 2 * edgeIndex / cylinderEdgeCount) * r;
 
                 //top
                 data[i++] = x;
@@ -156,18 +233,18 @@ namespace SpotLight.ObjectRenderers
 
                 //top
                 indices.Add(2 * edgeIndex);
-                indices.Add((2 * edgeIndex + 2) % (v * 2));
+                indices.Add((2 * edgeIndex + 2) % (cylinderEdgeCount * 2));
 
                 //bottom
                 indices.Add(2 * edgeIndex + 1);
-                indices.Add((2 * edgeIndex + 1 + 2) % (v * 2));
+                indices.Add((2 * edgeIndex + 1 + 2) % (cylinderEdgeCount * 2));
 
                 //top to bottom
                 indices.Add(2 * edgeIndex);
                 indices.Add(2 * edgeIndex + 1);
 
                 indices.Add(2 * edgeIndex + 1);
-                indices.Add(v * 2);
+                indices.Add(cylinderEdgeCount * 2);
             }
 
             //floor
@@ -182,6 +259,196 @@ namespace SpotLight.ObjectRenderers
 
             Submit(PrimitiveType.Lines, "AreaCylinder", indices, data);
             #endregion
+
+#if ODYSSEY
+            #region AreaCylinderTop
+            r = 5;
+            t = -5;
+            b = 0;
+
+            data = new float[(cylinderEdgeCount * 2 + 1) * 7];
+
+            i = 0;
+
+            for (int edgeIndex = 0; edgeIndex < cylinderEdgeCount; edgeIndex++)
+            {
+                float x = (float)Math.Sin(Math.PI * 2 * edgeIndex / cylinderEdgeCount) * r;
+                float z = (float)Math.Cos(Math.PI * 2 * edgeIndex / cylinderEdgeCount) * r;
+
+                //top
+                data[i++] = x;
+                data[i++] = t;
+                data[i++] = z;
+
+                data[i++] = 0;
+                data[i++] = 0.5f;
+                data[i++] = 1;
+                data[i++] = 1;
+
+                //bottom
+                data[i++] = x;
+                data[i++] = b;
+                data[i++] = z;
+
+                data[i++] = 0;
+                data[i++] = 0f;
+                data[i++] = 1;
+                data[i++] = 1;
+            }
+
+            //floor
+            data[i++] = 0;
+            data[i++] = b;
+            data[i++] = 0;
+
+            data[i++] = 0;
+            data[i++] = 0f;
+            data[i++] = 0.5f;
+            data[i++] = 1;
+
+            Submit(PrimitiveType.Lines, "AreaCylinderTop", indices, data);
+            #endregion
+
+            #region AreaCylinderCenter
+            indices = new List<int>();
+
+            r = 5;
+            t = 5;
+            b = 0;
+
+            data = new float[(cylinderEdgeCount * 2 + 1) * 7];
+
+            i = 0;
+
+            for (int edgeIndex = 0; edgeIndex < cylinderEdgeCount; edgeIndex++)
+            {
+                float x = (float)Math.Sin(Math.PI * 2 * edgeIndex / cylinderEdgeCount) * r;
+                float z = (float)Math.Cos(Math.PI * 2 * edgeIndex / cylinderEdgeCount) * r;
+
+                //top
+                data[i++] = x;
+                data[i++] = t;
+                data[i++] = z;
+
+                data[i++] = 0;
+                data[i++] = 0.5f;
+                data[i++] = 1;
+                data[i++] = 1;
+
+                //bottom
+                data[i++] = x;
+                data[i++] = b;
+                data[i++] = z;
+
+                data[i++] = 0;
+                data[i++] = 0f;
+                data[i++] = 1;
+                data[i++] = 1;
+
+                //top
+                indices.Add(2 * edgeIndex);
+                indices.Add((2 * edgeIndex + 2) % (cylinderEdgeCount * 2));
+
+                //bottom
+                indices.Add(2 * edgeIndex + 1);
+                indices.Add((2 * edgeIndex + 1 + 2) % (cylinderEdgeCount * 2));
+
+                //top to bottom
+                indices.Add(2 * edgeIndex);
+                indices.Add(2 * edgeIndex + 1);
+
+                indices.Add(2 * edgeIndex + 1);
+                indices.Add(cylinderEdgeCount * 2);
+            }
+
+            Submit(PrimitiveType.Lines, "AreaCylinderCenter", indices, data);
+            #endregion
+
+
+            #region AreaSphere
+            indices = new List<int>();
+
+            int sphereSubDivisionsU = 16;
+            int sphereSubDivisionsV = 8;
+
+            r = 5f;
+
+            data = new float[(sphereSubDivisionsU * (sphereSubDivisionsV - 1) + 2) * 7];
+
+            int lastIndex = sphereSubDivisionsU * (sphereSubDivisionsV - 1) + 1;
+
+            i = 0;
+
+            //top
+            data[i++] = 0;
+            data[i++] = r;
+            data[i++] = 0;
+
+            data[i++] = 0;
+            data[i++] = 0.5f;
+            data[i++] = 1;
+            data[i++] = 1;
+
+            void addIndex(int u, int v) => indices.Add(1 + v + (sphereSubDivisionsV-1) * u);
+
+            for (int uIndex = 0; uIndex < sphereSubDivisionsU; uIndex++)
+            {
+                double angleU = Math.PI * 2 * uIndex / sphereSubDivisionsU;
+
+                float _x = (float)Math.Sin(angleU) * r;
+                float _z = (float)Math.Cos(angleU) * r;
+
+                indices.Add(0);
+                addIndex(uIndex, 0);
+
+                for (int vIndex = 0; vIndex < sphereSubDivisionsV-1; vIndex++)
+                {
+                    double angleV = Math.PI * (vIndex + 1) / sphereSubDivisionsV;
+
+                    float vRadius = (float)Math.Sin(angleV);
+
+                    float x = _x * vRadius;
+                    float z = _z * vRadius;
+
+                    float y = (float)Math.Cos(angleV) * r;
+
+                    data[i++] = x;
+                    data[i++] = y;
+                    data[i++] = z;
+
+                    data[i++] = 0;
+                    data[i++] = 0.5f - (float)(angleV / Math.PI) * 0.5f;
+                    data[i++] = 1;
+                    data[i++] = 1;
+
+
+                    //u+
+                    addIndex(uIndex, vIndex);
+                    addIndex((uIndex + 1) % sphereSubDivisionsU, vIndex);
+
+                    
+                    //v+
+                    addIndex(uIndex, vIndex);
+                    if (vIndex < sphereSubDivisionsV - 2)
+                        addIndex(uIndex, (vIndex + 1));
+                    else
+                        indices.Add(lastIndex);
+                }
+            }
+
+            //bottom
+            data[i++] = 0;
+            data[i++] = -r;
+            data[i++] = 0;
+
+            data[i++] = 0;
+            data[i++] = 0f;
+            data[i++] = 1f;
+            data[i++] = 1;
+
+            Submit(PrimitiveType.Lines, "AreaSphere", indices, data);
+            #endregion
+#endif
 
             #region TransparentWall
             indices = new List<int>();
@@ -219,6 +486,10 @@ namespace SpotLight.ObjectRenderers
             indices.Add(0b101);
 
             Submit(PrimitiveType.Triangles, "TransparentWall", indices, data, Pass.TRANSPARENT);
+#if ODYSSEY
+            Submit(PrimitiveType.Triangles, "TransparentWallNoAction", indices, data, Pass.TRANSPARENT);
+            Submit(PrimitiveType.Triangles, "TransparentWallMoveLimit", indices, data, Pass.TRANSPARENT);
+#endif
             #endregion
 
             #endregion
@@ -257,6 +528,11 @@ namespace SpotLight.ObjectRenderers
             }
             else
                 return false;
+        }
+
+        public static void TryGetModel(string modelName, out ExtraModel cachedModel)
+        {
+            models.TryGetValue(modelName, out cachedModel);
         }
 
         public sealed class ExtraModel

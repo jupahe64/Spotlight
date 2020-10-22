@@ -31,12 +31,18 @@ namespace SpotLight.Level
             I3dWorldObject obj;
             bool loadLinks;
 
-            if (info.PropertyEntries.TryGetValue("RailPoints", out DictionaryEntry railPointEntry) && railPointEntry.NodeType == ByamlFile.ByamlNodeType.Array) //at this point we can be sure it's a rail
-                obj = new Rail(info, zone, out loadLinks);
+            if((info.ObjectName.EndsWith("Area")
+#if ODYSSEY
+            || info.ObjectName.EndsWith("Area2D")
+#endif
+            )&& info.PropertyEntries.TryGetValue("Priority", out DictionaryEntry priorityEntry) && priorityEntry.NodeType == ByamlFile.ByamlNodeType.Integer)
+                obj = new AreaObject(in info, zone, out loadLinks);
+            else if (info.PropertyEntries.TryGetValue("RailPoints", out DictionaryEntry railPointEntry) && railPointEntry.NodeType == ByamlFile.ByamlNodeType.Array) //at this point we can be sure it's a rail
+                obj = new Rail(in info, zone, out loadLinks);
             else
-                obj = new General3dWorldObject(info, zone, out loadLinks);
+                obj = new General3dWorldObject(in info, zone, out loadLinks);
 
-            if (linkedObjsByID != null && isLinked)
+            if (isLinked && linkedObjsByID != null)
             {
                 if (!linkedObjsByID.ContainsKey(info.ID))
                     linkedObjsByID.Add(info.ID, obj);
@@ -70,29 +76,29 @@ namespace SpotLight.Level
 
             if (loadLinks)
             {
-                obj.Links = new Dictionary<string, List<I3dWorldObject>>();
+                var links = new Dictionary<string, List<I3dWorldObject>>();
                 foreach (DictionaryEntry link in info.LinkEntries.Values)
                 {
-                    obj.Links.Add(link.Key, new List<I3dWorldObject>());
+                    links.Add(link.Key, new List<I3dWorldObject>());
                     foreach (ArrayEntry linked in link.IterArray())
                     {
                         if (objectsByReference.ContainsKey(linked.Position))
                         {
-                            obj.Links[link.Key].Add(objectsByReference[linked.Position]);
+                            links[link.Key].Add(objectsByReference[linked.Position]);
                             objectsByReference[linked.Position].AddLinkDestination(link.Key, obj);
                         }
                         else
                         {
                             I3dWorldObject _obj = ParseObject(linked, zone, objectsByReference, out bool linkedAlreadyReferenced, linkedObjsByID, true);
                             _obj.AddLinkDestination(link.Key, obj);
-                            obj.Links[link.Key].Add(_obj);
+                            links[link.Key].Add(_obj);
                             if (zone != null && !linkedAlreadyReferenced)
                                 zone.LinkedObjects.Add(_obj);
                         }
                     }
                 }
-                if (obj.Links.Count == 0)
-                    obj.Links = null;
+                if (links.Count > 0)
+                    obj.Links = links;
             }
 
             return obj;

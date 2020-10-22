@@ -181,6 +181,8 @@ namespace SpotLight.ObjectRenderers
                 {
                     uint[] indices = shape.Meshes[0].GetIndices().ToArray();
 
+#pragma warning disable CS0162 // Unreachable code detected
+
                     if (LoadTextures)
                     {
                         if (mdl.Materials[shape.MaterialIndex].TextureRefs.Count != 0)
@@ -265,9 +267,10 @@ namespace SpotLight.ObjectRenderers
                             textures[shapeIndex] = -1;
                         }
                     }
-                    //else
-                    //    textures[shapeIndex] = -2;
-                    //Apparently this is unreachable. I (Super Hackio) don't exactly know why...
+                    else
+                        textures[shapeIndex] = -2;
+
+#pragma warning restore CS0162 // Unreachable code detected
 
                     switch (mdl.Materials[shape.MaterialIndex].RenderState?.FlagsMode)
                     {
@@ -760,7 +763,7 @@ namespace SpotLight.ObjectRenderers
                     pixelInternalFormat = PixelInternalFormat.Rgba;
                     break;
                 default:
-                    pixelInternalFormat = PixelInternalFormat.Rgba;
+                    pixelInternalFormat = 0;
                     break;
             }
         }
@@ -897,7 +900,8 @@ namespace SpotLight.ObjectRenderers
                         goto DATA_UPLOADED;
                     }
 
-                    return -2;
+                    if (internalFormat == 0)
+                        return -2;
                 }
 
                 //#region channel reassign

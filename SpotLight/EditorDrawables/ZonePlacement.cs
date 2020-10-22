@@ -27,9 +27,6 @@ namespace SpotLight.EditorDrawables
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
-            if (!Visible)
-                return;
-
             Vector4 hightlightColor;
 
             if (Selected && editorScene.Hovered == this)
@@ -45,8 +42,6 @@ namespace SpotLight.EditorDrawables
 
             rotMat = Selected ? editorScene.SelectionTransformAction.NewRot(rotMat) : rotMat;
 
-            ZoneTransform transformBackup = SceneDrawState.ZoneTransform;
-
             Matrix4 transform = new Matrix4(rotMat) * Matrix4.CreateTranslation(Selected ? editorScene.SelectionTransformAction.NewPos(Position) : Position);
 
             Vector4 pickingColor = control.NextPickingColor();
@@ -55,8 +50,6 @@ namespace SpotLight.EditorDrawables
             {
                 renderer.Draw(control, pass, hightlightColor, transform, pickingColor);
             }
-
-            SceneDrawState.ZoneTransform = transformBackup;
         }
 
         public ZoneTransform GetTransform()

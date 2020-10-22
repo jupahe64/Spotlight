@@ -153,11 +153,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EditorDrawables\AreaObject.cs" />
+    <Compile Include="EditorDrawables\ObjectUtils.cs" />
     <Compile Include="GUI\AddObjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\AddObjectForm.Designer.cs">
       <DependentUpon>AddObjectForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\AddObjectForm.SetupUtils.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\AddZoneForm.cs">
       <SubType>Form</SubType>

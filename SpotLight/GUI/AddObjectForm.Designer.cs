@@ -81,6 +81,7 @@
             this.RailTypePanel = new System.Windows.Forms.Panel();
             this.RailTypeTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.RailTypeLabel = new System.Windows.Forms.Label();
+            this.AreaTab = new System.Windows.Forms.TabPage();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ToQuickFavoritesButton = new System.Windows.Forms.Button();
             this.ObjectTypeTabControl.SuspendLayout();
@@ -158,7 +159,6 @@
             this.DBEntryListView.TabIndex = 0;
             this.DBEntryListView.UseCompatibleStateImageBehavior = false;
             this.DBEntryListView.View = System.Windows.Forms.View.Details;
-            this.DBEntryListView.SelectedIndexChanged += new System.EventHandler(this.ObjectSelectListView_SelectedIndexChanged);
             this.DBEntryListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.DBEntryListView_MouseDoubleClick);
             // 
             // ClassNameColumnHeader
@@ -208,6 +208,7 @@
             // 
             this.ObjectTypeTabControl.Controls.Add(this.ObjectFromDBTab);
             this.ObjectTypeTabControl.Controls.Add(this.RailTab);
+            this.ObjectTypeTabControl.Controls.Add(this.AreaTab);
             this.ObjectTypeTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ObjectTypeTabControl.Location = new System.Drawing.Point(0, 0);
             this.ObjectTypeTabControl.Name = "ObjectTypeTabControl";
@@ -261,7 +262,6 @@
             this.SearchTextBox.Name = "SearchTextBox";
             this.SearchTextBox.Size = new System.Drawing.Size(229, 20);
             this.SearchTextBox.TabIndex = 1;
-            this.SearchTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.SearchTextBox_KeyUp);
             // 
             // SearchLabel
             // 
@@ -576,6 +576,16 @@
             this.RailTypeLabel.TabIndex = 1;
             this.RailTypeLabel.Text = "Rail Type:";
             // 
+            // AreaTab
+            // 
+            this.AreaTab.Location = new System.Drawing.Point(4, 22);
+            this.AreaTab.Name = "AreaTab";
+            this.AreaTab.Padding = new System.Windows.Forms.Padding(3);
+            this.AreaTab.Size = new System.Drawing.Size(776, 446);
+            this.AreaTab.TabIndex = 2;
+            this.AreaTab.Text = "Areas";
+            this.AreaTab.UseVisualStyleBackColor = true;
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.ToQuickFavoritesButton);
@@ -689,5 +699,6 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Button DeselectModelButton;
         private GL_EditorFramework.SuggestingTextBox RailTypeTextBox;
+        private System.Windows.Forms.TabPage AreaTab;
     }
 }

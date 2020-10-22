@@ -35,17 +35,6 @@ namespace SpotLight.EditorDrawables
 
         protected static Vector4 LinkColor = new Vector4(0f, 1f, 1f, 1f);
         
-        public static Dictionary<string, dynamic> CreateUnitConfig(General3dWorldObject obj) => new Dictionary<string, dynamic>
-        {
-            ["DisplayName"]         = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
-            ["DisplayRotate"]       = LevelIO.Vector3ToDict(obj.DisplayRotation),
-            ["DisplayScale"]        = LevelIO.Vector3ToDict(obj.DisplayScale),
-            ["DisplayTranslate"]    = LevelIO.Vector3ToDict(obj.DisplayTranslation, 100f),
-            ["GenerateCategory"]    = "",
-            ["ParameterConfigName"] = obj.ClassName,
-            ["PlacementTargetFile"] = "Map"
-        };
-        
         public override Vector3 GlobalPosition {
             get => Vector4.Transform(new Vector4(Position, 1), SceneDrawState.ZoneTransform.PositionTransform).Xyz;
             set => Position = Vector4.Transform(new Vector4(value, 1), SceneDrawState.ZoneTransform.PositionTransform.Inverted()).Xyz;
@@ -81,10 +70,7 @@ namespace SpotLight.EditorDrawables
         /// <summary>
         /// All places where this object is linked to
         /// </summary>
-        public IReadOnlyList<(string, I3dWorldObject)> LinkDestinations { get => linkDestinations; }
-
-
-        List<(string, I3dWorldObject)> linkDestinations = new List<(string, I3dWorldObject)>();
+        public List<(string, I3dWorldObject)> LinkDestinations { get; } = new List<(string, I3dWorldObject)>();
 
         [PropertyCapture.Undoable]
         public Vector3 DisplayTranslation { get; set; }
@@ -109,12 +95,12 @@ namespace SpotLight.EditorDrawables
         /// <param name="objectEntry">Unknown</param>
         /// <param name="linkedObjs">List of objects that are linked with this object</param>
         /// <param name="objectsByReference">Unknown</param>
-        public General3dWorldObject(LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks) 
+        public General3dWorldObject(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks) 
             : base(info.Position, info.Rotation, info.Scale)
         {
             ID = info.ID;
             ObjectName = info.ObjectName;
-            ModelName = info.ModelName;
+            ModelName = info.ModelName ?? string.Empty;
             ClassName = info.ClassName;
             DisplayTranslation = info.DisplayTranslation;
             DisplayRotation = info.DisplayRotation;
@@ -128,9 +114,10 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
+            DoModelLoad();
+            
             zone?.SubmitID(ID);
 
-            DoModelLoad();
 
             loadLinks = true;
         }
@@ -215,7 +202,7 @@ namespace SpotLight.EditorDrawables
             objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Scale), true);
             objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(Position, 100f), true);
 
-            objNode.AddDynamicValue("UnitConfig", CreateUnitConfig(this), true);
+            objNode.AddDynamicValue("UnitConfig", ObjectUtils.CreateUnitConfig(this), true);
 
             objNode.AddDynamicValue("UnitConfigName", ObjectName);
 
@@ -242,12 +229,12 @@ namespace SpotLight.EditorDrawables
             return Selected ? editorScene.SelectionTransformAction.NewPos(GlobalPosition) : GlobalPosition + Vector3.Transform(GlobalRotation, DisplayTranslation);
         }
 
-        public void ClearLinkDestinations()
+        public void UpdateLinkDestinations_Clear()
         {
-            linkDestinations.Clear();
+            LinkDestinations.Clear();
         }
 
-        public void AddLinkDestinations()
+        public void UpdateLinkDestinations_Populate()
         {
             if (Links != null)
             {
@@ -263,7 +250,7 @@ namespace SpotLight.EditorDrawables
 
         public void AddLinkDestination(string linkName, I3dWorldObject linkingObject)
         {
-            linkDestinations.Add((linkName, linkingObject));
+            LinkDestinations.Add((linkName, linkingObject));
         }
 
         public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, ZoneTransform? zoneToZoneTransform = null, bool deselectOld = true)
@@ -274,40 +261,16 @@ namespace SpotLight.EditorDrawables
             if(deselectOld)
                 Selected = false;
 
-            //copy links
-            Dictionary<string, List<I3dWorldObject>> newLinks;
-            if (Links != null)
-            {
-                newLinks = new Dictionary<string, List<I3dWorldObject>>();
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
-                {
-                    newLinks[keyValuePair.Key] = new List<I3dWorldObject>();
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
-                    {
-                        newLinks[keyValuePair.Key].Add(obj);
-                    }
-                }
-            }
-            else
-                newLinks = null;
 
-            //copy properties
-            Dictionary<string, dynamic> newProperties = new Dictionary<string, dynamic>();
+            duplicates[this] = new General3dWorldObject(
+                ObjectUtils.TransformedPosition(Position, zoneToZoneTransform),
+                ObjectUtils.TransformedPosition(Rotation, zoneToZoneTransform),
 
-            foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
-                newProperties[keyValuePair.Key] = keyValuePair.Value;
+                Scale, scene.EditZone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
 
-            Vector3 position = Position;
-            Vector3 rotation = Rotation;
-
-            if (zoneToZoneTransform.HasValue)
-            {
-                position = (new Vector4(position, 1) * zoneToZoneTransform.Value.PositionTransform).Xyz;
-                rotation = Framework.ApplyRotation(rotation, zoneToZoneTransform.Value.RotationTransform);
-            }
-
-            duplicates[this] = new General3dWorldObject(position, rotation, Scale, scene.EditZone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
-                newLinks, newProperties, scene.EditZone);
+                ObjectUtils.DuplicateLinks(Links),
+                ObjectUtils.DuplicateProperties(Properties),
+                scene.EditZone);
 
 #if ODYSSEY
             duplicates[this].ScenarioBitField = ScenarioBitField;
@@ -317,40 +280,29 @@ namespace SpotLight.EditorDrawables
         }
 
         public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
+            => ObjectUtils.LinkDuplicatesAndAddLinkDestinations(this, duplicationInfo, allowKeepLinksOfDuplicate);
+
+        public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
         {
-            if (Links != null)
+            return Program.ParameterDB.ObjectParameters[ClassName].TryGetObjectList(zone, out objList);
+        }
+
+        public void AddToZoneBatch(ZoneRenderBatch zoneBatch)
+        {
+            General3dWorldObjectBatch renderer = (General3dWorldObjectBatch)zoneBatch.GetBatchRenderer(typeof(General3dWorldObjectBatch));
+
+            BfresModelRenderer.TryGetModel(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, out BfresModelRenderer.CachedModel cachedModel);
+
+            if (cachedModel != null)
             {
-                bool isDuplicate = duplicationInfo.IsDuplicate(this);
-
-                bool hasDuplicate = duplicationInfo.HasDuplicate(this);
-
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
-                {
-                    I3dWorldObject[] oldLink = keyValuePair.Value.ToArray();
-
-                    //Clear Link
-                    keyValuePair.Value.Clear();
-
-                    //Populate Link
-                    foreach (I3dWorldObject obj in oldLink)
-                    {
-                        bool objHasDuplicate = duplicationInfo.TryGetDuplicate(obj, out I3dWorldObject duplicate);
-
-                        if (!(isDuplicate && objHasDuplicate) && !(isDuplicate&&!allowKeepLinksOfDuplicate))
-                        {
-                            //Link to original
-                            keyValuePair.Value.Add(obj);
-                            obj.AddLinkDestination(keyValuePair.Key, this);
-                        }
-
-                        if(objHasDuplicate && (hasDuplicate==isDuplicate))
-                        {
-                            //Link to duplicate
-                            keyValuePair.Value.Add(duplicate);
-                            duplicate.AddLinkDestination(keyValuePair.Key, this);
-                        }
-                    }
-                }
+                renderer.cachedModels.Add((cachedModel,
+                    Matrix4.CreateScale(DisplayScale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
+                    Matrix4.CreateTranslation(DisplayTranslation) *
+                    Matrix4.CreateScale(Scale) *
+                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(Rotation)) *
+                    Matrix4.CreateTranslation(Position)
+                ));
             }
         }
 
@@ -368,13 +320,9 @@ namespace SpotLight.EditorDrawables
         /// <param name="editorScene">The current Editor Scene</param>
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
-            if (!ObjectRenderState.ShouldBeDrawn(this))
-                return;
-
             if (!Selected)
             {
-                if ((!SpotLight.Properties.Settings.Default.DrawAreas && (ModelName?.StartsWith("Area")??false)) ||
-                    (!SpotLight.Properties.Settings.Default.DrawSkyBoxes && ClassName == "SkyProjection"))
+                if (!SpotLight.Properties.Settings.Default.DrawSkyBoxes && ClassName == "SkyProjection")
                 {
                     control.SkipPickingColors(1);
                     return;
@@ -400,7 +348,7 @@ namespace SpotLight.EditorDrawables
             else
                 highlightColor = Vector4.Zero;
 
-            if (SceneObjectIterState.InLinks && linkDestinations.Count == 0)
+            if (SceneObjectIterState.InLinks && LinkDestinations.Count == 0)
                 highlightColor = new Vector4(1, 0, 0, 1) * 0.5f + highlightColor * 0.5f;
 
 
@@ -479,11 +427,6 @@ namespace SpotLight.EditorDrawables
             }
         }
 
-        public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
-        {
-            return Program.ParameterDB.ObjectParameters[ClassName].TryGetObjectList(zone, out objList);
-        }
-
         public override bool TrySetupObjectUIControl(EditorSceneBase scene, ObjectUIControl objectUIControl)
         {
             if (!Selected)
@@ -503,25 +446,6 @@ namespace SpotLight.EditorDrawables
                 objectUIControl.AddObjectUIContainer(new LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
 
             return true;
-        }
-
-        public void AddToZoneBatch(ZoneRenderBatch zoneBatch)
-        {
-            General3dWorldObjectBatch renderer = (General3dWorldObjectBatch)zoneBatch.GetBatchRenderer(typeof(General3dWorldObjectBatch));
-
-            BfresModelRenderer.TryGetModel(string.IsNullOrEmpty(ModelName) ? ObjectName : ModelName, out BfresModelRenderer.CachedModel cachedModel);
-
-            if (cachedModel!=null)
-            {
-                renderer.cachedModels.Add((cachedModel,
-                    Matrix4.CreateScale(DisplayScale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
-                    Matrix4.CreateTranslation(DisplayTranslation) *
-                    Matrix4.CreateScale(Scale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(Rotation)) *
-                    Matrix4.CreateTranslation(Position)
-                ));
-            }
         }
 
         protected class General3dWorldObjectBatch : IBatchRenderer
@@ -907,10 +831,10 @@ namespace SpotLight.EditorDrawables
 
         public class LinksUIContainer : IObjectUIContainer
         {
-            General3dWorldObject obj;
+            I3dWorldObject obj;
             EditorSceneBase scene;
 
-            public LinksUIContainer(General3dWorldObject obj, EditorSceneBase scene)
+            public LinksUIContainer(I3dWorldObject obj, EditorSceneBase scene)
             {
                 this.obj = obj;
                 this.scene = scene;

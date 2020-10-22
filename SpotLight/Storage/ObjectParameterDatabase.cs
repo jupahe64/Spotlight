@@ -873,7 +873,7 @@ namespace SpotLight.Database
         /// <summary>
         /// List of Informations on certain objects
         /// </summary>
-        private List<Information> ObjectInformations = new List<Information>();
+        private Dictionary<string, Information> ObjectInformations = new Dictionary<string, Information>();
         /// <summary>
         /// The Latest version of this database
         /// </summary>
@@ -908,7 +908,10 @@ namespace SpotLight.Database
                 if (Check.Equals(new Version(1, 0)))
                 {
                     while (FS.Position < FS.Length)
-                        ObjectInformations.Add(new Information() { ClassName = FS.ReadString(), Description = FS.ReadString() });
+                    {
+                        var info = new Information() { ClassName = FS.ReadString(), Description = FS.ReadString() };
+                        ObjectInformations.Add(info.ClassName, info);
+                    }
                 }
                 //Version 1.1 backwards compatability
                 if (Check.Equals(new Version(1, 1)))
@@ -921,7 +924,7 @@ namespace SpotLight.Database
                         ushort PropCount = BitConverter.ToUInt16(Read, 0);
                         for (int i = 0; i < PropCount; i++)
                             NewInfo.Properties.Add(FS.ReadString(), FS.ReadString());
-                        ObjectInformations.Add(NewInfo);
+                        ObjectInformations.Add(NewInfo.ClassName, NewInfo);
                     }
                 }
                 return;
@@ -934,7 +937,7 @@ namespace SpotLight.Database
                 ushort PropCount = BitConverter.ToUInt16(Read, 0);
                 for (int i = 0; i < PropCount; i++)
                     NewInfo.Properties.Add(FS.ReadString(), FS.ReadString());
-                ObjectInformations.Add(NewInfo);
+                ObjectInformations.Add(NewInfo.ClassName, NewInfo);
             }
             FS.Close();
         }
@@ -946,28 +949,28 @@ namespace SpotLight.Database
         {
             FileStream FS = new FileStream(Filename, FileMode.Create);
             FS.Write(new byte[8] { (byte)'S', (byte)'O', (byte)'D', (byte)'D', (byte)Version.Major, (byte)Version.Minor, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major, (byte)System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Minor }, 0, 8);
-            for (int i = 0; i < ObjectInformations.Count; i++)
+            foreach (var info in ObjectInformations.Values)
             {
-                byte[] write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].ClassName);
+                byte[] write = Encoding.GetEncoding(932).GetBytes(info.ClassName);
                 FS.Write(write,0,write.Length);
                 FS.WriteByte(0x00);
 
-                write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].EnglishName ?? ObjectInformations[i].ClassName);
+                write = Encoding.GetEncoding(932).GetBytes(info.EnglishName ?? info.ClassName);
                 FS.Write(write, 0, write.Length);
                 FS.WriteByte(0x00);
 
-                write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].Description);
+                write = Encoding.GetEncoding(932).GetBytes(info.Description);
                 FS.Write(write, 0, write.Length);
                 FS.WriteByte(0x00);
 
-                FS.Write(BitConverter.GetBytes((ushort)ObjectInformations[i].Properties.Count), 0, 2);
-                for (int j = 0; j < ObjectInformations[i].Properties.Count; j++)
+                FS.Write(BitConverter.GetBytes((ushort)info.Properties.Count), 0, 2);
+                for (int j = 0; j < info.Properties.Count; j++)
                 {
-                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].Properties.ElementAt(j).Key);
+                    write = Encoding.GetEncoding(932).GetBytes(info.Properties.ElementAt(j).Key);
                     FS.Write(write, 0, write.Length);
                     FS.WriteByte(0x00);
 
-                    write = Encoding.GetEncoding(932).GetBytes(ObjectInformations[i].Properties.ElementAt(j).Value);
+                    write = Encoding.GetEncoding(932).GetBytes(info.Properties.ElementAt(j).Value);
                     FS.Write(write, 0, write.Length);
                     FS.WriteByte(0x00);
                 }
@@ -981,10 +984,10 @@ namespace SpotLight.Database
         /// <returns></returns>
         public Information GetInformation(string TargetClassName)
         {
-            List<Information> found = ObjectInformations.Where(p => string.Equals(p.ClassName, TargetClassName)).ToList();
-            if (found.Count == 0)//An area that when entered activates a camera
+            if (ObjectInformations.TryGetValue(TargetClassName, out Information info))
+                return info;
+            else
                 return new Information() { ClassName = TargetClassName, Description = "", EnglishName = TargetClassName };
-            return found[0];
         }
         /// <summary>
         /// Set a piece of Information. If it already exists, and the input is not an empty piece of information, the data will be saved. If it's empty, the entry will be deleted.
@@ -995,13 +998,13 @@ namespace SpotLight.Database
             if (Info.EnglishName == null)
                 Info.EnglishName = Info.ClassName;
 
-            if (ObjectInformations.Any(p => p.Equals(Info)))
+            if (ObjectInformations.ContainsKey(Info.ClassName))
             {
                 if (Info.Properties.Count == 0 && Info.Description.Length == 0 && (Info.EnglishName.Equals(Info.ClassName) || Info.EnglishName.Length == 0))
-                    ObjectInformations.Remove(Info);
+                    ObjectInformations.Remove(Info.ClassName);
             }
             else
-                ObjectInformations.Add(Info);
+                ObjectInformations.Add(Info.ClassName, Info);
         }
        
         /// <summary>

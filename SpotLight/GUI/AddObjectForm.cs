@@ -40,7 +40,7 @@ namespace SpotLight
                     parameter.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = LVG, Tag = parameter };
                 FullItems[i++] = LVI;
             }
-            DBEntryListView.Items.AddRange(FullItems);
+            SetupSearchLogicWithEnglishNames(DBEntryListView, SearchTextBox, FullItems, EnglishNameTextBox, ObjectSelectListView_SelectedIndexChanged);
 
             this.scene = scene;
             this.control = control;
@@ -73,17 +73,17 @@ namespace SpotLight
         readonly ListViewItem[] FullItems;
         private Information ObjectInformation;
 
-        public string SelectedClassName => DBEntryListView.SelectedItems[0].SubItems[0].Text;
+        public string SelectedClassName;
         bool Loading = false;
         bool Edited = false;
         readonly ObjectInformationDatabase OID = Program.InformationDB;
-        private void ObjectSelectListView_SelectedIndexChanged(object sender, EventArgs e)
+        private void ObjectSelectListView_SelectedIndexChanged(ListViewItem item)
         {
             SelectObjectListView.Items.Clear();
             SelectModelListView.Items.Clear();
             PropertyNotesListView.Items.Clear();
 
-            if (DBEntryListView.SelectedItems.Count == 0 || DBEntryListView.SelectedItems[0].Tag == null)
+            if (item.Tag == null)
             {
                 ClassNameLabel.Text = NothingSelectedText;
                 SelectObjectListView.Enabled = false;
@@ -91,31 +91,53 @@ namespace SpotLight
                 PropertyNotesListView.Enabled = false;
                 return;
             }
+
+            SelectedClassName = item.Text;
+
             Loading = true;
             ObjectInformation = OID.GetInformation(SelectedClassName);
             ClassNameLabel.Text = ObjectInformation.ClassName;
             EnglishNameTextBox.Text = (ObjectInformation.EnglishName == null || ObjectInformation.EnglishName.Length == 0) ? ObjectInformation.ClassName : ObjectInformation.EnglishName;
             ObjectDescriptionTextBox.Text = ObjectInformation.Description.Length == 0 ? NoDescriptionFoundText: ObjectInformation.Description ;
-            Parameter Param = (Parameter)DBEntryListView.SelectedItems[0].Tag;
+            Parameter Param = (Parameter)item.Tag;
+
+
+
+            //update ObjectNames
             for (int i = 0; i < Param.ObjectNames.Count; i++)
-            {
                 SelectObjectListView.Items.Add(new ListViewItem(new string[] { Param.ObjectNames[i] }));
+
+            if (Param.ObjectNames.Count > 0)
+            {
                 SelectObjectListView.Items[0].Selected = true;
                 SelectObjectListView.Enabled = true;
             }
+
+
+            //update ModelNames 
             for (int i = 0; i < Param.ModelNames.Count; i++)
-            {
                 SelectModelListView.Items.Add(new ListViewItem(new string[] { Param.ModelNames[i] }));
+
+            if (Param.ModelNames.Count > 0)
+            {
                 SelectModelListView.Items[0].Selected = true;
                 SelectModelListView.Enabled = true;
             }
+
+
+            //update Properties 
             for (int i = 0; i < Param.Properties.Count; i++)
-            {
                 PropertyNotesListView.Items.Add(new ListViewItem(new string[] { Param.Properties[i].Key, Param.Properties[i].Value, ObjectInformation.GetNoteForProperty(Param.Properties[i].Key) }));
+
+            if (Param.Properties.Count > 0)
+            {
                 PropertyNotesListView.Items[0].Selected = true;
                 PropertyNotesListView.Enabled = true;
                 PropertyHintTextBox.Text = PropertyNotesListView.SelectedItems[0].SubItems[2].Text;
             }
+
+
+
             PropertyLabel.Text = PropertyNotesListView.Items.Count == 0 ? NoPropertiesText:string.Format(PropertyNotesListView.Items.Count > 1 ? MultiplePropertiesText:SinglePropertyText, PropertyNotesListView.Items.Count);
 
             Loading = false;
@@ -123,43 +145,47 @@ namespace SpotLight
 
         private void ObjectDescriptionTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading || DBEntryListView.SelectedItems.Count == 0)
+            if (Loading)
                 return;
             ObjectInformation.Description = ObjectDescriptionTextBox.Text;
             OID.SetInformation(ObjectInformation);
             Edited = true;
         }
 
-        private void SearchTextBox_KeyUp(object sender, KeyEventArgs e)
-        {
-            string Search = SearchTextBox.Text.ToLower();
-            DBEntryListView.Groups[10].Header = string.Format(SearchResultsSuccessText, SearchTextBox.Text);
-            if (Search.Equals(""))
-            {
-                DBEntryListView.Items.Clear();
-                DBEntryListView.Items.AddRange(FullItems);
-            }
-            else
-            {
-                DBEntryListView.Items.Clear();
-                for (int i = 0; i < Program.ParameterDB.ObjectParameters.Count; i++)
-                {
-                    Parameter Param = (Parameter)FullItems[i].Tag;
-                    Information tmp = OID.GetInformation(Param.ClassName);
-                    bool a = !Param.ClassName.ToLower().Contains(Search), b = !(tmp.EnglishName ?? Param.ClassName).ToLower().Contains(Search);
-                    if (a && b)
-                        continue;
+        //private void SearchTextBox_KeyUp(object sender, KeyEventArgs e)
+        //{
+        //    string Search = SearchTextBox.Text.ToLower();
+        //    DBEntryListView.Groups[10].Header = string.Format(SearchResultsSuccessText, SearchTextBox.Text);
 
-                    DBEntryListView.Items.Add(new ListViewItem(new string[] { Param.ClassName, OID.GetInformation(Param.ClassName).EnglishName ?? Param.ClassName, Param.ObjectNames.Count.ToString().PadLeft(3, '0'), Param.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = DBEntryListView.Groups[10], Tag = Param });
-                }
-                if (DBEntryListView.Items.Count == 0)
-                    DBEntryListView.Items.Add(new ListViewItem(new string[] { string.Format(SearchResultsFailureText, SearchTextBox.Text), "----------", "---", "---" }) { Group = DBEntryListView.Groups[10] });
-            }
-        }
+        //    DBEntryListView.Items.Clear();
+        //    if (Search.Equals(""))
+        //    {
+        //        DBEntryListView.Items.AddRange(FullItems);
+        //    }
+        //    else
+        //    {
+        //        List<ListViewItem> filteredItems = new List<ListViewItem>();
+        //        for (int i = 0; i < Program.ParameterDB.ObjectParameters.Count; i++)
+        //        {
+        //            Parameter Param = (Parameter)FullItems[i].Tag;
+        //            //Information tmp = OID.GetInformation(Param.ClassName);
+        //            bool a = !Param.ClassName.ToLower().Contains(Search);
+        //            //bool b = !(tmp.EnglishName ?? Param.ClassName).ToLower().Contains(Search);
+        //            if (a)// && b)
+        //                continue;
+
+        //            filteredItems.Add(FullItems[i]);
+        //        }
+        //        if (filteredItems.Count == 0)
+        //            filteredItems.Add(new ListViewItem(new string[] { string.Format(SearchResultsFailureText, SearchTextBox.Text), "----------", "---", "---" }) { Group = DBEntryListView.Groups[10] });
+
+        //        DBEntryListView.Items.AddRange(filteredItems.ToArray());
+        //    }
+        //}
 
         private void PropertyNotesListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
+            if (Loading || DBEntryListView.SelectedIndices.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
                 return;
 
             Loading = true;
@@ -169,7 +195,7 @@ namespace SpotLight
 
         private void PropertyHintTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading || DBEntryListView.SelectedItems.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
+            if (Loading || DBEntryListView.SelectedIndices.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
                 return;
             ObjectInformation.SetNoteForProperty(PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
             PropertyNotesListView.SelectedItems[0].SubItems[2].Text = PropertyHintTextBox.Text;
@@ -179,11 +205,10 @@ namespace SpotLight
 
         private void EnglishNameTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading || DBEntryListView.SelectedItems.Count == 0)
+            if (Loading || DBEntryListView.SelectedIndices.Count == 0)
                 return;
             ObjectInformation.EnglishName = EnglishNameTextBox.Text;
             OID.SetInformation(ObjectInformation);
-            DBEntryListView.SelectedItems[0].SubItems[1].Text = EnglishNameTextBox.Text;
             Edited = true;
         }
 
@@ -268,7 +293,7 @@ namespace SpotLight
                 if (railParam != null)
                     ObjectParameterDatabase.AddToProperties(railParam.Properties, properties);
 
-                Rail rail = new Rail(pathPoints, zone.NextObjID(), closeRail, false, properties, railParam.ClassName, zone);
+                Rail rail = new Rail(pathPoints, zone.NextObjID(), railParam.ClassName, closeRail, false, properties, zone);
 
 #if ODYSSEY
                 rail.ScenarioBitField = ushort.MaxValue; //All scenarios
@@ -294,7 +319,7 @@ namespace SpotLight
 
             if (ObjectTypeTabControl.SelectedTab == ObjectFromDBTab)
             {
-                if (Loading || DBEntryListView.SelectedItems.Count == 0)
+                if (Loading || DBEntryListView.SelectedIndices.Count == 0)
                     return false;
 
                 objectParameter = Program.ParameterDB.ObjectParameters[SelectedClassName];
