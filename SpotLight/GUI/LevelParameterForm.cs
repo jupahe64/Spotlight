@@ -373,6 +373,7 @@ namespace SpotLight
         private void WorldComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             int i = WorldComboBox.SelectedIndex;
+            currentWorld = i;
 
             ListViewItem[] items = itemsByWorld[i];
 
@@ -430,6 +431,7 @@ namespace SpotLight
 
         private void AddLevelButton_Click(object sender, EventArgs e)
         {
+            currentWorld = WorldComboBox.SelectedIndex;
             int index = StageList.Worlds[currentWorld].Add("", StageList.GetNextCourseID());
 
             LevelsListView.BeginUpdate();
