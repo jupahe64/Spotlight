@@ -552,7 +552,7 @@ namespace SpotLight.EditorDrawables
                 this.obj = obj;
                 this.scene = scene;
 
-                if (Program.ParameterDB.ObjectParameters.TryGetValue(obj.ClassName, out Parameter entry))
+                if (Program.ParameterDB.ObjectParameters.TryGetValue(obj.ClassName, out ObjectParam entry))
                 {
                     DB_objectNames = entry.ObjectNames.ToArray();
                     DB_modelNames = entry.ModelNames.ToArray();
@@ -648,7 +648,7 @@ namespace SpotLight.EditorDrawables
 
             List<KeyValuePair<string, dynamic>> capture = null;
 
-            Dictionary<string, string> propertyInfos;
+            IReadOnlyDictionary<string, string> propertyInfos;
 
             public ExtraPropertiesUIContainer(Dictionary<string, dynamic> propertyDict, EditorSceneBase scene, Information information = null)
             {

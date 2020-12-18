@@ -18,6 +18,7 @@ using System.Threading;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using System.Reflection;
 using SpotLight.ObjectRenderers;
+using SpotLight.GUI;
 
 namespace SpotLight
 {
@@ -237,12 +238,12 @@ namespace SpotLight
                         }
                     }
                 }
-
-                if (File.Exists(Program.SODDPath))
-                    Program.InformationDB = new ObjectInformationDatabase(Program.SODDPath);
-                else
-                    Program.InformationDB = new ObjectInformationDatabase();
             }
+
+            if (File.Exists(Program.SODDPath))
+                Program.InformationDB = new ObjectInformationDatabase(Program.SODDPath);
+            else
+                Program.InformationDB = new ObjectInformationDatabase();
 
             if (CheckForUpdates(out Version useless, false))
             {
@@ -385,6 +386,29 @@ namespace SpotLight
             General3dWorldObject obj = (currentScene.SelectedObjects.First() as General3dWorldObject);
             Rail rail = (currentScene.SelectedObjects.First() as Rail);
             Debugger.Break();
+
+            SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
+
+            SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
+
+            foreach (General3dWorldObject _obj in currentScene.SelectedObjects)
+            {
+                string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
+
+                if(BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
+                {
+                    scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
+                        System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
+                        System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
+                        System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
+                        System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
+                        System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
+                        );
+                }
+            }
+
+            var model = scene.ToGltf2();
+            model.SaveGLTF(currentScene.ToString()+".gltf");
         }
 
         private void Scene_ObjectsMoved(object sender, EventArgs e)
@@ -504,7 +528,7 @@ namespace SpotLight
                 return;
             }
 
-            var form = new AddObjectForm(currentScene, LevelGLControlModern, QuickFavoriteControl);
+            var form = new AddObjectForm(currentScene, QuickFavoriteControl);
             form.ShowDialog(this);
 
             if(form.SomethingWasSelected)
@@ -1097,7 +1121,6 @@ namespace SpotLight
             SaveAsToolStripMenuItem.Enabled = Trigger;
             UndoToolStripMenuItem.Enabled = Trigger;
             RedoToolStripMenuItem.Enabled = Trigger;
-            AddObjectToolStripMenuItem.Enabled = Trigger;
             AddZoneToolStripMenuItem.Enabled = Trigger;
             CopyToolStripMenuItem.Enabled = Trigger;
             PasteToolStripMenuItem.Enabled = Trigger;
@@ -1202,7 +1225,7 @@ Would you like to generate a new object Database from your 3DW Directory?";
             DatabaseMissingHeader = Program.CurrentLanguage.GetTranslation("DatabaseMissinHeader") ?? "Database Missing";
             DatabaseExcludeText = Program.CurrentLanguage.GetTranslation("DatabaseExcludeText") ?? "Are you sure? You cannot add objects without it.";
             DatabaseExcludeHeader = Program.CurrentLanguage.GetTranslation("DatabaseExcludeHeader") ?? "Confirmation";
-            DatabaseOutdatedHeader = Program.CurrentLanguage.GetTranslation("DatabaseOutdatedText") ??
+            DatabaseOutdatedText = Program.CurrentLanguage.GetTranslation("DatabaseOutdatedText") ??
 @"The Loaded Database is outdated ({0}).
 The latest Database version is {1}.
 Would you like to rebuild the database from your 3DW Files?";

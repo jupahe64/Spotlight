@@ -373,7 +373,6 @@
             // 
             // AddObjectToolStripMenuItem
             // 
-            this.AddObjectToolStripMenuItem.Enabled = false;
             this.AddObjectToolStripMenuItem.Name = "AddObjectToolStripMenuItem";
             this.AddObjectToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
             this.AddObjectToolStripMenuItem.Text = "Add Object";
@@ -575,6 +574,7 @@
             // 
             // toolStripTextBox1
             // 
+            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 

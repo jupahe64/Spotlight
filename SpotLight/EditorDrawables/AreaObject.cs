@@ -250,8 +250,7 @@ namespace SpotLight.EditorDrawables
 
         public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
         {
-            //TODO use area parameters once it's introduced
-            return Program.ParameterDB.ObjectParameters[ClassName].TryGetObjectList(zone, out objList);
+            return Program.ParameterDB.AreaParameters[ClassName].TryGetObjectList(zone, out objList);
         }
 
         public void AddToZoneBatch(ZoneRenderBatch zoneBatch)
@@ -267,8 +266,6 @@ namespace SpotLight.EditorDrawables
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
-            //TODO culling
-
             if (!Selected)
             {
                 if (!SpotLight.Properties.Settings.Default.DrawAreas)
@@ -357,25 +354,14 @@ namespace SpotLight.EditorDrawables
             AreaObject area;
             EditorSceneBase scene;
 
-            string[] DB_classNames;
-            string[] DB_modelNames;
+            string[] shapeNames;
 
             public BasicPropertyUIContainer(AreaObject area, EditorSceneBase scene)
             {
                 this.area = area;
                 this.scene = scene;
 
-                //TODO use area parameters once it's introduced
-                if (Program.ParameterDB.ObjectParameters.TryGetValue(area.ClassName, out Parameter entry))
-                {
-                    DB_classNames = entry.ObjectNames.ToArray();
-                    DB_modelNames = entry.ModelNames.ToArray();
-                }
-                else
-                {
-                    DB_classNames = Array.Empty<string>();
-                    DB_modelNames = Array.Empty<string>();
-                }
+                shapeNames = LevelIO.AreaModelNames.ToArray();
             }
 
             public void DoUI(IObjectUIControl control)
@@ -388,8 +374,7 @@ namespace SpotLight.EditorDrawables
                 else
                     control.TextInput(area.ID, "Object ID");
 
-                area.ClassName = control.DropDownTextInput("Class Name", area.ClassName, DB_classNames);
-                area.ModelName = control.DropDownTextInput("Model Name", area.ModelName, DB_modelNames);
+                area.ModelName = control.DropDownTextInput("Model Name", area.ModelName, shapeNames);
 
                 area.Priority = (int)control.NumberInput(area.Priority, "Priority");
 

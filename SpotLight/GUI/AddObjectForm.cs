@@ -1,242 +1,589 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
-using GL_EditorFramework.EditorDrawables;
-using GL_EditorFramework.GL_Core;
+﻿using BrightIdeasSoftware;
 using OpenTK;
 using SpotLight.Database;
 using SpotLight.EditorDrawables;
 using SpotLight.Level;
+using SpotLight.Properties;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static SpotLight.GUI.PathShapeSelector;
+using static SpotLight.ObjectParameterForm;
 
-
-namespace SpotLight
+namespace SpotLight.GUI
 {
+
     public partial class AddObjectForm : Form
     {
-        public AddObjectForm(SM3DWorldScene scene, GL_ControlModern control, QuickFavoriteControl quickFavorites)
+        private struct PointFormation
         {
-            InitializeComponent();
-            CenterToParent();
-            Localize();
-            DBEntryListView.ShowGroups = true;
-            DBEntryListView.DoubleBuffering(true);
-            FullItems = new ListViewItem[Program.ParameterDB.ObjectParameters.Count];
-            int i = 0;
-            foreach(var parameter in Program.ParameterDB.ObjectParameters.Values)
+            public Func<List<RailPoint>> Func { get; set; }
+            public string Name { get; set; }
+
+            public override string ToString()
             {
-                ListViewGroup LVG = null;
-                if (parameter.ObjList >= 0 && parameter.ObjList <= ObjList.Linked)
+                return Name;
+            }
+        }
+
+
+
+        readonly Control focusControl = new Label() { Size = new Size() };
+
+        private byte[] infoDB_backup;
+
+        EditableInformation currentEditInfo;
+        PropertyDef selectedProperty;
+
+        bool currentInfoWasEdited = false;
+
+        private readonly SM3DWorldScene scene;
+        private readonly QuickFavoriteControl quickFavorites;
+
+        private IParameter selectedParameter;
+
+        public bool SomethingWasSelected { get; private set; }
+
+        bool hasSearchTerm = false;
+
+        private List<string> editedInformations = new List<string>();
+
+        private bool ignoreTextEvents = false;
+
+        (string searchTerm, byte[] listViewState, Point scrollPos, object selection, int selectedPropertyIndex)[] tabPageStates;
+
+        public void OnInformationEdited()
+        {
+            currentInfoWasEdited = true;
+        }
+
+        public AddObjectForm(SM3DWorldScene scene, QuickFavoriteControl quickFavorites)
+        {
+            //backup current database
+            var stream = new MemoryStream();
+            Program.InformationDB.Save(stream);
+            infoDB_backup = stream.ToArray();
+
+
+
+            InitializeComponent();
+
+            ClearForm();
+
+            CenterToParent();
+            //Localize(); TODO
+            ObjDBListView.ShowGroups = true;
+
+
+            #region Setup Columns
+            ClassNameColumn.AspectGetter = (o) => (o as IParameter).ClassName;
+
+            EnglishNameColumn.AspectGetter = (o) =>
+            {
+                var className = (o as IParameter).ClassName;
+                return Program.InformationDB.GetInformation(className)?.EnglishName ?? className;
+            };
+
+
+            var categories = new string[]
+            {
+                "Areas",
+                "CheckPoints",
+                "Cutscene Objects",
+                "Goals",
+                "Objects",
+                "Starting Points",
+                "Skies",
+                "Linkables",
+                "Rails",
+                "Cutscene Objects",
+                "Nature Objects",
+            };
+
+            CategoryColumn.AspectGetter = (o) => (int)(o as IParameter).ObjList;
+            CategoryColumn.AspectToStringConverter = (o) => categories[(int)o];
+            #endregion
+
+            #region search engine
+            SearchTextBox.TextChanged += (x, y) =>
+            {
+                hasSearchTerm = !string.IsNullOrEmpty(SearchTextBox.Text);
+
+                object selected = ObjDBListView.SelectedObject;
+                if (hasSearchTerm)
                 {
-                    LVG = DBEntryListView.Groups[(byte)parameter.ObjList];
+                    List<IParameter> beginsWithTerm = new List<IParameter>();
+                    List<IParameter> containsTerm = new List<IParameter>();
+
+                    foreach (IParameter parameter in ObjDBListView.Objects)
+                    {
+                        var className = parameter.ClassName;
+                        var englishName = Program.InformationDB.GetInformation(className).EnglishName ?? className;
+
+                        int matchIndexA = className.IndexOf(SearchTextBox.Text, StringComparison.OrdinalIgnoreCase);
+                        int matchIndexB = englishName.IndexOf(SearchTextBox.Text, StringComparison.OrdinalIgnoreCase);
+
+                        if (matchIndexA == 0 || matchIndexB == 0)
+                            beginsWithTerm.Add(parameter);
+                        else if (matchIndexA > -1 || matchIndexB > -1)
+                            containsTerm.Add(parameter);
+                    }
+
+                    beginsWithTerm.AddRange(containsTerm);
+
+                    ObjDBListView.ShowGroups = false;
+                    CategoryColumn.IsVisible = true;
+
+                    ObjDBListView.SetObjects(beginsWithTerm);
+                    ObjDBListView.RebuildColumns();
+                }
+                else
+                {
+                    ObjDBListView.ShowGroups = true;
+                    CategoryColumn.IsVisible = false;
+
+                    PopulateObjDBListView();
+
+                    ObjDBListView.RebuildColumns();
                 }
 
-                ListViewItem LVI = new ListViewItem(new string[] 
-                { 
-                    parameter.ClassName, 
-                    OID.GetInformation(parameter.ClassName).EnglishName ?? parameter.ClassName, 
-                    parameter.ObjectNames.Count.ToString().PadLeft(3, '0'),
-                    parameter.ModelNames.Count.ToString().PadLeft(3, '0') }) { Group = LVG, Tag = parameter };
-                FullItems[i++] = LVI;
-            }
-            SetupSearchLogicWithEnglishNames(DBEntryListView, SearchTextBox, FullItems, EnglishNameTextBox, ObjectSelectListView_SelectedIndexChanged);
+                ObjDBListView.SelectedObject = selected;
+                ObjDBListView.FocusedObject = selected;
+            };
+            #endregion
+
+            #region setup path formations
+            PathShapeSelector.AddShape(new PathShape("Line", new PathPoint[]
+            {
+                new PathPoint(new Vector3(-3,0,0), Vector3.Zero, Vector3.Zero),
+                new PathPoint(new Vector3(3,0,0), Vector3.Zero, Vector3.Zero),
+            },
+            false));
+
+            PathShapeSelector.AddShape(new PathShape("Circle", new PathPoint[]
+            {
+                new PathPoint(new Vector3(-3,0,0), new Vector3(0,0,-2), new Vector3(0,0,2)),
+                new PathPoint(new Vector3(0,0,3), new Vector3(-2,0,0), new Vector3(2,0,0)),
+                new PathPoint(new Vector3(3,0,0), new Vector3(0,0,2), new Vector3(0,0,-2)),
+                new PathPoint(new Vector3(0,0,-3), new Vector3(2,0,0), new Vector3(-2,0,0)),
+            },
+            true));
+
+            PathShapeSelector.AddShape(new PathShape("Square", new PathPoint[]
+            {
+                new PathPoint(new Vector3(-3,0,-3), Vector3.Zero, Vector3.Zero),
+                new PathPoint(new Vector3(3,0,-3), Vector3.Zero, Vector3.Zero),
+                new PathPoint(new Vector3(3,0,3), Vector3.Zero, Vector3.Zero),
+                new PathPoint(new Vector3(-3,0,3), Vector3.Zero, Vector3.Zero),
+            },
+            true));
+
+            PathShapeSelector.AddShape(new PathShape("Rectangle", new PathPoint[]
+            {
+                new PathPoint(new Vector3(-3,0,-6), Vector3.Zero, Vector3.Zero),
+                new PathPoint(new Vector3(3,0,-6), Vector3.Zero, Vector3.Zero),
+                new PathPoint(new Vector3(3,0,6), Vector3.Zero, Vector3.Zero),
+                new PathPoint(new Vector3(-3,0,6), Vector3.Zero, Vector3.Zero),
+            },
+            true));
+
+            PathShapeSelector.AddShape(new PathShape("RoundedRect", new PathPoint[]
+            {
+                new PathPoint(new Vector3(-3,0,-5), new Vector3(0,0,2), new Vector3(0,0,-2)),
+                new PathPoint(new Vector3(0,0,-8), new Vector3(-2,0,0), new Vector3(2,0,0)),
+                new PathPoint(new Vector3(3,0,-5), new Vector3(0,0,-2), new Vector3(0,0,2)),
+                new PathPoint(new Vector3(3,0,5), new Vector3(0,0,-2), new Vector3(0,0,2)),
+                new PathPoint(new Vector3(0,0,8), new Vector3(2,0,0), new Vector3(-2,0,0)),
+                new PathPoint(new Vector3(-3,0,5), new Vector3(0,0,2), new Vector3(0,0,-2)),
+            },
+            true));
+
+            PathShapeSelector.AddShape(new PathShape("RoundedSquare", new PathPoint[]
+            {
+                new PathPoint(new Vector3(-6,0,-3), new Vector3(0,0,2), new Vector3(0,0,-2)),//good
+                new PathPoint(new Vector3(-3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0)),//good
+                new PathPoint(new Vector3(3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0)),//good
+                new PathPoint(new Vector3(6,0,-3), new Vector3(0,0,-2), new Vector3(0,0,2)),//good
+                new PathPoint(new Vector3(6,0,3), new Vector3(0,0,-2), new Vector3(0,0,2)),
+                new PathPoint(new Vector3(3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0)),
+                new PathPoint(new Vector3(-3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0)),
+                new PathPoint(new Vector3(-6,0,3), new Vector3(0,0,2), new Vector3(0,0,-2)),
+            },
+            true));
+
+            //PathShapeComboBox.SelectedIndex = 0;
+            #endregion
+
+            #region setup area shapes
+            AreaShapeComboBox.Items.AddRange(LevelIO.AreaModelNames.ToArray());
+
+            AreaShapeComboBox.SelectedIndex = 0;
+            #endregion
+
+            tabPageStates = new (string searchTerm, byte[] listViewState, Point scrollPos, object selection, int selectedPropertyIndex)[ObjectTypeTabControl.TabPages.Count];
+
+
+            PopulateObjDBListView();
+
 
             this.scene = scene;
-            this.control = control;
             this.quickFavorites = quickFavorites;
         }
 
-        private void AddObjectForm_Load(object sender, EventArgs e)
+        private void SubmitInformation()
         {
-            RailTypeTextBox.Text = "Rail";
-            RailTypeTextBox.PossibleSuggestions = Program.ParameterDB.RailParameters.Keys.ToArray();
-
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Line [2-Points]", "A Basic Line consisting of 2 path points." }) 
-            { Tag = new Func<List<RailPoint>>(PathPointFormations.BasicPath) });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Circle [4-Points]", "A Basic Circle consisting of 4 path points. Recommended to be closed." }) 
-            { Tag = new Func<List<RailPoint>>(PathPointFormations.CirclePath) });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Square [4-Points]", "A Basic Square consisting of 4 path points. Recommended to be closed." }) 
-            { Tag = new Func<List<RailPoint>>(PathPointFormations.SquarePath) });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rectangle [4-Points]", "A Basic Rectangle consisting of 4 path points. Recommended to be closed." }) 
-            { Tag = new Func<List<RailPoint>>(PathPointFormations.RectanglePath) });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rounded Rectangle [6-Points]", "A Rounded Rectangle consisting of 6 path points. Recommended to be closed." }) 
-            { Tag = new Func<List<RailPoint>>(PathPointFormations.RoundedRectanglePath) });
-            RailFormationListView.Items.Add(new ListViewItem(new string[] { "Rounded Square [8-Points]", "A Rounded Square consisting of 8 path points. Recommended to be closed." }) 
-            { Tag = new Func<List<RailPoint>>(PathPointFormations.RoundedSquarePath) });
-            RailFormationListView.Items[0].Selected = true;
+            if (currentEditInfo != null && currentInfoWasEdited)
+            {
+                Program.InformationDB.SetInformation(currentEditInfo);
+                if (!editedInformations.Contains(currentEditInfo.ClassName))
+                    editedInformations.Add(currentEditInfo.ClassName);
+            }
         }
 
-        readonly SM3DWorldScene scene;
-        readonly GL_ControlModern control;
-        private QuickFavoriteControl quickFavorites;
-        readonly ListViewItem[] FullItems;
-        private Information ObjectInformation;
-
-        public string SelectedClassName;
-        bool Loading = false;
-        bool Edited = false;
-        readonly ObjectInformationDatabase OID = Program.InformationDB;
-        private void ObjectSelectListView_SelectedIndexChanged(ListViewItem item)
+        private void EnglishNameTextBox_FocusChanged(object sender, EventArgs e)
         {
-            SelectObjectListView.Items.Clear();
-            SelectModelListView.Items.Clear();
-            PropertyNotesListView.Items.Clear();
+            splitContainer1.Refresh();
+        }
 
-            if (item.Tag == null)
+        private void NewAddObjectForm_Load(object sender, EventArgs e)
+        {
+            ObjectNameTextBox.Enabled = true;
+            ModelNameTextBox.Enabled = true;
+
+            ClassNameLabel.Focus();
+        }
+
+        int? selectedPropertyIndexOverride = null;
+
+        int lastselectedTabIndex = 0;
+
+        private void TabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SubmitInformation();
+
+            tabPageStates[lastselectedTabIndex] = (SearchTextBox.Text, ObjDBListView.SaveState(), ObjDBListView.AutoScrollOffset, ObjDBListView.SelectedObject, PropertyListBox.SelectedIndex);
+
+            if (tabPageStates[ObjectTypeTabControl.SelectedIndex].listViewState != null)
             {
-                ClassNameLabel.Text = NothingSelectedText;
-                SelectObjectListView.Enabled = false;
-                SelectModelListView.Enabled = false;
-                PropertyNotesListView.Enabled = false;
+                (var searchTerm, var listViewState, var scrollPos, var selectedObject, var selectedPropertyIndex) = tabPageStates[ObjectTypeTabControl.SelectedIndex];
+
+                PopulateObjDBListView();
+
+                ObjDBListView.RestoreState(listViewState);
+
+                if (selectedObject != null)
+                    ObjDBListView.SelectedObject = selectedObject;
+                else
+                {
+                    ClearForm();
+                    ObjDBListView.DeselectAll();
+                }
+
+                SearchTextBox.Text = searchTerm;
+                ObjDBListView.AutoScrollOffset = scrollPos;
+
+                selectedPropertyIndexOverride = selectedPropertyIndex;
+            }
+            else
+            {
+                PopulateObjDBListView();
+
+                SearchTextBox.Text = string.Empty;
+                ClearForm();
+                ObjDBListView.DeselectAll();
+            }
+
+            lastselectedTabIndex = ObjectTypeTabControl.SelectedIndex;
+        }
+
+        private void PopulateObjDBListView()
+        {
+            if (ObjectTypeTabControl.SelectedTab == ObjectsTab)
+            {
+                ObjDBListView.SetObjects(Program.ParameterDB.ObjectParameters.Values);
+
+                ObjDBListView.BuildGroups(CategoryColumn, SortOrder.None);
+            }
+            else if (ObjectTypeTabControl.SelectedTab == RailsTab)
+            {
+                ObjDBListView.SetObjects(Program.ParameterDB.RailParameters.Values);
+
+                ObjDBListView.BuildGroups(CategoryColumn, SortOrder.None);
+            }
+            else if (ObjectTypeTabControl.SelectedTab == AreasTab)
+            {
+                ObjDBListView.SetObjects(Program.ParameterDB.AreaParameters.Values);
+
+                ObjDBListView.BuildGroups(CategoryColumn, SortOrder.None);
+            }
+        }
+
+        private void SplitContainer2_Panel2_Paint(object sender, PaintEventArgs e)
+        {
+            if(EnglishNameTextBox.Focused)
+                e.Graphics.FillRectangle(SystemBrushes.ControlDark, Rectangle.Inflate(EnglishNameTextBox.Bounds, 1, 1));
+            else
+                e.Graphics.FillRectangle(SystemBrushes.ControlLight, Rectangle.Inflate(EnglishNameTextBox.Bounds, 1, 1));
+        }
+
+        private void PropertyListBox_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index == -1)
+                return;
+
+            bool selected = e.State.HasFlag(DrawItemState.Selected);
+
+            var item = (PropertyDef)PropertyListBox.Items[e.Index];
+
+            if (selected)
+            {
+                e.Graphics.FillRectangle(SystemBrushes.Highlight, e.Bounds);
+                e.Graphics.DrawString(item.TypeDef.ToString(), Font, SystemBrushes.HighlightText, Point.Add(e.Bounds.Location, new Size(5, 3)));
+                e.Graphics.DrawString(item.Name, Font, SystemBrushes.HighlightText, Point.Add(e.Bounds.Location, new Size(50, 3)));
+            }
+            else
+            {
+                e.Graphics.FillRectangle(SystemBrushes.ControlLightLight, e.Bounds);
+                e.Graphics.DrawString(item.TypeDef.ToString(), Font, SystemBrushes.ControlText, Point.Add(e.Bounds.Location, new Size(5, 3)));
+                e.Graphics.DrawString(item.Name, Font, SystemBrushes.GrayText, Point.Add(e.Bounds.Location, new Size(50, 3)));
+            }
+
+            if (currentEditInfo.Properties.ContainsKey(item.Name))
+            {
+                int infoX = e.Bounds.Right - 20;
+                int infoY = e.Bounds.Y + 3;
+
+                if (selected)
+                    e.Graphics.DrawImage(Resources.InfoIndicatorHighlight, infoX, infoY);
+                else
+                    e.Graphics.DrawImage(Resources.InfoIndicator, infoX, infoY);
+            }
+
+            if (e.Index < PropertyListBox.Items.Count - 1)
+            {
+                int lineY = e.Bounds.Bottom - 1;
+                e.Graphics.DrawLine(SystemPens.ControlDark, 0, lineY, e.Bounds.Width, lineY);
+            }
+        }
+
+        private void ObjDBListView_SelectionChanged(object sender, EventArgs e)
+        {
+            var backup = ignoreTextEvents;
+            ignoreTextEvents = true;
+
+            selectedParameter = (IParameter)ObjDBListView.SelectedObject;
+
+            if (selectedParameter == null)
+                return;
+
+            SubmitInformation();
+
+            currentInfoWasEdited = false;
+            currentEditInfo = Program.InformationDB.GetEditableInformation(selectedParameter.ClassName);
+
+            ClassNameLabel.Text = selectedParameter.ClassName;
+
+            EnglishNameTextBox.Text = currentEditInfo.EnglishName ?? selectedParameter.ClassName;
+
+            ObjectDescriptionTextBox.Text = currentEditInfo.Description;
+
+            List<object> items = new List<object>();
+
+            if (ObjectTypeTabControl.SelectedTab == ObjectsTab && selectedParameter is ObjectParam param)
+            {
+                for (int i = 0; i < param.Properties.Count; i++)
+                {
+                    items.Add(param.Properties[i]);
+                }
+
+                ObjectNameTextBox.Enabled = true;
+                ModelNameTextBox.Enabled = true;
+
+                ObjectNameTextBox.PossibleSuggestions = param.ObjectNames.ToArray();
+                ModelNameTextBox.PossibleSuggestions = param.ModelNames.ToArray();
+
+                ObjectNameTextBox.Text = ObjectNameTextBox.PossibleSuggestions[0];
+                ModelNameTextBox.Text = string.Empty;
+            }
+            else if (ObjectTypeTabControl.SelectedTab == RailsTab && selectedParameter is RailParam railParam)
+            {
+                for (int i = 0; i < railParam.Properties.Count; i++)
+                {
+                    items.Add(railParam.Properties[i]);
+                }
+
+                PathShapeSelector.Enabled = true;
+            }
+            else if (ObjectTypeTabControl.SelectedTab == AreasTab && selectedParameter is AreaParam areaParam)
+            {
+                for (int i = 0; i < areaParam.Properties.Count; i++)
+                {
+                    items.Add(areaParam.Properties[i]);
+                }
+
+                AreaShapeComboBox.Enabled = true;
+            }
+
+            if(scene != null)
+                SelectObjectButton.Enabled = true;
+            ToQuickFavoritesButton.Enabled = true;
+
+            PropertyDescriptionTextBox.Enabled = false;
+
+
+            PropertyListBox.Items.Clear();
+            PropertyListBox.Items.AddRange(items.ToArray());
+
+            if (selectedPropertyIndexOverride.HasValue)
+            {
+                PropertyListBox.SelectedIndex = selectedPropertyIndexOverride.Value;
+                if (selectedPropertyIndexOverride.Value == -1)
+                    PropertyListBox_SelectedIndexChanged(null, null);
+
+                selectedPropertyIndexOverride = null;
+            }
+
+            ignoreTextEvents = backup;
+        }
+
+        private void ClearForm()
+        {
+            var backup = ignoreTextEvents;
+            ignoreTextEvents = true;
+
+            EnglishNameTextBox.Text = string.Empty;
+            ClassNameLabel.Text = string.Empty;
+            ObjectDescriptionTextBox.Text = string.Empty;
+            PropertyDescriptionTextBox.Text = string.Empty;
+
+            PropertyListBox.Items.Clear();
+
+            SelectObjectButton.Enabled = false;
+            ToQuickFavoritesButton.Enabled = false;
+
+
+            if (ObjectTypeTabControl.SelectedTab == ObjectsTab)
+            {
+                ObjectNameTextBox.Enabled = false;
+                ModelNameTextBox.Enabled = false;
+            }
+            else if (ObjectTypeTabControl.SelectedTab == RailsTab)
+            {
+                PathShapeSelector.Enabled = false;
+            }
+            else if (ObjectTypeTabControl.SelectedTab == AreasTab)
+            {
+                AreaShapeComboBox.Enabled = false;
+            }
+
+
+            ignoreTextEvents = backup;
+        }
+
+        private void PropertyListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var backup = ignoreTextEvents;
+            ignoreTextEvents = true;
+
+            if (PropertyListBox.SelectedItem == null)
+            {
+                PropertyDescriptionTextBox.Text = string.Empty;
                 return;
             }
 
-            SelectedClassName = item.Text;
+            selectedProperty = (PropertyDef)PropertyListBox.SelectedItem;
 
-            Loading = true;
-            ObjectInformation = OID.GetInformation(SelectedClassName);
-            ClassNameLabel.Text = ObjectInformation.ClassName;
-            EnglishNameTextBox.Text = (ObjectInformation.EnglishName == null || ObjectInformation.EnglishName.Length == 0) ? ObjectInformation.ClassName : ObjectInformation.EnglishName;
-            ObjectDescriptionTextBox.Text = ObjectInformation.Description.Length == 0 ? NoDescriptionFoundText: ObjectInformation.Description ;
-            Parameter Param = (Parameter)item.Tag;
-
-
-
-            //update ObjectNames
-            for (int i = 0; i < Param.ObjectNames.Count; i++)
-                SelectObjectListView.Items.Add(new ListViewItem(new string[] { Param.ObjectNames[i] }));
-
-            if (Param.ObjectNames.Count > 0)
+            if (currentEditInfo.Properties.TryGetValue(selectedProperty.Name, out string desc))
             {
-                SelectObjectListView.Items[0].Selected = true;
-                SelectObjectListView.Enabled = true;
+                PropertyDescriptionTextBox.Text = desc;
+            }
+            else
+            {
+                PropertyDescriptionTextBox.Text = string.Empty;
             }
 
+            PropertyDescriptionTextBox.Enabled = true;
 
-            //update ModelNames 
-            for (int i = 0; i < Param.ModelNames.Count; i++)
-                SelectModelListView.Items.Add(new ListViewItem(new string[] { Param.ModelNames[i] }));
+            ignoreTextEvents = backup;
+        }
 
-            if (Param.ModelNames.Count > 0)
-            {
-                SelectModelListView.Items[0].Selected = true;
-                SelectModelListView.Enabled = true;
-            }
+        private void PropertyDescriptionTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (ignoreTextEvents)
+                return;
 
+            if(!currentEditInfo.Properties.ContainsKey(selectedProperty.Name))
+                PropertyListBox.Refresh();
 
-            //update Properties 
-            for (int i = 0; i < Param.Properties.Count; i++)
-                PropertyNotesListView.Items.Add(new ListViewItem(new string[] { Param.Properties[i].Key, Param.Properties[i].Value, ObjectInformation.GetNoteForProperty(Param.Properties[i].Key) }));
-
-            if (Param.Properties.Count > 0)
-            {
-                PropertyNotesListView.Items[0].Selected = true;
-                PropertyNotesListView.Enabled = true;
-                PropertyHintTextBox.Text = PropertyNotesListView.SelectedItems[0].SubItems[2].Text;
-            }
-
-
-
-            PropertyLabel.Text = PropertyNotesListView.Items.Count == 0 ? NoPropertiesText:string.Format(PropertyNotesListView.Items.Count > 1 ? MultiplePropertiesText:SinglePropertyText, PropertyNotesListView.Items.Count);
-
-            Loading = false;
+            currentEditInfo.Properties[selectedProperty.Name] = PropertyDescriptionTextBox.Text;
+            OnInformationEdited();
         }
 
         private void ObjectDescriptionTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading)
+            if (ignoreTextEvents)
                 return;
-            ObjectInformation.Description = ObjectDescriptionTextBox.Text;
-            OID.SetInformation(ObjectInformation);
-            Edited = true;
+
+            currentEditInfo.Description = ObjectDescriptionTextBox.Text;
+            OnInformationEdited();
         }
 
-        //private void SearchTextBox_KeyUp(object sender, KeyEventArgs e)
-        //{
-        //    string Search = SearchTextBox.Text.ToLower();
-        //    DBEntryListView.Groups[10].Header = string.Format(SearchResultsSuccessText, SearchTextBox.Text);
-
-        //    DBEntryListView.Items.Clear();
-        //    if (Search.Equals(""))
-        //    {
-        //        DBEntryListView.Items.AddRange(FullItems);
-        //    }
-        //    else
-        //    {
-        //        List<ListViewItem> filteredItems = new List<ListViewItem>();
-        //        for (int i = 0; i < Program.ParameterDB.ObjectParameters.Count; i++)
-        //        {
-        //            Parameter Param = (Parameter)FullItems[i].Tag;
-        //            //Information tmp = OID.GetInformation(Param.ClassName);
-        //            bool a = !Param.ClassName.ToLower().Contains(Search);
-        //            //bool b = !(tmp.EnglishName ?? Param.ClassName).ToLower().Contains(Search);
-        //            if (a)// && b)
-        //                continue;
-
-        //            filteredItems.Add(FullItems[i]);
-        //        }
-        //        if (filteredItems.Count == 0)
-        //            filteredItems.Add(new ListViewItem(new string[] { string.Format(SearchResultsFailureText, SearchTextBox.Text), "----------", "---", "---" }) { Group = DBEntryListView.Groups[10] });
-
-        //        DBEntryListView.Items.AddRange(filteredItems.ToArray());
-        //    }
-        //}
-
-        private void PropertyNotesListView_SelectedIndexChanged(object sender, EventArgs e)
+        private void EnglishNameTextBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (Loading || DBEntryListView.SelectedIndices.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
-                return;
-
-            Loading = true;
-            PropertyHintTextBox.Text = PropertyNotesListView.SelectedItems[0].SubItems[2].Text;
-            Loading = false;
-        }
-
-        private void PropertyHintTextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (Loading || DBEntryListView.SelectedIndices.Count == 0 || PropertyNotesListView.SelectedItems.Count == 0)
-                return;
-            ObjectInformation.SetNoteForProperty(PropertyNotesListView.SelectedItems[0].SubItems[0].Text, PropertyHintTextBox.Text);
-            PropertyNotesListView.SelectedItems[0].SubItems[2].Text = PropertyHintTextBox.Text;
-            OID.SetInformation(ObjectInformation);
-            Edited = true;
+            if (e.KeyCode == Keys.Return && Focused)
+            {
+                focusControl.Focus();
+                e.SuppressKeyPress = true;
+            }
         }
 
         private void EnglishNameTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (Loading || DBEntryListView.SelectedIndices.Count == 0)
+            if (ignoreTextEvents)
                 return;
-            ObjectInformation.EnglishName = EnglishNameTextBox.Text;
-            OID.SetInformation(ObjectInformation);
-            Edited = true;
+
+            currentEditInfo.EnglishName = EnglishNameTextBox.Text;
+            OnInformationEdited();
         }
 
-        private void AddObjectForm_FormClosing(object sender, FormClosingEventArgs e)
+
+
+        private void NewAddObjectForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (Edited)
+            SubmitInformation();
+
+            if (editedInformations.Count == 0)
+                return;
+
+            //TODO Localize
+            string message = "";
+
+            foreach (var className in editedInformations)
+                message += className + '\n';
+
+            message += '\n' + "have unsafed changes, do you want to save them?";
+
+
+            DialogResult result = MessageBox.Show(message, "Unsafed Changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+            if (result == DialogResult.Yes)
             {
-                DialogResult result = MessageBox.Show(SaveDescriptionText, SaveDescriptionHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-                if (result == DialogResult.Yes)
-                {
-                    OID.Save(Program.SODDPath);
-                }
-                else if (result == DialogResult.Cancel)
-                    e.Cancel = true;
+                Program.InformationDB.Save(Program.SODDPath);
             }
-        }
-
-        public bool SomethingWasSelected { get; private set; }
-
-        private void SelectObjectButton_Click(object sender, EventArgs e)
-        {
-            if(TryGetPlacementHandler(out var placementHandler, out string _))
+            else if (result == DialogResult.Cancel)
             {
-                scene.ObjectPlaceDelegate = placementHandler;
-
-                SomethingWasSelected = true;
-
-                Close();
+                e.Cancel = true;
+            }
+            else
+            {
+                //restore database from backup
+                Program.InformationDB = new ObjectInformationDatabase(new MemoryStream(infoDB_backup));
             }
         }
 
@@ -248,270 +595,16 @@ namespace SpotLight
             }
         }
 
-        private bool TryGetPlacementHandler(out SM3DWorldScene.ObjectPlacementHandler placementHandler, out string text)
+        private void SelectObjectButton_Click(object sender, EventArgs e)
         {
-            #region Local Handlers and variables
-            Parameter objectParameter;
-            int objectNameIndex;
-            int objectModelIndex;
-
-            (I3dWorldObject, ObjectList)[] PlaceObjectFromDB(Vector3 pos, SM3DWorldZone zone)
+            if (TryGetPlacementHandler(out var placementHandler, out string _))
             {
-                General3dWorldObject obj = objectParameter.ToGeneral3DWorldObject(zone.NextObjID(), zone, pos,
-                    objectNameIndex,
-                    objectModelIndex);
+                scene.ObjectPlaceDelegate = placementHandler;
 
-#if ODYSSEY
-                obj.ScenarioBitField = ushort.MaxValue; //All scenarios
-#endif
+                SomethingWasSelected = true;
 
-                if (objectParameter.TryGetObjectList(zone, out ObjectList objList))
-                {
-                    return new (I3dWorldObject, ObjectList)[] {
-                        (obj, objList)
-                    };
-                }
-                else
-                {
-                    return new (I3dWorldObject, ObjectList)[] {
-                        (obj, zone.LinkedObjects)
-                    };
-                }
+                Close();
             }
-
-            RailParam railParam;
-            Func<List<RailPoint>> railFormationFunc;
-            bool reverseRail;
-            bool closeRail;
-
-            (I3dWorldObject, ObjectList)[] PlaceRail(Vector3 pos, SM3DWorldZone zone)
-            {
-                List<RailPoint> pathPoints = PathPointFormations.GetPathFormation(pos, railFormationFunc(), reverseRail);
-
-                var properties = new Dictionary<string, dynamic>();
-
-                if (railParam != null)
-                    ObjectParameterDatabase.AddToProperties(railParam.Properties, properties);
-
-                Rail rail = new Rail(pathPoints, zone.NextObjID(), railParam.ClassName, closeRail, false, properties, zone);
-
-#if ODYSSEY
-                rail.ScenarioBitField = ushort.MaxValue; //All scenarios
-#endif
-
-                if (zone.ObjLists.ContainsKey("Map_Rails"))
-                {
-                    return new (I3dWorldObject, ObjectList)[] {
-                        (rail, zone.ObjLists["Map_Rails"])
-                    };
-                }
-                else
-                {
-                    return new (I3dWorldObject, ObjectList)[] {
-                        (rail, zone.LinkedObjects)
-                    };
-                }
-            }
-            #endregion
-
-            placementHandler = null;
-            text = null;
-
-            if (ObjectTypeTabControl.SelectedTab == ObjectFromDBTab)
-            {
-                if (Loading || DBEntryListView.SelectedIndices.Count == 0)
-                    return false;
-
-                objectParameter = Program.ParameterDB.ObjectParameters[SelectedClassName];
-                objectNameIndex = SelectObjectListView.SelectedIndices.Count == 1 ? SelectObjectListView.SelectedIndices[0] : -1;
-                objectModelIndex = SelectModelListView.SelectedIndices.Count == 1 ? SelectModelListView.SelectedIndices[0] : -1;
-
-                if (SelectObjectListView.Items.Count > 1)
-                {
-                    text = SelectObjectListView.SelectedItems[0].Text + "\n" + (string.IsNullOrEmpty(ObjectInformation.EnglishName) ? SelectedClassName : ObjectInformation.EnglishName) +
-                        (string.IsNullOrEmpty(SelectModelListView.SelectedItems.Count > 0 ? SelectModelListView.SelectedItems[0].ToString() : "") ? string.Empty : '\n' + "Mdl: " + SelectModelListView.SelectedItems[0].Text);
-                }
-                else
-                {
-                    text = string.IsNullOrEmpty(ObjectInformation.EnglishName) ? SelectedClassName : ObjectInformation.EnglishName + '\n' + SelectObjectListView.SelectedItems[0].Text +
-                        (string.IsNullOrEmpty(SelectModelListView.SelectedItems.Count > 0 ? SelectModelListView.SelectedItems[0].ToString():"") ? string.Empty : '\n' + "Mdl: " + SelectModelListView.SelectedItems[0].Text);
-                }
-                
-                placementHandler = PlaceObjectFromDB;
-                return true;
-
-            }
-
-            if (ObjectTypeTabControl.SelectedTab == RailTab)
-            {
-                if (Loading || RailFormationListView.SelectedItems.Count == 0)
-                    return false;
-
-                railFormationFunc = (Func<List<RailPoint>>)RailFormationListView.SelectedItems[0].Tag;
-
-                Program.ParameterDB.RailParameters.TryGetValue(RailTypeTextBox.Text, out railParam);
-
-                reverseRail = ReverseRailCheckBox.Checked;
-                closeRail = CloseRailCheckBox.Checked;
-
-                text = RailFormationListView.SelectedItems[0].Text + '\n' + RailTypeTextBox.Text + '\n' + (closeRail ? "Closed" : "Open");
-
-                placementHandler = PlaceRail;
-                return true;
-            }
-
-            return true;
         }
-
-
-
-        private void Localize()
-        {
-            Text = Program.CurrentLanguage.GetTranslation("AddObjectsTitle") ?? "Spotlight - Add Object";
-            ObjectFromDBTab.Text = Program.CurrentLanguage.GetTranslation("ObjectFromDBTab") ?? "Objects";
-            RailTab.Text = Program.CurrentLanguage.GetTranslation("RailTab") ?? "Rails";
-            SearchLabel.Text = Program.CurrentLanguage.GetTranslation("SearchText") ?? "Search";
-            ClassNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("ClassNameColumnHeader") ?? "Class Name";
-            EnglishNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("EnglishNameColumnHeader") ?? "Name";
-            ObjectCountColumnHeader.Text = Program.CurrentLanguage.GetTranslation("ObjectCountColumnHeader") ?? "Objects";
-            ModelCountColumnHeader.Text = Program.CurrentLanguage.GetTranslation("ModelCountColumnHeader") ?? "Models";
-
-            RailTypeLabel.Text = Program.CurrentLanguage.GetTranslation("RailTypeLabel") ?? "Rail Type";
-            CloseRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("ClosePathCheckBox") ?? "Close the Path?";
-            ReverseRailCheckBox.Text = Program.CurrentLanguage.GetTranslation("ReverseRailCheckBox") ?? "Reverse?";
-            RailNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("RailNameColumnHeader") ?? "Rail Name";
-            RailDescriptionColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectDescriptionText") ?? "Description";
-            ModelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectNameText") ?? "Name";
-            ObjectNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("AddObjectNameText") ?? "Name";
-            NameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("GlobalPropertyNameText") ?? "Property Name";
-            TypeColumnHeader.Text = Program.CurrentLanguage.GetTranslation("GlobalTypeText") ?? "Type";
-            SelectObjectButton.Text = Program.CurrentLanguage.GetTranslation("GlobalSelectText") ?? "Select";
-            ToQuickFavoritesButton.Text = Program.CurrentLanguage.GetTranslation("GlobalToQuickFavoritesText") ?? "To Quick Favorites";
-
-            NothingSelectedText = Program.CurrentLanguage.GetTranslation("NothingSelectedText") ?? "Nothing Selected";
-            NoPropertiesText = Program.CurrentLanguage.GetTranslation("AddObjectNoPropertiesText") ?? "No Properties";
-            SinglePropertyText = Program.CurrentLanguage.GetTranslation("AddObjectSinglePropertyText") ?? "{0} Property";
-            MultiplePropertiesText = Program.CurrentLanguage.GetTranslation("AddObjectMultiPropertyText") ?? "{0} Properties";
-            NoDescriptionFoundText = Program.CurrentLanguage.GetTranslation("NoDescriptionFoundText") ?? "No Description Found";
-            SearchResultsSuccessText = Program.CurrentLanguage.GetTranslation("SearchResultsSuccessText") ?? "Search Results: {0}";
-            SearchResultsFailureText = Program.CurrentLanguage.GetTranslation("SearchResultsFailureText") ?? "No Results for {0}";
-            SaveDescriptionText = Program.CurrentLanguage.GetTranslation("SaveDescriptionText") ?? "You edited one or more object descriptions\nWould you like to save?";
-            SaveDescriptionHeader = Program.CurrentLanguage.GetTranslation("SaveDescriptionHeader") ?? "Save changes?";
-        }
-
-        private string NothingSelectedText { get; set; }
-        private string NoPropertiesText { get; set; }
-        private string SinglePropertyText { get; set; }
-        private string MultiplePropertiesText { get; set; }
-        private string NoDescriptionFoundText { get; set; }
-        private string SearchResultsSuccessText { get; set; }
-        private string SearchResultsFailureText { get; set; }
-        private string SaveDescriptionHeader { get; set; }
-        private string SaveDescriptionText { get; set; }
-
-        private void DBEntryListView_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            SelectObjectButton.PerformClick();
-        }
-
-        private void DeselectModelButton_Click(object sender, EventArgs e)
-        {
-            SelectModelListView.SelectedItems.Clear();
-        }
-    }
-    public static class ControlExtensions
-    {
-        public static void DoubleBuffering(this Control control, bool enable)
-        {
-            var method = typeof(Control).GetMethod("SetStyle", BindingFlags.Instance | BindingFlags.NonPublic);
-            method.Invoke(control, new object[] { ControlStyles.OptimizedDoubleBuffer, enable });
-        }
-    }
-
-    public static class PathPointFormations
-    {
-        /// <summary>
-        /// Gets a List of Path Points as they are placed relative to the pos
-        /// </summary>
-        /// <param name="pos">Position to place at</param>
-        /// <param name="Formation">Formation to place</param>
-        /// <returns></returns>
-        public static List<RailPoint> GetPathFormation(Vector3 pos, List<RailPoint> Formation, bool Reverse)
-        {
-            List<RailPoint> Final = new List<RailPoint>();
-            for (int i = 0; i < Formation.Count; i++)
-            {
-                RailPoint pt = Formation[i];
-                pt.Position += pos;
-                Final.Add(pt);
-            }
-            if (Reverse)
-                Final.Reverse();
-            return Final;
-        }
-        /// <summary>
-        /// 2-Point Path (Line)
-        /// </summary>
-        public static List<RailPoint> BasicPath() => new List<RailPoint>()
-        {
-            new RailPoint(new Vector3(-3,0,0), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,0), Vector3.Zero, Vector3.Zero),
-        };
-        /// <summary>
-        /// 4-Point Path (Circle, Recommended Closed)
-        /// </summary>
-        public static List<RailPoint> CirclePath() => new List<RailPoint>()
-        {
-            new RailPoint(new Vector3(-3,0,0), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(0,0,3), new Vector3(-2,0,0), new Vector3(2,0,0)),
-            new RailPoint(new Vector3(3,0,0), new Vector3(0,0,2), new Vector3(0,0,-2)),
-            new RailPoint(new Vector3(0,0,-3), new Vector3(2,0,0), new Vector3(-2,0,0)),
-        };
-        /// <summary>
-        /// 4-Point Path (Square, Recommended Closed)
-        /// </summary>
-        public static List<RailPoint> SquarePath() => new List<RailPoint>()
-        {
-            new RailPoint(new Vector3(-3,0,-3), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,-3), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,3), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(-3,0,3), Vector3.Zero, Vector3.Zero),
-        };
-        /// <summary>
-        /// 4-Point Path (Rectangle, Recommended Closed)
-        /// </summary>
-        public static List<RailPoint> RectanglePath() => new List<RailPoint>()
-        {
-            new RailPoint(new Vector3(-3,0,-6), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,-6), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(3,0,6), Vector3.Zero, Vector3.Zero),
-            new RailPoint(new Vector3(-3,0,6), Vector3.Zero, Vector3.Zero),
-        };
-        /// <summary>
-        /// 6-Point Path (Rounded Rectangle, Recommended Closed)
-        /// </summary>
-        public static List<RailPoint> RoundedRectanglePath() => new List<RailPoint>()
-        {
-            new RailPoint(new Vector3(-3,0,-5), new Vector3(0,0,2), new Vector3(0,0,-2)),
-            new RailPoint(new Vector3(0,0,-8), new Vector3(-2,0,0), new Vector3(2,0,0)),
-            new RailPoint(new Vector3(3,0,-5), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(3,0,5), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(0,0,8), new Vector3(2,0,0), new Vector3(-2,0,0)),
-            new RailPoint(new Vector3(-3,0,5), new Vector3(0,0,2), new Vector3(0,0,-2)),
-        };
-        /// <summary>
-        /// 8-Point Path (Rounded Square, Recommended Closed)
-        /// </summary>
-        public static List<RailPoint> RoundedSquarePath() => new List<RailPoint>()
-        {
-            new RailPoint(new Vector3(-6,0,-3), new Vector3(0,0,2), new Vector3(0,0,-2)),//good
-            new RailPoint(new Vector3(-3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0)),//good
-            new RailPoint(new Vector3(3,0,-6), new Vector3(-2,0,0), new Vector3(2,0,0)),//good
-            new RailPoint(new Vector3(6,0,-3), new Vector3(0,0,-2), new Vector3(0,0,2)),//good
-            new RailPoint(new Vector3(6,0,3), new Vector3(0,0,-2), new Vector3(0,0,2)),
-            new RailPoint(new Vector3(3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0)),
-            new RailPoint(new Vector3(-3,0,6), new Vector3(2,0,0), new Vector3(-2,0,0)),
-            new RailPoint(new Vector3(-6,0,3), new Vector3(0,0,2), new Vector3(0,0,-2)),
-        };
     }
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SpotLight.GUI;
 
 namespace SpotLight
 {
@@ -133,6 +134,16 @@ namespace SpotLight
             }
             else
                 return Path.Combine(GamePath, Folder, Filename);
+        }
+
+        public static Information GetInfo(this IParameter param)
+        {
+            return InformationDB.GetInformation(param.ClassName);
+        }
+
+        public static string GetEnglishName(this IParameter param)
+        {
+            return InformationDB.GetInformation(param.ClassName).EnglishName ?? param.ClassName;
         }
     }
 }

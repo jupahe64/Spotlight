@@ -22,13 +22,44 @@ namespace SpotLight
             public Type Type { get; private set; }
             public string ActualName { get; private set; }
             public string AltName { get; private set; }
+            public byte TypeID { get; private set; }
 
-            private TypeDef(Type type, object defaultValue, string actualName, string altName)
+            public static TypeDef FromTypeID(byte typeID) => Defs[typeID];
+
+            public static bool TryGetFromNodeType(BYAML.ByamlFile.ByamlNodeType nodeType, out TypeDef def)
+            {
+                switch (nodeType)
+                {
+                    case BYAML.ByamlFile.ByamlNodeType.Integer:
+                        def = IntDef;
+                        return true;
+
+                    case BYAML.ByamlFile.ByamlNodeType.Float:
+                        def = FloatDef;
+                        return true;
+
+                    case BYAML.ByamlFile.ByamlNodeType.StringIndex:
+                    case BYAML.ByamlFile.ByamlNodeType.Null:
+                        def = StringDef;
+                        return true;
+
+                    case BYAML.ByamlFile.ByamlNodeType.Boolean:
+                        def = BoolDef;
+                        return true;
+
+                    default:
+                        def = null;
+                        return false;
+                }
+            }
+
+            private TypeDef(Type type, object defaultValue, string actualName, string altName, byte typeID)
             {
                 DefaultValue = defaultValue;
                 Type = type;
                 ActualName = actualName;
                 AltName = altName;
+                TypeID = typeID;
             }
 
             public override string ToString()
@@ -38,10 +69,10 @@ namespace SpotLight
 
             public static readonly TypeDef[] Defs = new TypeDef[]
             {
-                new TypeDef(typeof(int),    0,     "int",    String.Empty),
-                new TypeDef(typeof(float),  0f,    "float",  String.Empty),
-                new TypeDef(typeof(string), "",    "string", String.Empty),
-                new TypeDef(typeof(bool),   false, "bool",   String.Empty)
+                new TypeDef(typeof(int),    0,     "int",    String.Empty, 0),
+                new TypeDef(typeof(float),  0f,    "float",  String.Empty, 1),
+                new TypeDef(typeof(string), "",    "string", String.Empty, 2),
+                new TypeDef(typeof(bool),   false, "bool",   String.Empty, 3)
             };
 
             public static readonly TypeDef IntDef = Defs[0];

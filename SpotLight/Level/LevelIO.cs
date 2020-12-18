@@ -17,6 +17,26 @@ namespace SpotLight.Level
 {
     public class LevelIO
     {
+        public static HashSet<string> AreaModelNames { get; private set; } = new HashSet<string>
+        {
+                "AreaCubeBase",
+#if ODYSSEY
+                "AreaCubeTop",
+                "AreaCubeCenter",
+#endif
+                "AreaCylinder",
+#if ODYSSEY
+                "AreaCylinderTop",
+                "AreaCylinderCenter",
+                "AreaSphere",
+
+                "AreaPrismBase",
+                "AreaPrismTop",
+                "AreaPrismCenter",
+#endif
+                "AreaInfinite"
+        };
+
         /// <summary>
         /// Parses a 3d World from an ArrayEntry
         /// </summary>
@@ -31,11 +51,7 @@ namespace SpotLight.Level
             I3dWorldObject obj;
             bool loadLinks;
 
-            if((info.ObjectName.EndsWith("Area")
-#if ODYSSEY
-            || info.ObjectName.EndsWith("Area2D")
-#endif
-            )&& info.PropertyEntries.TryGetValue("Priority", out DictionaryEntry priorityEntry) && priorityEntry.NodeType == ByamlFile.ByamlNodeType.Integer)
+            if((info.ClassName == "Area") || info.ObjectName.Contains("Area") && AreaModelNames.Contains(info.ModelName))
                 obj = new AreaObject(in info, zone, out loadLinks);
             else if (info.PropertyEntries.TryGetValue("RailPoints", out DictionaryEntry railPointEntry) && railPointEntry.NodeType == ByamlFile.ByamlNodeType.Array) //at this point we can be sure it's a rail
                 obj = new Rail(in info, zone, out loadLinks);

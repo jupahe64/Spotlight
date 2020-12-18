@@ -18,6 +18,11 @@ using BfresLibrary.Helpers;
 using Syroot.BinaryData;
 using Syroot.NintenTools.NSW.Bntx.GFX;
 
+using SharpGLTF.Geometry;
+using SharpGLTF.Geometry.VertexTypes;
+using System.ComponentModel;
+using SharpGLTF.Materials;
+
 namespace SpotLight.ObjectRenderers
 {
     public static class BfresModelRenderer
@@ -109,9 +114,9 @@ namespace SpotLight.ObjectRenderers
             }
         }
 
-        public static void TryGetModel(string modelName, out CachedModel cachedModel)
+        public static bool TryGetModel(string modelName, out CachedModel cachedModel)
         {
-            cache.TryGetValue(modelName, out cachedModel);
+            return cache.TryGetValue(modelName, out cachedModel);
         }
 
         public static bool TryDraw(string modelName, GL_ControlModern control, Pass pass, Vector4 highlightColor)
@@ -225,7 +230,7 @@ namespace SpotLight.ObjectRenderers
                                     Target = i;
                                     break;
                                 }
-                                else if (!mdl.Materials[shape.MaterialIndex].TextureRefs[i].Name.Contains("_"))
+                                else if (mdl.Materials[shape.MaterialIndex].Samplers[i].Name == "_a0")
                                 {
                                     Target = i;
                                 }
@@ -284,6 +289,8 @@ namespace SpotLight.ObjectRenderers
                             break;
                     }
 
+                    bool use_vtx_col = mdl.Materials[shape.MaterialIndex].ShaderAssign.ShaderOptions["vtxcolor_type"].String != "-1";
+
                     Matrix4[] transforms = GetTransforms(mdl.Skeleton.Bones.Values.ToArray());
 
                     //Create a buffer instance which stores all the buffer data
@@ -307,31 +314,47 @@ namespace SpotLight.ObjectRenderers
 
                     foreach (VertexAttrib att in mdl.VertexBuffers[shapeIndex].Attributes.Values)
                     {
-                        if (att.Name == "_p0")
-                            vec4Positions = helper["_p0"].Data;
-                        if (att.Name == "_n0")
-                            vec4Normals = helper["_n0"].Data;
-                        if (att.Name == "_u0")
-                            vec4uv0 = helper["_u0"].Data;
-                        if (att.Name == "_u1")
-                            vec4uv1 = helper["_u1"].Data;
-                        if (att.Name == "_u2")
-                            vec4uv2 = helper["_u2"].Data;
-                        if (att.Name == "_c0")
-                            vec4c0 = helper["_c0"].Data;
-                        if (att.Name == "_t0")
-                            vec4t0 = helper["_t0"].Data;
-                        if (att.Name == "_b0")
-                            vec4b0 = helper["_b0"].Data;
-                        if (att.Name == "_w0")
-                            vec4w0 = helper["_w0"].Data;
-                        if (att.Name == "_i0")
-                            vec4i0 = helper["_i0"].Data;
+                        switch (att.Name)
+                        {
+                            case "_p0":
+                                vec4Positions = helper["_p0"].Data;
+                                break;
+                            case "_n0":
+                                vec4Normals = helper["_n0"].Data;
+                                break;
+                            case "_u0":
+                                vec4uv0 = helper["_u0"].Data;
+                                break;
+                            case "_u1":
+                                vec4uv1 = helper["_u1"].Data;
+                                break;
+                            case "_u2":
+                                vec4uv2 = helper["_u2"].Data;
+                                break;
+                            case "_c0": 
+                                if(use_vtx_col)  
+                                    vec4c0 = helper["_c0"].Data;
+                                break;
+                            case "_t0":
+                                vec4t0 = helper["_t0"].Data;
+                                break;
+                            case "_b0":
+                                vec4b0 = helper["_b0"].Data;
+                                break;
+                            case "_w0":
+                                vec4w0 = helper["_w0"].Data;
+                                break;
+                            case "_i0":
+                                vec4i0 = helper["_i0"].Data;
+                                break;
 
-                        if (att.Name == "_p1")
-                            vec4Positions1 = helper["_p1"].Data;
-                        if (att.Name == "_p2")
-                            vec4Positions2 = helper["_p2"].Data;
+                            case "_p1":
+                                vec4Positions1 = helper["_p1"].Data;
+                                break;
+                            case "_p2":
+                                vec4Positions2 = helper["_p2"].Data;
+                                break;
+                        }
                     }
 
                     indexBufferLengths[shapeIndex] = indices.Length;
@@ -415,6 +438,9 @@ namespace SpotLight.ObjectRenderers
                             pos = Vector3.TransformPosition(pos, NoBindFix);
                             nrm = Vector3.TransformNormal(nrm, NoBindFix);
                         }
+
+
+                        //write vertex data into vertex buffer
                         bufferData[_i] = pos.X * 0.01f;
                         bufferData[_i + 1] = pos.Y * 0.01f;
                         bufferData[_i + 2] = pos.Z * 0.01f;
@@ -673,6 +699,53 @@ namespace SpotLight.ObjectRenderers
                     vaos[i].Use(control);
                     GL.DrawElements(BeginMode.Triangles, indexBufferLengths[i], DrawElementsType.UnsignedInt, 0);
                 }
+            }
+
+            public MeshBuilder<VertexPosition, VertexColor1Texture1> VaosToMesh(GLControl control, MaterialBuilder material)
+            {
+
+                VertexBuilder<VertexPosition, VertexColor1Texture1, VertexEmpty> Vertex(float[] data)
+                {
+                    byte[] color = BitConverter.GetBytes(data[5]);
+
+                    return new VertexBuilder<VertexPosition, VertexColor1Texture1, VertexEmpty>(
+                        new VertexPosition(data[0], data[1], data[2]),
+                        new VertexColor1Texture1(
+                            new System.Numerics.Vector4(color[0] / 255f, color[1] / 255f, color[2] / 255f, color[3] / 255f),
+                            new System.Numerics.Vector2(data[3], data[4])
+                            ));
+                }
+
+                var builder = new MeshBuilder<VertexPosition, VertexColor1Texture1>();
+                
+                for (int i = 0; i < vaos.Length; i++)
+                {
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, vaos[i].buffer);
+                    GL.BindBuffer(BufferTarget.ElementArrayBuffer, vaos[i].indexBuffer.Value);
+
+                    int indexCount = indexBufferLengths[i];
+
+                    int[] indices = new int[indexCount];
+
+                    GL.GetBufferSubData(BufferTarget.ElementArrayBuffer, new IntPtr(), indexCount * sizeof(float), indices);
+
+                    var primitive = builder.UsePrimitive(material);
+
+                    float[] dataA = new float[6];
+                    float[] dataB = new float[6];
+                    float[] dataC = new float[6];
+
+                    for (int j = 0; j < indexCount; j+=3)
+                    {
+                        GL.GetBufferSubData(BufferTarget.ArrayBuffer, new IntPtr(sizeof(float) * 6 * indices[j]), sizeof(float) * 6, dataA);
+                        GL.GetBufferSubData(BufferTarget.ArrayBuffer, new IntPtr(sizeof(float) * 6 * indices[j+1]), sizeof(float) * 6, dataB);
+                        GL.GetBufferSubData(BufferTarget.ArrayBuffer, new IntPtr(sizeof(float) * 6 * indices[j+2]), sizeof(float) * 6, dataC);
+
+                        primitive.AddTriangle(Vertex(dataA), Vertex(dataB), Vertex(dataC));
+                    }
+                }
+
+                return builder;
             }
         }
 
