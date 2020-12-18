@@ -107,6 +107,7 @@
             this.ObjDBListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.ObjDBListView.CellEditUseWholeCell = false;
             this.ObjDBListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.ClassNameColumn,
             this.EnglishNameColumn});
@@ -457,7 +458,7 @@
             // 
             this.olvColumn2.Text = "English Name";
             // 
-            // NewAddObjectForm
+            // AddObjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -467,7 +468,7 @@
             this.Controls.Add(this.SharedContentPanel);
             this.Controls.Add(this.ObjectTypeTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "NewAddObjectForm";
+            this.Name = "AddObjectForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Spotlight - Add Object";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.NewAddObjectForm_FormClosing);

@@ -79,6 +79,7 @@ namespace SpotLight.GUI
 
             CenterToParent();
             //Localize(); TODO
+
             ObjDBListView.ShowGroups = true;
 
 
@@ -345,13 +346,13 @@ namespace SpotLight.GUI
             if (selected)
             {
                 e.Graphics.FillRectangle(SystemBrushes.Highlight, e.Bounds);
-                e.Graphics.DrawString(item.TypeDef.ToString(), Font, SystemBrushes.HighlightText, Point.Add(e.Bounds.Location, new Size(5, 3)));
+                e.Graphics.DrawString(item.TypeDef.ActualName, Font, SystemBrushes.HighlightText, Point.Add(e.Bounds.Location, new Size(5, 3)));
                 e.Graphics.DrawString(item.Name, Font, SystemBrushes.HighlightText, Point.Add(e.Bounds.Location, new Size(50, 3)));
             }
             else
             {
                 e.Graphics.FillRectangle(SystemBrushes.ControlLightLight, e.Bounds);
-                e.Graphics.DrawString(item.TypeDef.ToString(), Font, SystemBrushes.ControlText, Point.Add(e.Bounds.Location, new Size(5, 3)));
+                e.Graphics.DrawString(item.TypeDef.ActualName, Font, SystemBrushes.ControlText, Point.Add(e.Bounds.Location, new Size(5, 3)));
                 e.Graphics.DrawString(item.Name, Font, SystemBrushes.GrayText, Point.Add(e.Bounds.Location, new Size(50, 3)));
             }
 
