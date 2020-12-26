@@ -226,6 +226,7 @@ namespace SpotLight.Level
 #if ODYSSEY
                     case "SrcUnitLayerList":
                     case "PlacementFileName":
+                    case "comment":
 #endif
                         break; //ignore these
                     case "Id":
@@ -288,7 +289,8 @@ namespace SpotLight.Level
                         info.ClassName = _data["ParameterConfigName"];
                         break;
                     default:
-                        properties.Add(entry.Key, entry);
+                        if(!properties.ContainsKey(entry.Key))
+                            properties.Add(entry.Key, entry);
                         break;
                 }
             }

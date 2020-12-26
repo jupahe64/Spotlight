@@ -811,10 +811,15 @@ namespace SpotLight.Level
 #endif
                 foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
                 {
+#if ODYSSEY
+                    if (keyValuePair.Value.Count==0)
+                        continue; //level files in Odyssey don't contain empty lists
+#endif
+
                     if (!keyValuePair.Key.StartsWith(prefix)) //ObjList is not part of the Category
                         continue;
 
-                    ByamlNodeWriter.ArrayNode categoryNode = writer.CreateArrayNode();
+                    ByamlNodeWriter.ArrayNode objListNode = writer.CreateArrayNode();
 
 #if ODYSSEY
                     foreach (I3dWorldObject obj in keyValuePair.Value)
@@ -826,14 +831,14 @@ namespace SpotLight.Level
                         {
                             ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
                             obj.Save(alreadyWrittenObjs, writer, objNode, false);
-                            categoryNode.AddDictionaryNodeRef(objNode);
+                            objListNode.AddDictionaryNodeRef(objNode);
                         }
                         else
                         {
-                            categoryNode.AddDictionaryRef(obj);
+                            objListNode.AddDictionaryRef(obj);
                         }
                     }
-                    scenarioNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), categoryNode, true);
+                    scenarioNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), objListNode, true);
 #else
                     foreach (I3dWorldObject obj in keyValuePair.Value)
                     {
@@ -860,9 +865,7 @@ namespace SpotLight.Level
 
                 rootNode.AddDictionaryNodeRef(scenarioNode, true);
             }
-#endif
-
-#if !ODYSSEY
+#else
             rootNode.AddArrayNodeRef("Objs", objsNode, true);
             if(saveZonePlacements)
                 rootNode.AddArrayNodeRef("ZoneList", zonesNode, true);

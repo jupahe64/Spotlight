@@ -171,6 +171,7 @@ namespace SpotLight.EditorDrawables
             StaticObjects.Add(new ZonePlacementRenderer(this));
         }
 
+        private const string LINKS_LIST_NAME = "Links";
         private CameraStateSave?[] camStateSaves = new CameraStateSave?[10];
 
         protected void SaveCam(int index)
@@ -275,7 +276,9 @@ namespace SpotLight.EditorDrawables
 
                 ObjectPlaced?.Invoke(null, null);
 
-                return REDRAW_PICKING;
+                UpdateSelection(REDRAW_PICKING);
+
+                return 0;
             }
             else
                 return base.MouseClick(e, control);
@@ -738,8 +741,8 @@ namespace SpotLight.EditorDrawables
             }
 
             EndUndoCollection();
-            control.Refresh();
-            control.Repick();
+
+            UpdateSelection(REDRAW_PICKING);
         }
 
         static List<ZonePlacement> copiedZonePlacements = null;
@@ -798,7 +801,7 @@ namespace SpotLight.EditorDrawables
                 }
 
                 if (copies.Count > 0)
-                    copiedObjects.Add(("Links", copies));
+                    copiedObjects.Add((LINKS_LIST_NAME, copies));
             }
 
             if (copiedZonePlacements.Count > 0 || copiedObjects.Count > 0)
@@ -843,9 +846,18 @@ namespace SpotLight.EditorDrawables
 
                 foreach ((string listName, Dictionary<I3dWorldObject, I3dWorldObject> copies) in copiedObjects)
                 {
-                    if (!EditZone.ObjLists.TryGetValue(listName, out ObjectList list))
+                    if (!EditZone.ObjLists.TryGetValue(listName, out ObjectList objectList))
                     {
-                        list = EditZone.LinkedObjects;
+#if ODYSSEY
+                        if(listName != LINKS_LIST_NAME)
+                        {
+                            var newList = new ObjectList();
+                            EditZone.ObjLists.Add(listName, newList);
+                            objectList = newList;
+                        }
+                        else
+#endif
+                            objectList = EditZone.LinkedObjects;
                     }
 
                     Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
@@ -856,12 +868,12 @@ namespace SpotLight.EditorDrawables
                         obj.DuplicateSelected(duplicates, this, zoneToZoneTransform, false); //yep we need to duplicate the copies
                     }
 
-                    list.AddRange(duplicates.Values);
+                    objectList.AddRange(duplicates.Values);
 
                     foreach (var keyValuePair in copies) totalDuplicates.Add(keyValuePair.Key, duplicates[keyValuePair.Value]);
 
                     if (duplicates.Count > 0)
-                        objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(list, duplicates.Values.ToArray()));
+                        objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objectList, duplicates.Values.ToArray()));
                 }
 
                 //Clear LinkDestinations
@@ -915,8 +927,8 @@ namespace SpotLight.EditorDrawables
             }
 
             EndUndoCollection();
-            control.Refresh();
-            control.Repick();
+
+            UpdateSelection(REDRAW_PICKING);
         }
 
         public void GrowSelection()
@@ -942,7 +954,7 @@ namespace SpotLight.EditorDrawables
                 obj.SelectDefault(control);
             }
 
-            control.Refresh();
+            UpdateSelection(REDRAW);
         }
 
         public void SelectAllLinked()
@@ -997,7 +1009,7 @@ namespace SpotLight.EditorDrawables
                 }
             }
 
-            control.Refresh();
+            UpdateSelection(REDRAW);
         }
 
         public class DuplicationInfo

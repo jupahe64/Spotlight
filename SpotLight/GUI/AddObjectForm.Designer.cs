@@ -33,7 +33,7 @@
             this.ObjDBListView = new BrightIdeasSoftware.FastObjectListView();
             this.ClassNameColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.EnglishNameColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.CategoryColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.ObjListColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchLabel = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
@@ -103,7 +103,7 @@
             // 
             this.ObjDBListView.AllColumns.Add(this.ClassNameColumn);
             this.ObjDBListView.AllColumns.Add(this.EnglishNameColumn);
-            this.ObjDBListView.AllColumns.Add(this.CategoryColumn);
+            this.ObjDBListView.AllColumns.Add(this.ObjListColumn);
             this.ObjDBListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -141,11 +141,12 @@
             this.EnglishNameColumn.Text = "English Name";
             this.EnglishNameColumn.Width = 109;
             // 
-            // CategoryColumn
+            // ObjListColumn
             // 
-            this.CategoryColumn.IsEditable = false;
-            this.CategoryColumn.IsVisible = false;
-            this.CategoryColumn.MinimumWidth = 30;
+            this.ObjListColumn.IsEditable = false;
+            this.ObjListColumn.IsVisible = false;
+            this.ObjListColumn.MinimumWidth = 30;
+            this.ObjListColumn.Text = "List";
             // 
             // SearchTextBox
             // 
@@ -522,7 +523,7 @@
         private BrightIdeasSoftware.FastObjectListView ObjDBListView;
         private BrightIdeasSoftware.OLVColumn ClassNameColumn;
         private BrightIdeasSoftware.OLVColumn EnglishNameColumn;
-        private BrightIdeasSoftware.OLVColumn CategoryColumn;
+        private BrightIdeasSoftware.OLVColumn ObjListColumn;
         private BrightIdeasSoftware.OLVColumn olvColumn1;
         private BrightIdeasSoftware.OLVColumn olvColumn2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;

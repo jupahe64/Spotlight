@@ -73,7 +73,7 @@ namespace SpotLight.Database
         /// <summary>
         /// The Latest version of this database
         /// </summary>
-        public static Version LatestVersion { get; } = new Version(1, 9);
+        public static Version LatestVersion { get; } = new Version(1, 10);
 
         /// <summary>
         /// Create an empty Object Parameters File
@@ -193,36 +193,39 @@ namespace SpotLight.Database
 
             Dictionary<string, List<ObjectInfo>> MAPinfosByListName = new Dictionary<string, List<ObjectInfo>>()
             {
-                ["AreaList"] = new List<ObjectInfo>(),
-                ["CheckPointList"] = new List<ObjectInfo>(),
-                ["DemoObjList"] = new List<ObjectInfo>(),
-                ["GoalList"] = new List<ObjectInfo>(),
-                ["ObjectList"] = new List<ObjectInfo>(),
-                ["PlayerList"] = new List<ObjectInfo>(),
-                ["SkyList"] = new List<ObjectInfo>(),
-                ["Links"] = new List<ObjectInfo>()
+                [nameof(ObjList.AreaList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.CheckPointList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.DemoList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.GoalList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.Links)] = new List<ObjectInfo>(),
+                [nameof(ObjList.ObjectList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.PlayerList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.RailList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.SkyList)] = new List<ObjectInfo>(),
+
+#if ODYSSEY
+                [nameof(ObjList.DemoObjList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.NatureList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.PlayerStartInfoList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.CapMessageList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.MapIconList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.SceneWatchObjList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.ScenarioStartCameraList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.PlayerAffectObjList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.RaceList)] = new List<ObjectInfo>(),
+#endif
             };
             Dictionary<string, List<ObjectInfo>> DESIGNinfosByListName = new Dictionary<string, List<ObjectInfo>>()
             {
-                ["AreaList"] = new List<ObjectInfo>(),
-                ["CheckPointList"] = new List<ObjectInfo>(),
-                ["DemoObjList"] = new List<ObjectInfo>(),
-                ["GoalList"] = new List<ObjectInfo>(),
-                ["ObjectList"] = new List<ObjectInfo>(),
-                ["PlayerList"] = new List<ObjectInfo>(),
-                ["SkyList"] = new List<ObjectInfo>(),
-                ["Links"] = new List<ObjectInfo>()
+                [nameof(ObjList.AreaList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.Links)] = new List<ObjectInfo>(),
+                [nameof(ObjList.ObjectList)] = new List<ObjectInfo>(),
             };
             Dictionary<string, List<ObjectInfo>> SOUNDinfosByListName = new Dictionary<string, List<ObjectInfo>>()
             {
-                ["AreaList"] = new List<ObjectInfo>(),
-                ["CheckPointList"] = new List<ObjectInfo>(),
-                ["DemoObjList"] = new List<ObjectInfo>(),
-                ["GoalList"] = new List<ObjectInfo>(),
-                ["ObjectList"] = new List<ObjectInfo>(),
-                ["PlayerList"] = new List<ObjectInfo>(),
-                ["SkyList"] = new List<ObjectInfo>(),
-                ["Links"] = new List<ObjectInfo>()
+                [nameof(ObjList.AreaList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.Links)] = new List<ObjectInfo>(),
+                [nameof(ObjList.ObjectList)] = new List<ObjectInfo>(),
             };
 
             for (int i = 0; i < Zones.Length; i++)
@@ -272,12 +275,14 @@ namespace SpotLight.Database
 
         private void CollectObjectParameter(ref ObjectInfo info, ObjList objList, Category category)
         {
-            if (ObjectParameters.TryGetValue(info.ClassName, out ObjectParam param))
+            ObjectParam param;
+
+            if (ObjectParameters.TryGetValue(info.ClassName, out param))
             {
-                if (string.IsNullOrEmpty(info.ObjectName) && !param.ObjectNames.Contains(info.ObjectName))
+                if (!string.IsNullOrEmpty(info.ObjectName) && !param.ObjectNames.Contains(info.ObjectName))
                     param.ObjectNames.Add(info.ObjectName);
 
-                if (string.IsNullOrEmpty(info.ModelName) && !param.ModelNames.Contains(info.ModelName))
+                if (!string.IsNullOrEmpty(info.ModelName) && !param.ModelNames.Contains(info.ModelName))
                     param.ModelNames.Add(info.ModelName);
 
                 foreach (var propertyEntry in info.PropertyEntries)
@@ -294,26 +299,29 @@ namespace SpotLight.Database
                     if (!param.LinkNames.Contains(key))
                         param.LinkNames.Add(key);
                 }
+
+                if(param.ObjList == ObjList.Links)
+                    param.ObjList = objList;
             }
             else
             {
-                ObjectParam OP = new ObjectParam() { ClassName = info.ClassName, Category = category};
-                OP.ObjectNames.Add(info.ObjectName);
+                param = new ObjectParam() { ClassName = info.ClassName, Category = category};
+                param.ObjectNames.Add(info.ObjectName);
 
                 if (!string.IsNullOrEmpty(info.ModelName))
-                    OP.ModelNames.Add(info.ModelName);
+                    param.ModelNames.Add(info.ModelName);
 
                 foreach (var propertyEntry in info.PropertyEntries)
                 {
                     if (TypeDef.TryGetFromNodeType(propertyEntry.Value.NodeType, out TypeDef typeDef))
-                        OP.Properties.Add(new PropertyDef(propertyEntry.Key, typeDef));
+                        param.Properties.Add(new PropertyDef(propertyEntry.Key, typeDef));
                 }
 
                 foreach (string key in info.LinkEntries.Keys)
-                    OP.LinkNames.Add(key);
+                    param.LinkNames.Add(key);
 
-                OP.ObjList = objList;
-                ObjectParameters.Add(info.ClassName, OP);
+                param.ObjList = objList;
+                ObjectParameters.Add(info.ClassName, param);
             }
         }
 
@@ -390,7 +398,7 @@ namespace SpotLight.Database
             {
                 foreach (var propertyEntry in info.PropertyEntries)
                 {
-                    if (!param.Properties.Any(O => O.Name == propertyEntry.Key))
+                    if (propertyEntry.Key !="Priority" && !param.Properties.Any(O => O.Name == propertyEntry.Key))
                     {
                         if (TypeDef.TryGetFromNodeType(propertyEntry.Value.NodeType, out TypeDef typeDef))
                             param.Properties.Add(new PropertyDef(propertyEntry.Key, typeDef));
@@ -409,8 +417,11 @@ namespace SpotLight.Database
 
                 foreach (var propertyEntry in info.PropertyEntries)
                 {
-                    if (TypeDef.TryGetFromNodeType(propertyEntry.Value.NodeType, out TypeDef typeDef))
-                        OP.Properties.Add(new PropertyDef(propertyEntry.Key, typeDef));
+                    if (propertyEntry.Key != "Priority")
+                    {
+                        if (TypeDef.TryGetFromNodeType(propertyEntry.Value.NodeType, out TypeDef typeDef))
+                            OP.Properties.Add(new PropertyDef(propertyEntry.Key, typeDef));
+                    }
                 }
 
                 foreach (string key in info.LinkEntries.Keys)
@@ -614,11 +625,21 @@ namespace SpotLight.Database
                     objList = zone.ObjLists[listName];
                     return true;
                 }
+#if ODYSSEY
+                else
+                {
+                    var newList = new ObjectList();
+                    zone.ObjLists.Add(listName, newList);
+                    objList = newList;
+                    return true;
+                }
+#else
                 else
                 {
                     objList = null;
                     return false;
                 }
+#endif
             }
         }
 
@@ -893,8 +914,16 @@ namespace SpotLight.Database
         /// </summary>
         RailList,
 
+        //Odyssey exclusives
         DemoObjList,
-        NatureList
+        NatureList,
+        PlayerStartInfoList,
+        CapMessageList,
+        MapIconList,
+        SceneWatchObjList,
+        ScenarioStartCameraList,
+        PlayerAffectObjList,
+        RaceList
     }
 
     public enum Category : byte

@@ -104,12 +104,21 @@ namespace SpotLight.GUI
                 "Skies",
                 "Linkables",
                 "Rails",
-                "Cutscene Objects",
-                "Nature Objects",
+
+                "DemoObjList",
+                "NatureList",
+                "PlayerStartInfoList",
+                "CapMessageList",
+                "MapIconList",
+                "SceneWatchObjList",
+                "ScenarioStartCameraList",
+                "PlayerAffectObjList",
+                "RaceList"
             };
 
-            CategoryColumn.AspectGetter = (o) => (int)(o as IParameter).ObjList;
-            CategoryColumn.AspectToStringConverter = (o) => categories[(int)o];
+            ObjListColumn.AspectGetter = (o) => (int)(o as IParameter).ObjList;
+            //CategoryColumn.AspectToStringConverter = (o) => categories[(int)o];
+            ObjListColumn.AspectToStringConverter = (o) => ((ObjList)(int)o).ToString();
             #endregion
 
             #region search engine
@@ -123,7 +132,7 @@ namespace SpotLight.GUI
                     List<IParameter> beginsWithTerm = new List<IParameter>();
                     List<IParameter> containsTerm = new List<IParameter>();
 
-                    foreach (IParameter parameter in ObjDBListView.Objects)
+                    foreach (IParameter parameter in GetParameterList())
                     {
                         var className = parameter.ClassName;
                         var englishName = Program.InformationDB.GetInformation(className).EnglishName ?? className;
@@ -140,7 +149,7 @@ namespace SpotLight.GUI
                     beginsWithTerm.AddRange(containsTerm);
 
                     ObjDBListView.ShowGroups = false;
-                    CategoryColumn.IsVisible = true;
+                    ObjListColumn.IsVisible = true;
 
                     ObjDBListView.SetObjects(beginsWithTerm);
                     ObjDBListView.RebuildColumns();
@@ -148,7 +157,7 @@ namespace SpotLight.GUI
                 else
                 {
                     ObjDBListView.ShowGroups = true;
-                    CategoryColumn.IsVisible = false;
+                    ObjListColumn.IsVisible = false;
 
                     PopulateObjDBListView();
 
@@ -306,24 +315,27 @@ namespace SpotLight.GUI
 
         private void PopulateObjDBListView()
         {
+            ObjDBListView.SetObjects(GetParameterList());
+
+            ObjDBListView.BuildGroups(ObjListColumn, SortOrder.None);
+        }
+
+        private IEnumerable<IParameter> GetParameterList()
+        {
             if (ObjectTypeTabControl.SelectedTab == ObjectsTab)
             {
-                ObjDBListView.SetObjects(Program.ParameterDB.ObjectParameters.Values);
-
-                ObjDBListView.BuildGroups(CategoryColumn, SortOrder.None);
+                return Program.ParameterDB.ObjectParameters.Values;
             }
             else if (ObjectTypeTabControl.SelectedTab == RailsTab)
             {
-                ObjDBListView.SetObjects(Program.ParameterDB.RailParameters.Values);
-
-                ObjDBListView.BuildGroups(CategoryColumn, SortOrder.None);
+                return Program.ParameterDB.RailParameters.Values;
             }
             else if (ObjectTypeTabControl.SelectedTab == AreasTab)
             {
-                ObjDBListView.SetObjects(Program.ParameterDB.AreaParameters.Values);
-
-                ObjDBListView.BuildGroups(CategoryColumn, SortOrder.None);
+                return Program.ParameterDB.AreaParameters.Values;
             }
+            else
+                throw new Exception();
         }
 
         private void SplitContainer2_Panel2_Paint(object sender, PaintEventArgs e)

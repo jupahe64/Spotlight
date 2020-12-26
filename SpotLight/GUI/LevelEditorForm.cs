@@ -308,6 +308,23 @@ namespace SpotLight
 
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
+#if ODYSSEY
+            MainSceneListView.RootLists.Clear();
+
+            MainSceneListView.RootLists.Add("Common_Linked", currentScene.EditZone.LinkedObjects);
+
+            if (ZoneListBox.SelectedIndex == 0) //main zone selected
+                MainSceneListView.RootLists.Add("Common_ZoneList", currentScene.ZonePlacements);
+
+            foreach (KeyValuePair<string, ObjectList> keyValuePair in currentScene.EditZone.ObjLists)
+            {
+                MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+
+            MainSceneListView.UpdateComboBoxItems();
+#endif
+
+
             var selection = new HashSet<object>();
 
             foreach (var item in currentScene.SelectedObjects)
@@ -370,7 +387,6 @@ namespace SpotLight
                 SpotlightToolStripStatusLabel.Text = SelectedText+$" \"{selected.ToString()}\".";
 
 
-                MainSceneListView.CurrentList.Contains(selected);
                 MainSceneListView.TryEnsureVisible(selected);
             }
             MainSceneListView.Refresh();
