@@ -288,9 +288,12 @@ namespace SpotLight.ObjectRenderers
                             passes[shapeIndex] = Pass.OPAQUE;
                             break;
                     }
+                    bool use_vtx_col = true;
 
-                    bool use_vtx_col = mdl.Materials[shape.MaterialIndex].ShaderAssign.ShaderOptions["vtxcolor_type"].String != "-1";
-
+#if ODYSSEY
+                    if(mdl.Materials[shape.MaterialIndex].ShaderAssign.ShaderOptions.TryGetValue("vtxcolor_type", out ResString resString))
+                        use_vtx_col = resString.String != "-1";
+#endif
                     Matrix4[] transforms = GetTransforms(mdl.Skeleton.Bones.Values.ToArray());
 
                     //Create a buffer instance which stores all the buffer data
@@ -521,7 +524,7 @@ namespace SpotLight.ObjectRenderers
 
             public void Draw(GL_ControlModern control, Pass pass, Vector4 highlightColor)
             {
-                #region model rendering prepare
+#region model rendering prepare
                 switch (pass)
                 {
                     case Pass.OPAQUE:
@@ -556,7 +559,7 @@ namespace SpotLight.ObjectRenderers
                         control.CurrentShader.SetVector4("color", control.NextPickingColor());
                         break;
                 }
-                #endregion
+#endregion
 
                 for (int i = 0; i<vaos.Length; i++)
                 {
@@ -906,7 +909,7 @@ namespace SpotLight.ObjectRenderers
                     }
                 }
 
-                #region channel reassign
+#region channel reassign
 
                 byte[] sources = new byte[] { 0, 0, 0, 0, 0, 0xFF };
 
@@ -923,7 +926,7 @@ namespace SpotLight.ObjectRenderers
                     deswizzled[i + 3] = sources[(int)texture.CompSelA];
                     //deswizzled[i + 3] = 0xFF;
                 }
-                #endregion
+#endregion
 
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, (int)texture.Width, (int)texture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, deswizzled);
 

@@ -846,16 +846,16 @@ namespace SpotLight.Level
                         {
                             ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
                             obj.Save(alreadyWrittenObjs, writer, objNode, false);
-                            categoryNode.AddDictionaryNodeRef(objNode);
+                            objListNode.AddDictionaryNodeRef(objNode);
                             objsNode.AddDictionaryNodeRef(objNode);
                         }
                         else
                         {
-                            categoryNode.AddDictionaryRef(obj);
+                            objListNode.AddDictionaryRef(obj);
                             objsNode.AddDictionaryRef(obj);
                         }
                     }
-                    rootNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), categoryNode, true);
+                    rootNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), objListNode, true);
 #endif
                 }
 
