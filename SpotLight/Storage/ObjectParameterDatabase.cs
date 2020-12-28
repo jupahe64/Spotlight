@@ -10,6 +10,7 @@ using static BYAML.ByamlFile;
 using static BYAML.ByamlIterator;
 using static SpotLight.Level.LevelIO;
 using static SpotLight.ObjectParameterForm;
+using GL_EditorFramework;
 
 /* File Format .sopd
  * ----------------------------------------------
@@ -241,13 +242,13 @@ namespace SpotLight.Database
 
 
 
-                foreach (KeyValuePair<string, List<ObjectInfo>> keyValuePair in infosByListName)
+                foreach (var (listName, infos) in infosByListName)
                 {
-                    ObjList objList = (ObjList)Enum.Parse(typeof(ObjList), keyValuePair.Key);
+                    ObjList objList = (ObjList)Enum.Parse(typeof(ObjList), listName);
 
-                    for (int j = 0; j < keyValuePair.Value.Count; j++)
+                    for (int j = 0; j < infos.Count; j++)
                     {
-                        ObjectInfo info = keyValuePair.Value[j];
+                        ObjectInfo info = infos[j];
 
                         if (info.ID.StartsWith("rail"))
                         {

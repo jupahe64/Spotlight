@@ -169,14 +169,14 @@ namespace SpotLight.EditorDrawables
             {
                 DictionaryNode linksNode = writer.CreateDictionaryNode(Links);
 
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
+                foreach (var (linkName, link) in Links)
                 {
-                    if (keyValuePair.Value.Count == 0)
+                    if (link.Count == 0)
                         continue;
 
-                    ArrayNode linkNode = writer.CreateArrayNode(keyValuePair.Value);
+                    ArrayNode linkNode = writer.CreateArrayNode(link);
 
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    foreach (I3dWorldObject obj in link)
                     {
                         if (!alreadyWrittenObjs.Contains(obj))
                         {
@@ -188,7 +188,7 @@ namespace SpotLight.EditorDrawables
                             linkNode.AddDictionaryRef(obj);
                     }
 
-                    linksNode.AddArrayNodeRef(keyValuePair.Key, linkNode, true);
+                    linksNode.AddArrayNodeRef(linkName, linkNode, true);
                 }
                 objNode.AddDictionaryNodeRef("Links", linksNode, true);
             }
@@ -208,12 +208,12 @@ namespace SpotLight.EditorDrawables
 
             if (Properties.Count!=0)
             {
-                foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
+                foreach (KeyValuePair<string, dynamic> property in Properties)
                 {
-                    if(keyValuePair.Value is string && keyValuePair.Value == "")
-                        objNode.AddDynamicValue(keyValuePair.Key, null, true);
+                    if(property.Value is string && property.Value == "")
+                        objNode.AddDynamicValue(property.Key, null, true);
                     else
-                        objNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
+                        objNode.AddDynamicValue(property.Key, property.Value, true);
                 }
             }
         }
@@ -238,11 +238,11 @@ namespace SpotLight.EditorDrawables
         {
             if (Links != null)
             {
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
+                foreach (var (linkName, link) in Links)
                 {
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    foreach (I3dWorldObject obj in link)
                     {
-                        obj.AddLinkDestination(keyValuePair.Key, this);
+                        obj.AddLinkDestination(linkName, this);
                     }
                 }
             }
@@ -268,7 +268,7 @@ namespace SpotLight.EditorDrawables
 
                 Scale, scene.EditZone.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
 
-                ObjectUtils.DuplicateLinks(Links),
+                null, //ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
                 scene.EditZone);
 
@@ -752,10 +752,10 @@ namespace SpotLight.EditorDrawables
                         }
 
                         //add removed parameters to deleteInfos
-                        foreach (var keyValuePair in propertyDict)
+                        foreach (var property in propertyDict)
                         {
-                            if (!newParamNames.Contains(keyValuePair.Key))
-                                deleteInfos.Add(new RevertableDictDeletion.DeleteInfo(keyValuePair.Value, keyValuePair.Key));
+                            if (!newParamNames.Contains(property.Key))
+                                deleteInfos.Add(new RevertableDictDeletion.DeleteInfo(property.Value, property.Key));
                         }
 
                         //add everything to undo
@@ -782,11 +782,11 @@ namespace SpotLight.EditorDrawables
                         //regenerate propertyDict by merging the newParameters and the oterParameters
                         propertyDict.Clear();
 
-                        foreach (var keyValuePair in newParameters)
-                            propertyDict.Add(keyValuePair.Key, keyValuePair.Value);
+                        foreach (var parameter in newParameters)
+                            propertyDict.Add(parameter.Key, parameter.Value);
 
-                        foreach (var keyValuePair in otherParameters)
-                            propertyDict.Add(keyValuePair.Key, keyValuePair.Value);
+                        foreach (var parameter in otherParameters)
+                            propertyDict.Add(parameter.Key, parameter.Value);
                         
                         //update keys
                         propertyDictKeys = propertyDict.Keys.ToArray();
@@ -809,11 +809,11 @@ namespace SpotLight.EditorDrawables
                 if (capture == null)
                     return;
 
-                foreach (var keyValuePair in capture)
+                foreach (var capturedProperty in capture)
                 {
-                    if(keyValuePair.Value!= propertyDict[keyValuePair.Key])
+                    if(capturedProperty.Value!= propertyDict[capturedProperty.Key])
                     {
-                        scene.AddToUndo(new RevertableDictEntryChange(keyValuePair.Key, propertyDict, keyValuePair.Value));
+                        scene.AddToUndo(new RevertableDictEntryChange(capturedProperty.Key, propertyDict, capturedProperty.Value));
                     }
 
                 }
@@ -842,10 +842,10 @@ namespace SpotLight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in obj.Links)
+                foreach (var (linkName, link) in obj.Links)
                 {
-                    if (control.Link(keyValuePair.Key))
-                        scene.EnterList(keyValuePair.Value);
+                    if (control.Link(linkName))
+                        scene.EnterList(link);
                 }
             }
 

@@ -122,12 +122,12 @@ namespace SpotLight.Level
             ZoneBatch.Clear();
 
             SceneObjectIterState.InLinks = false;
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
+            foreach (var (listName, objList) in ObjLists)
             {
-                if (keyValuePair.Key == MAP_PREFIX + "SkyList")
+                if (listName == MAP_PREFIX + "SkyList")
                     continue;
 
-                foreach (I3dWorldObject obj in keyValuePair.Value)
+                foreach (I3dWorldObject obj in objList)
                     obj.AddToZoneBatch(ZoneBatch);
             }
             SceneObjectIterState.InLinks = true;
@@ -370,22 +370,22 @@ namespace SpotLight.Level
 
             string stageFileName = LevelName + categoryName + ".byml";
 
-            foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
+            foreach (KeyValuePair<string, byte[]> fileEntry in sarc.Files)
             {
-                if (keyValuePair.Key == stageFileName)
+                if (fileEntry.Key == stageFileName)
                 {
                     Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
 
-                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(fileEntry.Value));
                     LoadStageByml(byamlIter, prefix, linkedObjsByID, objectsByReference);
                 }
                 else
                 {
-                    if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
+                    if ((fileEntry.Value[0] << 8 | fileEntry.Value[1]) == ByamlFile.BYAML_MAGIC)
                     {
-                        //if(keyValuePair.Key == "CameraParam.byml")
+                        //if(fileEntry.Key == "CameraParam.byml")
                         //{
-                        //    ByamlIterator byamlIterator = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                        //    ByamlIterator byamlIterator = new ByamlIterator(new MemoryStream(fileEntry.Value));
 
                         //    Dictionary<string, dynamic> cameraParam = new Dictionary<string, dynamic>();
 
@@ -410,13 +410,13 @@ namespace SpotLight.Level
                         //            cameraParam.Add(entry.Key, entry.Parse());
                         //    }
 
-                        //    ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, cameraParam);
+                        //    ExtraFiles[extraFilesIndex].Add(fileEntry.Key, cameraParam);
                         //}
                         //else
-                            ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                            ExtraFiles[extraFilesIndex].Add(fileEntry.Key, ByamlFile.FastLoadN(new MemoryStream(fileEntry.Value)));
                     }
                     else
-                        ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                        ExtraFiles[extraFilesIndex].Add(fileEntry.Key, fileEntry.Value);
                 }
             }
 
@@ -442,36 +442,36 @@ namespace SpotLight.Level
             string stageFileNameDesign = LevelName + "Design.byml";
             string stageFileNameSound = LevelName + "Sound.byml";
 
-            foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
+            foreach (KeyValuePair<string, byte[]> fileEntry in sarc.Files)
             {
-                if (keyValuePair.Key == stageFileNameMap)
+                if (fileEntry.Key == stageFileNameMap)
                 {
                     Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
 
-                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(fileEntry.Value));
                     LoadStageByml(byamlIter, MAP_PREFIX, linkedObjsByID, objectsByReference);
                     HasCategoryMap = true;
                 }
-                else if (keyValuePair.Key == stageFileNameDesign)
+                else if (fileEntry.Key == stageFileNameDesign)
                 {
                     Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
 
-                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(fileEntry.Value));
                     LoadStageByml(byamlIter, DESIGN_PREFIX, linkedObjsByID, objectsByReference);
                     HasCategoryDesign = true;
                 }
-                else if (keyValuePair.Key == stageFileNameSound)
+                else if (fileEntry.Key == stageFileNameSound)
                 {
                     Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
 
-                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(keyValuePair.Value));
+                    ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(fileEntry.Value));
                     LoadStageByml(byamlIter, SOUND_PREFIX, linkedObjsByID, objectsByReference);
                     HasCategorySound = true;
                 }
                 else
                 {
                     int extraFilesIndex;
-                    switch (keyValuePair.Key)
+                    switch (fileEntry.Key)
                     {
                         case "CameraParam.byml":
                         case "InterpoleParam.byml":
@@ -482,10 +482,10 @@ namespace SpotLight.Level
                             break;
                     }
 
-                    if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
-                        ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                    if ((fileEntry.Value[0] << 8 | fileEntry.Value[1]) == ByamlFile.BYAML_MAGIC)
+                        ExtraFiles[extraFilesIndex].Add(fileEntry.Key, ByamlFile.FastLoadN(new MemoryStream(fileEntry.Value)));
                     else
-                        ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                        ExtraFiles[extraFilesIndex].Add(fileEntry.Key, fileEntry.Value);
                 }
             }
 
@@ -662,8 +662,8 @@ namespace SpotLight.Level
                 Files = new Dictionary<string, byte[]>()
             };
 
-            foreach (KeyValuePair<string, dynamic> keyValuePair in ExtraFiles[extraFilesIndex])
-                SaveExtraFile(sarcData, keyValuePair);
+            foreach (KeyValuePair<string, dynamic> fileEntry in ExtraFiles[extraFilesIndex])
+                SaveExtraFile(sarcData, fileEntry);
 
             using (MemoryStream stream = new MemoryStream())
             {
@@ -677,22 +677,22 @@ namespace SpotLight.Level
             return true;
         }
 
-        private static void SaveExtraFile(SarcData sarcData, KeyValuePair<string, dynamic> keyValuePair)
+        private static void SaveExtraFile(SarcData sarcData, KeyValuePair<string, dynamic> fileEntry)
         {
-            if (keyValuePair.Value is BymlFileData)
+            if (fileEntry.Value is BymlFileData)
             {
                 using (MemoryStream stream = new MemoryStream())
                 {
-                    ByamlFile.FastSaveN(stream, keyValuePair.Value);
-                    sarcData.Files.Add(keyValuePair.Key, stream.ToArray());
+                    ByamlFile.FastSaveN(stream, fileEntry.Value);
+                    sarcData.Files.Add(fileEntry.Key, stream.ToArray());
                 }
             }
-            else if (keyValuePair.Value is byte[])
+            else if (fileEntry.Value is byte[])
             {
-                sarcData.Files.Add(keyValuePair.Key, keyValuePair.Value);
+                sarcData.Files.Add(fileEntry.Key, fileEntry.Value);
             }
             else
-                throw new Exception("The extra file " + keyValuePair.Key + "has no way to save");
+                throw new Exception("The extra file " + fileEntry.Key + "has no way to save");
         }
 
         private bool SaveCombined()
@@ -705,8 +705,8 @@ namespace SpotLight.Level
             };
             for (int extraFilesIndex = 0; extraFilesIndex < 3; extraFilesIndex++)
             {
-                foreach (KeyValuePair<string, dynamic> keyValuePair in ExtraFiles[extraFilesIndex])
-                    SaveExtraFile(sarcData, keyValuePair);
+                foreach (KeyValuePair<string, dynamic> fileEntry in ExtraFiles[extraFilesIndex])
+                    SaveExtraFile(sarcData, fileEntry);
             }
 
             if (HasCategoryMap)
@@ -809,20 +809,20 @@ namespace SpotLight.Level
             {
                 ByamlNodeWriter.DictionaryNode scenarioNode = writer.CreateDictionaryNode();
 #endif
-                foreach (KeyValuePair<string, ObjectList> keyValuePair in ObjLists)
+                foreach (var (listName, objList) in ObjLists)
                 {
 #if ODYSSEY
-                    if (keyValuePair.Value.Count==0)
+                    if (objList.Count==0)
                         continue; //level files in Odyssey don't contain empty lists
 #endif
 
-                    if (!keyValuePair.Key.StartsWith(prefix)) //ObjList is not part of the Category
+                    if (!listName.StartsWith(prefix)) //ObjList is not part of the Category
                         continue;
 
                     ByamlNodeWriter.ArrayNode objListNode = writer.CreateArrayNode();
 
 #if ODYSSEY
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    foreach (I3dWorldObject obj in objList)
                     {
                         if ((obj.ScenarioBitField & (ushort)(1 << scenario)) == 0)
                             continue; //the object doesn't appear in this scenario
@@ -838,9 +838,9 @@ namespace SpotLight.Level
                             objListNode.AddDictionaryRef(obj);
                         }
                     }
-                    scenarioNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), objListNode, true);
+                    scenarioNode.AddArrayNodeRef(listName.Substring(prefix.Length), objListNode, true);
 #else
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    foreach (I3dWorldObject obj in objList)
                     {
                         if (!alreadyWrittenObjs.Contains(obj))
                         {
@@ -855,7 +855,7 @@ namespace SpotLight.Level
                             objsNode.AddDictionaryRef(obj);
                         }
                     }
-                    rootNode.AddArrayNodeRef(keyValuePair.Key.Substring(prefix.Length), objListNode, true);
+                    rootNode.AddArrayNodeRef(listName.Substring(prefix.Length), objListNode, true);
 #endif
                 }
 
@@ -899,15 +899,15 @@ namespace SpotLight.Level
 
                     string stageFileName = LevelName + categoryName + ".byml";
 
-                    foreach (KeyValuePair<string, byte[]> keyValuePair in sarc.Files)
+                    foreach (var (arcFileName, arcFileData) in sarc.Files)
                     {
-                        if (keyValuePair.Key != stageFileName)
+                        if (arcFileName != stageFileName)
                         {
                             //TODO handle CameraParam
-                            if ((keyValuePair.Value[0] << 8 | keyValuePair.Value[1]) == ByamlFile.BYAML_MAGIC)
-                                ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, ByamlFile.FastLoadN(new MemoryStream(keyValuePair.Value)));
+                            if ((arcFileData[0] << 8 | arcFileData[1]) == ByamlFile.BYAML_MAGIC)
+                                ExtraFiles[extraFilesIndex].Add(arcFileName, ByamlFile.FastLoadN(new MemoryStream(arcFileData)));
                             else
-                                ExtraFiles[extraFilesIndex].Add(keyValuePair.Key, keyValuePair.Value);
+                                ExtraFiles[extraFilesIndex].Add(arcFileName, arcFileData);
                         }
                     }
                 }

@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using SZS;
 using WinInput = System.Windows.Input;
+using GL_EditorFramework;
 
 namespace SpotLight.EditorDrawables
 {
@@ -687,7 +688,7 @@ namespace SpotLight.EditorDrawables
 
                 objList.AddRange(duplicates.Values);
 
-                foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+                foreach (var (orignal, copy) in duplicates) totalDuplicates.Add(orignal, copy);
 
                 if (duplicates.Count > 0)
                     objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objList, duplicates.Values.ToArray()));
@@ -701,7 +702,7 @@ namespace SpotLight.EditorDrawables
                 obj.DuplicateSelected(duplicates, this);
             }
 
-            foreach (var keyValuePair in duplicates) totalDuplicates.Add(keyValuePair.Key, keyValuePair.Value);
+            foreach (var (orignal, copy) in duplicates) totalDuplicates.Add(orignal, copy);
 
             if (duplicates.Count > 0)
                 objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(EditZone.LinkedObjects, duplicates.Values.ToArray()));
@@ -752,6 +753,7 @@ namespace SpotLight.EditorDrawables
         static SM3DWorldZone copySrcZone = null;
 
         static ZoneTransform copySrcZoneTransform;
+        static Matrix4 copySrcCameraMatrix;
         private SM3DWorldZone mainZone;
 
         /// <summary>
@@ -776,18 +778,17 @@ namespace SpotLight.EditorDrawables
             copiedObjects = new List<(string listName, Dictionary<I3dWorldObject, I3dWorldObject> copies)>();
 
             SceneObjectIterState.InLinks = false;
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in EditZone.ObjLists)
+            foreach (var (listName, objList) in EditZone.ObjLists)
             {
                 Dictionary<I3dWorldObject, I3dWorldObject> copies = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
-                foreach (I3dWorldObject obj in keyValuePair.Value)
+                foreach (I3dWorldObject obj in objList)
                 {
-                    obj.LinkDestinations.Clear();
                     obj.DuplicateSelected(copies, this, null, false);
                 }
 
                 if (copies.Count > 0)
-                    copiedObjects.Add((keyValuePair.Key, copies));
+                    copiedObjects.Add((listName, copies));
             }
             SceneObjectIterState.InLinks = true;
 
@@ -862,15 +863,15 @@ namespace SpotLight.EditorDrawables
 
                     Dictionary<I3dWorldObject, I3dWorldObject> duplicates = new Dictionary<I3dWorldObject, I3dWorldObject>();
 
-                    foreach (I3dWorldObject obj in copies.Values)
+                    foreach (I3dWorldObject copy in copies.Values)
                     {
-                        obj.LinkDestinations.Clear();
-                        obj.DuplicateSelected(duplicates, this, zoneToZoneTransform, false); //yep we need to duplicate the copies
+                        copy.LinkDestinations.Clear();
+                        copy.DuplicateSelected(duplicates, this, zoneToZoneTransform, false); //yep we need to duplicate the copies
                     }
 
                     objectList.AddRange(duplicates.Values);
 
-                    foreach (var keyValuePair in copies) totalDuplicates.Add(keyValuePair.Key, duplicates[keyValuePair.Value]);
+                    foreach (var (original, copy) in copies) totalDuplicates.Add(original, copy);
 
                     if (duplicates.Count > 0)
                         objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objectList, duplicates.Values.ToArray()));
@@ -939,9 +940,9 @@ namespace SpotLight.EditorDrawables
             {
                 if (obj.Links != null && obj.IsSelected())
                 {
-                    foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in obj.Links)
+                    foreach (var (linkName, link) in obj.Links)
                     {
-                        foreach (I3dWorldObject _obj in keyValuePair.Value)
+                        foreach (I3dWorldObject _obj in link)
                         {
                             objectsToSelect.Add(_obj);
                         }
@@ -993,9 +994,9 @@ namespace SpotLight.EditorDrawables
                     {
                         if (obj.Links != null)
                         {
-                            foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in obj.Links)
+                            foreach (var (linkName, link) in obj.Links)
                             {
-                                foreach (I3dWorldObject _obj in keyValuePair.Value)
+                                foreach (I3dWorldObject _obj in link)
                                 {
                                     if (!_obj.IsSelected())
                                     {

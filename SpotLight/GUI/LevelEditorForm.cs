@@ -316,9 +316,9 @@ namespace SpotLight
             if (ZoneListBox.SelectedIndex == 0) //main zone selected
                 MainSceneListView.RootLists.Add("Common_ZoneList", currentScene.ZonePlacements);
 
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in currentScene.EditZone.ObjLists)
+            foreach (var (listName, objList) in currentScene.EditZone.ObjLists)
             {
-                MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
+                MainSceneListView.RootLists.Add(listName, objList);
             }
 
             MainSceneListView.UpdateComboBoxItems();
@@ -1104,9 +1104,9 @@ namespace SpotLight
             if (ZoneListBox.SelectedIndex == 0) //main zone selected
                 MainSceneListView.RootLists.Add("Common_ZoneList", currentScene.ZonePlacements);
 
-            foreach (KeyValuePair<string, ObjectList> keyValuePair in zone.ObjLists)
+            foreach (var (listName, objList) in zone.ObjLists)
             {
-                MainSceneListView.RootLists.Add(keyValuePair.Key, keyValuePair.Value);
+                MainSceneListView.RootLists.Add(listName, objList);
             }
 
             MainSceneListView.UpdateComboBoxItems();

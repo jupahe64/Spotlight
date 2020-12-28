@@ -73,15 +73,15 @@ namespace SpotLight.EditorDrawables
 
             Properties = new Dictionary<string, dynamic>();
 
-            foreach (var keyValuePair in info.PropertyEntries)
+            foreach (var propertyEntry in info.PropertyEntries)
             {
-                switch (keyValuePair.Key)
+                switch (propertyEntry.Key)
                 {
                     case "Priority":
-                        Priority = keyValuePair.Value.Parse();
+                        Priority = propertyEntry.Value.Parse();
                         continue;
                     default:
-                        Properties.Add(keyValuePair.Key, keyValuePair.Value.Parse());
+                        Properties.Add(propertyEntry.Key, propertyEntry.Value.Parse());
                         continue;
                 }
             }
@@ -139,14 +139,14 @@ namespace SpotLight.EditorDrawables
             {
                 DictionaryNode linksNode = writer.CreateDictionaryNode(Links);
 
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
+                foreach (var (linkName, link) in Links)
                 {
-                    if (keyValuePair.Value.Count == 0)
+                    if (link.Count == 0)
                         continue;
 
-                    ArrayNode linkNode = writer.CreateArrayNode(keyValuePair.Value);
+                    ArrayNode linkNode = writer.CreateArrayNode(link);
 
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    foreach (I3dWorldObject obj in link)
                     {
                         if (!alreadyWrittenObjs.Contains(obj))
                         {
@@ -158,7 +158,7 @@ namespace SpotLight.EditorDrawables
                             linkNode.AddDictionaryRef(obj);
                     }
 
-                    linksNode.AddArrayNodeRef(keyValuePair.Key, linkNode, true);
+                    linksNode.AddArrayNodeRef(linkName, linkNode, true);
                 }
                 objNode.AddDictionaryNodeRef("Links", linksNode, true);
             }
@@ -180,12 +180,12 @@ namespace SpotLight.EditorDrawables
 
             if (Properties.Count != 0)
             {
-                foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
+                foreach (KeyValuePair<string, dynamic> property in Properties)
                 {
-                    if (keyValuePair.Value is string && keyValuePair.Value == "")
-                        objNode.AddDynamicValue(keyValuePair.Key, null, true);
+                    if (property.Value is string && property.Value == "")
+                        objNode.AddDynamicValue(property.Key, null, true);
                     else
-                        objNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
+                        objNode.AddDynamicValue(property.Key, property.Value, true);
                 }
             }
         }
@@ -204,11 +204,11 @@ namespace SpotLight.EditorDrawables
         {
             if (Links != null)
             {
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in Links)
+                foreach (var (linkName, link) in Links)
                 {
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    foreach (I3dWorldObject obj in link)
                     {
-                        obj.AddLinkDestination(keyValuePair.Key, this);
+                        obj.AddLinkDestination(linkName, this);
                     }
                 }
             }

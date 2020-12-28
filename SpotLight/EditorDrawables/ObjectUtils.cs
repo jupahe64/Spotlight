@@ -41,12 +41,12 @@ namespace SpotLight.EditorDrawables
             if (links != null)
             {
                 newLinks = new Dictionary<string, List<I3dWorldObject>>();
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in links)
+                foreach (var (linkName, link) in links)
                 {
-                    newLinks[keyValuePair.Key] = new List<I3dWorldObject>();
-                    foreach (I3dWorldObject obj in keyValuePair.Value)
+                    newLinks[linkName] = new List<I3dWorldObject>();
+                    foreach (I3dWorldObject obj in link)
                     {
-                        newLinks[keyValuePair.Key].Add(obj);
+                        newLinks[linkName].Add(obj);
                     }
                 }
                 return newLinks;
@@ -59,8 +59,8 @@ namespace SpotLight.EditorDrawables
         {
             Dictionary<string, dynamic> newProperties = new Dictionary<string, dynamic>();
 
-            foreach (KeyValuePair<string, dynamic> keyValuePair in properties)
-                newProperties[keyValuePair.Key] = keyValuePair.Value;
+            foreach (KeyValuePair<string, dynamic> property in properties)
+                newProperties[property.Key] = property.Value;
 
             return newProperties;
         }
@@ -73,30 +73,30 @@ namespace SpotLight.EditorDrawables
 
                 bool hasDuplicate = duplicationInfo.HasDuplicate(self);
 
-                foreach (KeyValuePair<string, List<I3dWorldObject>> keyValuePair in self.Links)
+                foreach (var (linkName, link) in self.Links)
                 {
-                    I3dWorldObject[] oldLink = keyValuePair.Value.ToArray();
+                    I3dWorldObject[] oldLink = link.ToArray();
 
                     //Clear Link
-                    keyValuePair.Value.Clear();
+                    link.Clear();
 
                     //Populate Link
-                    foreach (I3dWorldObject obj in oldLink)
+                    foreach (I3dWorldObject linkedObj in oldLink)
                     {
-                        bool objHasDuplicate = duplicationInfo.TryGetDuplicate(obj, out I3dWorldObject duplicate);
+                        bool linkedObjHasDuplicate = duplicationInfo.TryGetDuplicate(linkedObj, out I3dWorldObject duplicate);
 
-                        if (!(isDuplicate && objHasDuplicate) && !(isDuplicate && !allowKeepLinksOfDuplicate))
+                        if (!(isDuplicate && linkedObjHasDuplicate) && !(isDuplicate && !allowKeepLinksOfDuplicate))
                         {
                             //Link to original
-                            keyValuePair.Value.Add(obj);
-                            obj.AddLinkDestination(keyValuePair.Key, self);
+                            link.Add(linkedObj);
+                            linkedObj.AddLinkDestination(linkName, self);
                         }
 
-                        if (objHasDuplicate && (hasDuplicate == isDuplicate))
+                        if (linkedObjHasDuplicate && (hasDuplicate == isDuplicate))
                         {
                             //Link to duplicate
-                            keyValuePair.Value.Add(duplicate);
-                            duplicate.AddLinkDestination(keyValuePair.Key, self);
+                            link.Add(duplicate);
+                            duplicate.AddLinkDestination(linkName, self);
                         }
                     }
                 }

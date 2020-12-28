@@ -107,21 +107,21 @@ namespace SpotLight.EditorDrawables
 
             Properties = new Dictionary<string, dynamic>();
 
-            foreach (var keyValuePair in info.PropertyEntries)
+            foreach (var propertyEntry in info.PropertyEntries)
             {
-                switch (keyValuePair.Key)
+                switch (propertyEntry.Key)
                 {
                     case "IsLadder":
-                        IsLadder = keyValuePair.Value.Parse();
+                        IsLadder = propertyEntry.Value.Parse();
                         continue;
                     case "IsClosed":
-                        Closed = keyValuePair.Value.Parse();
+                        Closed = propertyEntry.Value.Parse();
                         continue;
                     case "RailType":
                     case "RailPoints":
                         continue;
                     default:
-                        Properties.Add(keyValuePair.Key, keyValuePair.Value.Parse());
+                        Properties.Add(propertyEntry.Key, propertyEntry.Value.Parse());
                         continue;
                 }
             }
@@ -219,12 +219,12 @@ namespace SpotLight.EditorDrawables
 
                 if (point.Properties.Count != 0)
                 {
-                    foreach (var keyValuePair in point.Properties)
+                    foreach (var property in point.Properties)
                     {
-                        if (keyValuePair.Value is string && keyValuePair.Value == "")
-                            pointNode.AddDynamicValue(keyValuePair.Key, null, true);
+                        if (property.Value is string && property.Value == "")
+                            pointNode.AddDynamicValue(property.Key, null, true);
                         else
-                            pointNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
+                            pointNode.AddDynamicValue(property.Key, property.Value, true);
                     }
                 }
 
@@ -249,12 +249,12 @@ namespace SpotLight.EditorDrawables
 
             if (Properties.Count != 0)
             {
-                foreach (KeyValuePair<string, dynamic> keyValuePair in Properties)
+                foreach (KeyValuePair<string, dynamic> property in Properties)
                 {
-                    if (keyValuePair.Value is string && keyValuePair.Value == "")
-                        objNode.AddDynamicValue(keyValuePair.Key, null, true);
+                    if (property.Value is string && property.Value == "")
+                        objNode.AddDynamicValue(property.Key, null, true);
                     else
-                        objNode.AddDynamicValue(keyValuePair.Key, keyValuePair.Value, true);
+                        objNode.AddDynamicValue(property.Key, property.Value, true);
                 }
             }
         }
@@ -303,8 +303,8 @@ namespace SpotLight.EditorDrawables
                     //copy point properties
                     Dictionary<string, dynamic> newPointProperties = new Dictionary<string, dynamic>();
 
-                    foreach (var keyValuePair in point.Properties)
-                        newPointProperties.Add(keyValuePair.Key, keyValuePair.Value);
+                    foreach (var property in point.Properties)
+                        newPointProperties.Add(property.Key, property.Value);
 
                     newPoints.Add(new RailPoint(point.Position, point.ControlPoint1, point.ControlPoint2, newPointProperties));
                 }
@@ -313,8 +313,8 @@ namespace SpotLight.EditorDrawables
             //copy path properties
             Dictionary<string, dynamic> newPathProperties = new Dictionary<string, dynamic>();
 
-            foreach (var keyValuePair in Properties)
-                newPathProperties.Add(keyValuePair.Key, keyValuePair.Value);
+            foreach (var property in Properties)
+                newPathProperties.Add(property.Key, property.Value);
 
             duplicates[this] = new Rail(newPoints, scene.EditZone.NextRailID(), ClassName, Closed, IsLadder, newPathProperties, scene.EditZone);
 

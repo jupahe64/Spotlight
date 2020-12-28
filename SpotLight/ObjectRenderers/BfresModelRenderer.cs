@@ -165,9 +165,9 @@ namespace SpotLight.ObjectRenderers
                     {
                         Dictionary<string, int> arc = new Dictionary<string, int>();
                         texArcCache.Add(textureArc, arc);
-                        foreach(KeyValuePair<string,TextureShared> keyValuePair in new ResFile(new MemoryStream(objArc.Files[textureArc + ".bfres"])).Textures)
+                        foreach(KeyValuePair<string,TextureShared> textureEntry in new ResFile(new MemoryStream(objArc.Files[textureArc + ".bfres"])).Textures)
                         {
-                            arc.Add(keyValuePair.Key, UploadTexture(keyValuePair.Value));
+                            arc.Add(textureEntry.Key, UploadTexture(textureEntry.Value));
                         }
                     }
                 }
