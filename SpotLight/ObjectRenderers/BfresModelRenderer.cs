@@ -101,17 +101,17 @@ namespace SpotLight.ObjectRenderers
 
         public static void Submit(string modelName, Stream stream, string textureArc = null)
         {
-            try
-            {
+            //try
+            //{
                 ResFile bfres = new ResFile(stream);
 
                 if (!cache.ContainsKey(modelName) && bfres.Models.Count > 0)
                     cache[modelName] = new CachedModel(bfres, textureArc);
-            }
-            catch (Exception e) 
-            {
-                Console.WriteLine($"Error with {modelName}: {e.Message}");
-            }
+            //}
+            //catch (Exception e) 
+            //{
+            //    Console.WriteLine($"Error with {modelName}: {e.Message}");
+            //}
         }
 
         public static bool TryGetModel(string modelName, out CachedModel cachedModel)
