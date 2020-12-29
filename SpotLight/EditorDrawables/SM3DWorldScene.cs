@@ -763,7 +763,6 @@ namespace SpotLight.EditorDrawables
         static SM3DWorldZone copySrcZone = null;
 
         static ZoneTransform copySrcZoneTransform;
-        static Matrix4 copySrcCameraMatrix;
         private SM3DWorldZone mainZone;
 
         /// <summary>
@@ -855,7 +854,6 @@ namespace SpotLight.EditorDrawables
                         EditZoneTransform.PositionTransform.Inverted() * copySrcZoneTransform.PositionTransform,
                         EditZoneTransform.RotationTransform.Inverted() * copySrcZoneTransform.RotationTransform
                         );
-
                 }
 
                 SelectedObjects.Clear();
