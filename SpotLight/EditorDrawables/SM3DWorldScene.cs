@@ -682,8 +682,12 @@ namespace SpotLight.EditorDrawables
             {
                 foreach (I3dWorldObject obj in objList)
                 {
-                    obj.LinkDestinations.Clear();
-                    obj.DuplicateSelected(duplicates, this);
+                    obj.DuplicateSelected(duplicates, EditZone);
+
+                    obj.DeselectAll(control);
+
+                    if (duplicates.TryGetValue(obj, out var copy))
+                        copy.SelectDefault(control);
                 }
 
                 objList.AddRange(duplicates.Values);
@@ -698,8 +702,12 @@ namespace SpotLight.EditorDrawables
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
             {
-                obj.LinkDestinations.Clear();
-                obj.DuplicateSelected(duplicates, this);
+                obj.DuplicateSelected(duplicates, EditZone);
+
+                obj.DeselectAll(control);
+
+                if (duplicates.TryGetValue(obj, out var copy))
+                    copy.SelectDefault(control);
             }
 
             foreach (var (orignal, copy) in duplicates) totalDuplicates.Add(orignal, copy);
@@ -716,11 +724,11 @@ namespace SpotLight.EditorDrawables
             foreach (ObjectList objects in EditZone.ObjLists.Values)
             {
                 foreach (I3dWorldObject obj in objects)
-                    obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, true);
+                    obj.LinkDuplicates(duplicationInfo, true);
             }
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in EditZone.LinkedObjects)
-                obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, true);
+                obj.LinkDuplicates(duplicationInfo, true);
 
             BeginUndoCollection();
             //Add to undo
@@ -742,6 +750,8 @@ namespace SpotLight.EditorDrawables
             }
 
             EndUndoCollection();
+
+            UpdateLinkDestinations();
 
             UpdateSelection(REDRAW_PICKING);
         }
@@ -784,7 +794,10 @@ namespace SpotLight.EditorDrawables
 
                 foreach (I3dWorldObject obj in objList)
                 {
-                    obj.DuplicateSelected(copies, this, null, false);
+                    obj.DuplicateSelected(copies, null);
+
+                    if(copies.TryGetValue(obj, out var copy))
+                        copy.SelectAll(control);
                 }
 
                 if (copies.Count > 0)
@@ -797,8 +810,10 @@ namespace SpotLight.EditorDrawables
 
                 foreach (I3dWorldObject obj in EditZone.LinkedObjects)
                 {
-                    obj.LinkDestinations.Clear();
-                    obj.DuplicateSelected(copies, this);
+                    obj.DuplicateSelected(copies, null);
+
+                    if (copies.TryGetValue(obj, out var copy))
+                        copy.SelectAll(control);
                 }
 
                 if (copies.Count > 0)
@@ -865,28 +880,19 @@ namespace SpotLight.EditorDrawables
 
                     foreach (I3dWorldObject copy in copies.Values)
                     {
-                        copy.LinkDestinations.Clear();
-                        copy.DuplicateSelected(duplicates, this, zoneToZoneTransform, false); //yep we need to duplicate the copies
+                        copy.DuplicateSelected(duplicates, EditZone, zoneToZoneTransform); //yep we need to duplicate the copies
+
+                        if (duplicates.TryGetValue(copy, out var pasted))
+                            pasted.SelectDefault(control);
                     }
 
                     objectList.AddRange(duplicates.Values);
 
-                    foreach (var (original, copy) in copies) totalDuplicates.Add(original, copy);
+                    foreach (var (original, copy) in copies) totalDuplicates.Add(original, duplicates[copy]);
 
                     if (duplicates.Count > 0)
                         objListInfos.Add(new Revertable3DWorldObjAddition.ObjListInfo(objectList, duplicates.Values.ToArray()));
                 }
-
-                //Clear LinkDestinations
-                SceneObjectIterState.InLinks = false;
-                foreach (List<I3dWorldObject> objects in EditZone.ObjLists.Values)
-                {
-                    foreach (I3dWorldObject obj in objects)
-                        obj.UpdateLinkDestinations_Clear();
-                }
-                SceneObjectIterState.InLinks = true;
-                foreach (I3dWorldObject obj in EditZone.LinkedObjects)
-                    obj.UpdateLinkDestinations_Clear();
 
                 //Rebuild links
                 DuplicationInfo duplicationInfo = new DuplicationInfo(totalDuplicates);
@@ -895,11 +901,11 @@ namespace SpotLight.EditorDrawables
                 foreach (ObjectList objects in EditZone.ObjLists.Values)
                 {
                     foreach (I3dWorldObject obj in objects)
-                        obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, isSameZone);
+                        obj.LinkDuplicates(duplicationInfo, isSameZone);
                 }
                 SceneObjectIterState.InLinks = true;
                 foreach (I3dWorldObject obj in EditZone.LinkedObjects)
-                    obj.LinkDuplicatesAndAddLinkDestinations(duplicationInfo, isSameZone);
+                    obj.LinkDuplicates(duplicationInfo, isSameZone);
             }
 
             BeginUndoCollection();
@@ -928,6 +934,8 @@ namespace SpotLight.EditorDrawables
             }
 
             EndUndoCollection();
+
+            UpdateLinkDestinations();
 
             UpdateSelection(REDRAW_PICKING);
         }
@@ -1015,12 +1023,12 @@ namespace SpotLight.EditorDrawables
 
         public class DuplicationInfo
         {
-            Dictionary<I3dWorldObject, I3dWorldObject> duplicatedObjects;
+            Dictionary<I3dWorldObject, I3dWorldObject> duplicatesByOriginal;
             HashSet<I3dWorldObject> duplicates = new HashSet<I3dWorldObject>();
 
             public DuplicationInfo(Dictionary<I3dWorldObject, I3dWorldObject> duplicates)
             {
-                duplicatedObjects = duplicates;
+                duplicatesByOriginal = duplicates;
 
                 foreach (I3dWorldObject obj in duplicates.Values)
                     this.duplicates.Add(obj);
@@ -1028,9 +1036,9 @@ namespace SpotLight.EditorDrawables
 
             public bool IsDuplicate(I3dWorldObject obj) => duplicates.Contains(obj);
 
-            public bool HasDuplicate(I3dWorldObject obj) => duplicatedObjects.ContainsKey(obj) || duplicates.Contains(obj);
+            public bool HasDuplicate(I3dWorldObject obj) => duplicatesByOriginal.ContainsKey(obj) || duplicates.Contains(obj);
 
-            public bool TryGetDuplicate(I3dWorldObject obj, out I3dWorldObject duplicate) => duplicatedObjects.TryGetValue(obj, out duplicate);
+            public bool TryGetDuplicate(I3dWorldObject obj, out I3dWorldObject duplicate) => duplicatesByOriginal.TryGetValue(obj, out duplicate);
         }
 
         #region Link Connection Editing

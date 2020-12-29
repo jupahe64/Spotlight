@@ -23,8 +23,10 @@ namespace SpotLight.EditorDrawables
         void UpdateLinkDestinations_Populate();
         void AddLinkDestination(string linkName, I3dWorldObject linkingObject);
 
-        void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, ZoneTransform? zoneToZoneTransform = null, bool deselectOld = true);
-        void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate);
+        void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldZone destZone, ZoneTransform? zoneToZoneTransform = null);
+
+        ///implemented via <see cref="ObjectUtils.LinkDuplicates"/> or not at all
+        void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowLinkCopyToOrignal);
 
         Dictionary<string, List<I3dWorldObject>> Links { get; set; }
         void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);

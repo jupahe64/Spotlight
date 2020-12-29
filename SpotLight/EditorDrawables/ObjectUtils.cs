@@ -65,13 +65,13 @@ namespace SpotLight.EditorDrawables
             return newProperties;
         }
 
-        public static void LinkDuplicatesAndAddLinkDestinations(I3dWorldObject self, SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
+        public static void LinkDuplicates(I3dWorldObject self, SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowLinkCopyToOrignal)
         {
             if (self.Links != null)
             {
-                bool isDuplicate = duplicationInfo.IsDuplicate(self);
+                bool self_isCopy = duplicationInfo.IsDuplicate(self);
 
-                bool hasDuplicate = duplicationInfo.HasDuplicate(self);
+                bool self_hasCopy = duplicationInfo.HasDuplicate(self);
 
                 foreach (var (linkName, link) in self.Links)
                 {
@@ -81,22 +81,37 @@ namespace SpotLight.EditorDrawables
                     link.Clear();
 
                     //Populate Link
-                    foreach (I3dWorldObject linkedObj in oldLink)
+                    foreach (I3dWorldObject linked in oldLink)
                     {
-                        bool linkedObjHasDuplicate = duplicationInfo.TryGetDuplicate(linkedObj, out I3dWorldObject duplicate);
+                        bool linked_hasCopy = duplicationInfo.TryGetDuplicate(linked, out I3dWorldObject linked_copy);
 
-                        if (!(isDuplicate && linkedObjHasDuplicate) && !(isDuplicate && !allowKeepLinksOfDuplicate))
+                        
+                        if (self_isCopy)
                         {
-                            //Link to original
-                            link.Add(linkedObj);
-                            linkedObj.AddLinkDestination(linkName, self);
+                            if (linked_hasCopy)
+                            {
+                                //link copy to copy
+                                link.Add(linked_copy);
+                            }
+                            else if(allowLinkCopyToOrignal)
+                            {
+                                //link copy to original
+                                link.Add(linked);
+                            }
                         }
-
-                        if (linkedObjHasDuplicate && (hasDuplicate == isDuplicate))
+                        else //self is original
                         {
-                            //Link to duplicate
-                            link.Add(duplicate);
-                            duplicate.AddLinkDestination(linkName, self);
+                            if (linked_hasCopy && !self_hasCopy)
+                            {
+                                //link original to original and copy
+                                link.Add(linked);
+                                link.Add(linked_copy);
+                            }
+                            else
+                            {
+                                //link original to original
+                                link.Add(linked);
+                            }
                         }
                     }
                 }

@@ -219,34 +219,29 @@ namespace SpotLight.EditorDrawables
             LinkDestinations.Add((linkName, linkingObject));
         }
 
-        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldScene scene, ZoneTransform? zoneToZoneTransform = null, bool deselectOld = true)
+        public void DuplicateSelected(Dictionary<I3dWorldObject, I3dWorldObject> duplicates, SM3DWorldZone destZone, ZoneTransform? zoneToZoneTransform = null)
         {
             if (!Selected)
                 return;
-
-            if (deselectOld)
-                Selected = false;
 
 
             duplicates[this] = new AreaObject(
                 ObjectUtils.TransformedPosition(Position, zoneToZoneTransform),
                 ObjectUtils.TransformedPosition(Rotation, zoneToZoneTransform),
 
-                Scale, scene.EditZone.NextObjID(), ModelName, ClassName, Priority,
+                Scale, destZone?.NextObjID(), ModelName, ClassName, Priority,
 
                 ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
-                scene.EditZone);
+                destZone);
 
 #if ODYSSEY
             duplicates[this].ScenarioBitField = ScenarioBitField;
 #endif
-
-            duplicates[this].SelectDefault(scene.GL_Control);
         }
 
-        public void LinkDuplicatesAndAddLinkDestinations(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
-            => ObjectUtils.LinkDuplicatesAndAddLinkDestinations(this, duplicationInfo, allowKeepLinksOfDuplicate);
+        public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
+            => ObjectUtils.LinkDuplicates(this, duplicationInfo, allowKeepLinksOfDuplicate);
 
         public bool TryGetObjectList(SM3DWorldZone zone, out ObjectList objList)
         {
