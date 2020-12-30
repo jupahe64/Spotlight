@@ -1019,6 +1019,19 @@ namespace SpotLight.EditorDrawables
             UpdateSelection(REDRAW);
         }
 
+        public void InvertSelection()
+        {
+            foreach (var obj in Get3DWObjects())
+            {
+                if (obj.IsSelected())
+                    obj.DeselectAll(control);
+                else
+                    obj.SelectDefault(control);
+            }
+
+            UpdateSelection(REDRAW);
+        }
+
         public class DuplicationInfo
         {
             Dictionary<I3dWorldObject, I3dWorldObject> duplicatesByOriginal;

@@ -19,6 +19,7 @@ using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using System.Reflection;
 using SpotLight.ObjectRenderers;
 using SpotLight.GUI;
+using System.Drawing;
 
 namespace SpotLight
 {
@@ -309,19 +310,9 @@ namespace SpotLight
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
 #if ODYSSEY
-            MainSceneListView.RootLists.Clear();
+            UpdateRootLists();
 
-            MainSceneListView.RootLists.Add("Common_Linked", currentScene.EditZone.LinkedObjects);
-
-            if (ZoneListBox.SelectedIndex == 0) //main zone selected
-                MainSceneListView.RootLists.Add("Common_ZoneList", currentScene.ZonePlacements);
-
-            foreach (var (listName, objList) in currentScene.EditZone.ObjLists)
-            {
-                MainSceneListView.RootLists.Add(listName, objList);
-            }
-
-            MainSceneListView.UpdateComboBoxItems();
+            UpdateMoveToSpecificButtons();
 #endif
 
 
@@ -402,6 +393,7 @@ namespace SpotLight
             General3dWorldObject obj = (currentScene.SelectedObjects.First() as General3dWorldObject);
             Rail rail = (currentScene.SelectedObjects.First() as Rail);
             Debugger.Break();
+            return;
 
             SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
 
@@ -686,26 +678,33 @@ namespace SpotLight
 
         private void MoveToLinkedToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MoveToTargetList(currentScene.EditZone.LinkedObjects);
+            SpotlightToolStripStatusLabel.Text = StatusMovedToLinksMessage;
+        }
+
+        private void MoveToTargetList(ObjectList targetObjList)
+        {
             AdditionManager additionManager = new AdditionManager();
             DeletionManager deletionManager = new DeletionManager();
 
-            var linkedObjs = currentScene.EditZone.LinkedObjects;
-            
-            foreach (var objList in currentScene.EditZone.ObjLists.Values)
+
+            foreach (var objList in currentScene.EditZone.ObjLists.Values.Append(currentScene.EditZone.LinkedObjects))
             {
+                if (objList == targetObjList)
+                    continue;
+
                 var selected = objList.Where(x => x.IsSelectedAll()).ToArray();
 
                 if (selected.Length == 0)
                     continue;
 
-                additionManager.Add(linkedObjs, selected);
+                additionManager.Add(targetObjList, selected);
                 deletionManager.Add(objList, selected);
             }
             currentScene.BeginUndoCollection();
             currentScene.ExecuteAddition(additionManager);
             currentScene.ExecuteDeletion(deletionManager);
             currentScene.EndUndoCollection();
-            SpotlightToolStripStatusLabel.Text = StatusMovedToLinksMessage;
         }
 
         private void MoveToAppropriateListsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1090,13 +1089,34 @@ namespace SpotLight
 
         private void ZoneListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SM3DWorldZone zone = (SM3DWorldZone)ZoneListBox.SelectedItem;
-
             currentScene.EditZoneIndex = ZoneListBox.SelectedIndex;
 
             if (MainSceneListView.RootLists.TryGetValue("Common_Linked", out var linked) && linked == currentScene.EditZone.LinkedObjects) //Zone didn't change
                 goto UPDATE_THE_REST;
 
+            UpdateRootLists();
+
+            if (currentScene.EditZone.HasCategoryMap)
+                MainSceneListView.SetRootList(SM3DWorldZone.MAP_PREFIX + "ObjectList");
+            else if (currentScene.EditZone.HasCategoryDesign)
+                MainSceneListView.SetRootList(SM3DWorldZone.DESIGN_PREFIX + "ObjectList");
+            else
+                MainSceneListView.SetRootList(SM3DWorldZone.SOUND_PREFIX + "ObjectList");
+
+
+            MainSceneListView.Refresh();
+
+            UpdateMoveToSpecificButtons();
+
+            EditIndividualButton.Enabled = ZoneListBox.SelectedIndex > 0;
+
+        UPDATE_THE_REST:
+            currentScene.SetupObjectUIControl(ObjectUIControl);
+            LevelGLControlModern.Refresh();
+        }
+
+        private void UpdateRootLists()
+        {
             MainSceneListView.RootLists.Clear();
 
             MainSceneListView.RootLists.Add("Common_Linked", currentScene.EditZone.LinkedObjects);
@@ -1104,27 +1124,32 @@ namespace SpotLight
             if (ZoneListBox.SelectedIndex == 0) //main zone selected
                 MainSceneListView.RootLists.Add("Common_ZoneList", currentScene.ZonePlacements);
 
-            foreach (var (listName, objList) in zone.ObjLists)
+            foreach (var (listName, objList) in currentScene.EditZone.ObjLists)
             {
                 MainSceneListView.RootLists.Add(listName, objList);
             }
 
             MainSceneListView.UpdateComboBoxItems();
+        }
 
-            if(zone.HasCategoryMap)
-                MainSceneListView.SetRootList(SM3DWorldZone.MAP_PREFIX+"ObjectList");
-            else if(zone.HasCategoryDesign)
-                MainSceneListView.SetRootList(SM3DWorldZone.DESIGN_PREFIX + "ObjectList");
-            else
-                MainSceneListView.SetRootList(SM3DWorldZone.SOUND_PREFIX + "ObjectList");
+        private void UpdateMoveToSpecificButtons()
+        {
+            List<ToolStripItem> items = new List<ToolStripItem>();
 
-            MainSceneListView.Refresh();
+            using (Graphics cg = CreateGraphics())
+            {
+                foreach (var (listName, objList) in currentScene.EditZone.ObjLists)
+                {
+                    var btn = new ToolStripButton(listName, null, MoveToListMenuItem_Click);
 
-            EditIndividualButton.Enabled = ZoneListBox.SelectedIndex > 0;
+                    btn.Width = (int)Math.Ceiling(cg.MeasureString(listName, btn.Font).Width);
 
-        UPDATE_THE_REST:
-            currentScene.SetupObjectUIControl(ObjectUIControl);
-            LevelGLControlModern.Refresh();
+                    items.Add(btn);
+                }
+            }
+
+            MoveToSpecificListToolStripMenuItem.DropDownItems.Clear();
+            MoveToSpecificListToolStripMenuItem.DropDownItems.AddRange(items.ToArray());
         }
 
         /// <summary>
@@ -1142,17 +1167,9 @@ namespace SpotLight
             PasteToolStripMenuItem.Enabled = Trigger;
             DuplicateToolStripMenuItem.Enabled = Trigger;
             DeleteToolStripMenuItem.Enabled = Trigger;
-            SelectAllToolStripMenuItem.Enabled = Trigger;
-            DeselectAllToolStripMenuItem.Enabled = Trigger;
-            GrowSelectionToolStripMenuItem.Enabled = Trigger;
-            SelectAllLinkedToolStripMenuItem.Enabled = Trigger;
-            SelectionToolStripMenuItem.Enabled = Trigger;
             MoveSelectionToToolStripMenuItem.Enabled = Trigger;
-            MoveToAppropriateListsToolStripMenuItem.Enabled = Trigger;
-            MoveToLinkedToolStripMenuItem.Enabled = Trigger;
+            SelectionToolStripMenuItem.Enabled = Trigger;
             ModeToolStripMenuItem.Enabled = Trigger;
-            EditObjectsToolStripMenuItem.Enabled = Trigger;
-            EditLinksToolStripMenuItem.Enabled = Trigger;
             EditIndividualButton.Enabled = Trigger;
             MainSceneListView.Enabled = Trigger;
         }
@@ -1438,6 +1455,23 @@ Would you like to rebuild the database from your 3DW Files?";
         {
             Program.IsProgramReady = true;
             Focus();
+        }
+
+        private void InvertSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentScene?.InvertSelection();
+        }
+
+        private void MoveToListMenuItem_Click(object sender, EventArgs e)
+        {
+            string listName = ((ToolStripButton)sender).Text;
+
+            //TODO Localize
+            if(MessageBox.Show("Are you sure you want to move all selected objects to "+listName+"?", "Confirm", MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
+            {
+                MoveToTargetList(currentScene.EditZone.ObjLists[listName]);
+                //TODO set status text
+            }
         }
     }
 }

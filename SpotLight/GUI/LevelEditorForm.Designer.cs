@@ -61,12 +61,14 @@
             this.MoveSelectionToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToLinkedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToAppropriateListsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MoveToSpecificListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LevelParametersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SelectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DeselectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.GrowSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SelectAllLinkedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.invertSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditObjectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditLinksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -426,7 +428,8 @@
             // 
             this.MoveSelectionToToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MoveToLinkedToolStripMenuItem,
-            this.MoveToAppropriateListsToolStripMenuItem});
+            this.MoveToAppropriateListsToolStripMenuItem,
+            this.MoveToSpecificListToolStripMenuItem});
             this.MoveSelectionToToolStripMenuItem.Enabled = false;
             this.MoveSelectionToToolStripMenuItem.Name = "MoveSelectionToToolStripMenuItem";
             this.MoveSelectionToToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.M)));
@@ -435,19 +438,23 @@
             // 
             // MoveToLinkedToolStripMenuItem
             // 
-            this.MoveToLinkedToolStripMenuItem.Enabled = false;
             this.MoveToLinkedToolStripMenuItem.Name = "MoveToLinkedToolStripMenuItem";
-            this.MoveToLinkedToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.MoveToLinkedToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.MoveToLinkedToolStripMenuItem.Text = "Linked Objects";
             this.MoveToLinkedToolStripMenuItem.Click += new System.EventHandler(this.MoveToLinkedToolStripMenuItem_Click);
             // 
             // MoveToAppropriateListsToolStripMenuItem
             // 
-            this.MoveToAppropriateListsToolStripMenuItem.Enabled = false;
             this.MoveToAppropriateListsToolStripMenuItem.Name = "MoveToAppropriateListsToolStripMenuItem";
-            this.MoveToAppropriateListsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.MoveToAppropriateListsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.MoveToAppropriateListsToolStripMenuItem.Text = "Appropriate Lists";
             this.MoveToAppropriateListsToolStripMenuItem.Click += new System.EventHandler(this.MoveToAppropriateListsToolStripMenuItem_Click);
+            // 
+            // MoveToSpecificListToolStripMenuItem
+            // 
+            this.MoveToSpecificListToolStripMenuItem.Name = "MoveToSpecificListToolStripMenuItem";
+            this.MoveToSpecificListToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.MoveToSpecificListToolStripMenuItem.Text = "Specific List";
             // 
             // LevelParametersToolStripMenuItem
             // 
@@ -462,7 +469,8 @@
             this.SelectAllToolStripMenuItem,
             this.DeselectAllToolStripMenuItem,
             this.GrowSelectionToolStripMenuItem,
-            this.SelectAllLinkedToolStripMenuItem});
+            this.SelectAllLinkedToolStripMenuItem,
+            this.invertSelectionToolStripMenuItem});
             this.SelectionToolStripMenuItem.Enabled = false;
             this.SelectionToolStripMenuItem.Name = "SelectionToolStripMenuItem";
             this.SelectionToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
@@ -470,7 +478,6 @@
             // 
             // SelectAllToolStripMenuItem
             // 
-            this.SelectAllToolStripMenuItem.Enabled = false;
             this.SelectAllToolStripMenuItem.Name = "SelectAllToolStripMenuItem";
             this.SelectAllToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.SelectAllToolStripMenuItem.Text = "Select All";
@@ -478,7 +485,6 @@
             // 
             // DeselectAllToolStripMenuItem
             // 
-            this.DeselectAllToolStripMenuItem.Enabled = false;
             this.DeselectAllToolStripMenuItem.Name = "DeselectAllToolStripMenuItem";
             this.DeselectAllToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.DeselectAllToolStripMenuItem.Text = "Deselect All";
@@ -486,7 +492,6 @@
             // 
             // GrowSelectionToolStripMenuItem
             // 
-            this.GrowSelectionToolStripMenuItem.Enabled = false;
             this.GrowSelectionToolStripMenuItem.Name = "GrowSelectionToolStripMenuItem";
             this.GrowSelectionToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.GrowSelectionToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
@@ -496,13 +501,20 @@
             // 
             // SelectAllLinkedToolStripMenuItem
             // 
-            this.SelectAllLinkedToolStripMenuItem.Enabled = false;
             this.SelectAllLinkedToolStripMenuItem.Name = "SelectAllLinkedToolStripMenuItem";
             this.SelectAllLinkedToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.SelectAllLinkedToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L)));
             this.SelectAllLinkedToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.SelectAllLinkedToolStripMenuItem.Text = "Select All Linked";
             this.SelectAllLinkedToolStripMenuItem.Click += new System.EventHandler(this.SelectAllLinkedToolStripMenuItem_Click);
+            // 
+            // invertSelectionToolStripMenuItem
+            // 
+            this.invertSelectionToolStripMenuItem.Name = "invertSelectionToolStripMenuItem";
+            this.invertSelectionToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.I)));
+            this.invertSelectionToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.invertSelectionToolStripMenuItem.Text = "Invert Selection";
+            this.invertSelectionToolStripMenuItem.Click += new System.EventHandler(this.InvertSelectionToolStripMenuItem_Click);
             // 
             // ModeToolStripMenuItem
             // 
@@ -516,7 +528,6 @@
             // 
             // EditObjectsToolStripMenuItem
             // 
-            this.EditObjectsToolStripMenuItem.Enabled = false;
             this.EditObjectsToolStripMenuItem.Name = "EditObjectsToolStripMenuItem";
             this.EditObjectsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
             | System.Windows.Forms.Keys.O)));
@@ -526,7 +537,6 @@
             // 
             // EditLinksToolStripMenuItem
             // 
-            this.EditLinksToolStripMenuItem.Enabled = false;
             this.EditLinksToolStripMenuItem.Name = "EditLinksToolStripMenuItem";
             this.EditLinksToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
             | System.Windows.Forms.Keys.L)));
@@ -574,7 +584,6 @@
             // 
             // toolStripTextBox1
             // 
-            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 
@@ -679,6 +688,8 @@
         private QuickFavoriteControl QuickFavoriteControl;
         private System.Windows.Forms.ToolStripMenuItem SelectionToolStripMenuItem;
         private System.Windows.Forms.Button CancelAddObjectButton;
+        private System.Windows.Forms.ToolStripMenuItem invertSelectionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem MoveToSpecificListToolStripMenuItem;
     }
 }
 
