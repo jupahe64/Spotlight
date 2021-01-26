@@ -766,14 +766,14 @@ namespace SpotLight
 
         private void LevelParametersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Directory.Exists(Program.GamePath + "\\SystemData") && File.Exists(Program.GamePath + "\\SystemData\\StageList.szs"))
+            if (Directory.Exists(Program.ProjectPath + "\\SystemData") && File.Exists(Program.ProjectPath + "\\SystemData\\StageList.szs"))
             {
                 LPF = new LevelParameterForm(currentScene == null ? "" : currentScene.ToString());
                 LPF.Show();
             }
             else
             {
-                MessageBox.Show(string.Format(LevelParamsMissingText, Program.GamePath), LevelParamsMissingHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(string.Format(LevelParamsMissingText, Program.ProjectPath), LevelParamsMissingHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
