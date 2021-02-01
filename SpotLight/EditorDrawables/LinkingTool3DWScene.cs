@@ -41,7 +41,11 @@ namespace SpotLight.EditorDrawables
             set
             {
                 source = value;
-                PossibleNames = source.Links?.Keys.ToArray();
+
+                if (source.Links != null)
+                    PossibleNames = source.Links.Keys.ToArray();
+                else
+                    PossibleNames = Array.Empty<string>();
             }
         }
 
