@@ -1203,7 +1203,7 @@ namespace SpotLight.Database
                 return new EditableInformation(info);
             else
             {
-                return new EditableInformation(className, null, className);
+                return new EditableInformation(className, null, null);
             }
         }
 

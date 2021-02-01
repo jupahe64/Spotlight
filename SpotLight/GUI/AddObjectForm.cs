@@ -62,6 +62,13 @@ namespace SpotLight.GUI
         public void OnInformationEdited()
         {
             currentInfoWasEdited = true;
+
+            if (!editedInformations.Contains(currentEditInfo.ClassName))
+            {
+                editedInformations.Add(currentEditInfo.ClassName);
+
+                Text = caption + $" ({editedInformations.Count} unsaved entries)";
+            }
         }
 
         public AddObjectForm(SM3DWorldScene scene, QuickFavoriteControl quickFavorites)
@@ -247,13 +254,20 @@ namespace SpotLight.GUI
             this.quickFavorites = quickFavorites;
         }
 
+        string caption;
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            caption = Text;
+        }
+
         private void SubmitInformation()
         {
             if (currentEditInfo != null && currentInfoWasEdited)
             {
                 Program.InformationDB.SetInformation(currentEditInfo);
-                if (!editedInformations.Contains(currentEditInfo.ClassName))
-                    editedInformations.Add(currentEditInfo.ClassName);
             }
         }
 
@@ -449,7 +463,7 @@ namespace SpotLight.GUI
             ToQuickFavoritesButton.Enabled = true;
 
             PropertyDescriptionTextBox.Enabled = false;
-
+            PropertyDescriptionTextBox.Text = string.Empty;
 
             PropertyListBox.Items.Clear();
             PropertyListBox.Items.AddRange(items.ToArray());
