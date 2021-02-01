@@ -365,6 +365,26 @@ namespace SpotLight.EditorDrawables
                         }
                     }
                     GL.End();
+
+#if ODYSSEY
+                    foreach (var points in scene.koopaRacePoints)
+                    {
+                        int randomColor = control.RNG.Next();
+                        GL.VertexAttrib4(1, new Vector4(
+                            (((randomColor >> 16) & 0xFF) / 255f) * 0.5f + 0.25f,
+                            (((randomColor >> 8) & 0xFF) / 255f) * 0.5f + 0.25f,
+                            ((randomColor & 0xFF) / 255f) * 0.5f + 0.25f,
+                            1f
+                            ));
+                        
+                        GL.Begin(PrimitiveType.LineStrip);
+                        foreach (var point in points)
+                        {
+                            GL.Vertex3(point.Postion*0.01f);
+                        }
+                        GL.End();
+                    }
+#endif
                 }
             }
 
@@ -435,6 +455,16 @@ namespace SpotLight.EditorDrawables
         public SM3DWorldZone EditZone { get; private set; }
 
         private int editZoneIndex = -1;
+
+#if ODYSSEY
+        struct KoopaRacePoint
+        {
+            public Vector3 Postion { get; set; }
+        }
+
+        List<List<KoopaRacePoint>> koopaRacePoints = new List<List<KoopaRacePoint>>();
+#endif
+
         public int EditZoneIndex
         {
             get => editZoneIndex;
@@ -448,6 +478,62 @@ namespace SpotLight.EditorDrawables
                 if (value == 0)
                 {
                     EditZone = MainZone;
+
+#if ODYSSEY
+                    koopaRacePoints.Clear();
+
+                    foreach (var entry in MainZone.ExtraFiles[0].Where(x => x.Key.Contains("_")))
+                    {
+                        var data = entry.Value.RootNode;
+
+                        var actionNames = ((List<object>)data["ActionName"]).Select(x => (string)x).ToList();
+
+                        var capActionNames = new List<string>() { "-" };
+                        if (data.ContainsKey("ActionNameCap") && data["ActionNameCap"] != null)
+                            capActionNames.AddRange(((List<object>)data["ActionNameCap"]).Select(x => (string)x));
+
+                        var hackNames = new List<string>() { "-" };
+                        if (data.ContainsKey("HackName") && data["HackName"] != null)
+                            hackNames.AddRange(((List<object>)data["HackName"]).Select(x => (string)x));
+
+                        var materialCodes = ((List<object>)data["MaterialCode"]).Select(x => (string)x).ToList();
+
+                        //listView1.Columns.Add("Index");
+                        //listView1.Columns.Add("PosX");
+                        //listView1.Columns.Add("PosY");
+                        //listView1.Columns.Add("PosZ");
+                        //listView1.Columns.Add("RotX");
+                        //listView1.Columns.Add("RotY");
+                        //listView1.Columns.Add("RotZ");
+                        //listView1.Columns.Add("Action");
+                        //listView1.Columns.Add("AnimFrame");
+                        //listView1.Columns.Add("Flags");
+                        //listView1.Columns.Add("MaterialCode");
+
+                        List<KoopaRacePoint> points = new List<KoopaRacePoint>();
+
+                        foreach (var item in data["DataArray"])
+                        {
+                            points.Add(new KoopaRacePoint
+                            {
+                                Postion = new Vector3(item[0], item[1], item[2])
+                            });
+
+                            //listViewItem.SubItems.Add(item[0].ToString());
+                            //listViewItem.SubItems.Add(item[1].ToString());
+                            //listViewItem.SubItems.Add(item[2].ToString());
+                            //listViewItem.SubItems.Add(item[3].ToString());
+                            //listViewItem.SubItems.Add(item[4].ToString());
+                            //listViewItem.SubItems.Add(item[5].ToString());
+                            //listViewItem.SubItems.Add(actionNames[item[6]]);
+                            //listViewItem.SubItems.Add(item[7].ToString());
+                            //listViewItem.SubItems.Add(Convert.ToString(item[8], 2).PadLeft(16, '0'));
+                            //listViewItem.SubItems.Add(materialCodes[item[9]]);
+                        }
+
+                        koopaRacePoints.Add(points);
+                    }
+#endif
 
                     EditZoneTransform = ZoneTransform.Identity;
 
@@ -1052,7 +1138,7 @@ namespace SpotLight.EditorDrawables
             public bool TryGetDuplicate(I3dWorldObject obj, out I3dWorldObject duplicate) => duplicatesByOriginal.TryGetValue(obj, out duplicate);
         }
 
-        #region Link Connection Editing
+#region Link Connection Editing
 
         public struct RevertableConnectionAddition : IRevertable
         {
@@ -1151,7 +1237,7 @@ namespace SpotLight.EditorDrawables
             return true;
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         /// Saves the level over the original file

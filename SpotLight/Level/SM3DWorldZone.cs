@@ -381,7 +381,7 @@ namespace SpotLight.Level
                 }
                 else
                 {
-                    if ((fileEntry.Value[0] << 8 | fileEntry.Value[1]) == ByamlFile.BYAML_MAGIC)
+                    if ((fileEntry.Value[1] << 8 | fileEntry.Value[0]) == ByamlFile.BYAML_MAGIC)
                     {
                         //if(fileEntry.Key == "CameraParam.byml")
                         //{
