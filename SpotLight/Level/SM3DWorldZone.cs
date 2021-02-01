@@ -567,7 +567,7 @@ namespace SpotLight.Level
 
                         if (zone != null)
                         {
-                            ZonePlacements.Add(new ZonePlacement(position, rotation, scale, zone));
+                            ZonePlacements.Add(new ZonePlacement(position, rotation, zone));
                         }
 
                         SKIP_ZONE:;
@@ -773,7 +773,7 @@ namespace SpotLight.Level
 
                     objNode.AddDynamicValue("ModelName", null);
                     objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(zonePlacement.Rotation), true);
-                    objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(zonePlacement.Scale), true);
+                    objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
                     objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(zonePlacement.Position, 100f), true);
 
                     objNode.AddDynamicValue("UnitConfig", new Dictionary<string, dynamic>

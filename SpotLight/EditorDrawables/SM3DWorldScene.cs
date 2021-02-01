@@ -579,7 +579,7 @@ namespace SpotLight.EditorDrawables
             private set
             {
                 mainZone = value;
-                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, Vector3.One, value);
+                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, value);
             }
         }
 
@@ -750,7 +750,7 @@ namespace SpotLight.EditorDrawables
                     if (placement.IsSelectedAll())
                     {
                         placement.DeselectAll(control);
-                        newPlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Scale, placement.Zone));
+                        newPlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Zone));
                     }
                 }
                 //the rest will be handled at the end of the function
@@ -863,7 +863,7 @@ namespace SpotLight.EditorDrawables
                 {
                     if (placement.IsSelectedAll())
                     {
-                        copiedZonePlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Scale, placement.Zone));
+                        copiedZonePlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Zone));
                     }
                 }
                 //the rest will be handled at the end of the function
@@ -1003,7 +1003,7 @@ namespace SpotLight.EditorDrawables
             {
                 foreach (var placement in copiedZonePlacements)
                 {
-                    var newPlacement = new ZonePlacement(placement.Position, placement.Rotation, placement.Scale, placement.Zone);
+                    var newPlacement = new ZonePlacement(placement.Position, placement.Rotation, placement.Zone);
 
                     newPlacement.SelectDefault(control);
                     ZonePlacements.Add(newPlacement);
