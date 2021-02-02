@@ -65,6 +65,11 @@ namespace SpotLight
         /// </summary>
         /// <returns>true if the path is valid, false if it's invalid</returns>
         public static bool IsGamePathValid(string path) => Directory.Exists(path + "\\ObjectData") && Directory.Exists(path + "\\StageData");
+        public static void MakeGamePathValid(string path)
+        {
+            Directory.CreateDirectory(path + "\\ObjectData");
+            Directory.CreateDirectory(path + "\\StageData");
+        }
 
         /// <summary>
         /// The path that the game files are kept at.<para/>This is the path that should contain the StageData and ObjectData folders.

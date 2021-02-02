@@ -255,29 +255,29 @@ namespace SpotLight
                 IsFolderPicker = true
             };
 
+            string lastValidPath = GamePathTextBox.Text;
+
             while (true)
             {
-                if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
+                if (ofd.ShowDialog() != CommonFileDialogResult.Ok)
                 {
-                    if (Program.IsGamePathValid(ofd.FileName))
-                    {
-                        Program.GamePath = ofd.FileName;
-                        GamePathTextBox.Text = ofd.FileName;
-
-                        Properties.Settings.Default.GamePaths.AddUnique(ofd.FileName);
-
-                        GamePathTextBox.PossibleSuggestions = Properties.Settings.Default.GamePaths.ToArray();
-
-                        Properties.Settings.Default.Save();
-
-                        return;
-                    }
-                    else
-                        MessageBox.Show(InvalidFolder, InvalidGamePath);
-                    
+                    GamePathTextBox.Text = lastValidPath; //reset the path to make sure it's still valid
+                    return;
                 }
                 else
-                    return;
+                {
+                    GamePathTextBox.Text = ofd.FileName;
+
+                    CancelEventArgs cancelEventArgs = new CancelEventArgs();
+
+                    //will set everything 
+                    GamePathTextBox_ValueEntered(null, cancelEventArgs);
+
+                    if (cancelEventArgs.Cancel)
+                        MessageBox.Show(InvalidFolder, InvalidGamePath);
+                    else
+                        return;
+                }
             }
         }
 
@@ -308,28 +308,19 @@ namespace SpotLight
                 IsFolderPicker = true
             };
 
-            while (true)
+            string lastValidPath = ProjectPathTextBox.Text;
+
+            if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
-                {
-                    if (Program.IsGamePathValid(ofd.FileName))
-                    {
-                        Program.ProjectPath = ofd.FileName;
-                        ProjectPathTextBox.Text = ofd.FileName;
+                ProjectPathTextBox.Text = ofd.FileName;
 
-                        Properties.Settings.Default.ProjectPaths.AddUnique(ofd.FileName);
+                CancelEventArgs cancelEventArgs = new CancelEventArgs();
 
-                        ProjectPathTextBox.PossibleSuggestions = Properties.Settings.Default.ProjectPaths.ToArray();
+                //will set everything and show a message box if it's invalid
+                ProjectPathTextBox_ValueEntered(null, cancelEventArgs);
 
-                        Properties.Settings.Default.Save();
-
-                        return;
-                    }
-                    else
-                        MessageBox.Show(InvalidFolder, InvalidGamePath);
-                }
-                else
-                    return;
+                if (cancelEventArgs.Cancel)
+                    ProjectPathTextBox.Text = lastValidPath; //reset the path to make sure it's still valid
             }
         }
 
@@ -337,16 +328,30 @@ namespace SpotLight
         {
             string path = ProjectPathTextBox.Text;
 
-            if (!string.IsNullOrEmpty(path) && !Program.IsGamePathValid(path))
+            if(string.IsNullOrEmpty(path))
             {
-                e.Cancel = true;
+                //empty project paths are valid but we don't want to save them
+                Program.ProjectPath = path;
                 return;
+            }
+
+
+            if (!Program.IsGamePathValid(path))
+            {
+                if(MessageBox.Show("The entered path doesn't contain an ObjectData or StageData folder, would you like to create them?","Missing ObjectData / StageData",MessageBoxButtons.YesNoCancel) != DialogResult.Yes)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                else
+                {
+                    Program.MakeGamePathValid(path);
+                }
             }
 
             Program.ProjectPath = path;
 
-            if(!string.IsNullOrEmpty(path)) //we don't want to add an empty string to the ProjectPaths
-                Properties.Settings.Default.ProjectPaths.AddUnique(path);
+            Properties.Settings.Default.ProjectPaths.AddUnique(path);
 
             ProjectPathTextBox.PossibleSuggestions = Properties.Settings.Default.ProjectPaths.ToArray();
 
