@@ -572,6 +572,13 @@ namespace SpotLight.EditorDrawables
             }
         }
 
+        public override void Connect(GL_ControlBase control)
+        {
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            base.Connect(control);
+        }
+
         protected ZoneTransform EditZoneTransform { get; private set; }
 
         public SM3DWorldZone MainZone { 
