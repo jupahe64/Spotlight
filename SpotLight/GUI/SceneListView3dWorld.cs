@@ -242,7 +242,6 @@ namespace SpotLight.GUI
             public bool IsSubsetOf(IEnumerable<object> other){throw new NotImplementedException();}
             public bool IsSupersetOf(IEnumerable<object> other){throw new NotImplementedException();}
             public bool Overlaps(IEnumerable<object> other){throw new NotImplementedException();}
-            public bool Remove(object item){throw new NotImplementedException();}
             public bool SetEquals(IEnumerable<object> other){throw new NotImplementedException();}
             public void SymmetricExceptWith(IEnumerable<object> other){throw new NotImplementedException();}
             public void UnionWith(IEnumerable<object> other){throw new NotImplementedException();}
@@ -253,6 +252,10 @@ namespace SpotLight.GUI
             public bool Add(object item)
             {
                 return true;
+            }
+            public bool Remove(object item)
+            { 
+                return false; 
             }
 
             public void Clear()
