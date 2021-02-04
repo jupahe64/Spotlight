@@ -32,14 +32,14 @@ namespace SpotLight.GUI
                 }
 
                 SelectedItems = Scene.SelectedObjects;
+
+                FilterTextBox.Text = string.Empty;
             }
         }
 
         private readonly Stack<IList> listStack = new Stack<IList>();
 
         public event EventHandler SelectionChanged;
-        public event EventHandler CurrentZoneChanged;
-        public event EventHandler EditCurrentZone;
 
         public event ListEventHandler ListExited;
         public event ItemClickedEventHandler ItemClicked;
