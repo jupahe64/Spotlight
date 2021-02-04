@@ -103,12 +103,10 @@ namespace SpotLight
 
             GrowSelectionToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(Keys.Control|Keys.Oemplus).Replace("Oemplus","+");
 
-            MainTabControl.SelectedTab = ObjectsTabPage;
             LevelGLControlModern.CameraDistance = 20;
 
-            MainSceneListView.SelectionChanged += MainSceneListView_SelectionChanged;
-            MainSceneListView.ItemsMoved += MainSceneListView_ItemsMoved;
             MainSceneListView.ListExited += MainSceneListView_ListExited;
+            MainSceneListView.SelectionChanged += SceneListView3dWorld1_SelectionChanged;
 
             Localize();
 
@@ -251,82 +249,48 @@ namespace SpotLight
                 AboutToolStripMenuItem.BackColor = System.Drawing.Color.LawnGreen;
                 CheckForUpdatesToolStripMenuItem.BackColor = System.Drawing.Color.LawnGreen;
             }
+
+            MainSceneListView.ItemClicked += MainSceneListView_ItemClicked;
         }
 
 
         private void MainSceneListView_ListExited(object sender, ListEventArgs e)
         {
             currentScene.CurrentList = e.List;
-            //fetch availible properties for list
             currentScene.SetupObjectUIControl(ObjectUIControl);
-        }
-
-        private void MainSceneListView_ItemsMoved(object sender, ItemsMovedEventArgs e)
-        {
-            currentScene.ReorderObjects(MainSceneListView.CurrentList, e.OriginalIndex, e.Count, e.Offset);
-            e.Handled = true;
-            LevelGLControlModern.Refresh();
         }
 
         private void Scene_ListChanged(object sender, ListChangedEventArgs e)
         {
-            if (e.Lists.Contains(MainSceneListView.CurrentList))
-            {
-                MainSceneListView.UpdateAutoScrollHeight();
-                MainSceneListView.Refresh();
-            }
-        }
-
-        private void MainSceneListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (currentScene == null)
-                return;
-
-            //apply selection changes to scene
-            if (e.SelectionChangeMode == SelectionChangeMode.SET)
-            {
-                currentScene.SelectedObjects.Clear();
-
-                foreach (ISelectable obj in e.Items)
-                    obj.SelectDefault(LevelGLControlModern);
-            }
-            else if (e.SelectionChangeMode == SelectionChangeMode.ADD)
-            {
-                foreach (ISelectable obj in e.Items)
-                    obj.SelectDefault(LevelGLControlModern);
-            }
-            else //SelectionChangeMode.SUBTRACT
-            {
-                foreach (ISelectable obj in e.Items)
-                    obj.DeselectAll(LevelGLControlModern);
-            }
-
-            e.Handled = true;
-            LevelGLControlModern.Refresh();
-
-            Scene_SelectionChanged(this, null);
+            MainSceneListView.Refresh();
         }
 
         private void Scene_SelectionChanged(object sender, EventArgs e)
         {
 #if ODYSSEY
-            UpdateRootLists();
-
             UpdateMoveToSpecificButtons();
 #endif
 
 
             var selection = new HashSet<object>();
 
+            var fullySelectedRails = new List<Rail>();
+
             foreach (var item in currentScene.SelectedObjects)
             {
                 if (item is Rail rail)
                 {
+                    bool isFullySelected = true;
                     foreach (var point in rail.PathPoints)
                     {
-                        if(point.Selected)
+                        if (point.Selected)
                             selection.Add(point);
+                        else
+                            isFullySelected = false;
                     }
+
+                    if(isFullySelected)
+                        fullySelectedRails.Add(rail);
                 }
                 else
                     selection.Add(item);
@@ -367,6 +331,10 @@ namespace SpotLight
                 }
                 SelectedObjects = multi > 1 ? SelectedObjects + "." : SelectedObjects.Remove(SelectedObjects.Length - 2) + ".";
                 SpotlightToolStripStatusLabel.Text = SelectedText + $" {SelectedObjects}";
+
+
+                if(fullySelectedRails.Count==1 && selection.Count == fullySelectedRails[0].PathPoints.Count)
+                    MainSceneListView.TryEnsureVisible(fullySelectedRails[0]);
             }
             else if (selection.Count == 0)
                 CurrentObjectLabel.Text = SpotlightToolStripStatusLabel.Text = NothingSelected;
@@ -638,7 +606,7 @@ namespace SpotLight
 
             currentScene.DeleteSelected();
             LevelGLControlModern.Refresh();
-            MainSceneListView.UpdateAutoScrollHeight();
+            MainSceneListView.Refresh();
             Scene_SelectionChanged(this, null);
         }
 
@@ -919,7 +887,7 @@ namespace SpotLight
 
         private void Scene_Reverted(object sender, RevertedEventArgs e)
         {
-            UpdateZoneList(true);
+            UpdateZoneList();
             MainSceneListView.Refresh();
             currentScene.SetupObjectUIControl(ObjectUIControl);
         }
@@ -931,8 +899,15 @@ namespace SpotLight
 
         private void Scene_ListEntered(object sender, ListEventArgs e)
         {
+            if(e.List is List<RailPoint> points)
+            {
+                if (points.Count > 0)
+                    MainSceneListView.TryEnsureVisible(points[0]);
+
+                return;
+            }
+
             MainSceneListView.EnterList(e.List);
-            MainTabControl.SelectedTab = ObjectsTabPage;
         }
 
         private void MainSceneListView_ItemClicked(object sender, ItemClickedEventArgs e)
@@ -963,7 +938,7 @@ namespace SpotLight
 
         private void EditIndividualButton_Click(object sender, EventArgs e)
         {
-            OpenZone((SM3DWorldZone)ZoneListBox.SelectedItem);
+            OpenZone(currentScene.EditZone);
         }
 
         private void ZoneDocumentTabControl_SelectedTabChanged(object sender, EventArgs e)
@@ -975,11 +950,12 @@ namespace SpotLight
 
             currentScene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Document;
 
+            MainSceneListView.Scene = currentScene;
+
             #region setup UI
             ObjectUIControl.ClearObjectUIContainers();
             ObjectUIControl.Refresh();
 
-            MainSceneListView.SelectedItems = currentScene.SelectedObjects;
             MainSceneListView.Refresh();
 
             UpdateZoneList();
@@ -988,7 +964,7 @@ namespace SpotLight
             #endregion
         }
 
-        private void UpdateZoneList(bool noEventTrigger = false)
+        private void UpdateZoneList()
         {
             ZoneListBox.BeginUpdate();
             ZoneListBox.Items.Clear();
@@ -1074,7 +1050,6 @@ namespace SpotLight
             {
                 ZoneListBox.Items.Clear();
                 MainSceneListView.UnselectCurrentList();
-                MainSceneListView.RootLists.Clear();
                 ObjectUIControl.ClearObjectUIContainers();
                 ObjectUIControl.Refresh();
 
@@ -1091,17 +1066,14 @@ namespace SpotLight
         {
             currentScene.EditZoneIndex = ZoneListBox.SelectedIndex;
 
-            if (MainSceneListView.RootLists.TryGetValue("Common_Linked", out var linked) && linked == currentScene.EditZone.LinkedObjects) //Zone didn't change
-                goto UPDATE_THE_REST;
-
-            UpdateRootLists();
+            MainSceneListView.CollapseAllNodes();
 
             if (currentScene.EditZone.HasCategoryMap)
-                MainSceneListView.SetRootList(SM3DWorldZone.MAP_PREFIX + "ObjectList");
+                MainSceneListView.ExpandNode(SM3DWorldZone.MAP_PREFIX);
             else if (currentScene.EditZone.HasCategoryDesign)
-                MainSceneListView.SetRootList(SM3DWorldZone.DESIGN_PREFIX + "ObjectList");
+                MainSceneListView.ExpandNode(SM3DWorldZone.DESIGN_PREFIX);
             else
-                MainSceneListView.SetRootList(SM3DWorldZone.SOUND_PREFIX + "ObjectList");
+                MainSceneListView.ExpandNode(SM3DWorldZone.SOUND_PREFIX);
 
 
             MainSceneListView.Refresh();
@@ -1110,26 +1082,15 @@ namespace SpotLight
 
             EditIndividualButton.Enabled = ZoneListBox.SelectedIndex > 0;
 
-        UPDATE_THE_REST:
             currentScene.SetupObjectUIControl(ObjectUIControl);
             LevelGLControlModern.Refresh();
         }
 
-        private void UpdateRootLists()
+        private void SceneListView3dWorld1_SelectionChanged(object sender, EventArgs e)
         {
-            MainSceneListView.RootLists.Clear();
+            LevelGLControlModern.Refresh();
 
-            MainSceneListView.RootLists.Add("Common_Linked", currentScene.EditZone.LinkedObjects);
-
-            if (ZoneListBox.SelectedIndex == 0) //main zone selected
-                MainSceneListView.RootLists.Add("Common_ZoneList", currentScene.ZonePlacements);
-
-            foreach (var (listName, objList) in currentScene.EditZone.ObjLists)
-            {
-                MainSceneListView.RootLists.Add(listName, objList);
-            }
-
-            MainSceneListView.UpdateComboBoxItems();
+            Scene_SelectionChanged(this, null);
         }
 
         private void UpdateMoveToSpecificButtons()
@@ -1170,7 +1131,6 @@ namespace SpotLight
             MoveSelectionToToolStripMenuItem.Enabled = Trigger;
             SelectionToolStripMenuItem.Enabled = Trigger;
             ModeToolStripMenuItem.Enabled = Trigger;
-            EditIndividualButton.Enabled = Trigger;
             MainSceneListView.Enabled = Trigger;
         }
 
@@ -1345,8 +1305,6 @@ Would you like to rebuild the database from your 3DW Files?";
             CheckForUpdatesToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("CheckForUpdatesToolStripMenuItem") ?? "Check for Updates";
             #endregion
 
-            ZonesTabPage.Text = Program.CurrentLanguage.GetTranslation("ZonesTabPage") ?? "Zones";
-            ObjectsTabPage.Text = Program.CurrentLanguage.GetTranslation("ObjectsTabPage") ?? "Objects";
             EditIndividualButton.Text = Program.CurrentLanguage.GetTranslation("EditIndividualButton") ?? "Edit Individual";
             CancelAddObjectButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
             CurrentObjectLabel.Text = NothingSelected;
@@ -1429,6 +1387,13 @@ Would you like to rebuild the database from your 3DW Files?";
             }
         }
 
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            LevelGLControlModern_Load(null, null);
+        }
+
         private void LevelGLControlModern_Load(object sender, EventArgs e)
         {
             BfresModelRenderer.Initialize();
@@ -1454,6 +1419,7 @@ Would you like to rebuild the database from your 3DW Files?";
         private void LevelEditorForm_Shown(object sender, EventArgs e)
         {
             Program.IsProgramReady = true;
+            BringToFront();
             Focus();
         }
 

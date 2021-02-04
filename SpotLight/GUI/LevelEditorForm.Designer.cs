@@ -36,7 +36,7 @@
             this.ZoneListBox = new System.Windows.Forms.ListBox();
             this.EditIndividualButton = new System.Windows.Forms.Button();
             this.ObjectsTabPage = new System.Windows.Forms.TabPage();
-            this.MainSceneListView = new GL_EditorFramework.SceneListView();
+            this.MainSceneListView = new SpotLight.GUI.SceneListView3dWorld();
             this.CurrentObjectLabel = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
             this.ZoneDocumentTabControl = new GL_EditorFramework.DocumentTabControl();
@@ -194,7 +194,7 @@
             this.MainSceneListView.Enabled = false;
             this.MainSceneListView.Location = new System.Drawing.Point(3, 3);
             this.MainSceneListView.Name = "MainSceneListView";
-            this.MainSceneListView.RootLists = ((System.Collections.Generic.Dictionary<string, System.Collections.IList>)(resources.GetObject("MainSceneListView.RootLists")));
+            this.MainSceneListView.Scene = null;
             this.MainSceneListView.Size = new System.Drawing.Size(246, 213);
             this.MainSceneListView.TabIndex = 1;
             this.MainSceneListView.ItemClicked += new GL_EditorFramework.ItemClickedEventHandler(this.MainSceneListView_ItemClicked);
@@ -439,21 +439,21 @@
             // MoveToLinkedToolStripMenuItem
             // 
             this.MoveToLinkedToolStripMenuItem.Name = "MoveToLinkedToolStripMenuItem";
-            this.MoveToLinkedToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.MoveToLinkedToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.MoveToLinkedToolStripMenuItem.Text = "Linked Objects";
             this.MoveToLinkedToolStripMenuItem.Click += new System.EventHandler(this.MoveToLinkedToolStripMenuItem_Click);
             // 
             // MoveToAppropriateListsToolStripMenuItem
             // 
             this.MoveToAppropriateListsToolStripMenuItem.Name = "MoveToAppropriateListsToolStripMenuItem";
-            this.MoveToAppropriateListsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.MoveToAppropriateListsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.MoveToAppropriateListsToolStripMenuItem.Text = "Appropriate Lists";
             this.MoveToAppropriateListsToolStripMenuItem.Click += new System.EventHandler(this.MoveToAppropriateListsToolStripMenuItem_Click);
             // 
             // MoveToSpecificListToolStripMenuItem
             // 
             this.MoveToSpecificListToolStripMenuItem.Name = "MoveToSpecificListToolStripMenuItem";
-            this.MoveToSpecificListToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.MoveToSpecificListToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.MoveToSpecificListToolStripMenuItem.Text = "Specific List";
             // 
             // LevelParametersToolStripMenuItem
@@ -584,6 +584,7 @@
             // 
             // toolStripTextBox1
             // 
+            this.toolStripTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripTextBox1.Name = "toolStripTextBox1";
             this.toolStripTextBox1.Size = new System.Drawing.Size(100, 23);
             // 
@@ -671,7 +672,7 @@
         private System.Windows.Forms.Button EditIndividualButton;
         public GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         public GL_EditorFramework.ObjectUIControl ObjectUIControl;
-        public GL_EditorFramework.SceneListView MainSceneListView;
+        public GUI.SceneListView3dWorld MainSceneListView;
         private GL_EditorFramework.DocumentTabControl ZoneDocumentTabControl;
         private System.Windows.Forms.ListBox ZoneListBox;
         private System.Windows.Forms.ToolStripMenuItem AddZoneToolStripMenuItem;

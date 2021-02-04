@@ -200,6 +200,12 @@
     <Compile Include="GUI\PathShapeSelector.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="GUI\SceneListView3dWorld.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\SceneListView3dWorld.Designer.cs">
+      <DependentUpon>SceneListView3dWorld.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\SplashForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -284,6 +290,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ObjectParameterForm.resx">
       <DependentUpon>ObjectParameterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\SceneListView3dWorld.resx">
+      <DependentUpon>SceneListView3dWorld.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SplashForm.resx">
       <DependentUpon>SplashForm.cs</DependentUpon>
