@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
@@ -90,7 +91,8 @@ namespace SpotLight.GUI
             ItemsListView.CurrentList = list;
 
             TreeView.Visible = false;
-            btnBack.Visible = true;
+            FilterTextBox.Visible = false;
+            BackButton.Visible = true;
         }
 
         public void UnselectCurrentList()
@@ -100,7 +102,8 @@ namespace SpotLight.GUI
             listStack.Clear();
 
             TreeView.Visible = true;
-            btnBack.Visible = false;
+            FilterTextBox.Visible = true;
+            BackButton.Visible = false;
 
         }
 
@@ -115,7 +118,8 @@ namespace SpotLight.GUI
             if (listStack.Count == 0)
             {
                 TreeView.Visible = true;
-                btnBack.Visible = false;
+                FilterTextBox.Visible = true;
+                BackButton.Visible = false;
             }
         }
 
@@ -204,15 +208,85 @@ namespace SpotLight.GUI
 
             base.Refresh();
         }
+
+        private void FilterTextBox_TextChanged(object sender, EventArgs e)
+        {
+            string filterBefore = TreeView.FilterString;
+
+            object lastSelected = TreeView.LastSelectedItem;
+            TreeView.FilterString = FilterTextBox.Text;
+
+            if (string.IsNullOrEmpty(filterBefore))
+                TreeView.AutoScrollPosition = new Point(TreeView.AutoScrollPosition.X,0);
+            else
+                TreeView.TryEnsureVisible(lastSelected);
+
+            TreeView.Refresh();
+        }
     }
 
 
     public class SceneTreeView3dWorld : FastListViewBase
     {
+        class SuperSet : ISet<object>
+        {
+            #region not implemented
+            public int Count => throw new NotImplementedException();
+            public bool IsReadOnly => throw new NotImplementedException();
+            public void CopyTo(object[] array, int arrayIndex){throw new NotImplementedException();}
+            public void ExceptWith(IEnumerable<object> other){throw new NotImplementedException();}
+            public IEnumerator<object> GetEnumerator(){throw new NotImplementedException();}
+            public void IntersectWith(IEnumerable<object> other){throw new NotImplementedException();}
+            public bool IsProperSubsetOf(IEnumerable<object> other){throw new NotImplementedException();}
+            public bool IsProperSupersetOf(IEnumerable<object> other){throw new NotImplementedException();}
+            public bool IsSubsetOf(IEnumerable<object> other){throw new NotImplementedException();}
+            public bool IsSupersetOf(IEnumerable<object> other){throw new NotImplementedException();}
+            public bool Overlaps(IEnumerable<object> other){throw new NotImplementedException();}
+            public bool Remove(object item){throw new NotImplementedException();}
+            public bool SetEquals(IEnumerable<object> other){throw new NotImplementedException();}
+            public void SymmetricExceptWith(IEnumerable<object> other){throw new NotImplementedException();}
+            public void UnionWith(IEnumerable<object> other){throw new NotImplementedException();}
+            void ICollection<object>.Add(object item){throw new NotImplementedException();}
+            IEnumerator IEnumerable.GetEnumerator(){throw new NotImplementedException();}
+            #endregion
+
+            public bool Add(object item)
+            {
+                return true;
+            }
+
+            public void Clear()
+            {
+                
+            }
+
+            public bool Contains(object item)
+            {
+                return true;
+            }
+        }
+
+        Regex filter { get; set; } = new Regex(string.Empty);
+
+        string filterString = string.Empty;
+        public string FilterString
+        {
+            get => filterString;
+            set
+            {
+                filterString = value;
+                try
+                {
+                    filter = new Regex(value, RegexOptions.IgnoreCase);
+                }
+                catch(Exception) { }
+            }
+        }
+
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SM3DWorldScene Scene { get; set; }
 
-        HashSet<object> expandedNodes = new HashSet<object>();
+        ISet<object> expandedNodes = new HashSet<object>();
 
         protected override void OnLoad(EventArgs e)
         {
@@ -279,11 +353,12 @@ namespace SpotLight.GUI
 
         }
 
+        static readonly SuperSet superSet = new SuperSet();
+
         protected virtual void OnTree(TreeHandler tree)
         {
             GL_EditorFramework.EditorDrawables.IEditableObject _obj;
             Rail _rail;
-
 
             void HandleSelectionObject(SelectionChangeMode selectionChangeMode, int rangeStartOffset, int rangeEndOffset)
             {
@@ -336,6 +411,11 @@ namespace SpotLight.GUI
 
             if (Scene == null) return;
 
+            var bak = expandedNodes;
+
+            if(!string.IsNullOrEmpty(filterString))
+                expandedNodes = superSet;
+
             foreach (var (categoryName, prefix) in categories)
             {
                 tree.TreeNode(true, null, categoryName, prefix, false, null);
@@ -365,6 +445,9 @@ namespace SpotLight.GUI
 
                     foreach (I3dWorldObject obj in list)
                     {
+                        if (!filter.IsMatch(obj.ToString()))
+                            continue;
+
                         _obj = obj;
 
                         if (obj is Rail rail)
@@ -414,6 +497,8 @@ namespace SpotLight.GUI
             }
 
             tree.ExitBranch();
+
+            expandedNodes = bak;
         }
 
         protected override void DrawItems(DrawItemHandler handler)
@@ -515,21 +600,29 @@ namespace SpotLight.GUI
 
         protected override object Select(int rangeMin, int rangeMax, SelectionChangeMode selectionChangeMode)
         {
+            int _rangeMin = rangeMin;
+            int _rangeMax = rangeMax;
+
+            object lastSelected = null;
+
             if (selectionChangeMode == SelectionChangeMode.SET)
                 Scene.SelectedObjects.Clear();
 
             void TreeNode(bool isExpandable, Image image, string text, object item, bool isSelected, TreeHandler.TreeNodeSelectionHandler selectionHandler)
             {
-                selectionHandler?.Invoke(selectionChangeMode, rangeMin, rangeMax);
+                selectionHandler?.Invoke(selectionChangeMode, _rangeMin, _rangeMax);
 
-                rangeMin--;
-                rangeMax--;
+                if (_rangeMax == 0)
+                    lastSelected = item;
+
+                _rangeMin--;
+                _rangeMax--;
             }
 
             OnTree(new TreeHandler(TreeNode));
 
             //TODO return last selected
-            return null;
+            return lastSelected;
         }
 
         //TODO
