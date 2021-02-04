@@ -103,6 +103,7 @@ namespace SpotLight
 
             GrowSelectionToolStripMenuItem.ShortcutKeyDisplayString = KeyStrokeName(Keys.Control|Keys.Oemplus).Replace("Oemplus","+");
 
+            MainTabControl.SelectedTab = ObjectsTabPage;
             LevelGLControlModern.CameraDistance = 20;
 
             MainSceneListView.ListExited += MainSceneListView_ListExited;
@@ -334,7 +335,10 @@ namespace SpotLight
 
 
                 if(fullySelectedRails.Count==1 && selection.Count == fullySelectedRails[0].PathPoints.Count)
+                {
+                    MainTabControl.SelectedTab = ObjectsTabPage;
                     MainSceneListView.TryEnsureVisible(fullySelectedRails[0]);
+                }
             }
             else if (selection.Count == 0)
                 CurrentObjectLabel.Text = SpotlightToolStripStatusLabel.Text = NothingSelected;
@@ -345,7 +349,7 @@ namespace SpotLight
                 CurrentObjectLabel.Text = selected.ToString() + " " + SelectedText.ToLower();
                 SpotlightToolStripStatusLabel.Text = SelectedText+$" \"{selected.ToString()}\".";
 
-
+                MainTabControl.SelectedTab = ObjectsTabPage;
                 MainSceneListView.TryEnsureVisible(selected);
             }
             MainSceneListView.Refresh();
@@ -857,6 +861,8 @@ namespace SpotLight
                 scene.FocusOn(zone.ObjLists[playerListName][0]);
             }
             #endregion
+
+            MainTabControl.SelectedTab = ObjectsTabPage;
         }
 
         private void AssignSceneEvents(SM3DWorldScene scene)
@@ -902,12 +908,17 @@ namespace SpotLight
             if(e.List is List<RailPoint> points)
             {
                 if (points.Count > 0)
+                {
+                    MainTabControl.SelectedTab = ObjectsTabPage;
                     MainSceneListView.TryEnsureVisible(points[0]);
+                }
 
                 return;
             }
 
             MainSceneListView.EnterList(e.List);
+
+            MainTabControl.SelectedTab = ObjectsTabPage;
         }
 
         private void MainSceneListView_ItemClicked(object sender, ItemClickedEventArgs e)
