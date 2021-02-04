@@ -542,6 +542,11 @@ namespace SpotLight.EditorDrawables
             string[] DB_objectNames;
             string[] DB_modelNames;
 
+            string classNameAlias;
+            bool showClassNameAlias;
+            string classNameInfo;
+            bool showClassNameInfo;
+
             public BasicPropertyUIContainer(General3dWorldObject obj, EditorSceneBase scene)
             {
                 this.obj = obj;
@@ -557,6 +562,19 @@ namespace SpotLight.EditorDrawables
                     DB_objectNames = Array.Empty<string>();
                     DB_modelNames = Array.Empty<string>();
                 }
+
+                UpdateClassNameInfo();
+            }
+
+            void UpdateClassNameInfo()
+            {
+                var information = Program.InformationDB.GetInformation(obj.ClassName);
+
+                showClassNameAlias = information.EnglishName != null;
+                classNameAlias = "aka " + information.EnglishName;
+
+                showClassNameInfo = information.Description != string.Empty;
+                classNameInfo = information.Description;
             }
 
             public void DoUI(IObjectUIControl control)
@@ -570,7 +588,14 @@ namespace SpotLight.EditorDrawables
                     control.TextInput(obj.ID, "Object ID");
 
                 obj.ObjectName = control.DropDownTextInput("Object Name", obj.ObjectName, DB_objectNames);
+
+                if(showClassNameInfo)
+                    control.SetTooltip(classNameInfo);
                 obj.ClassName = control.TextInput(obj.ClassName, "Class Name");
+                if(showClassNameAlias)
+                    control.PlainText(classNameAlias);
+                control.SetTooltip(null);
+
                 obj.ModelName = control.DropDownTextInput("Model Name", obj.ModelName, DB_modelNames);
 
                 control.VerticalSeperator();
@@ -624,6 +649,8 @@ namespace SpotLight.EditorDrawables
                 capture = null;
 
                 obj.DoModelLoad();
+
+                UpdateClassNameInfo();
 
                 scene.Refresh();
             }
