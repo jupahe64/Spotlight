@@ -322,6 +322,12 @@ namespace SpotLight.EditorDrawables
                     control.SkipPickingColors(1);
                     return;
                 }
+
+                if (!SpotLight.Properties.Settings.Default.DrawTransparentWalls && ObjectName.Contains("TransparentWall"))
+                {
+                    control.SkipPickingColors(1);
+                    return;
+                }
             }
 
             bool hovered = editorScene.Hovered == this;

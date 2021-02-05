@@ -49,13 +49,14 @@
             this.ProjectPathButton = new System.Windows.Forms.Button();
             this.ProjectPathLabel = new System.Windows.Forms.Label();
             this.MiscellaneousGroupBox = new System.Windows.Forms.GroupBox();
+            this.SplashTestButton = new System.Windows.Forms.Button();
             this.SplashSizeComboBox = new System.Windows.Forms.ComboBox();
             this.SplashSizeLabel = new System.Windows.Forms.Label();
             this.LanguageComboBox = new System.Windows.Forms.ComboBox();
             this.LanguageLabel = new System.Windows.Forms.Label();
             this.ProjectPathTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.GamePathTextBox = new GL_EditorFramework.SuggestingTextBox();
-            this.SplashTestButton = new System.Windows.Forms.Button();
+            this.RenderTransparentWallsCheckBox = new System.Windows.Forms.CheckBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
@@ -135,6 +136,7 @@
             // 
             // RenderingGroupBox
             // 
+            this.RenderingGroupBox.Controls.Add(this.RenderTransparentWallsCheckBox);
             this.RenderingGroupBox.Controls.Add(this.RenderSkyboxesCheckBox);
             this.RenderingGroupBox.Controls.Add(this.PlayerLabel);
             this.RenderingGroupBox.Controls.Add(this.PlayerComboBox);
@@ -288,6 +290,16 @@
             this.MiscellaneousGroupBox.TabStop = false;
             this.MiscellaneousGroupBox.Text = "Miscellaneous";
             // 
+            // SplashTestButton
+            // 
+            this.SplashTestButton.Location = new System.Drawing.Point(414, 19);
+            this.SplashTestButton.Name = "SplashTestButton";
+            this.SplashTestButton.Size = new System.Drawing.Size(62, 21);
+            this.SplashTestButton.TabIndex = 12;
+            this.SplashTestButton.Text = "Test";
+            this.SplashTestButton.UseVisualStyleBackColor = true;
+            this.SplashTestButton.Click += new System.EventHandler(this.SplashTestButton_Click);
+            // 
             // SplashSizeComboBox
             // 
             this.SplashSizeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -354,15 +366,18 @@
             this.GamePathTextBox.TabIndex = 8;
             this.GamePathTextBox.ValueEntered += new System.ComponentModel.CancelEventHandler(this.GamePathTextBox_ValueEntered);
             // 
-            // SplashTestButton
+            // RenderTransparentWallsCheckBox
             // 
-            this.SplashTestButton.Location = new System.Drawing.Point(414, 19);
-            this.SplashTestButton.Name = "SplashTestButton";
-            this.SplashTestButton.Size = new System.Drawing.Size(62, 21);
-            this.SplashTestButton.TabIndex = 12;
-            this.SplashTestButton.Text = "Test";
-            this.SplashTestButton.UseVisualStyleBackColor = true;
-            this.SplashTestButton.Click += new System.EventHandler(this.SplashTestButton_Click);
+            this.RenderTransparentWallsCheckBox.AutoSize = true;
+            this.RenderTransparentWallsCheckBox.Checked = true;
+            this.RenderTransparentWallsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.RenderTransparentWallsCheckBox.Location = new System.Drawing.Point(298, 19);
+            this.RenderTransparentWallsCheckBox.Name = "RenderTransparentWallsCheckBox";
+            this.RenderTransparentWallsCheckBox.Size = new System.Drawing.Size(147, 17);
+            this.RenderTransparentWallsCheckBox.TabIndex = 4;
+            this.RenderTransparentWallsCheckBox.Text = "Render TransparentWalls";
+            this.RenderTransparentWallsCheckBox.UseVisualStyleBackColor = true;
+            this.RenderTransparentWallsCheckBox.CheckedChanged += new System.EventHandler(this.RenderTransparentWallsCheckBox_CheckedChanged);
             // 
             // SettingsForm
             // 
@@ -430,5 +445,6 @@
         private System.Windows.Forms.ComboBox SplashSizeComboBox;
         private System.Windows.Forms.Label SplashSizeLabel;
         private System.Windows.Forms.Button SplashTestButton;
+        private System.Windows.Forms.CheckBox RenderTransparentWallsCheckBox;
     }
 }

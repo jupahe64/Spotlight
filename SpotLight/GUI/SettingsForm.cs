@@ -86,6 +86,8 @@ namespace SpotLight
 
             RenderAreaCheckBox.Checked = Properties.Settings.Default.DrawAreas;
             RenderSkyboxesCheckBox.Checked = Properties.Settings.Default.DrawSkyBoxes;
+            RenderTransparentWallsCheckBox.Checked = Properties.Settings.Default.DrawTransparentWalls;
+
             switch (Properties.Settings.Default.PlayerChoice)
             {
                 case "None":
@@ -184,6 +186,13 @@ namespace SpotLight
         private void RenderSkyboxesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.DrawSkyBoxes = RenderSkyboxesCheckBox.Checked;
+            Properties.Settings.Default.Save();
+            Home.LevelGLControlModern.Refresh();
+        }
+
+        private void RenderTransparentWallsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DrawTransparentWalls = RenderTransparentWallsCheckBox.Checked;
             Properties.Settings.Default.Save();
             Home.LevelGLControlModern.Refresh();
         }
