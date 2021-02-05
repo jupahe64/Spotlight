@@ -79,6 +79,7 @@
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.CancelAddObjectButton = new System.Windows.Forms.Button();
+            this.restartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -288,7 +289,8 @@
             this.OpenExToolStripMenuItem,
             this.SaveToolStripMenuItem,
             this.SaveAsToolStripMenuItem,
-            this.OptionsToolStripMenuItem});
+            this.OptionsToolStripMenuItem,
+            this.restartToolStripMenuItem});
             this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
             this.FileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.FileToolStripMenuItem.Text = "File";
@@ -602,6 +604,13 @@
             this.CancelAddObjectButton.Visible = false;
             this.CancelAddObjectButton.Click += new System.EventHandler(this.CancelAddObjectButton_Click);
             // 
+            // restartToolStripMenuItem
+            // 
+            this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
+            this.restartToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.restartToolStripMenuItem.Text = "Restart";
+            this.restartToolStripMenuItem.Click += new System.EventHandler(this.RestartToolStripMenuItem_Click);
+            // 
             // LevelEditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -691,6 +700,7 @@
         private System.Windows.Forms.Button CancelAddObjectButton;
         private System.Windows.Forms.ToolStripMenuItem invertSelectionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MoveToSpecificListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem restartToolStripMenuItem;
     }
 }
 

@@ -1124,6 +1124,7 @@ namespace SpotLight.Database
                 else
                     System.Diagnostics.Debugger.Break();
 
+                stream.Close();
                 return;
             }
             while (stream.Position < stream.Length)

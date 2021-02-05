@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SpotLight.GUI;
+using OpenTK;
+using System.Drawing;
 
 namespace SpotLight
 {
@@ -46,8 +48,46 @@ namespace SpotLight
             else
                 CurrentLanguage = new Language();
 
-            LevelEditorForm LEF = new LevelEditorForm();
-            Application.Run(LEF);
+
+            Form host = new Form();
+
+            host.Controls.Add(new GLControl());
+
+            host.Load += (x, y) =>
+            {
+                StartUpForm = new LevelEditorForm();
+
+                Rectangle? bounds = null;
+
+                while (StartUpForm != null)
+                {
+                    var f = StartUpForm;
+                    StartUpForm = null;
+
+                    f.Load += (x, y) =>
+                    {
+                        if(bounds!=null)
+                            f.SetBounds(bounds.Value.X, bounds.Value.Y, bounds.Value.Width, bounds.Value.Height);
+                    };
+
+                    f.Shown += (x,y) => f.TopLevel = true;
+
+                    f.ShowDialog(host);
+                    bounds = f.DesktopBounds;
+                }
+
+                host.Close();
+            };
+
+
+            Application.Run(host);
+        }
+
+        static Form StartUpForm; 
+
+        public static void SetRestartForm(Form form)
+        {
+            StartUpForm = form;
         }
 
         /// <summary>

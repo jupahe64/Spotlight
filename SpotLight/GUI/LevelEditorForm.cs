@@ -85,6 +85,25 @@ namespace SpotLight
             }
         }
 
+        public LevelEditorForm(DocumentTabControl.DocumentTab[] documentTabs, DocumentTabControl.DocumentTab selectedTab, QuickFavoriteControl.QuickFavorite[] quickFavorites)
+            :this()
+        {
+            foreach (var item in documentTabs)
+            {
+                ZoneDocumentTabControl.AddTab(item, false);
+            }
+
+            foreach (var item in quickFavorites)
+            {
+                QuickFavoriteControl.AddFavorite(item);
+            }
+
+            ZoneDocumentTabControl.Select(selectedTab);
+
+            if(currentScene!=null)
+                SetAppStatus(true);
+        }
+
         public LevelEditorForm()
         {
             InitializeComponent();
@@ -1449,6 +1468,21 @@ Would you like to rebuild the database from your 3DW Files?";
                 MoveToTargetList(currentScene.EditZone.ObjLists[listName]);
                 //TODO set status text
             }
+        }
+
+        private void RestartToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var tabs = ZoneDocumentTabControl.Tabs.ToArray();
+            var selected = ZoneDocumentTabControl.SelectedTab;
+
+            ZoneDocumentTabControl.ClearTabs();
+
+            currentScene?.Disconnect(LevelGLControlModern);
+
+            ((List<GL_EditorFramework.GL_Core.GL_ControlModern>)typeof(Framework).GetField("modernGlControls", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).Remove(LevelGLControlModern);
+
+            Program.SetRestartForm(new LevelEditorForm(tabs, selected, QuickFavoriteControl.Favorites.ToArray()));
+            Close();
         }
     }
 }

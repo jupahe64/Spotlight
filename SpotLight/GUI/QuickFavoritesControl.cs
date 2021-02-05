@@ -18,9 +18,9 @@ namespace SpotLight
     {
         public QuickFavoriteControl.QuickFavorite Favorite { get; set; }
 
-        public QuickFavoriteClosingEventArgs(QuickFavoriteControl.QuickFavorite tab)
+        public QuickFavoriteClosingEventArgs(QuickFavoriteControl.QuickFavorite favorite)
         {
-            Favorite = tab;
+            Favorite = favorite;
         }
     }
 
@@ -107,9 +107,9 @@ Closed
             Invalidate();
         }
 
-        public void Select(QuickFavorite tab)
+        public void Select(QuickFavorite favorite)
         {
-            int index = favorites.IndexOf(tab);
+            int index = favorites.IndexOf(favorite);
             if (index != -1)
                 Select(index);
         }
@@ -128,9 +128,9 @@ Closed
             Invalidate();
         }
 
-        public void AddFavorite(QuickFavorite tab)
+        public void AddFavorite(QuickFavorite favorite)
         {
-            favorites.Add(tab);
+            favorites.Add(favorite);
 
             Invalidate();
         }
@@ -139,12 +139,12 @@ Closed
 
         public Font HeaderFont { get; private set; } = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
 
-        public void InsertFavorite(int index, QuickFavorite tab, bool select)
+        public void InsertFavorite(int index, QuickFavorite favorite, bool select)
         {
             if (index < 0 || index > favorites.Count)
                 throw new ArgumentOutOfRangeException(nameof(index), index, "Index must be within the bounds of "+nameof(Favorites));
 
-            favorites.Insert(index, tab);
+            favorites.Insert(index, favorite);
 
             if (select)
             {
@@ -155,9 +155,9 @@ Closed
             Invalidate();
         }
 
-        public void RemoveFavorite(QuickFavorite tab)
+        public void RemoveFavorite(QuickFavorite favorite)
         {
-            int index = favorites.IndexOf(tab);
+            int index = favorites.IndexOf(favorite);
             if (index != -1)
                 RemoveFavorite(index);
         }
