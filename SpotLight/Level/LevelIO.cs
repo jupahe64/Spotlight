@@ -58,7 +58,7 @@ namespace SpotLight.Level
             else
                 obj = new General3dWorldObject(in info, zone, out loadLinks);
 
-            if (isLinked && linkedObjsByID != null)
+            if (isLinked && linkedObjsByID != null && !(obj is Rail))
             {
                 if (!linkedObjsByID.ContainsKey(info.ID))
                     linkedObjsByID.Add(info.ID, obj);
