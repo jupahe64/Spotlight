@@ -33,8 +33,11 @@ namespace SpotLight.GUI
             }
         }
 
-
-
+        [Program.Localized]
+        string UnsavedDescriptionsHeader = "Unsafed Changes";
+        [Program.Localized]
+        string UnsavedDescriptionsFooter = "have unsafed changes, do you want to save them?";
+        
         readonly Control focusControl = new Label() { Size = new Size() };
 
         private byte[] infoDB_backup;
@@ -85,7 +88,7 @@ namespace SpotLight.GUI
             ClearForm();
 
             CenterToParent();
-            //Localize(); TODO
+            Localize();
 
             ObjDBListView.ShowGroups = true;
 
@@ -252,6 +255,25 @@ namespace SpotLight.GUI
 
             this.scene = scene;
             this.quickFavorites = quickFavorites;
+        }
+
+        private void Localize()
+        {
+            this.Localize(
+                ClassNameColumn,
+                EnglishNameColumn,
+                ObjListColumn,
+                SearchLabel,
+                PropertiesLabel,
+                ToQuickFavoritesButton,
+                SelectObjectButton,
+                ObjectNameLabel,
+                ModelNameLabel,
+                ObjectsTab,
+                RailsTab,
+                AreasTab,
+                AreaShapeLabel
+                );
         }
 
         string caption;
@@ -589,16 +611,15 @@ namespace SpotLight.GUI
             if (editedInformations.Count == 0)
                 return;
 
-            //TODO Localize
             string message = "";
 
             foreach (var className in editedInformations)
                 message += className + '\n';
 
-            message += '\n' + "have unsafed changes, do you want to save them?";
+            message += '\n' + UnsavedDescriptionsFooter;
 
 
-            DialogResult result = MessageBox.Show(message, "Unsafed Changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+            DialogResult result = MessageBox.Show(message, UnsavedDescriptionsHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
             {
                 Program.InformationDB.Save(Program.SODDPath);

@@ -21,6 +21,9 @@ namespace SpotLight
             StageTypeComboBox.DataSource = new BindingSource(comboSource, null);
             StageTypeComboBox.DisplayMember = "Value";
             StageTypeComboBox.ValueMember = "Key";
+
+
+
             StageList = new StageList(Program.TryGetPathViaProject("SystemData", "StageList.szs"));
 
             WorldIDNumericUpDown.Maximum = StageList.Worlds.Count;
@@ -478,29 +481,25 @@ namespace SpotLight
         #region Localization
         public void Localize()
         {
-            Text = Program.CurrentLanguage.GetTranslation("LevelParamTitle") ?? "Spotlight - Level Parameters";
-            SaveSuccessHeader = Program.CurrentLanguage.GetTranslation("SaveSuccessHeader") ?? "Notice";
-            SaveSuccessText = Program.CurrentLanguage.GetTranslation("SaveSuccessText") ?? "Save Successful!";
-            SaveFailedHeader = Program.CurrentLanguage.GetTranslation("SaveSuccessHeader") ?? "Warning";
-            SaveFailedText = Program.CurrentLanguage.GetTranslation("SaveSuccessText") ?? "Save Failed!";
+            this.Localize(
+            AddLevelButton,
+            DeleteLevelButton,
+            SaveToolStripMenuItem,
+            StageNameLabel,
+            StageNameTextBox,
+            StageTypeLabel,
+            GlobalIDLabel,
+            StampCheckBox,
+            TimeLabel,
+            GreenStarUnlockCountLabel,
+            GreenStarLabel,
+            DoubleCherryLabel,
+            GhostTimeLabel,
+            GhostIDLabel,
 
-            AddLevelButton.Text = Program.CurrentLanguage.GetTranslation("AddLevel") ?? "Add Level";
-            DeleteLevelButton.Text = Program.CurrentLanguage.GetTranslation("DeleteLevel") ?? "Delete Level";
-            SaveToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("Save") ?? "Save";
-            StageNameLabel.Text = Program.CurrentLanguage.GetTranslation("StageNameLabel") ?? "Stage Name";
-            StageNameTextBox.Text = Program.CurrentLanguage.GetTranslation("StageNameDefault") ?? "No Level Selected";
-            StageTypeLabel.Text = Program.CurrentLanguage.GetTranslation("StageTypeLabel") ?? "Stage Type";
-            GlobalIDLabel.Text = Program.CurrentLanguage.GetTranslation("GlobalIDLabel") ?? "Global ID";
-            StampCheckBox.Text = Program.CurrentLanguage.GetTranslation("StampCheckBox") ?? "Has Stamp?";
-            TimeLabel.Text = Program.CurrentLanguage.GetTranslation("TimeLabel") ?? "Time";
-            GreenStarUnlockCountLabel.Text = Program.CurrentLanguage.GetTranslation("GreenStarUnlockCountLabel") ?? "Green Star Unlock Requirement";
-            GreenStarLabel.Text = Program.CurrentLanguage.GetTranslation("GreenStarLabel") ?? "Green Stars";
-            DoubleCherryLabel.Text = Program.CurrentLanguage.GetTranslation("DoubleCherryLabel") ?? "Double Cherry Max";
-            GhostTimeLabel.Text = Program.CurrentLanguage.GetTranslation("GhostTimeLabel") ?? "Mii Ghost Time";
-            GhostIDLabel.Text = Program.CurrentLanguage.GetTranslation("GhostIDLabel") ?? "Mii Ghost ID";
-
-            CourseIDColumnHeader.Text = Program.CurrentLanguage.GetTranslation("CourseIDColumnHeader") ?? "CourseID";
-            LevelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("LevelNameColumnHeader") ?? "Level Name";
+            CourseIDColumnHeader,
+            LevelNameColumnHeader
+            );
 
             for (int i = 0; i < WorldComboBox.Items.Count - 1; i++)
             {
@@ -508,11 +507,15 @@ namespace SpotLight
                     WorldComboBox.Items[i] = value;
             }
         }
-        
-        private string SaveSuccessHeader { get; set; }
-        private string SaveSuccessText { get; set; }
-        private string SaveFailedHeader { get; set; }
-        private string SaveFailedText { get; set; }
+
+        //[Program.Localized]
+        //string SaveSuccessHeader = "Notice";
+        //[Program.Localized]
+        //string SaveSuccessText = "Save Successful!";
+        //[Program.Localized]
+        //string SaveFailedHeader = "Warning";
+        //[Program.Localized]
+        //string SaveFailedText = "Save Failed!";
         #endregion
     }
 }

@@ -96,10 +96,11 @@ namespace SpotLight
             FilterZonesCheckbox_CheckedChanged(null, null);
 
             #region Localize()
-            Text = Program.CurrentLanguage.GetTranslation("AddZonesTitle") ?? "Spotlight - Add Zone";
-            FilterZonesCheckbox.Text = Program.CurrentLanguage.GetTranslation("FilterZonesCheckbox") ?? "Filter Zones";
+
+            this.Localize(FilterZonesCheckbox);
+
             OKButton.Text = Program.CurrentLanguage.GetTranslation("OKButton") ?? "OK";
-            CancelSelectionButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
+            CancelSelectionButton.Text = Program.CurrentLanguage.GetTranslation("CancelButton") ?? "Cancel";
             #endregion
         }
 
@@ -111,7 +112,7 @@ namespace SpotLight
 
             foreach (string filePath in Directory.EnumerateFiles(Program.ProjectPath.Equals("") ? Program.BaseStageDataPath: Path.Combine(Program.ProjectPath, "StageData")))
             {
-                if (!filePath.EndsWith(SM3DWorldZone.MAP_SUFFIX))
+                if (!filePath.EndsWith(SM3DWorldZone.MAP_SUFFIX) && !filePath.EndsWith(SM3DWorldZone.COMBINED_SUFFIX))
                     continue;
                 if (FilterZonesCheckbox.Checked && !filePath.Contains("Zone"))
                     continue;

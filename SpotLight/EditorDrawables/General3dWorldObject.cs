@@ -408,7 +408,7 @@ namespace SpotLight.EditorDrawables
             string Result = Program.TryGetPathViaProject("ObjectData", mdlName + ".szs");
             if (File.Exists(Result))
             {
-                SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Result));
+                SARCExt.SarcData objArc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(Result));
 
                 if (objArc.Files.ContainsKey(mdlName + ".bfres"))
                 {

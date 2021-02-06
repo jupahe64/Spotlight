@@ -115,31 +115,6 @@ namespace SpotLight.ObjectRenderers
             Submit(PrimitiveType.Lines, "AreaCubeBase", indices, data);
             #endregion
 
-#if ODYSSEY
-            #region AreaCubeTop
-
-            r = 5;
-            t = -10;
-            b = 0;
-
-            data = new float[]
-            {
-                -r, t, -r,  0, 0.5f, 1, 1,
-                 r, t, -r,  0, 0.5f, 1, 1,
-                -r, t,  r,  0, 0.5f, 1, 1,
-                 r, t,  r,  0, 0.5f, 1, 1,
-
-                -r, b, -r,  0, 0, 1, 1,
-                 r, b, -r,  0, 0, 1, 1,
-                -r, b,  r,  0, 0, 1, 1,
-                 r, b,  r,  0, 0, 1, 1,
-
-                 0, b,  0,  0, 0, 0.5f, 1,
-            };
-
-            Submit(PrimitiveType.Lines, "AreaCubeTop", indices, data);
-            #endregion
-
             #region AreaCubeCenter
             indices = new List<int>();
 
@@ -192,6 +167,32 @@ namespace SpotLight.ObjectRenderers
 
             Submit(PrimitiveType.Lines, "AreaCubeCenter", indices, data);
             #endregion
+
+#if ODYSSEY
+            #region AreaCubeTop
+
+            r = 5;
+            t = -10;
+            b = 0;
+
+            data = new float[]
+            {
+                -r, t, -r,  0, 0.5f, 1, 1,
+                 r, t, -r,  0, 0.5f, 1, 1,
+                -r, t,  r,  0, 0.5f, 1, 1,
+                 r, t,  r,  0, 0.5f, 1, 1,
+
+                -r, b, -r,  0, 0, 1, 1,
+                 r, b, -r,  0, 0, 1, 1,
+                -r, b,  r,  0, 0, 1, 1,
+                 r, b,  r,  0, 0, 1, 1,
+
+                 0, b,  0,  0, 0, 0.5f, 1,
+            };
+
+            Submit(PrimitiveType.Lines, "AreaCubeTop", indices, data);
+            #endregion
+
 #endif
 
             #region AreaCylinder
@@ -363,7 +364,8 @@ namespace SpotLight.ObjectRenderers
 
             Submit(PrimitiveType.Lines, "AreaCylinderCenter", indices, data);
             #endregion
-
+            
+#endif
 
             #region AreaSphere
             indices = new List<int>();
@@ -448,7 +450,6 @@ namespace SpotLight.ObjectRenderers
 
             Submit(PrimitiveType.Lines, "AreaSphere", indices, data);
             #endregion
-#endif
 
             #region TransparentWall
             indices = new List<int>();

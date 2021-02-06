@@ -20,21 +20,21 @@ namespace SpotLight.Level
         public static HashSet<string> AreaModelNames { get; private set; } = new HashSet<string>
         {
                 "AreaCubeBase",
+                "AreaCubeCenter",
 #if ODYSSEY
                 "AreaCubeTop",
-                "AreaCubeCenter",
 #endif
                 "AreaCylinder",
 #if ODYSSEY
                 "AreaCylinderTop",
                 "AreaCylinderCenter",
-                "AreaSphere",
 
                 "AreaPrismBase",
                 "AreaPrismTop",
                 "AreaPrismCenter",
+                "AreaInfinite",
 #endif
-                "AreaInfinite"
+                "AreaSphere",
         };
 
         /// <summary>
@@ -120,6 +120,25 @@ namespace SpotLight.Level
             return obj;
         }
 
+        public static void GetObjectInfosCombined(string fileName, 
+            Dictionary<string, List<ObjectInfo>> MAPinfosByListName,
+            Dictionary<string, List<ObjectInfo>> DESIGNinfosByListName,
+            Dictionary<string, List<ObjectInfo>> SOUNDinfosByListName)
+        {
+            string levelName;
+
+            string levelNameWithSuffix = Path.GetFileName(fileName);
+
+            levelName = levelNameWithSuffix.Remove(levelNameWithSuffix.Length - SM3DWorldZone.COMBINED_SUFFIX.Length);
+
+
+            SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+
+            GetObjectInfos(MAPinfosByListName, levelName, "Map", sarc);
+            GetObjectInfos(DESIGNinfosByListName, levelName, "Design", sarc);
+            GetObjectInfos(SOUNDinfosByListName, levelName, "Sound", sarc);
+        }
+
         public static void GetObjectInfos(string fileName, Dictionary<string, List<ObjectInfo>> infosByListName)
         {
             string levelName;
@@ -148,10 +167,16 @@ namespace SpotLight.Level
             }
 
             SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+            GetObjectInfos(infosByListName, levelName, categoryName, sarc);
+        }
 
+        private static void GetObjectInfos(Dictionary<string, List<ObjectInfo>> infosByListName, string levelName, string categoryName, SarcData sarc)
+        {
             Dictionary<long, ObjectInfo> objectInfosByReference = new Dictionary<long, ObjectInfo>();
 
-            ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(sarc.Files[levelName + categoryName + ".byml"]));
+            if(sarc.Files.TryGetValue(levelName + categoryName + ".byml", out var data))
+            {
+                ByamlIterator byamlIter = new ByamlIterator(new MemoryStream(data));
 #if ODYSSEY
             foreach (ArrayEntry scenario in byamlIter.IterRootArray())
                 foreach (DictionaryEntry entry in scenario.IterDictionary())
@@ -167,19 +192,20 @@ namespace SpotLight.Level
                     }
                 }
 #else
-            foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
-            {
-                if (!infosByListName.ContainsKey(entry.Key))
-                    continue;
-
-                List<ObjectInfo> objectInfos = new List<ObjectInfo>();
-
-                foreach (ArrayEntry obj in entry.IterArray())
+                foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
                 {
-                    objectInfos.Add(ParseObjectInfo(obj, objectInfosByReference, infosByListName, entry.Key));
+                    if (!infosByListName.ContainsKey(entry.Key))
+                        continue;
+
+                    List<ObjectInfo> objectInfos = new List<ObjectInfo>();
+
+                    foreach (ArrayEntry obj in entry.IterArray())
+                    {
+                        objectInfos.Add(ParseObjectInfo(obj, objectInfosByReference, infosByListName, entry.Key));
+                    }
                 }
-            }
 #endif
+            }
         }
 
         const string str_Links = "Links";

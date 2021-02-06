@@ -383,37 +383,38 @@ namespace SpotLight
         #region Translations
         public void Localize()
         {
-            Text = Program.CurrentLanguage.GetTranslation("SettingsTitle") ?? "Spotlight - Settings";
-            DatabaseVersionBase = Program.CurrentLanguage.GetTranslation("DatabaseVersionBase") ?? "Database Last Built on: [DATABASEGENDATE].    Version: [VER]";
-            DescriptionVersionBase = Program.CurrentLanguage.GetTranslation("DescriptionVersionBase") ?? "Descriptions Last Edited on: [DATABASEGENDATE].    Version: [VER]";
-            FileDoesntExist = Program.CurrentLanguage.GetTranslation("FileDoesntExist") ?? "N/A (File doesn't exist)";
-            FileDeleted = Program.CurrentLanguage.GetTranslation("FileDeleted") ?? "N/A (File was deleted)";
-            SettingsInvalid = Program.CurrentLanguage.GetTranslation("SettingsInvalid") ?? "Invalid";
-            DatabaseOutdated = Program.CurrentLanguage.GetTranslation("DatabaseOutdated") ?? "Outdated";
-            DatabasePickerTitle = Program.CurrentLanguage.GetTranslation("DatabasePickerTitle") ?? "Select the Game Directory of Super Mario 3D World";
-            InvalidFolder = Program.CurrentLanguage.GetTranslation("InvalidFolder") ?? "The Directory doesn't contain ObjectData and StageData.";
-            InvalidGamePath = Program.CurrentLanguage.GetTranslation("DatabaseOutdated") ?? "The GamePath is invalid";
-            InvalidProjectPath = Program.CurrentLanguage.GetTranslation("DatabaseOutdated") ?? "The ProjectPath is invalid";
-            DatabaseRebuildSuccessText = Program.CurrentLanguage.GetTranslation("DatabaseRebuildSuccessText") ?? "Database has been rebuilt!";
-            DatabaseRebuildSuccessHeader = Program.CurrentLanguage.GetTranslation("DatabaseRebuildSuccessHeader") ?? "Success";
-            DescriptionClearText = Program.CurrentLanguage.GetTranslation("DescriptionClearText") ??
-@"Are you sure you want to empty out your description database?
-(This action cannot be undone)";
-            DescriptionClearHeader = Program.CurrentLanguage.GetTranslation("DescriptionClearHeader") ?? "Confirmation";
-            DescriptionClearSuccessText = Program.CurrentLanguage.GetTranslation("DescriptionClearSuccessText") ?? "Descriptions Deleted";
-            DescriptionClearSuccessHeader = Program.CurrentLanguage.GetTranslation("DescriptionClearSuccessHeader") ?? "Success";
-            ResetWarningText = Program.CurrentLanguage.GetTranslation("ResetWarningText") ?? "This will reset all your customizations, delete your Object Database and Description Database, and quit spotlight without saving.\nAre you sure you want to continue?";
-            ResetWarningHeader = Program.CurrentLanguage.GetTranslation("ResetWarningHeader") ?? "Warning";
+            this.Localize(
+                GamePathLabel,
+                ProjectPathLabel,
+                ObjectParameterGroupBox,
+                RebuildDatabaseButton,
+                ClearDescriptionsButton,
+                RenderingGroupBox,
+                RenderAreaCheckBox,
+                RenderSkyboxesCheckBox,
+                PlayerLabel,
 
-            GamePathLabel.Text = Program.CurrentLanguage.GetTranslation("GamePathLabel") ?? "Game Directory:";
-            ProjectPathLabel.Text = Program.CurrentLanguage.GetTranslation("ProjectPathLabel") ?? "Project Directory:";
-            ObjectParameterGroupBox.Text = Program.CurrentLanguage.GetTranslation("ObjectParameterGroupBox") ?? "Databases";
-            RebuildDatabaseButton.Text = Program.CurrentLanguage.GetTranslation("RebuildDatabaseButton") ?? "Rebuild";
-            ClearDescriptionsButton.Text = Program.CurrentLanguage.GetTranslation("ClearDescriptionsButton") ?? "Clear";
-            RenderingGroupBox.Text = Program.CurrentLanguage.GetTranslation("RenderingGroupBox") ?? "Rendering";
-            RenderAreaCheckBox.Text = Program.CurrentLanguage.GetTranslation("RenderAreaCheckBox") ?? "Render Areas";
-            RenderSkyboxesCheckBox.Text = Program.CurrentLanguage.GetTranslation("RenderSkyboxesCheckBox") ?? "Render Skyboxes";
-            PlayerLabel.Text = Program.CurrentLanguage.GetTranslation("PlayerLabel") ?? "Player:";
+                LoadingAndSavingGroupBox,
+                UniqueIDsCheckBox,
+                EditingGroupBox,
+                IDEditingCheckBox,
+                MiscellaneousGroupBox,
+                LanguageLabel,
+                SplashSizeLabel,
+                SplashTestButton,
+                ResetSpotlightButton,
+
+                LoadingAndSavingGroupBox,
+                UniqueIDsCheckBox,
+                EditingGroupBox,
+                IDEditingCheckBox,
+                MiscellaneousGroupBox,
+                LanguageLabel,
+                SplashSizeLabel,
+                SplashTestButton,
+                ResetSpotlightButton
+            );
+
             Loading = true;
             int tempplayerid = PlayerComboBox.SelectedIndex;
             PlayerComboBox.Items.Clear();
@@ -424,37 +425,7 @@ namespace SpotLight
             PlayerComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("PlayerToad") ?? "Toad");
             PlayerComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("PlayerRosalina") ?? "Rosalina");
             PlayerComboBox.SelectedIndex = tempplayerid;
-            switch (PlayerComboBox.SelectedIndex)
-            {
-                case 0:
-                    Properties.Settings.Default.PlayerChoice = "None";
-                    break;
-                case 1:
-                    Properties.Settings.Default.PlayerChoice = "Mario";
-                    break;
-                case 2:
-                    Properties.Settings.Default.PlayerChoice = "Luigi";
-                    break;
-                case 3:
-                    Properties.Settings.Default.PlayerChoice = "Peach";
-                    break;
-                case 4:
-                    Properties.Settings.Default.PlayerChoice = "Toad";
-                    break;
-                case 5:
-                    Properties.Settings.Default.PlayerChoice = "Rosalina";
-                    break;
-            }
             Loading = false;
-            LoadingAndSavingGroupBox.Text = Program.CurrentLanguage.GetTranslation("LoadingAndSavingGroupBox") ?? "Loading and Saving";
-            UniqueIDsCheckBox.Text = Program.CurrentLanguage.GetTranslation("UniqueIDsCheckBox") ?? "Only load unique ObjectIDs (disable if objects disappear when loading a custom level)";
-            EditingGroupBox.Text = Program.CurrentLanguage.GetTranslation("EditingGroupBox") ?? "Editing";
-            IDEditingCheckBox.Text = Program.CurrentLanguage.GetTranslation("IDEditingCheckBox") ?? "Enable ID Editing";
-            MiscellaneousGroupBox.Text = Program.CurrentLanguage.GetTranslation("MiscellaneousGroupBox") ?? "Miscellaneous";
-            LanguageLabel.Text = Program.CurrentLanguage.GetTranslation("LanguageLabel") ?? "Language:";
-            SplashSizeLabel.Text = Program.CurrentLanguage.GetTranslation("SplashSizeLabel") ?? "Splash Size:";
-            SplashTestButton.Text = Program.CurrentLanguage.GetTranslation("SplashTestButton") ?? "Test";
-            ResetSpotlightButton.Text = Program.CurrentLanguage.GetTranslation("ResetSpotlightButton") ?? "Reset";
 
             #region Databases
             string ver = SettingsInvalid;
@@ -491,26 +462,68 @@ namespace SpotLight
             date = File.GetLastWriteTime(Program.SODDPath);
             DescriptionInfoLabel.Text = DescriptionVersionBase.Replace("[DATABASEGENDATE]", date.Year.CompareTo(new DateTime(2018, 1, 1).Year) < 0 ? FileDoesntExist : date.ToLongDateString()).Replace("[VER]", ver);
             #endregion
+
+            switch (PlayerComboBox.SelectedIndex)
+            {
+                case 0:
+                    Properties.Settings.Default.PlayerChoice = "None";
+                    break;
+                case 1:
+                    Properties.Settings.Default.PlayerChoice = "Mario";
+                    break;
+                case 2:
+                    Properties.Settings.Default.PlayerChoice = "Luigi";
+                    break;
+                case 3:
+                    Properties.Settings.Default.PlayerChoice = "Peach";
+                    break;
+                case 4:
+                    Properties.Settings.Default.PlayerChoice = "Toad";
+                    break;
+                case 5:
+                    Properties.Settings.Default.PlayerChoice = "Rosalina";
+                    break;
+            }
         }
 
-        private string DatabaseVersionBase { get; set; }
-        private string DescriptionVersionBase { get; set; }
-        private string FileDoesntExist { get; set; }
-        private string FileDeleted { get; set; }
-        private string SettingsInvalid { get; set; }
-        private string DatabaseOutdated { get; set; }
-        private string DatabasePickerTitle { get; set; }
-        private string InvalidFolder { get; set; }
-        private string InvalidGamePath { get; set; }
-        private string InvalidProjectPath { get; set; }
-        private string DatabaseRebuildSuccessHeader { get; set; }
-        private string DatabaseRebuildSuccessText { get; set; }
-        private string DescriptionClearHeader { get; set; }
-        private string DescriptionClearText { get; set; }
-        private string DescriptionClearSuccessHeader { get; set; }
-        private string DescriptionClearSuccessText { get; set; }
-        private string ResetWarningHeader { get; set; }
-        private string ResetWarningText { get; set; }
+        [Program.Localized]
+        string DatabaseVersionBase = "Database Last Built on: [DATABASEGENDATE].    Version: [VER]";
+        [Program.Localized]
+        string DescriptionVersionBase = "Descriptions Last Edited on: [DATABASEGENDATE].    Version: [VER]";
+        [Program.Localized]
+        string FileDoesntExist = "N/A (File doesn't exist)";
+        [Program.Localized]
+        string FileDeleted = "N/A (File was deleted)";
+        [Program.Localized]
+        string SettingsInvalid = "Invalid";
+        [Program.Localized]
+        string DatabaseOutdated = "Outdated";
+        [Program.Localized]
+        string DatabasePickerTitle = "Select the Game Directory of Super Mario 3D World";
+        [Program.Localized]
+        string InvalidFolder = "The Directory doesn't contain ObjectData and StageData.";
+        [Program.Localized]
+        string InvalidGamePath = "The GamePath is invalid";
+        [Program.Localized]
+        string InvalidProjectPath = "The ProjectPath is invalid";
+        [Program.Localized]
+        string DatabaseRebuildSuccessText = "Database has been rebuilt!";
+        [Program.Localized]
+        string DatabaseRebuildSuccessHeader = "Success";
+        [Program.Localized]
+        string DescriptionClearText =
+        @"Are you sure you want to empty out your description database?
+(This action cannot be undone)";
+        [Program.Localized]
+        string DescriptionClearHeader = "Confirmation";
+        [Program.Localized]
+        string DescriptionClearSuccessText = "Descriptions Deleted";
+        [Program.Localized]
+        string DescriptionClearSuccessHeader = "Success";
+        [Program.Localized]
+        string ResetWarningText = "This will reset all your customizations, delete your Object Database and Description Database, and quit spotlight without saving.\nAre you sure you want to continue?";
+        [Program.Localized]
+        string ResetWarningHeader = "Warning";
 
         #endregion
 
@@ -534,6 +547,8 @@ namespace SpotLight
             Thread.Sleep(9999);
             Program.IsProgramReady = true;
         }
+
+        
     }
 
     public static class StringCollectionExtensions

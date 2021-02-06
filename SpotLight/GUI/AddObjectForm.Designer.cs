@@ -57,9 +57,7 @@
             this.PathShapeSelector = new SpotLight.GUI.PathShapeSelector();
             this.AreasTab = new System.Windows.Forms.TabPage();
             this.AreaShapeComboBox = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.olvColumn1 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.olvColumn2 = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.AreaShapeLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -423,7 +421,7 @@
             // AreasTab
             // 
             this.AreasTab.Controls.Add(this.AreaShapeComboBox);
-            this.AreasTab.Controls.Add(this.label2);
+            this.AreasTab.Controls.Add(this.AreaShapeLabel);
             this.AreasTab.Location = new System.Drawing.Point(4, 22);
             this.AreasTab.Name = "AreasTab";
             this.AreasTab.Padding = new System.Windows.Forms.Padding(3);
@@ -442,22 +440,14 @@
             this.AreaShapeComboBox.Size = new System.Drawing.Size(854, 21);
             this.AreaShapeComboBox.TabIndex = 12;
             // 
-            // label2
+            // AreaShapeLabel
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 440);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(63, 13);
-            this.label2.TabIndex = 11;
-            this.label2.Text = "Area Shape";
-            // 
-            // olvColumn1
-            // 
-            this.olvColumn1.Text = "English Name";
-            // 
-            // olvColumn2
-            // 
-            this.olvColumn2.Text = "English Name";
+            this.AreaShapeLabel.AutoSize = true;
+            this.AreaShapeLabel.Location = new System.Drawing.Point(6, 440);
+            this.AreaShapeLabel.Name = "AreaShapeLabel";
+            this.AreaShapeLabel.Size = new System.Drawing.Size(63, 13);
+            this.AreaShapeLabel.TabIndex = 11;
+            this.AreaShapeLabel.Text = "Area Shape";
             // 
             // AddObjectForm
             // 
@@ -524,12 +514,10 @@
         private BrightIdeasSoftware.OLVColumn ClassNameColumn;
         private BrightIdeasSoftware.OLVColumn EnglishNameColumn;
         private BrightIdeasSoftware.OLVColumn ObjListColumn;
-        private BrightIdeasSoftware.OLVColumn olvColumn1;
-        private BrightIdeasSoftware.OLVColumn olvColumn2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TabPage AreasTab;
         private System.Windows.Forms.ComboBox AreaShapeComboBox;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label AreaShapeLabel;
         private SpotLight.GUI.PathShapeSelector PathShapeSelector;
     }
 }

@@ -192,6 +192,8 @@ namespace SpotLight.Database
             string[] Designs = Directory.GetFiles(StageDataPath, $"*{SM3DWorldZone.DESIGN_SUFFIX}");
             string[] Sounds = Directory.GetFiles(StageDataPath, $"*{SM3DWorldZone.SOUND_SUFFIX}");
 
+            string[] Combined = Directory.GetFiles(StageDataPath, $"*{SM3DWorldZone.COMBINED_SUFFIX}");
+
             Dictionary<string, List<ObjectInfo>> MAPinfosByListName = new Dictionary<string, List<ObjectInfo>>()
             {
                 [nameof(ObjList.AreaList)] = new List<ObjectInfo>(),
@@ -235,6 +237,15 @@ namespace SpotLight.Database
                 GetObjectInfos(Designs[i], DESIGNinfosByListName);
             for (int i = 0; i < Sounds.Length; i++)
                 GetObjectInfos(Sounds[i], SOUNDinfosByListName);
+
+            for (int i = 0; i < Combined.Length; i++)
+            {
+                GetObjectInfosCombined(Combined[i],
+                MAPinfosByListName,
+                DESIGNinfosByListName,
+                SOUNDinfosByListName);
+            }
+
 
             void GetParameters(Dictionary<string, List<ObjectInfo>> infosByListName, Category category)
             {
@@ -391,7 +402,6 @@ namespace SpotLight.Database
                 }
             }
         }
-
 
         private void CollectAreaParameter(ref ObjectInfo info, Category category)
         {

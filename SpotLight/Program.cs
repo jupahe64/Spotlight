@@ -90,6 +90,76 @@ namespace SpotLight
             StartUpForm = form;
         }
 
+
+        static string base_localization = "";
+
+        static void AddLocalizationLine(string id, string text) => base_localization += id + "|" + text.Replace("|", "</>").Replace(@"
+", "<N>").Replace("\n", "<N>") + "\n";
+
+        public static void Localize(this Control control, params object[] controls)
+        {
+            if(control is Form)
+            {
+                string id = control.Name + "Header";
+
+                AddLocalizationLine(id,control.Text);
+
+                string localized = CurrentLanguage.GetTranslation(id);
+
+                if (!string.IsNullOrEmpty(localized))
+                    control.Text = localized;
+            }
+
+
+            Type type = control.GetType();
+
+            foreach (var item in controls)
+            {
+                if(item is Control _control)
+                {
+                    string id = type.Name + "." + _control.Name;
+
+                    AddLocalizationLine(id, _control.Text);
+
+                    string localized = CurrentLanguage.GetTranslation(id);
+
+                    if (!string.IsNullOrEmpty(localized))
+                        _control.Text = localized;
+                }
+                else if (item is ToolStripItem _item)
+                {
+                    string id = type.Name + "." + _item.Name;
+
+                    AddLocalizationLine(id, _item.Text);
+
+                    string localized = CurrentLanguage.GetTranslation(id);
+
+                    if (!string.IsNullOrEmpty(localized))
+                        _item.Text = localized;
+                }
+            }
+
+            foreach (var field in type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                if (!field.CustomAttributes.Any((x) => x.AttributeType == typeof(LocalizedAttribute)))
+                    continue;
+
+                string id = field.Name;
+
+                AddLocalizationLine(id, (string)field.GetValue(control));
+
+                string localized = CurrentLanguage.GetTranslation(id);
+
+                if (!string.IsNullOrEmpty(localized))
+                    field.SetValue(control, localized);
+            }
+        }
+
+        public class LocalizedAttribute : Attribute
+        {
+
+        }
+
         /// <summary>
         /// Checks the current GamePath to see if it is a valid SM3DW path
         /// </summary>

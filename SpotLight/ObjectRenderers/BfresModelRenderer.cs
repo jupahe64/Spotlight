@@ -9,7 +9,6 @@ using GL_EditorFramework;
 using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
 using OpenTK.Graphics.OpenGL;
-using SZS;
 using OpenTK;
 using BfresLibrary;
 using BfresLibrary.Switch;
@@ -22,6 +21,7 @@ using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using System.ComponentModel;
 using SharpGLTF.Materials;
+using SZS;
 
 namespace SpotLight.ObjectRenderers
 {
@@ -141,7 +141,7 @@ namespace SpotLight.ObjectRenderers
             if (cache.ContainsKey(ModelName))
             {
                 cache.Remove(ModelName);
-                Submit(ModelName, new MemoryStream(SARC.UnpackRamN(new MemoryStream(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", ModelName+".szs")))).Files[ModelName+".bfres"]));
+                Submit(ModelName, new MemoryStream(SARCExt.SARC.UnpackRamN(new MemoryStream(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", ModelName+".szs")))).Files[ModelName+".bfres"]));
             }
         }
 
@@ -159,16 +159,23 @@ namespace SpotLight.ObjectRenderers
             {
                 if (LoadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
                 {
-                    SarcData objArc = SARC.UnpackRamN(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")));
-
-                    if (!texArcCache.ContainsKey(textureArc))
+                    try
                     {
-                        Dictionary<string, int> arc = new Dictionary<string, int>();
-                        texArcCache.Add(textureArc, arc);
-                        foreach(KeyValuePair<string,TextureShared> textureEntry in new ResFile(new MemoryStream(objArc.Files[textureArc + ".bfres"])).Textures)
+                        SARCExt.SarcData objArc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")));
+
+                        if (!texArcCache.ContainsKey(textureArc))
                         {
-                            arc.Add(textureEntry.Key, UploadTexture(textureEntry.Value));
+                            Dictionary<string, int> arc = new Dictionary<string, int>();
+                            texArcCache.Add(textureArc, arc);
+                            foreach (KeyValuePair<string, TextureShared> textureEntry in new ResFile(new MemoryStream(objArc.Files[textureArc + ".bfres"])).Textures)
+                            {
+                                arc.Add(textureEntry.Key, UploadTexture(textureEntry.Value));
+                            }
                         }
+                    }
+                    catch (OutOfMemoryException)
+                    {
+
                     }
                 }
 

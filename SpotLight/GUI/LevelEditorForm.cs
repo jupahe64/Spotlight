@@ -451,7 +451,10 @@ namespace SpotLight
                 SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
                 return;
             }
-            OpenLevel(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.MAP_SUFFIX}"));
+            if (TryOpenZoneWithLoadingBar(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.MAP_SUFFIX}"), out var zone))
+                OpenZone(zone);
+            else if (TryOpenZoneWithLoadingBar(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.COMBINED_SUFFIX}"), out zone))
+                OpenZone(zone);
         }
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1226,178 +1229,169 @@ namespace SpotLight
         {
             Text = Program.CurrentLanguage.GetTranslation("EditorTitle") ?? "Spotlight";
 
-            #region Program Strings
-            WelcomeMessageHeader = Program.CurrentLanguage.GetTranslation("WelcomeMessageHeader") ?? "Introduction";
-            WelcomeMessageText = Program.CurrentLanguage.GetTranslation("WelcomeMessageText") ??
+
+            #region Controls
+            #region Toolstrip Items
+            this.Localize(
+            FileToolStripMenuItem,
+            OpenToolStripMenuItem,
+            OpenExToolStripMenuItem,
+            SaveToolStripMenuItem,
+            SaveAsToolStripMenuItem,
+            OptionsToolStripMenuItem,
+
+            EditToolStripMenuItem,
+            UndoToolStripMenuItem,
+            RedoToolStripMenuItem,
+            AddObjectToolStripMenuItem,
+            AddZoneToolStripMenuItem,
+            DuplicateToolStripMenuItem,
+            DeleteToolStripMenuItem,
+            LevelParametersToolStripMenuItem,
+            MoveSelectionToToolStripMenuItem,
+            MoveToLinkedToolStripMenuItem,
+            MoveToAppropriateListsToolStripMenuItem,
+
+            SelectionToolStripMenuItem,
+            SelectAllToolStripMenuItem,
+            DeselectAllToolStripMenuItem,
+            GrowSelectionToolStripMenuItem,
+            SelectAllLinkedToolStripMenuItem,
+
+            ModeToolStripMenuItem,
+            EditObjectsToolStripMenuItem,
+            EditLinksToolStripMenuItem,
+
+            AboutToolStripMenuItem,
+            SpotlightWikiToolStripMenuItem,
+            CheckForUpdatesToolStripMenuItem,
+            #endregion
+
+            EditIndividualButton,
+            CancelAddObjectButton
+            );
+            CurrentObjectLabel.Text = NothingSelected;
+            #endregion
+        }
+
+        [Program.Localized]
+        string WelcomeMessageHeader = "Introduction";
+        [Program.Localized]
+        string WelcomeMessageText =
 @"Welcome to Spotlight!
 
 In order to use this program, you will need the folders ""StageData"" and ""ObjectData"" from Super Mario 3D World
 
 Please select the folder than contains these folders";
-            StatusWelcomeMessage = Program.CurrentLanguage.GetTranslation("StatusWelcomeMessage") ?? "Welcome to Spotlight!";
-            StatusWelcomeBackMessage = Program.CurrentLanguage.GetTranslation("StatusWelcomeBackMessage") ?? "Welcome back!";
-            DatabasePickerTitle = Program.CurrentLanguage.GetTranslation("DatabasePickerTitle") ?? "Select the Game Directory of Super Mario 3D World";
-            InvalidGamepathText = Program.CurrentLanguage.GetTranslation("InvalidGamepathText") ?? "The Directory doesn't contain ObjectData and StageData.";
-            InvalidGamepathHeader = Program.CurrentLanguage.GetTranslation("InvalidGamepathHeader") ?? "The GamePath is invalid";
-            DatabaseMissingText = Program.CurrentLanguage.GetTranslation("DatabaseMissingText") ??
+        [Program.Localized]
+        string StatusWelcomeMessage = "Welcome to Spotlight!";
+        [Program.Localized]
+        string StatusWelcomeBackMessage = "Welcome back!";
+        [Program.Localized]
+        string DatabasePickerTitle = "Select the Game Directory of Super Mario 3D World";
+        [Program.Localized]
+        string InvalidGamepathText = "The Directory doesn't contain ObjectData and StageData.";
+        [Program.Localized]
+        string InvalidGamepathHeader = "The GamePath is invalid";
+        [Program.Localized]
+        string DatabaseMissingText =
 @"Spotlight could not find the Object Parameter Database (ParameterDatabase.sopd)
 
 Spotlight needs an Object Parameter Database in order for you to add objects.
 
 Would you like to generate a new object Database from your 3DW Directory?";
-            DatabaseMissingHeader = Program.CurrentLanguage.GetTranslation("DatabaseMissinHeader") ?? "Database Missing";
-            DatabaseExcludeText = Program.CurrentLanguage.GetTranslation("DatabaseExcludeText") ?? "Are you sure? You cannot add objects without it.";
-            DatabaseExcludeHeader = Program.CurrentLanguage.GetTranslation("DatabaseExcludeHeader") ?? "Confirmation";
-            DatabaseOutdatedText = Program.CurrentLanguage.GetTranslation("DatabaseOutdatedText") ??
-@"The Loaded Database is outdated ({0}).
+        [Program.Localized]
+        string DatabaseMissingHeader = "Database Missing";
+        [Program.Localized]
+        string DatabaseExcludeText = "Are you sure? You cannot add objects without it.";
+        [Program.Localized]
+        string DatabaseExcludeHeader = "Confirmation";
+        [Program.Localized]
+        string DatabaseOutdatedText =
+                @"The Loaded Database is outdated ({0}).
 The latest Database version is {1}.
 Would you like to rebuild the database from your 3DW Files?";
-            DatabaseOutdatedHeader = Program.CurrentLanguage.GetTranslation("DatabaseOutdatedHeader") ?? "Database Outdated";
+        [Program.Localized]
+        string DatabaseOutdatedHeader = "Database Outdated";
+        [Program.Localized]
 
-            StatusOpenSuccessMessage = Program.CurrentLanguage.GetTranslation("StatusOpenSuccessMessage") ?? "{0} has been Loaded successfully.";
-            StatusWaitMessage = Program.CurrentLanguage.GetTranslation("StatusWaitMessage") ?? "Waiting...";
-            StatusOpenCancelledMessage = Program.CurrentLanguage.GetTranslation("StatusOpenCancelledMessage") ?? "Open Cancelled";
-            StatusOpenFailedMessage = Program.CurrentLanguage.GetTranslation("StatusOpenFailedMessage") ?? "Open Failed";
-            StatusLevelSavedMessage = Program.CurrentLanguage.GetTranslation("StatusLevelSavedMessage") ?? "Level Saved!";
-            StatusSettingsSavedMessage = Program.CurrentLanguage.GetTranslation("StatusSettingsSavedMessage") ?? "Settings Saved.";
-            StatusSaveCancelledOrFailedMessage = Program.CurrentLanguage.GetTranslation("StatusSaveCancelledOrFailedMessage") ?? "Save Cancelled or Failed.";
-            StatusObjectPlaceNoticeMessage = Program.CurrentLanguage.GetTranslation("StatusObjectPlaceNoticeMessage") ?? "You have to place the object by clicking, when holding shift multiple objects can be placed";
-            FileLevelOpenFilter = Program.CurrentLanguage.GetTranslation("FileLevelOpenFilter") ?? "Level Files (Map)|Level Files (Design)|Level Files (Sound)|All Level Files";
+        string StatusOpenSuccessMessage = "{0} has been Loaded successfully.";
+        [Program.Localized]
+        string StatusWaitMessage = "Waiting...";
+        [Program.Localized]
+        string StatusOpenCancelledMessage = "Open Cancelled";
+        [Program.Localized]
+        string StatusOpenFailedMessage = "Open Failed";
+        [Program.Localized]
+        string StatusLevelSavedMessage = "Level Saved!";
+        [Program.Localized]
+        string StatusSettingsSavedMessage = "Settings Saved.";
+        [Program.Localized]
+        string StatusSaveCancelledOrFailedMessage = "Save Cancelled or Failed.";
+        [Program.Localized]
+        string StatusObjectPlaceNoticeMessage = "You have to place the object by clicking, when holding shift multiple objects can be placed";
+        [Program.Localized]
+        string FileLevelOpenFilter = "Level Files (Map)|Level Files (Design)|Level Files (Sound)|All Level Files";
+        [Program.Localized]
 
-            LevelParamsMissingText = Program.CurrentLanguage.GetTranslation("LevelParamsMissingText") ?? "StageList.szs is missing from {0}\\SystemData";
-            LevelParamsMissingHeader = Program.CurrentLanguage.GetTranslation("LevelParamsMissingHeader") ?? "Missing File";
+        string LevelParamsMissingText = "StageList.szs is missing from {0}\\SystemData";
+        [Program.Localized]
+        string LevelParamsMissingHeader = "Missing File";
+        [Program.Localized]
 
-            DuplicateNothingMessage = Program.CurrentLanguage.GetTranslation("DuplicateNothingMessage") ?? "Can't duplicate nothing!";
-            DuplicateSuccessMessage = Program.CurrentLanguage.GetTranslation("DuplicateSuccessMessage") ?? "Duplicated {0}";
+        string DuplicateNothingMessage = "Can't duplicate nothing!";
+        [Program.Localized]
+        string DuplicateSuccessMessage = "Duplicated {0}";
+        [Program.Localized]
 
-            LevelSelectMissing = Program.CurrentLanguage.GetTranslation("LevelSelectMissing") ?? "StageList.szs Could not be found inside {0}, so this feature cannot be used.";
+        string LevelSelectMissing = "StageList.szs Could not be found inside {0}, so this feature cannot be used.";
+        [Program.Localized]
 
-            StatusObjectsDeletedMessage = Program.CurrentLanguage.GetTranslation("StatusObjectsDeletedMessage") ?? "Deleted {0}";
-            DatabaseInvalidText = Program.CurrentLanguage.GetTranslation("DatabaseInvalidText") ?? "The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?";
-            DatabaseInvalidHeader = Program.CurrentLanguage.GetTranslation("DatabaseInvalidHeader") ?? "Invalid Database";
-            DatabaseCreatedText = Program.CurrentLanguage.GetTranslation("DatabaseCreatedText") ?? "Database Created";
-            DatabaseCreatedHeader = Program.CurrentLanguage.GetTranslation("DatabaseCreatedHeader") ?? "Operation Complete";
+        string StatusObjectsDeletedMessage = "Deleted {0}";
+        [Program.Localized]
+        string DatabaseInvalidText = "The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?";
+        [Program.Localized]
+        string DatabaseInvalidHeader = "Invalid Database";
+        [Program.Localized]
+        string DatabaseCreatedText = "Database Created";
+        [Program.Localized]
+        string DatabaseCreatedHeader = "Operation Complete";
+        [Program.Localized]
 
-            StatusMovedToLinksMessage = Program.CurrentLanguage.GetTranslation("StatusMovedToLinksMessage") ?? "Moved to the Link List";
-            StatusMovedFromLinksMessage = Program.CurrentLanguage.GetTranslation("StatusMovedFromLinksMessage") ?? "Moved to the Appropriate List";
-            UpdateReadyText = Program.CurrentLanguage.GetTranslation("UpdateReadyText") ?? "Spotlight Version {0} is currently available for download! Would you like to visit the Download Page?";
-            UpdateReadyHeader = Program.CurrentLanguage.GetTranslation("UpdateReadyHeader") ?? "Update Ready!";
-            UpdateNoneText = Program.CurrentLanguage.GetTranslation("UpdateNoneText") ?? "You are using the Latest version of Spotlight ({0})";
-            UpdateNoneHeader = Program.CurrentLanguage.GetTranslation("UpdateNoneHeader") ?? "No Updates";
-            UpdateFailText = Program.CurrentLanguage.GetTranslation("UpdateFailText") ?? "Failed to retrieve update information.\n{0}";
-            UpdateFailHeader = Program.CurrentLanguage.GetTranslation("UpdateFailHeader") ?? "Connection Failure";
+        string StatusMovedToLinksMessage = "Moved to the Link List";
+        [Program.Localized]
+        string StatusMovedFromLinksMessage = "Moved to the Appropriate List";
+        [Program.Localized]
+        string UpdateReadyText = "Spotlight Version {0} is currently available for download! Would you like to visit the Download Page?";
+        [Program.Localized]
+        string UpdateReadyHeader = "Update Ready!";
+        [Program.Localized]
+        string UpdateNoneText = "You are using the Latest version of Spotlight ({0})";
+        [Program.Localized]
+        string UpdateNoneHeader = "No Updates";
+        [Program.Localized]
+        string UpdateFailText = "Failed to retrieve update information.\n{0}";
+        [Program.Localized]
+        string UpdateFailHeader = "Connection Failure";
+        [Program.Localized]
 
-            UnsavedChangesText = Program.CurrentLanguage.GetTranslation("UnsavedChangesText") ?? "You have unsaved changes in:\n {0} Do you want to save them?";
-            UnsavedChangesHeader = Program.CurrentLanguage.GetTranslation("UnsavedChangesHeader") ?? "Unsaved Changes!";
-            StatusLevelClosed = Program.CurrentLanguage.GetTranslation("StatusLevelClosed") ?? "{0} was closed.";
+        string UnsavedChangesText = "You have unsaved changes in:\n {0} Do you want to save them?";
+        [Program.Localized]
+        string UnsavedChangesHeader = "Unsaved Changes!";
+        [Program.Localized]
+        string StatusLevelClosed = "{0} was closed.";
+        [Program.Localized]
 
-            MultipleSelected = Program.CurrentLanguage.GetTranslation("MultipleSelected") ?? "Multiple Objects Selected";
-            NothingSelected = Program.CurrentLanguage.GetTranslation("NothingSelected") ?? "Nothing Selected";
-            SelectedText = Program.CurrentLanguage.GetTranslation("Selected") ?? "Selected";
+        string MultipleSelected = "Multiple Objects Selected";
+        [Program.Localized]
+        string NothingSelected = "Nothing Selected";
+        [Program.Localized]
+        string SelectedText = "Selected";
+        [Program.Localized]
 
-            MovedToOtherListInfo = Program.CurrentLanguage.GetTranslation("MovedToOtherListInfo") ?? "{0} was moved to {1}";
-            NothingMovedToLinkedInfo = Program.CurrentLanguage.GetTranslation("NothingMovedToLinkedInfo") ?? "All objects stayed in their object list (you held down Shift)";
-            #endregion
-
-            #region Controls
-            #region Toolstrip Items
-            FileToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("FileToolStripMenuItem") ?? "File";
-            OpenToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("OpenToolStripMenuItem") ?? "Open";
-            OpenExToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("OpenExToolStripMenuItem") ?? "Open with Selector";
-            SaveToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SaveToolStripMenuItem") ?? "Save";
-            SaveAsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SaveAsToolStripMenuItem") ?? "Save As";
-            OptionsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("OptionsToolStripMenuItem") ?? "Options";
-
-            EditToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("EditToolStripMenuItem") ?? "Edit";
-            UndoToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("UndoToolStripMenuItem") ?? "Undo";
-            RedoToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("RedoToolStripMenuItem") ?? "Redo";
-            AddObjectToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("AddObjectToolStripMenuItem") ?? "Add Object";
-            AddZoneToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("AddZoneToolStripMenuItem") ?? "Add Zone";
-            DuplicateToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DuplicateToolStripMenuItem") ?? "Duplicate";
-            DeleteToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DeleteToolStripMenuItem") ?? "Delete";
-            LevelParametersToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("LevelParametersToolStripMenuItem") ?? "Level Parameters";
-            MoveSelectionToToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveSelectionToToolStripMenuItem") ?? "Move Selection To";
-            MoveToLinkedToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveToLinkedToolStripMenuItem") ?? "Linked Objects";
-            MoveToAppropriateListsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("MoveToAppropriateListsToolStripMenuItem") ?? "Appropriate Lists";
-
-            SelectionToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectionToolStripMenuItem") ?? "Selection";
-            SelectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectAllToolStripMenuItem") ?? "Select All";
-            DeselectAllToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("DeselectAllToolStripMenuItem") ?? "Deselect All";
-            GrowSelectionToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("GrowSelectionToolStripMenuItem") ?? "Grow Selection";
-            SelectAllLinkedToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SelectAllLinkedToolStripMenuItem") ?? "Select All Linked";
-
-            ModeToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("ModeToolStripMenuItem") ?? "Mode";
-            EditObjectsToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("EditObjectsToolStripMenuItem") ?? "Edit Objects";
-            EditLinksToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("EditLinksToolStripMenuItem") ?? "Edit Links";
-
-            AboutToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("AboutToolStripMenuItem") ?? "About";
-            SpotlightWikiToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("SpotlightWikiToolStripMenuItem") ?? "Spotlight Wiki";
-            CheckForUpdatesToolStripMenuItem.Text = Program.CurrentLanguage.GetTranslation("CheckForUpdatesToolStripMenuItem") ?? "Check for Updates";
-            #endregion
-
-            EditIndividualButton.Text = Program.CurrentLanguage.GetTranslation("EditIndividualButton") ?? "Edit Individual";
-            CancelAddObjectButton.Text = Program.CurrentLanguage.GetTranslation("CancelSelectionButton") ?? "Cancel";
-            CurrentObjectLabel.Text = NothingSelected;
-            #endregion
-        }
-
-        private string WelcomeMessageHeader { get; set; }
-        private string WelcomeMessageText { get; set; }
-        private string StatusWelcomeMessage { get; set; }
-        private string StatusWelcomeBackMessage { get; set; }
-        private string DatabasePickerTitle { get; set; }
-        private string InvalidGamepathHeader { get; set; }
-        private string InvalidGamepathText { get; set; }
-        private string DatabaseMissingHeader { get; set; }
-        private string DatabaseMissingText { get; set; }
-        private string DatabaseExcludeHeader { get; set; }
-        private string DatabaseExcludeText { get; set; }
-        private string DatabaseOutdatedHeader { get; set; }
-        private string DatabaseOutdatedText { get; set; }
-
-        private string StatusOpenSuccessMessage { get; set; }
-        private string StatusWaitMessage { get; set; }
-        private string StatusOpenCancelledMessage { get; set; }
-        private string StatusOpenFailedMessage { get; set; }
-        private string StatusLevelSavedMessage { get; set; }
-        private string StatusSettingsSavedMessage { get; set; }
-        private string StatusSaveCancelledOrFailedMessage { get; set; }
-        private string StatusObjectPlaceNoticeMessage { get; set; }
-        private string FileLevelOpenFilter { get; set; }
-
-        private string LevelParamsMissingHeader { get; set; }
-        private string LevelParamsMissingText { get; set; }
-
-        private string DuplicateNothingMessage { get; set; }
-        private string DuplicateSuccessMessage { get; set; }
-
-        private string LevelSelectMissing { get; set; }
-
-        private string StatusObjectsDeletedMessage { get; set; }
-        private string DatabaseInvalidHeader { get; set; }
-        private string DatabaseInvalidText { get; set; }
-        private string DatabaseCreatedHeader { get; set; }
-        private string DatabaseCreatedText { get; set; }
-
-        private string StatusMovedToLinksMessage { get; set; }
-        private string StatusMovedFromLinksMessage { get; set; }
-        private string UpdateReadyHeader { get; set; }
-        private string UpdateReadyText { get; set; }
-        private string UpdateNoneHeader { get; set; }
-        private string UpdateNoneText { get; set; }
-        private string UpdateFailHeader { get; set; }
-        private string UpdateFailText { get; set; }
-
-        private string UnsavedChangesHeader { get; set; }
-        private string UnsavedChangesText { get; set; }
-        private string StatusLevelClosed { get; set; }
-
-        private string NothingSelected { get; set; }
-        private string MultipleSelected { get; set; }
-        private string SelectedText { get; set; }
-
-        public string MovedToOtherListInfo { get; private set; }
-        public string NothingMovedToLinkedInfo { get; private set; }
+        string MovedToOtherListInfo = "{0} was moved to {1}";
+        [Program.Localized]
+        string NothingMovedToLinkedInfo = "All objects stayed in their object list (you held down Shift)";
 
         #endregion
 

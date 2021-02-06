@@ -364,9 +364,9 @@ namespace SpotLight.Level
             if (!File.Exists(fileName))
                 return false;
 
-            SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+            SARCExt.SarcData sarc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(fileName));
 
-            byteOrder = sarc.byteOrder;
+            byteOrder = sarc.endianness;
 
             string stageFileName = LevelName + categoryName + ".byml";
 
@@ -434,9 +434,9 @@ namespace SpotLight.Level
             if (!File.Exists(fileName))
                 return false;
 
-            SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+            SARCExt.SarcData sarc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(fileName));
 
-            byteOrder = sarc.byteOrder;
+            byteOrder = sarc.endianness;
 
             string stageFileNameMap = LevelName + "Map.byml";
             string stageFileNameDesign = LevelName + "Design.byml";
@@ -507,7 +507,7 @@ namespace SpotLight.Level
                 if (entry.Key == "FilePath" || entry.Key == "Objs")
                     continue;
 
-                if (entry.Key == "ZoneList")
+                if (entry.Key == "ZoneList" || entry.Key == "ZoneHolderList")
                 {
                     foreach (ArrayEntry obj in entry.IterArray())
                     {
@@ -523,7 +523,7 @@ namespace SpotLight.Level
                             if (_entry.Key == "UnitConfigName")
                             {
                                 if (!TryOpen($"{Directory}\\{_entry.Parse()}{MAP_SUFFIX}", out zone))
-                                    TryOpen($"{Directory}\\{_entry.Parse()}", out zone);
+                                    TryOpen($"{Directory}\\{_entry.Parse()}.szs", out zone);
                             }
                             else if (_entry.Key == "Translate")
                             {
@@ -655,10 +655,10 @@ namespace SpotLight.Level
 
         private bool SaveCategory(string prefix, string categoryName, int extraFilesIndex, bool saveZonePlacements = false)
         {
-            SarcData sarcData = new SarcData()
+            SARCExt.SarcData sarcData = new SARCExt.SarcData()
             {
                 HashOnly = false,
-                byteOrder = byteOrder,
+                endianness = byteOrder,
                 Files = new Dictionary<string, byte[]>()
             };
 
@@ -672,12 +672,12 @@ namespace SpotLight.Level
                 sarcData.Files.Add(LevelName + categoryName + ".byml", stream.ToArray());
             }
 
-            File.WriteAllBytes(Path.Combine(Directory, LevelName + categoryName + COMMON_SUFFIX), YAZ0.Compress(SARC.PackN(sarcData).Item2));
+            File.WriteAllBytes(Path.Combine(Directory, LevelName + categoryName + COMMON_SUFFIX), YAZ0.Compress(SARCExt.SARC.PackN(sarcData).Item2));
 
             return true;
         }
 
-        private static void SaveExtraFile(SarcData sarcData, KeyValuePair<string, dynamic> fileEntry)
+        private static void SaveExtraFile(SARCExt.SarcData sarcData, KeyValuePair<string, dynamic> fileEntry)
         {
             if (fileEntry.Value is BymlFileData)
             {
@@ -697,10 +697,10 @@ namespace SpotLight.Level
 
         private bool SaveCombined()
         {
-            SarcData sarcData = new SarcData()
+            SARCExt.SarcData sarcData = new SARCExt.SarcData()
             {
                 HashOnly = false,
-                byteOrder = byteOrder,
+                endianness = byteOrder,
                 Files = new Dictionary<string, byte[]>()
             };
             for (int extraFilesIndex = 0; extraFilesIndex < 3; extraFilesIndex++)
@@ -739,7 +739,7 @@ namespace SpotLight.Level
                 }
             }
 
-            File.WriteAllBytes(Path.Combine(Directory, LevelName + COMBINED_SUFFIX), YAZ0.Compress(SARC.PackN(sarcData).Item2));
+            File.WriteAllBytes(Path.Combine(Directory, LevelName + COMBINED_SUFFIX), YAZ0.Compress(SARCExt.SARC.PackN(sarcData).Item2));
 
             return true;
         }
@@ -895,7 +895,7 @@ namespace SpotLight.Level
                 {
                     ExtraFiles[extraFilesIndex].Clear();
 
-                    SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(fileName));
+                    SARCExt.SarcData sarc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(fileName));
 
                     string stageFileName = LevelName + categoryName + ".byml";
 
