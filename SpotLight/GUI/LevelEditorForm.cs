@@ -420,8 +420,11 @@ namespace SpotLight
         private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter =
-                string.Format("{0}|*Stage{4}|{0}|*{4}|{1}|*{5}|{2}|*{6}|{3}|*.szs", FileLevelOpenFilter.Split('|')[0], FileLevelOpenFilter.Split('|')[1], FileLevelOpenFilter.Split('|')[2], FileLevelOpenFilter.Split('|')[3],
-                SM3DWorldZone.MAP_SUFFIX, SM3DWorldZone.DESIGN_SUFFIX, SM3DWorldZone.SOUND_SUFFIX),
+                $"{FileLevelOpenFilter.Split('|')[0]}|*Stage{SM3DWorldZone.MAP_SUFFIX};*Stage{SM3DWorldZone.COMBINED_SUFFIX};*Island{SM3DWorldZone.COMBINED_SUFFIX}|" +
+                $"{FileLevelOpenFilter.Split('|')[0]}|*{SM3DWorldZone.MAP_SUFFIX}|" +
+                $"{FileLevelOpenFilter.Split('|')[1]}|*{SM3DWorldZone.DESIGN_SUFFIX}|" +
+                $"{FileLevelOpenFilter.Split('|')[2]}|*{SM3DWorldZone.SOUND_SUFFIX}|" +
+                $"{FileLevelOpenFilter.Split('|')[3]}|*.szs",
                 InitialDirectory = currentScene?.EditZone.Directory ?? (Program.ProjectPath.Equals("") ? Program.BaseStageDataPath : System.IO.Path.Combine(Program.ProjectPath, "StageData")) };
 
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
@@ -760,15 +763,18 @@ namespace SpotLight
 
         private void LevelParametersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Directory.Exists(Program.ProjectPath + "\\SystemData") && File.Exists(Program.ProjectPath + "\\SystemData\\StageList.szs"))
+            string stagelistpath = Program.TryGetPathViaProject("SystemData", "StageList.szs");
+            if (!File.Exists(stagelistpath))
             {
-                LPF = new LevelParameterForm(currentScene == null ? "" : currentScene.ToString());
-                LPF.Show();
+                MessageBox.Show(string.Format(LevelSelectMissing, stagelistpath), "404", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SpotlightToolStripStatusLabel.Text = StatusOpenFailedMessage;
+                return;
             }
-            else
-            {
-                MessageBox.Show(string.Format(LevelParamsMissingText, Program.ProjectPath), LevelParamsMissingHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
+            Refresh();
+            StageList STGLST = new StageList(stagelistpath);
+            LPF = new LevelParameterForm(STGLST, currentScene?.ToString() ?? "");
+            LPF.Show();
         }
 
         //----------------------------------------------------------------------------

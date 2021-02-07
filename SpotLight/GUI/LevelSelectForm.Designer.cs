@@ -94,7 +94,8 @@
             "World Mushroom",
             "World Flower",
             "World Crown",
-            "Misc"});
+            "Misc",
+            "Bowsers Fury"});
             this.SectionComboBox.Location = new System.Drawing.Point(0, 0);
             this.SectionComboBox.Name = "SectionComboBox";
             this.SectionComboBox.Size = new System.Drawing.Size(326, 21);

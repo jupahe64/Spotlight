@@ -221,13 +221,16 @@ namespace SpotLight.Level
             if (!objectInfosByReference.ContainsKey(objectEntry.Position))
                 objectInfosByReference.Add(objectEntry.Position, info);
             
-            foreach (DictionaryEntry link in info.LinkEntries.Values)
+            if(infosByListName.ContainsKey(str_Links))
             {
-                foreach (ArrayEntry linked in link.IterArray())
+                foreach (DictionaryEntry link in info.LinkEntries.Values)
                 {
-                    if (!objectInfosByReference.ContainsKey(linked.Position))
+                    foreach (ArrayEntry linked in link.IterArray())
                     {
-                        ParseObjectInfo(linked, objectInfosByReference, infosByListName, str_Links);
+                        if (!objectInfosByReference.ContainsKey(linked.Position))
+                        {
+                            ParseObjectInfo(linked, objectInfosByReference, infosByListName, str_Links);
+                        }
                     }
                 }
             }

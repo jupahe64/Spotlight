@@ -206,6 +206,17 @@ namespace SpotLight.Database
                 [nameof(ObjList.RailList)] = new List<ObjectInfo>(),
                 [nameof(ObjList.SkyList)] = new List<ObjectInfo>(),
 
+                //Bowsers fury
+                [nameof(ObjList.BowserSpawnList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.DemoObjList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.GoalItemList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.IslandFlagList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.IslandList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.IslandStartList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.OceanList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.RaidonSpawnList)] = new List<ObjectInfo>(),
+                [nameof(ObjList.ZoneHolderList)] = new List<ObjectInfo>()
+
 #if ODYSSEY
                 [nameof(ObjList.DemoObjList)] = new List<ObjectInfo>(),
                 [nameof(ObjList.NatureList)] = new List<ObjectInfo>(),
@@ -934,7 +945,17 @@ namespace SpotLight.Database
         SceneWatchObjList,
         ScenarioStartCameraList,
         PlayerAffectObjList,
-        RaceList
+        RaceList,
+
+        //Bowsers Fury
+        BowserSpawnList,
+        GoalItemList,
+        IslandFlagList,
+        IslandList,
+        IslandStartList,
+        OceanList,
+        RaidonSpawnList,
+        ZoneHolderList
     }
 
     public enum Category : byte

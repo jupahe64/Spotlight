@@ -12,7 +12,7 @@ namespace SpotLight
 {
     public partial class LevelParameterForm : Form
     {
-        public LevelParameterForm(string LevelName = "")
+        public LevelParameterForm(StageList stageList, string LevelName = "")
         {
             InitializeComponent();
             CenterToParent();
@@ -22,9 +22,7 @@ namespace SpotLight
             StageTypeComboBox.DisplayMember = "Value";
             StageTypeComboBox.ValueMember = "Key";
 
-
-
-            StageList = new StageList(Program.TryGetPathViaProject("SystemData", "StageList.szs"));
+            StageList = stageList;
 
             WorldIDNumericUpDown.Maximum = StageList.Worlds.Count;
 

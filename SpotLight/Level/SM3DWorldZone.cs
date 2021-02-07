@@ -507,7 +507,7 @@ namespace SpotLight.Level
                 if (entry.Key == "FilePath" || entry.Key == "Objs")
                     continue;
 
-                if (entry.Key == "ZoneList" || entry.Key == "ZoneHolderList")
+                if (entry.Key == "ZoneList")
                 {
                     foreach (ArrayEntry obj in entry.IterArray())
                     {
