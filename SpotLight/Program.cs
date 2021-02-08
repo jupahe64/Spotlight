@@ -64,13 +64,13 @@ namespace SpotLight
                     var f = StartUpForm;
                     StartUpForm = null;
 
-                    f.Load += (x, y) =>
+                    f.Load += (x2, y2) =>
                     {
                         if(bounds!=null)
                             f.SetBounds(bounds.Value.X, bounds.Value.Y, bounds.Value.Width, bounds.Value.Height);
                     };
 
-                    f.Shown += (x,y) => f.TopLevel = true;
+                    f.Shown += (x2,y2) => f.TopLevel = true;
 
                     f.ShowDialog(host);
                     bounds = f.DesktopBounds;

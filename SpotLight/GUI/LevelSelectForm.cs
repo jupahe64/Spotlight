@@ -46,6 +46,7 @@ namespace SpotLight
             {
                 //Misc
                 SectionComboBox.Items[12] = Program.CurrentLanguage.GetTranslation("WorldNameMisc") ?? "Miscellaneous";
+                SectionComboBox.Items[13] = Program.CurrentLanguage.GetTranslation("WorldNameFury") ?? "Bowser's Fury";
 
                 //Bowsers Fury
                 string oceanStagepath = Program.TryGetPathViaProject("StageData", "SingleModeOceanStage.szs");
@@ -57,6 +58,10 @@ namespace SpotLight
                     {
                         ["IslandList"] = islandInfos
                     }, new Dictionary<string, List<Level.LevelIO.ObjectInfo>>(), new Dictionary<string, List<Level.LevelIO.ObjectInfo>>());
+                }
+                else
+                {
+                    SectionComboBox.Items.RemoveAt(13); //Bowsers Fury
                 }
             }
 
@@ -121,7 +126,13 @@ namespace SpotLight
                     #region misc stages
                     items = new ListViewItem[]
                     {
-                        ItemFromStageName("CourseSelectStage")
+                        ItemFromStageName("CourseSelectStage"),
+                        ItemFromStageName("TitleDemo00Stage"),
+                        ItemFromStageName("TitleDemo01Stage"),
+                        ItemFromStageName("TitleDemo02Stage"),
+                        ItemFromStageName("TitleDemo03Stage"),
+                        ItemFromStageName("TitleDemo04Stage"),
+                        ItemFromStageName("TitleDemo05Stage")
                     };
                     #endregion
                 }
@@ -139,7 +150,6 @@ namespace SpotLight
                         items[_i+3] = ItemFromStageName(islandInfos[_i].ObjectName);
                     }
                     #endregion
-
                 }
                 else
                 {
