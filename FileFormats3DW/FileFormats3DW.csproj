@@ -5,6 +5,7 @@
     <Platforms>AnyCPU;x86;x64</Platforms>
     <Configurations>Debug Spotlight;Release Spotlight;Debug Moonlight;Release Moonlight</Configurations>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Spotlight|AnyCPU'">
