@@ -31,7 +31,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Spotlight|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -42,7 +42,7 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Spotlight|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
@@ -51,7 +51,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Spotlight|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -61,7 +61,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Spotlight|x86' ">
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
@@ -74,7 +74,7 @@
   <PropertyGroup>
     <ApplicationIcon>SpotLightIcon.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Odyssey|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Moonlight|AnyCPU' ">
     <OutputPath>bin\Debug OdysseySupport\</OutputPath>
     <DefineConstants>TRACE;DEBUG;ODYSSEY</DefineConstants>
     <DocumentationFile>
@@ -82,14 +82,14 @@
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Odyssey|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Moonlight|x86' ">
     <OutputPath>bin\x86\Debug Odyssey\</OutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Odyssey|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Moonlight|AnyCPU' ">
     <OutputPath>bin\Release OdysseySupport\</OutputPath>
     <DefineConstants>ODYSSEY</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Odyssey|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Moonlight|x86' ">
     <OutputPath>bin\x86\Release Odyssey\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
@@ -101,7 +101,7 @@
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Spotlight|x64' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -111,7 +111,7 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Spotlight|x64' ">
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
@@ -121,7 +121,7 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Odyssey|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Moonlight|x64' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug Odyssey\</OutputPath>
     <DefineConstants>TRACE;DEBUG;ODYSSEY</DefineConstants>
@@ -130,7 +130,7 @@
     <LangVersion>7.3</LangVersion>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Odyssey|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Moonlight|x64' ">
     <OutputPath>bin\x64\Release Odyssey\</OutputPath>
     <DefineConstants>ODYSSEY</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
