@@ -10,7 +10,7 @@ It has a boatload of features inside allowing you to make your very own levels, 
 
 ## Assistance and How to Use
 
-A full guide to Spotlight can be found on it's Wiki Page
+A full guide to Spotlight can be found on the [Spotlight Wiki](https://github.com/jupahe64/Spotlight/wiki)
 
 ## Compiling (Source Code)
 
@@ -24,8 +24,7 @@ These folders contain their respective projects.
 After that it should be ready to go.
 
 # Join Us
-If you need help with the program or editing the game, you can [Join the Cat Chat (Discord)](https://discord.gg/9JGKSze). You can communicate with other SM3DW hackers here as well as show your own hacking accomplishments.<br/>(*Dislaimer: We cannot help you get the 3D World files*)
-
+If you need help with the program or editing the game, you can Join the Cat Chat (<a href="https://discord.gg/9JGKSze"><img src="https://img.shields.io/discord/308323056592486420.svg?color=7289da&logo=discord&logoColor=white" alt="The Cat Chat" /></a>). You can communicate with other SM3DW hackers here as well as show your own hacking accomplishments.<br/>(*Dislaimer: We cannot help you get the 3D World files*)
 
 # Credits
 
