@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using BYAML;
 using Syroot.BinaryData;
 using SZS;
@@ -200,28 +201,43 @@ namespace SpotLight
         /// <summary>
         /// A List of all the worlds in SM3DW
         /// </summary>
-        public List<World> Worlds = new List<World>();
+        public List<World> Worlds;
 
-        public StageList(string input)
+        public static bool TryOpen(string filename, out StageList stageList)
         {
-            Filename = input;
+            stageList = null;
 
-            BymlFileData Input;
-            SarcData Data = SARC.UnpackRamN(YAZ0.Decompress(input));
-            if (Data.Files.ContainsKey("StageList.byml"))
-                Input = ByamlFile.LoadN(new MemoryStream(Data.Files["StageList.byml"]), true, ByteOrder.BigEndian);
+            SarcData sarc = SARC.UnpackRamN(YAZ0.Decompress(filename));
+            
+            BymlFileData byml;
+            if (sarc.Files.ContainsKey("StageList.byml"))
+                byml = ByamlFile.LoadN(new MemoryStream(sarc.Files["StageList.byml"]), true, ByteOrder.BigEndian);
             else
                 throw new Exception("Failed to find the StageList");
 
-            List<dynamic> temp = Input.RootNode["WorldList"];
 
-            for (int i = 0; i < temp.Count; i++)
-                Worlds.Add(new World(temp[i]));
+            if (!byml.RootNode.TryGetValue("WorldList", out dynamic worldList))
+                return false;
 
-            //File.WriteAllBytes("Original.byml",Data.Files["StageList.byml"]);
+
+            List<World> worlds = new List<World>();
+
+            for (int i = 0; i < worldList.Count; i++)
+                worlds.Add(new World(worldList[i]));
+
+            stageList = new StageList(filename, worlds);
+
+            return true;
         }
 
-        public int GetNextCourseID()
+        private StageList(string filename, List<World> worlds)
+        {
+
+            Worlds = worlds;
+            Filename = filename;
+        }
+
+        public int GetNextUniqueCourseID()
         {
             int max = 0;
             for (int i = 0; i < Worlds.Count; i++)
@@ -253,6 +269,26 @@ namespace SpotLight
             
             Data.Files.Add("StageList.byml", tmp);
             Tuple<int, byte[]> x = SARC.PackN(Data);
+
+
+            if (Filename.StartsWith(Program.GamePath) && !string.IsNullOrEmpty(Program.ProjectPath))
+            {
+                switch (MessageBox.Show(
+                    Program.CurrentLanguage.GetTranslation("SaveStageListInProjectText") ?? "Would you like to save the StageList.szs to your ProjectPath instead of your BaseGame?",
+                    Program.CurrentLanguage.GetTranslation("SaveStageListInProjectHeader") ?? "Save in ProjectPath",
+                    MessageBoxButtons.YesNoCancel))
+                {
+                    case DialogResult.Yes:
+                        Directory.CreateDirectory(Path.Combine(Program.ProjectPath, "SystemData"));
+                        Filename = Path.Combine(Program.ProjectPath, "SystemData", "StageList.szs");
+                        break;
+                    case DialogResult.No:
+                        break;
+                    case DialogResult.Cancel:
+                        return;
+                }
+            }
+
             File.WriteAllBytes(Filename, YAZ0.Compress(x.Item2));
             //File.WriteAllBytes("Broken.byml", Data.Files["StageList.byml"]);
         }
