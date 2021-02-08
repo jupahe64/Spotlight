@@ -433,7 +433,7 @@ namespace SpotLight
         private void AddLevelButton_Click(object sender, EventArgs e)
         {
             currentWorld = WorldComboBox.SelectedIndex;
-            int index = StageList.Worlds[currentWorld].Add("", StageList.GetNextCourseID());
+            int index = StageList.Worlds[currentWorld].Add("", StageList.GetNextUniqueCourseID());
 
             LevelsListView.BeginUpdate();
             itemsByWorld[currentWorld] = null;

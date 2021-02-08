@@ -20,6 +20,39 @@ namespace SpotLight
         //Bowsers Fury
         List<Level.LevelIO.ObjectInfo> islandInfos;
 
+        //Captain Toad
+        bool displaysSeasons = false;
+
+        /// <summary>
+        /// For Captain Toad
+        /// </summary>
+        /// <param name=""></param>
+        public LevelSelectForm(List<List<string>> seasons)
+        {
+            InitializeComponent();
+            CenterToScreen();
+
+            Text = Program.CurrentLanguage.GetTranslation("LevelSelectTitle") ?? "Spotlight - Choose a Level";
+            CourseIDColumnHeader.Text = Program.CurrentLanguage.GetTranslation("CourseIDColumnHeader") ?? "CourseID";
+            LevelNameColumnHeader.Text = Program.CurrentLanguage.GetTranslation("LevelNameColumnHeader") ?? "Level Name";
+
+            itemsBySection = new ListViewItem[seasons.Count][];
+
+
+            SectionComboBox.Items.Clear();
+
+            for (int i = 0; i < seasons.Count; i++)
+            {
+                itemsBySection[i] = seasons[i].Select(x => ItemFromStageName(x)).ToArray();
+
+                SectionComboBox.Items.Add(Program.CurrentLanguage.GetTranslation("SeasonName" + (i + 1)) ?? "Season " + (i + 1));
+            }
+
+            displaysSeasons = true;
+
+            SectionComboBox.SelectedIndex = 0;
+        }
+
         public LevelSelectForm(StageList stagelist, bool showMisc = false)
         {
             InitializeComponent();
@@ -67,6 +100,7 @@ namespace SpotLight
 
             SectionComboBox.SelectedIndex = 0;
         }
+
         public string levelname = "";
         public bool Selected = false;
 
@@ -97,13 +131,15 @@ namespace SpotLight
             }
         }
 
+        static ListViewItem ItemFromStageName(string name) => new ListViewItem(new string[] { Program.CurrentLanguage.GetTranslation(name) ?? name }) { Tag = name };
+
         private void SectionComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             int i = SectionComboBox.SelectedIndex;
 
             ListViewItem[] items = itemsBySection[i];
 
-            if (i >= 12) //misc stages, bowsers fury
+            if (displaysSeasons    ||    i >= 12 /*misc stages, bowsers fury*/ )
             {
                 if (LevelsListView.Columns.Contains(CourseIDColumnHeader))
                     LevelsListView.Columns.Remove(CourseIDColumnHeader);
@@ -116,8 +152,6 @@ namespace SpotLight
                     CourseIDColumnHeader.Width = 65;
                 }
             }
-
-            ListViewItem ItemFromStageName(string name) => new ListViewItem(new string[] { Program.CurrentLanguage.GetTranslation(name) ?? name }) { Tag = name };
 
             if (items == null)
             {

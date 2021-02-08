@@ -20,6 +20,9 @@ using System.Reflection;
 using SpotLight.ObjectRenderers;
 using SpotLight.GUI;
 using System.Drawing;
+using SARCExt;
+using BYAML;
+using Syroot.BinaryData;
 
 namespace SpotLight
 {
@@ -446,8 +449,33 @@ namespace SpotLight
             }
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
             Refresh();
-            StageList STGLST = new StageList(stagelistpath);
-            LevelSelectForm LPSF = new LevelSelectForm(STGLST, true);
+
+
+            LevelSelectForm LPSF;
+
+            if (StageList.TryOpen(stagelistpath, out var STGLST))
+                LPSF = new LevelSelectForm(STGLST, true);
+            else
+            {
+                #region load StageList CaptainToad
+                SarcData sarc = SARC.UnpackRamN(SZS.YAZ0.Decompress(stagelistpath));
+
+                BymlFileData byml = ByamlFile.LoadN(new MemoryStream(sarc.Files["StageList.byml"]), true, ByteOrder.BigEndian);
+
+                List<List<string>> seasons = new List<List<string>>();
+
+                var regex = new System.Text.RegularExpressions.Regex("Chapter[0-9]_[0-9]");
+
+                foreach (var season in byml.RootNode["SeasonList"])
+                {
+                    seasons.Add(((List<dynamic>)season["StageList"]).Select(x => (string)x["StageName"]).Where(x=>!regex.IsMatch(x)).ToList());
+                }
+
+                LPSF = new LevelSelectForm(seasons);
+
+                #endregion
+            }
+
             LPSF.ShowDialog();
             if (string.IsNullOrEmpty(LPSF.levelname))
             {
@@ -767,12 +795,18 @@ namespace SpotLight
             if (!File.Exists(stagelistpath))
             {
                 MessageBox.Show(string.Format(LevelSelectMissing, stagelistpath), "404", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                SpotlightToolStripStatusLabel.Text = StatusOpenFailedMessage;
                 return;
             }
             SpotlightToolStripStatusLabel.Text = StatusWaitMessage;
             Refresh();
-            StageList STGLST = new StageList(stagelistpath);
+
+            if(!StageList.TryOpen(stagelistpath, out var STGLST))
+            {
+                MessageBox.Show(InvalidStageListFormatText, InvalidStageListFormatHeader, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                return;
+            }
+
             LPF = new LevelParameterForm(STGLST, currentScene?.ToString() ?? "");
             LPF.Show();
         }
@@ -1319,8 +1353,8 @@ The latest Database version is {1}.
 Would you like to rebuild the database from your 3DW Files?";
         [Program.Localized]
         string DatabaseOutdatedHeader = "Database Outdated";
-        [Program.Localized]
 
+        [Program.Localized]
         string StatusOpenSuccessMessage = "{0} has been Loaded successfully.";
         [Program.Localized]
         string StatusWaitMessage = "Waiting...";
@@ -1338,21 +1372,16 @@ Would you like to rebuild the database from your 3DW Files?";
         string StatusObjectPlaceNoticeMessage = "You have to place the object by clicking, when holding shift multiple objects can be placed";
         [Program.Localized]
         string FileLevelOpenFilter = "Level Files (Map)|Level Files (Design)|Level Files (Sound)|All Level Files";
+        
         [Program.Localized]
-
-        string LevelParamsMissingText = "StageList.szs is missing from {0}\\SystemData";
-        [Program.Localized]
-        string LevelParamsMissingHeader = "Missing File";
-        [Program.Localized]
-
         string DuplicateNothingMessage = "Can't duplicate nothing!";
         [Program.Localized]
         string DuplicateSuccessMessage = "Duplicated {0}";
-        [Program.Localized]
 
+        [Program.Localized]
         string LevelSelectMissing = "StageList.szs Could not be found inside {0}, so this feature cannot be used.";
-        [Program.Localized]
 
+        [Program.Localized]
         string StatusObjectsDeletedMessage = "Deleted {0}";
         [Program.Localized]
         string DatabaseInvalidText = "The Database is invalid, and you cannot add objects without one. Would you like to generate one from your SM3DW Files?";
@@ -1362,8 +1391,8 @@ Would you like to rebuild the database from your 3DW Files?";
         string DatabaseCreatedText = "Database Created";
         [Program.Localized]
         string DatabaseCreatedHeader = "Operation Complete";
-        [Program.Localized]
 
+        [Program.Localized]
         string StatusMovedToLinksMessage = "Moved to the Link List";
         [Program.Localized]
         string StatusMovedFromLinksMessage = "Moved to the Appropriate List";
@@ -1379,25 +1408,30 @@ Would you like to rebuild the database from your 3DW Files?";
         string UpdateFailText = "Failed to retrieve update information.\n{0}";
         [Program.Localized]
         string UpdateFailHeader = "Connection Failure";
-        [Program.Localized]
 
+        [Program.Localized]
         string UnsavedChangesText = "You have unsaved changes in:\n {0} Do you want to save them?";
         [Program.Localized]
         string UnsavedChangesHeader = "Unsaved Changes!";
         [Program.Localized]
         string StatusLevelClosed = "{0} was closed.";
-        [Program.Localized]
 
+        [Program.Localized]
         string MultipleSelected = "Multiple Objects Selected";
         [Program.Localized]
         string NothingSelected = "Nothing Selected";
         [Program.Localized]
         string SelectedText = "Selected";
-        [Program.Localized]
 
+        [Program.Localized]
         string MovedToOtherListInfo = "{0} was moved to {1}";
         [Program.Localized]
         string NothingMovedToLinkedInfo = "All objects stayed in their object list (you held down Shift)";
+
+        [Program.Localized]
+        string InvalidStageListFormatText = "The format of the StageList.szs in GamePath does not have editing support yet";
+        [Program.Localized]
+        string InvalidStageListFormatHeader = "Invalid Format";
 
         #endregion
 
