@@ -134,8 +134,6 @@ namespace SpotLight.ObjectRenderers
 
         public static bool Contains(string modelName) => cache.ContainsKey(modelName);
 
-        public const bool LoadTextures = true;
-
         public static void ReloadModel(string ModelName)
         {
             if (cache.ContainsKey(ModelName))
@@ -157,9 +155,11 @@ namespace SpotLight.ObjectRenderers
 
             public CachedModel(ResFile bfres, string textureArc)
             {
-                if (LoadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
+                bool loadTextures = !Properties.Settings.Default.DoNotLoadTextures;
+
+                if (loadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
                 {
-                    try
+                    if(new FileInfo(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")).Length<50000000)
                     {
                         SARCExt.SarcData objArc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")));
 
@@ -172,10 +172,6 @@ namespace SpotLight.ObjectRenderers
                                 arc.Add(textureEntry.Key, UploadTexture(textureEntry.Value));
                             }
                         }
-                    }
-                    catch (OutOfMemoryException)
-                    {
-
                     }
                 }
 
@@ -195,7 +191,7 @@ namespace SpotLight.ObjectRenderers
 
 #pragma warning disable CS0162 // Unreachable code detected
 
-                    if (LoadTextures)
+                    if (loadTextures)
                     {
                         if (mdl.Materials[shape.MaterialIndex].TextureRefs.Count != 0)
                         {

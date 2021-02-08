@@ -188,5 +188,17 @@ namespace SpotLight.Properties {
                 this["DrawTransparentWalls"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DoNotLoadTextures {
+            get {
+                return ((bool)(this["DoNotLoadTextures"]));
+            }
+            set {
+                this["DoNotLoadTextures"] = value;
+            }
+        }
     }
 }

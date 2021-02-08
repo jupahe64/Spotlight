@@ -37,11 +37,13 @@
             this.ClearDescriptionsButton = new System.Windows.Forms.Button();
             this.DatabaseInfoLabel = new System.Windows.Forms.Label();
             this.RenderingGroupBox = new System.Windows.Forms.GroupBox();
+            this.RenderTransparentWallsCheckBox = new System.Windows.Forms.CheckBox();
             this.RenderSkyboxesCheckBox = new System.Windows.Forms.CheckBox();
             this.PlayerLabel = new System.Windows.Forms.Label();
             this.PlayerComboBox = new System.Windows.Forms.ComboBox();
             this.RenderAreaCheckBox = new System.Windows.Forms.CheckBox();
             this.LoadingAndSavingGroupBox = new System.Windows.Forms.GroupBox();
+            this.DoNotLoadTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.UniqueIDsCheckBox = new System.Windows.Forms.CheckBox();
             this.ResetSpotlightButton = new System.Windows.Forms.Button();
             this.IDEditingCheckBox = new System.Windows.Forms.CheckBox();
@@ -56,7 +58,6 @@
             this.LanguageLabel = new System.Windows.Forms.Label();
             this.ProjectPathTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.GamePathTextBox = new GL_EditorFramework.SuggestingTextBox();
-            this.RenderTransparentWallsCheckBox = new System.Windows.Forms.CheckBox();
             this.ObjectParameterGroupBox.SuspendLayout();
             this.RenderingGroupBox.SuspendLayout();
             this.LoadingAndSavingGroupBox.SuspendLayout();
@@ -148,6 +149,19 @@
             this.RenderingGroupBox.TabStop = false;
             this.RenderingGroupBox.Text = "Rendering";
             // 
+            // RenderTransparentWallsCheckBox
+            // 
+            this.RenderTransparentWallsCheckBox.AutoSize = true;
+            this.RenderTransparentWallsCheckBox.Checked = true;
+            this.RenderTransparentWallsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.RenderTransparentWallsCheckBox.Location = new System.Drawing.Point(298, 19);
+            this.RenderTransparentWallsCheckBox.Name = "RenderTransparentWallsCheckBox";
+            this.RenderTransparentWallsCheckBox.Size = new System.Drawing.Size(147, 17);
+            this.RenderTransparentWallsCheckBox.TabIndex = 4;
+            this.RenderTransparentWallsCheckBox.Text = "Render TransparentWalls";
+            this.RenderTransparentWallsCheckBox.UseVisualStyleBackColor = true;
+            this.RenderTransparentWallsCheckBox.CheckedChanged += new System.EventHandler(this.RenderTransparentWallsCheckBox_CheckedChanged);
+            // 
             // RenderSkyboxesCheckBox
             // 
             this.RenderSkyboxesCheckBox.AutoSize = true;
@@ -202,6 +216,7 @@
             // 
             // LoadingAndSavingGroupBox
             // 
+            this.LoadingAndSavingGroupBox.Controls.Add(this.DoNotLoadTexturesCheckBox);
             this.LoadingAndSavingGroupBox.Controls.Add(this.UniqueIDsCheckBox);
             this.LoadingAndSavingGroupBox.Location = new System.Drawing.Point(12, 229);
             this.LoadingAndSavingGroupBox.Name = "LoadingAndSavingGroupBox";
@@ -209,6 +224,17 @@
             this.LoadingAndSavingGroupBox.TabIndex = 6;
             this.LoadingAndSavingGroupBox.TabStop = false;
             this.LoadingAndSavingGroupBox.Text = "Loading and Saving";
+            // 
+            // DoNotLoadTexturesCheckBox
+            // 
+            this.DoNotLoadTexturesCheckBox.AutoSize = true;
+            this.DoNotLoadTexturesCheckBox.Location = new System.Drawing.Point(9, 40);
+            this.DoNotLoadTexturesCheckBox.Name = "DoNotLoadTexturesCheckBox";
+            this.DoNotLoadTexturesCheckBox.Size = new System.Drawing.Size(296, 17);
+            this.DoNotLoadTexturesCheckBox.TabIndex = 1;
+            this.DoNotLoadTexturesCheckBox.Text = "Don\'t load textures (speeds up loading on so many levels)";
+            this.DoNotLoadTexturesCheckBox.UseVisualStyleBackColor = true;
+            this.DoNotLoadTexturesCheckBox.CheckedChanged += new System.EventHandler(this.DoNotLoadTexturesCheckBox_CheckedChanged);
             // 
             // UniqueIDsCheckBox
             // 
@@ -366,19 +392,6 @@
             this.GamePathTextBox.TabIndex = 8;
             this.GamePathTextBox.ValueEntered += new System.ComponentModel.CancelEventHandler(this.GamePathTextBox_ValueEntered);
             // 
-            // RenderTransparentWallsCheckBox
-            // 
-            this.RenderTransparentWallsCheckBox.AutoSize = true;
-            this.RenderTransparentWallsCheckBox.Checked = true;
-            this.RenderTransparentWallsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.RenderTransparentWallsCheckBox.Location = new System.Drawing.Point(298, 19);
-            this.RenderTransparentWallsCheckBox.Name = "RenderTransparentWallsCheckBox";
-            this.RenderTransparentWallsCheckBox.Size = new System.Drawing.Size(147, 17);
-            this.RenderTransparentWallsCheckBox.TabIndex = 4;
-            this.RenderTransparentWallsCheckBox.Text = "Render TransparentWalls";
-            this.RenderTransparentWallsCheckBox.UseVisualStyleBackColor = true;
-            this.RenderTransparentWallsCheckBox.CheckedChanged += new System.EventHandler(this.RenderTransparentWallsCheckBox_CheckedChanged);
-            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -446,5 +459,6 @@
         private System.Windows.Forms.Label SplashSizeLabel;
         private System.Windows.Forms.Button SplashTestButton;
         private System.Windows.Forms.CheckBox RenderTransparentWallsCheckBox;
+        private System.Windows.Forms.CheckBox DoNotLoadTexturesCheckBox;
     }
 }

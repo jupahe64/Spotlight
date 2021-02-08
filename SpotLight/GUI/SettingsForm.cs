@@ -109,7 +109,9 @@ namespace SpotLight
                     PlayerComboBox.SelectedIndex = 5;
                     break;
             }
+
             UniqueIDsCheckBox.Checked = Properties.Settings.Default.UniqueIDs;
+            DoNotLoadTexturesCheckBox.Checked = Properties.Settings.Default.DoNotLoadTextures;
             IDEditingCheckBox.Checked = Properties.Settings.Default.AllowIDEdits;
             if (!Directory.Exists(Program.LanguagePath))
             {
@@ -236,6 +238,13 @@ namespace SpotLight
             Properties.Settings.Default.UniqueIDs = UniqueIDsCheckBox.Checked;
             Properties.Settings.Default.Save();
         }
+
+        private void DoNotLoadTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DoNotLoadTextures = DoNotLoadTexturesCheckBox.Checked;
+            Properties.Settings.Default.Save();
+        }
+
 
         private void ResetSpotlightButton_Click(object sender, EventArgs e)
         {
@@ -547,8 +556,6 @@ namespace SpotLight
             Thread.Sleep(9999);
             Program.IsProgramReady = true;
         }
-
-        
     }
 
     public static class StringCollectionExtensions
