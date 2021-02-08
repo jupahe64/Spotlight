@@ -1,6 +1,6 @@
 ﻿using BYAML;
-using SpotLight.EditorDrawables;
-using SpotLight.Level;
+using Spotlight.EditorDrawables;
+using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +8,8 @@ using System.Linq;
 using System.Text;
 using static BYAML.ByamlFile;
 using static BYAML.ByamlIterator;
-using static SpotLight.Level.LevelIO;
-using static SpotLight.ObjectParameterForm;
+using static Spotlight.Level.LevelIO;
+using static Spotlight.ObjectParameterForm;
 using GL_EditorFramework;
 
 /* File Format .sopd
@@ -48,7 +48,7 @@ using GL_EditorFramework;
  * ----------------------------------------------End of Dictionary
 */
 
-namespace SpotLight.Database
+namespace Spotlight.Database
 {
     /// <summary>
     /// Database of all Object Parameters
@@ -1046,7 +1046,7 @@ namespace SpotLight.Database
  * Property Description
  * -----------
  */
-namespace SpotLight.Database
+namespace Spotlight.Database
 {
     public class ObjectInformationDatabase
     {

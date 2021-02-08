@@ -1,9 +1,9 @@
 ﻿using BrightIdeasSoftware;
 using OpenTK;
-using SpotLight.Database;
-using SpotLight.EditorDrawables;
-using SpotLight.Level;
-using SpotLight.Properties;
+using Spotlight.Database;
+using Spotlight.EditorDrawables;
+using Spotlight.Level;
+using Spotlight.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,10 +14,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static SpotLight.GUI.PathShapeSelector;
-using static SpotLight.ObjectParameterForm;
+using static Spotlight.GUI.PathShapeSelector;
+using static Spotlight.ObjectParameterForm;
 
-namespace SpotLight.GUI
+namespace Spotlight.GUI
 {
 
     public partial class AddObjectForm : Form

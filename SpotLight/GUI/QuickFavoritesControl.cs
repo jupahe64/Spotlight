@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
-using static SpotLight.EditorDrawables.SM3DWorldScene;
+using static Spotlight.EditorDrawables.SM3DWorldScene;
 
-namespace SpotLight
+namespace Spotlight
 {
     public class QuickFavoriteClosingEventArgs : EventArgs
     {

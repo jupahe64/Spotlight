@@ -1,4 +1,4 @@
-﻿namespace SpotLight
+﻿namespace Spotlight
 {
     partial class ObjectParameterForm
     {
@@ -37,7 +37,7 @@
             this.TypeLabel = new System.Windows.Forms.Label();
             this.NameLabel = new System.Windows.Forms.Label();
             this.NewTypeComboBox = new System.Windows.Forms.ComboBox();
-            this.MainEditorControl = new SpotLight.ObjectParameterEditorControl();
+            this.MainEditorControl = new Spotlight.ObjectParameterEditorControl();
             this.SuspendLayout();
             // 
             // OKButton

@@ -2,7 +2,7 @@
 using GL_EditorFramework;
 using GL_EditorFramework.EditorDrawables;
 using OpenTK;
-using SpotLight.Level;
+using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ using static BYAML.ByamlNodeWriter;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase.PropertyCapture;
 
-namespace SpotLight.EditorDrawables
+namespace Spotlight.EditorDrawables
 {
     public class Rail : Path<RailPoint>, I3dWorldObject
     {

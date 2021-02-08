@@ -3,7 +3,7 @@ using GL_EditorFramework.EditorDrawables;
 using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
 using OpenTK;
-using SpotLight.Level;
+using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using WinInput = System.Windows.Input;
 
-namespace SpotLight.EditorDrawables
+namespace Spotlight.EditorDrawables
 {
     
 

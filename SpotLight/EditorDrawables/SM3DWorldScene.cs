@@ -4,7 +4,7 @@ using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using SpotLight.Level;
+using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -19,7 +19,7 @@ using SZS;
 using WinInput = System.Windows.Input;
 using GL_EditorFramework;
 
-namespace SpotLight.EditorDrawables
+namespace Spotlight.EditorDrawables
 {
     public class SM3DWorldScene : EditorSceneBase
     {

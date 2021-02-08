@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static BYAML.ByamlIterator;
 
-namespace SpotLight
+namespace Spotlight
 {
     public class ObjectCamera
     {

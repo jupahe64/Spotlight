@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{392B74FE-63C9-45C4-8535-8B254E53164D}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>SpotLight</RootNamespace>
-    <AssemblyName>SpotLight</AssemblyName>
+    <RootNamespace>Spotlight</RootNamespace>
+    <AssemblyName>Spotlight</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -73,7 +73,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>SpotLightIcon.ico</ApplicationIcon>
+    <ApplicationIcon>SpotlightIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Moonlight|AnyCPU' ">
     <OutputPath>bin\Debug OdysseySupport\</OutputPath>
@@ -94,7 +94,7 @@
     <OutputPath>bin\x86\Release Odyssey\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>SpotLight.Program</StartupObject>
+    <StartupObject>Spotlight.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -410,7 +410,7 @@
     <None Include="Resources\Gizmos.png" />
     <None Include="Resources\InfoIndicator.png" />
     <None Include="Resources\InfoIndicatorHighlight.png" />
-    <Content Include="SpotLightIcon.ico" />
+    <Content Include="SpotlightIcon.ico" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EditorDrawables\ObjectSpecificDrawables\" />

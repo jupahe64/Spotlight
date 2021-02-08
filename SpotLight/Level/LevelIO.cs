@@ -2,7 +2,7 @@
 using GL_EditorFramework;
 using GL_EditorFramework.GL_Core;
 using OpenTK;
-using SpotLight.EditorDrawables;
+using Spotlight.EditorDrawables;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +13,7 @@ using System.Windows.Forms;
 using SZS;
 using static BYAML.ByamlIterator;
 
-namespace SpotLight.Level
+namespace Spotlight.Level
 {
     public class LevelIO
     {

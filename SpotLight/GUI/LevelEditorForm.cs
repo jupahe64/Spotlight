@@ -2,7 +2,7 @@
 using GL_EditorFramework.EditorDrawables;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using OpenTK;
-using SpotLight.EditorDrawables;
+using Spotlight.EditorDrawables;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,19 +12,19 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
-using SpotLight.Database;
-using SpotLight.Level;
+using Spotlight.Database;
+using Spotlight.Level;
 using System.Threading;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using System.Reflection;
-using SpotLight.ObjectRenderers;
-using SpotLight.GUI;
+using Spotlight.ObjectRenderers;
+using Spotlight.GUI;
 using System.Drawing;
 using SARCExt;
 using BYAML;
 using Syroot.BinaryData;
 
-namespace SpotLight
+namespace Spotlight
 {
     public partial class LevelEditorForm : Form
     {
@@ -389,28 +389,28 @@ namespace SpotLight
             Debugger.Break();
             return;
 
-            SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
+            //SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
 
-            SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
+            //SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
 
-            foreach (General3dWorldObject _obj in currentScene.SelectedObjects)
-            {
-                string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
+            //foreach (General3dWorldObject _obj in currentScene.SelectedObjects)
+            //{
+            //    string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
 
-                if(BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
-                {
-                    scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
-                        System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
-                        System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
-                        System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
-                        System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
-                        System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
-                        );
-                }
-            }
+            //    if(BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
+            //    {
+            //        scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
+            //            System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
+            //            System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
+            //            System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
+            //            System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
+            //            System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
+            //            );
+            //    }
+            //}
 
-            var model = scene.ToGltf2();
-            model.SaveGLTF(currentScene.ToString()+".gltf");
+            //var model = scene.ToGltf2();
+            //model.SaveGLTF(currentScene.ToString()+".gltf");
         }
 
         private void Scene_ObjectsMoved(object sender, EventArgs e)

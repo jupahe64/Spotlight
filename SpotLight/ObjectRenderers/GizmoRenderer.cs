@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpotLight.ObjectRenderers
+namespace Spotlight.ObjectRenderers
 {
     public static class GizmoRenderer
     {

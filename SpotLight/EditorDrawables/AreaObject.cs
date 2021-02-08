@@ -5,9 +5,9 @@ using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using SpotLight.Database;
-using SpotLight.Level;
-using SpotLight.ObjectRenderers;
+using Spotlight.Database;
+using Spotlight.Level;
+using Spotlight.ObjectRenderers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,10 +19,10 @@ using System.Windows.Forms;
 using static BYAML.ByamlNodeWriter;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase.PropertyCapture;
-using static SpotLight.EditorDrawables.General3dWorldObject;
+using static Spotlight.EditorDrawables.General3dWorldObject;
 using WinInput = System.Windows.Input;
 
-namespace SpotLight.EditorDrawables
+namespace Spotlight.EditorDrawables
 {
     public class AreaObject : TransformableObject, I3dWorldObject
     {
@@ -263,7 +263,7 @@ namespace SpotLight.EditorDrawables
         {
             if (!Selected)
             {
-                if (!SpotLight.Properties.Settings.Default.DrawAreas)
+                if (!Spotlight.Properties.Settings.Default.DrawAreas)
                 {
                     control.SkipPickingColors(1);
                     return;
@@ -364,7 +364,7 @@ namespace SpotLight.EditorDrawables
 #if ODYSSEY
                 control.PlainText(Convert.ToString(area.ScenarioBitField, 2));
 #endif
-                if (SpotLight.Properties.Settings.Default.AllowIDEdits)
+                if (Spotlight.Properties.Settings.Default.AllowIDEdits)
                     area.ID = control.TextInput(area.ID, "Object ID");
                 else
                     control.TextInput(area.ID, "Object ID");

@@ -1,4 +1,4 @@
-﻿namespace SpotLight
+﻿namespace Spotlight
 {
     partial class SplashForm
     {

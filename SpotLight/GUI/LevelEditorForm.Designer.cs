@@ -1,4 +1,4 @@
-﻿namespace SpotLight
+﻿namespace Spotlight
 {
     partial class LevelEditorForm
     {
@@ -36,11 +36,11 @@
             this.ZoneListBox = new System.Windows.Forms.ListBox();
             this.EditIndividualButton = new System.Windows.Forms.Button();
             this.ObjectsTabPage = new System.Windows.Forms.TabPage();
-            this.MainSceneListView = new SpotLight.GUI.SceneListView3dWorld();
+            this.MainSceneListView = new Spotlight.GUI.SceneListView3dWorld();
             this.CurrentObjectLabel = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
             this.ZoneDocumentTabControl = new GL_EditorFramework.DocumentTabControl();
-            this.QuickFavoriteControl = new SpotLight.QuickFavoriteControl();
+            this.QuickFavoriteControl = new Spotlight.QuickFavoriteControl();
             this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();

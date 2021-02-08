@@ -1,5 +1,5 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using SpotLight.Database;
+using Spotlight.Database;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,9 +13,9 @@ using System.Threading;
 using System.Windows.Forms;
 using GL_EditorFramework;
 using System.Threading.Tasks;
-using SpotLight.ObjectRenderers;
+using Spotlight.ObjectRenderers;
 
-namespace SpotLight
+namespace Spotlight
 {
     public partial class SettingsForm : Form
     {
@@ -463,7 +463,7 @@ namespace SpotLight
                     throw new Exception("Invalid Description File");
 
                 Version Check = new Version(FS.ReadByte(), FS.ReadByte());
-                ver = Check.Equals(SpotLight.Database.ObjectInformationDatabase.LatestVersion) ? SpotLight.Database.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
+                ver = Check.Equals(Spotlight.Database.ObjectInformationDatabase.LatestVersion) ? Spotlight.Database.ObjectInformationDatabase.LatestVersion.ToString() : Check.ToString() + $" ({DatabaseOutdated})";
                 FS.Close();
             }
             else

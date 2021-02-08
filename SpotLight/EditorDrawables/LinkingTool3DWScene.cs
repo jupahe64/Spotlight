@@ -12,9 +12,9 @@ using GL_EditorFramework.Interfaces;
 using GL_EditorFramework;
 using OpenTK;
 using WinInput = System.Windows.Input;
-using SpotLight.Level;
+using Spotlight.Level;
 
-namespace SpotLight.EditorDrawables
+namespace Spotlight.EditorDrawables
 {
     public class DestinationChangedEventArgs : EventArgs
     {

@@ -23,7 +23,7 @@ using System.ComponentModel;
 using SharpGLTF.Materials;
 using SZS;
 
-namespace SpotLight.ObjectRenderers
+namespace Spotlight.ObjectRenderers
 {
     public static class BfresModelRenderer
     {

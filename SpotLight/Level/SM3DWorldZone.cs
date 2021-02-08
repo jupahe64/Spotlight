@@ -3,7 +3,7 @@ using GL_EditorFramework;
 using GL_EditorFramework.GL_Core;
 using GL_EditorFramework.Interfaces;
 using OpenTK;
-using SpotLight.EditorDrawables;
+using Spotlight.EditorDrawables;
 using Syroot.BinaryData;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using SZS;
 using static BYAML.ByamlIterator;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 
-namespace SpotLight.Level
+namespace Spotlight.Level
 {
     public class ObjectList : List<I3dWorldObject>
     {
@@ -569,8 +569,9 @@ namespace SpotLight.Level
                         {
                             ZonePlacements.Add(new ZonePlacement(position, rotation, zone));
                         }
-
-                        SKIP_ZONE:;
+#if ODYSSEY
+                    SKIP_ZONE:;
+#endif
                     }
 
                     continue;
@@ -751,7 +752,7 @@ namespace SpotLight.Level
 
             ByamlNodeWriter writer = new ByamlNodeWriter(stream, false, byteOrder, 1);
 
-            #region Create ZoneList
+#region Create ZoneList
             ByamlNodeWriter.ArrayNode zonesNode = writer.CreateArrayNode();
 
             if (saveZonePlacements)
@@ -792,7 +793,7 @@ namespace SpotLight.Level
                     zonesNode.AddDictionaryNodeRef(objNode, true);
                 }
             }
-            #endregion
+#endregion
 
             HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
 

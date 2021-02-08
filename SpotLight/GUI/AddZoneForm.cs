@@ -1,4 +1,4 @@
-﻿using SpotLight.Level;
+﻿using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SpotLight
+namespace Spotlight
 {
     class AddZoneForm : Form
     {

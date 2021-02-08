@@ -1,4 +1,4 @@
-﻿using SpotLight.Database;
+﻿using Spotlight.Database;
 using System;
 using System.Configuration;
 using System.Collections.Generic;
@@ -7,11 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SpotLight.GUI;
+using Spotlight.GUI;
 using OpenTK;
 using System.Drawing;
 
-namespace SpotLight
+namespace Spotlight
 {
     static class Program
     {

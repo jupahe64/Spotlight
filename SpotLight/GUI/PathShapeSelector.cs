@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SpotLight.GUI
+namespace Spotlight.GUI
 {
     public partial class PathShapeSelector : UserControl
     {

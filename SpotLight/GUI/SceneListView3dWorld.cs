@@ -1,7 +1,7 @@
 ﻿using GL_EditorFramework;
 using GL_EditorFramework.EditorDrawables;
-using SpotLight.EditorDrawables;
-using SpotLight.Level;
+using Spotlight.EditorDrawables;
+using Spotlight.Level;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static GL_EditorFramework.Framework;
 
-namespace SpotLight.GUI
+namespace Spotlight.GUI
 {
     public partial class SceneListView3dWorld : UserControl
     {

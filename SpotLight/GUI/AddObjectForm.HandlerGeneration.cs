@@ -1,13 +1,13 @@
 ﻿using OpenTK;
-using SpotLight.Database;
-using SpotLight.EditorDrawables;
-using SpotLight.Level;
+using Spotlight.Database;
+using Spotlight.EditorDrawables;
+using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace SpotLight.GUI
+namespace Spotlight.GUI
 {
     public partial class AddObjectForm : Form
     {

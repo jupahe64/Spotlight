@@ -1,4 +1,4 @@
-﻿namespace SpotLight.GUI
+﻿namespace Spotlight.GUI
 {
     partial class SceneListView3dWorld
     {
@@ -13,7 +13,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SceneListView3dWorld));
             this.ItemsListView = new GL_EditorFramework.FastListView();
             this.BackButton = new System.Windows.Forms.Button();
-            this.TreeView = new SpotLight.GUI.SceneTreeView3dWorld();
+            this.TreeView = new Spotlight.GUI.SceneTreeView3dWorld();
             this.FilterTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 

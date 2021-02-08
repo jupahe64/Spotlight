@@ -1,7 +1,7 @@
 ﻿using BYAML;
 using GL_EditorFramework.EditorDrawables;
 using OpenTK;
-using SpotLight.Level;
+using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static BYAML.ByamlNodeWriter;
 
-namespace SpotLight.EditorDrawables
+namespace Spotlight.EditorDrawables
 {
     /// <summary>
     /// Interface object for SM3DW Objects

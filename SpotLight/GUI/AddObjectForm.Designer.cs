@@ -1,4 +1,4 @@
-﻿namespace SpotLight.GUI
+﻿namespace Spotlight.GUI
 {
     partial class AddObjectForm
     {
@@ -54,7 +54,7 @@
             this.ObjectNameTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.ModelNameTextBox = new GL_EditorFramework.SuggestingTextBox();
             this.RailsTab = new System.Windows.Forms.TabPage();
-            this.PathShapeSelector = new SpotLight.GUI.PathShapeSelector();
+            this.PathShapeSelector = new Spotlight.GUI.PathShapeSelector();
             this.AreasTab = new System.Windows.Forms.TabPage();
             this.AreaShapeComboBox = new System.Windows.Forms.ComboBox();
             this.AreaShapeLabel = new System.Windows.Forms.Label();
@@ -518,6 +518,6 @@
         private System.Windows.Forms.TabPage AreasTab;
         private System.Windows.Forms.ComboBox AreaShapeComboBox;
         private System.Windows.Forms.Label AreaShapeLabel;
-        private SpotLight.GUI.PathShapeSelector PathShapeSelector;
+        private Spotlight.GUI.PathShapeSelector PathShapeSelector;
     }
 }

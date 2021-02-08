@@ -9,7 +9,7 @@ using BYAML;
 using Syroot.BinaryData;
 using SZS;
 
-namespace SpotLight
+namespace Spotlight
 {
     public class LevelParam
     {

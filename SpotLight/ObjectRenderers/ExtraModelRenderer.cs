@@ -6,7 +6,7 @@ using OpenTK;
 using System.Collections.Generic;
 using System;
 
-namespace SpotLight.ObjectRenderers
+namespace Spotlight.ObjectRenderers
 {
     public static class ExtraModelRenderer
     {

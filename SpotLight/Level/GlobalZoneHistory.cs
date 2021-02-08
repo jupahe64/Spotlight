@@ -1,9 +1,9 @@
-﻿using SpotLight.Level;
+﻿using Spotlight.Level;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace SpotLight
+namespace Spotlight
 {
     public static class GlobalUndoRedo
     {

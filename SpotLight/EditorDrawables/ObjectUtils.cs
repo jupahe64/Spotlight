@@ -1,6 +1,6 @@
 ﻿using GL_EditorFramework;
 using OpenTK;
-using SpotLight.Level;
+using Spotlight.Level;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static BYAML.ByamlIterator;
 
-namespace SpotLight.EditorDrawables
+namespace Spotlight.EditorDrawables
 {
     public static class ObjectUtils
     {
