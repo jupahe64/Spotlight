@@ -188,6 +188,8 @@ namespace BYAML
 
         private IEnumerable<(string, ByamlNodeType, long)> IterDictionaryNode(BinaryDataReader reader, int length, uint offset = 0)
         {
+            HashSet<string> readNames = new HashSet<string>();
+
             // Read the elements of the dictionary.
             for (int i = 0; i < length; i++)
             {
@@ -195,6 +197,11 @@ namespace BYAML
                 int nodeNameIndex = (int)Get3MsbBytes(indexAndType);
                 ByamlNodeType nodeType = (ByamlNodeType)Get1LsbByte(indexAndType);
                 string nodeName = _nameArray[nodeNameIndex];
+
+                if (readNames.Contains(nodeName))
+                    Console.WriteLine("Duplicate Key: " + nodeName);
+
+                readNames.Add(nodeName);
 
                 long pos = reader.Position;
 

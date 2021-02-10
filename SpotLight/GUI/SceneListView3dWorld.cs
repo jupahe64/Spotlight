@@ -742,6 +742,7 @@ namespace Spotlight.GUI
                 index++;
             }
 
+            var bak = expandedNodes;
 
             try
             {
@@ -761,6 +762,10 @@ namespace Spotlight.GUI
                     AutoScrollPosition = new Point(0, index * FontHeight - Height + FontHeight);
 
                 return true;
+            }
+            finally
+            {
+                expandedNodes = bak;
             }
         }
     }

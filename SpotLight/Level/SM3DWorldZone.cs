@@ -517,6 +517,7 @@ namespace Spotlight.Level
                         Vector3 position = Vector3.Zero;
                         Vector3 rotation = Vector3.Zero;
                         Vector3 scale = Vector3.One;
+                        string layer = "Common";
                         SM3DWorldZone zone = null;
                         foreach (DictionaryEntry _entry in obj.IterDictionary())
                         {
@@ -552,6 +553,10 @@ namespace Spotlight.Level
                                     data["Z"]
                                 );
                             }
+                            else if (_entry.Key == "LayerConfigName")
+                            {
+                                layer = _entry.Parse();
+                            }
 #if ODYSSEY
                             else if (_entry.Key == "Id")
                             {
@@ -567,7 +572,7 @@ namespace Spotlight.Level
 
                         if (zone != null)
                         {
-                            ZonePlacements.Add(new ZonePlacement(position, rotation, zone));
+                            ZonePlacements.Add(new ZonePlacement(position, rotation, layer, zone));
                         }
 #if ODYSSEY
                     SKIP_ZONE:;
@@ -724,7 +729,7 @@ namespace Spotlight.Level
             {
                 using (MemoryStream stream = new MemoryStream())
                 {
-                    WriteStageByml(stream, DESIGN_PREFIX, true);
+                    WriteStageByml(stream, DESIGN_PREFIX, false);
 
                     sarcData.Files.Add(LevelName + "Design.byml", stream.ToArray());
                 }
@@ -734,7 +739,7 @@ namespace Spotlight.Level
             {
                 using (MemoryStream stream = new MemoryStream())
                 {
-                    WriteStageByml(stream, SOUND_PREFIX, true);
+                    WriteStageByml(stream, SOUND_PREFIX, false);
 
                     sarcData.Files.Add(LevelName + "Sound.byml", stream.ToArray());
                 }
@@ -766,7 +771,7 @@ namespace Spotlight.Level
                     objNode.AddDynamicValue("Comment", null);
                     objNode.AddDynamicValue("Id", "zone" + zoneID++);
                     objNode.AddDynamicValue("IsLinkDest", false);
-                    objNode.AddDynamicValue("LayerConfigName", "Common");
+                    objNode.AddDynamicValue("LayerConfigName", zonePlacement.Layer);
 
                     {
                         objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);

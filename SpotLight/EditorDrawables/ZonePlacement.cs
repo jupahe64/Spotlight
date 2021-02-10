@@ -23,9 +23,16 @@ namespace Spotlight.EditorDrawables
         [PropertyCapture.Undoable]
         public Vector3 Rotation { get; set; } = Vector3.Zero;
 
-        public ZonePlacement(Vector3 pos, Vector3 rot, SM3DWorldZone zone)
+        [PropertyCapture.Undoable]
+        public string Layer { get; set; }
+
+        public ZonePlacement(Vector3 pos, Vector3 rot, string layer, SM3DWorldZone zone)
             : base(pos)
         {
+            Rotation = rot;
+
+            Layer = layer;
+
             Zone = zone;
 
             Zone.UpdateRenderBatch();
@@ -144,6 +151,8 @@ namespace Spotlight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
+                placement.Layer = control.TextInput(placement.Layer, "Layer");
+
                 if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
                     placement.Position = control.Vector3Input(placement.Position, "Position", 1, 16);
                 else

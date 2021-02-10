@@ -251,7 +251,6 @@ namespace Spotlight.Level
                 {
                     case "Comment":
                     case "IsLinkDest":
-                    case "LayerConfigName":
 #if ODYSSEY
                     case "SrcUnitLayerList":
                     case "PlacementFileName":
@@ -260,6 +259,9 @@ namespace Spotlight.Level
                         break; //ignore these
                     case "Id":
                         info.ID = entry.Parse();
+                        break;
+                    case "LayerConfigName":
+                        info.Layer = entry.Parse();
                         break;
                     case "Links":
                         foreach (DictionaryEntry linkEntry in entry.IterDictionary())
@@ -336,6 +338,7 @@ namespace Spotlight.Level
             public Dictionary<string, DictionaryEntry> PropertyEntries { get; set; }
 
             public string ObjectName { get; set; }
+            public string Layer { get; set; }
             public string ClassName { get; set; }
             public string ModelName { get; set; }
 

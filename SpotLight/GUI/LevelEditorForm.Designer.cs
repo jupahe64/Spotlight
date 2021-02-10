@@ -49,6 +49,7 @@
             this.SaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.restartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.EditToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UndoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RedoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,7 +80,6 @@
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.CancelAddObjectButton = new System.Windows.Forms.Button();
-            this.restartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -340,6 +340,13 @@
             this.OptionsToolStripMenuItem.Text = "Options";
             this.OptionsToolStripMenuItem.Click += new System.EventHandler(this.OptionsToolStripMenuItem_Click);
             // 
+            // restartToolStripMenuItem
+            // 
+            this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
+            this.restartToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.restartToolStripMenuItem.Text = "Restart";
+            this.restartToolStripMenuItem.Click += new System.EventHandler(this.RestartToolStripMenuItem_Click);
+            // 
             // EditToolStripMenuItem
             // 
             this.EditToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -481,14 +488,14 @@
             // SelectAllToolStripMenuItem
             // 
             this.SelectAllToolStripMenuItem.Name = "SelectAllToolStripMenuItem";
-            this.SelectAllToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.SelectAllToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
             this.SelectAllToolStripMenuItem.Text = "Select All";
             this.SelectAllToolStripMenuItem.Click += new System.EventHandler(this.SelectAllToolStripMenuItem_Click);
             // 
             // DeselectAllToolStripMenuItem
             // 
             this.DeselectAllToolStripMenuItem.Name = "DeselectAllToolStripMenuItem";
-            this.DeselectAllToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.DeselectAllToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
             this.DeselectAllToolStripMenuItem.Text = "Deselect All";
             this.DeselectAllToolStripMenuItem.Click += new System.EventHandler(this.DeselectAllToolStripMenuItem_Click);
             // 
@@ -497,8 +504,8 @@
             this.GrowSelectionToolStripMenuItem.Name = "GrowSelectionToolStripMenuItem";
             this.GrowSelectionToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.GrowSelectionToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
-            this.GrowSelectionToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
-            this.GrowSelectionToolStripMenuItem.Text = "Grow Selection";
+            this.GrowSelectionToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
+            this.GrowSelectionToolStripMenuItem.Text = "Select All Linked";
             this.GrowSelectionToolStripMenuItem.Click += new System.EventHandler(this.GrowSelectionToolStripMenuItem_Click);
             // 
             // SelectAllLinkedToolStripMenuItem
@@ -506,15 +513,15 @@
             this.SelectAllLinkedToolStripMenuItem.Name = "SelectAllLinkedToolStripMenuItem";
             this.SelectAllLinkedToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.SelectAllLinkedToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L)));
-            this.SelectAllLinkedToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
-            this.SelectAllLinkedToolStripMenuItem.Text = "Select All Linked";
+            this.SelectAllLinkedToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
+            this.SelectAllLinkedToolStripMenuItem.Text = "Select Selection Cluster";
             this.SelectAllLinkedToolStripMenuItem.Click += new System.EventHandler(this.SelectAllLinkedToolStripMenuItem_Click);
             // 
             // invertSelectionToolStripMenuItem
             // 
             this.invertSelectionToolStripMenuItem.Name = "invertSelectionToolStripMenuItem";
             this.invertSelectionToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.I)));
-            this.invertSelectionToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.invertSelectionToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
             this.invertSelectionToolStripMenuItem.Text = "Invert Selection";
             this.invertSelectionToolStripMenuItem.Click += new System.EventHandler(this.InvertSelectionToolStripMenuItem_Click);
             // 
@@ -603,13 +610,6 @@
             this.CancelAddObjectButton.UseVisualStyleBackColor = true;
             this.CancelAddObjectButton.Visible = false;
             this.CancelAddObjectButton.Click += new System.EventHandler(this.CancelAddObjectButton_Click);
-            // 
-            // restartToolStripMenuItem
-            // 
-            this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
-            this.restartToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
-            this.restartToolStripMenuItem.Text = "Restart";
-            this.restartToolStripMenuItem.Click += new System.EventHandler(this.RestartToolStripMenuItem_Click);
             // 
             // LevelEditorForm
             // 

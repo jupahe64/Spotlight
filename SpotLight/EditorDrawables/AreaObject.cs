@@ -60,6 +60,9 @@ namespace Spotlight.EditorDrawables
         [Undoable]
         public string ModelName { get; set; }
 
+        [PropertyCapture.Undoable]
+        public string Layer { get; set; } = "Common";
+
 
         public AreaObject(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
             : base(info.Position, info.Rotation, info.Scale)
@@ -131,7 +134,7 @@ namespace Spotlight.EditorDrawables
             objNode.AddDynamicValue("Priority", Priority);
 
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", "Common");
+            objNode.AddDynamicValue("LayerConfigName", Layer);
 
             alreadyWrittenObjs.Add(this);
 
@@ -368,6 +371,8 @@ namespace Spotlight.EditorDrawables
                     area.ID = control.TextInput(area.ID, "Object ID");
                 else
                     control.TextInput(area.ID, "Object ID");
+
+                area.Layer = control.TextInput(area.Layer, "Layer");
 
                 area.ModelName = control.DropDownTextInput("Model Name", area.ModelName, shapeNames);
 

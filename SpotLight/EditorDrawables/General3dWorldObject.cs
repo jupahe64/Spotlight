@@ -67,6 +67,9 @@ namespace Spotlight.EditorDrawables
         [PropertyCapture.Undoable]
         public string ClassName { get; set; }
 
+        [PropertyCapture.Undoable]
+        public string Layer { get; set; } = "Common";
+
         /// <summary>
         /// All places where this object is linked to
         /// </summary>
@@ -102,6 +105,7 @@ namespace Spotlight.EditorDrawables
             ObjectName = info.ObjectName;
             ModelName = info.ModelName ?? string.Empty;
             ClassName = info.ClassName;
+            Layer = info.Layer;
             DisplayTranslation = info.DisplayTranslation;
             DisplayRotation = info.DisplayRotation;
             DisplayScale = info.DisplayScale;
@@ -161,7 +165,7 @@ namespace Spotlight.EditorDrawables
             objNode.AddDynamicValue("Comment", null);
             objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", "Common");
+            objNode.AddDynamicValue("LayerConfigName", Layer);
 
             alreadyWrittenObjs.Add(this);
 
@@ -593,6 +597,7 @@ namespace Spotlight.EditorDrawables
                 else
                     control.TextInput(obj.ID, "Object ID");
 
+                obj.Layer = control.TextInput(obj.Layer, "Layer");
                 obj.ObjectName = control.DropDownTextInput("Object Name", obj.ObjectName, DB_objectNames);
 
                 if(showClassNameInfo)

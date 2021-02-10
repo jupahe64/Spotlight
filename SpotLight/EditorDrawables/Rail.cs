@@ -241,7 +241,6 @@ namespace Spotlight.EditorDrawables
             objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(Vector3.Zero), true);
             objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
             objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(PathPoints[0].Position, 100f), true);
-            objNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(PathPoints[0].Position, 100f), true);
 
             objNode.AddDynamicValue("UnitConfig", ObjectUtils.CreateUnitConfig(ClassName), true);
 
