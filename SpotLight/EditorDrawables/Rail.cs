@@ -394,7 +394,7 @@ namespace Spotlight.EditorDrawables
 
             Rail rail;
             readonly EditorSceneBase scene;
-            string[] classNames = Program.ParameterDB.RailParameters.Keys.ToArray();
+            string[] DB_classNames;
 
             General3dWorldObject.ExtraPropertiesUIContainer pathPointPropertyContainer;
             General3dWorldObject.ExtraPropertiesUIContainer pathPropertyContainer;
@@ -407,11 +407,13 @@ namespace Spotlight.EditorDrawables
 
                 this.pathPointPropertyContainer = pathPointPropertyContainer;
                 this.pathPropertyContainer = pathPropertyContainer;
+
+                DB_classNames = Program.ParameterDB.RailParameters.Keys.ToArray();
             }
 
             public void DoUI(IObjectUIControl control)
             {
-                rail.ClassName = control.DropDownTextInput("Class Name", rail.ClassName, classNames);
+                rail.ClassName = control.DropDownTextInput("Class Name", rail.ClassName, DB_classNames, false);
 
                 rail.IsLadder = control.CheckBox("Is Ladder", rail.IsLadder);
 

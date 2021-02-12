@@ -353,6 +353,7 @@ namespace Spotlight.EditorDrawables
             EditorSceneBase scene;
 
             string[] shapeNames;
+            string[] DB_classNames;
 
             public BasicPropertyUIContainer(AreaObject area, EditorSceneBase scene)
             {
@@ -360,6 +361,7 @@ namespace Spotlight.EditorDrawables
                 this.scene = scene;
 
                 shapeNames = LevelIO.AreaModelNames.ToArray();
+                DB_classNames = Program.ParameterDB.AreaParameters.Keys.ToArray();
             }
 
             public void DoUI(IObjectUIControl control)
@@ -374,7 +376,8 @@ namespace Spotlight.EditorDrawables
 
                 area.Layer = control.TextInput(area.Layer, "Layer");
 
-                area.ModelName = control.DropDownTextInput("Model Name", area.ModelName, shapeNames);
+                area.ClassName = control.DropDownTextInput("Class Name", area.ClassName, DB_classNames);
+                area.ModelName = control.DropDownTextInput("Shape Name", area.ModelName, shapeNames, false);
 
                 area.Priority = (int)control.NumberInput(area.Priority, "Priority");
 

@@ -552,6 +552,8 @@ namespace Spotlight.EditorDrawables
             string[] DB_objectNames;
             string[] DB_modelNames;
 
+            string[] DB_classNames;
+
             string classNameAlias;
             bool showClassNameAlias;
             string classNameInfo;
@@ -562,16 +564,7 @@ namespace Spotlight.EditorDrawables
                 this.obj = obj;
                 this.scene = scene;
 
-                if (Program.ParameterDB.ObjectParameters.TryGetValue(obj.ClassName, out ObjectParam entry))
-                {
-                    DB_objectNames = entry.ObjectNames.ToArray();
-                    DB_modelNames = entry.ModelNames.ToArray();
-                }
-                else
-                {
-                    DB_objectNames = Array.Empty<string>();
-                    DB_modelNames = Array.Empty<string>();
-                }
+                DB_classNames = Program.ParameterDB.ObjectParameters.Keys.ToArray();
 
                 UpdateClassNameInfo();
             }
@@ -585,6 +578,17 @@ namespace Spotlight.EditorDrawables
 
                 showClassNameInfo = information.Description != string.Empty;
                 classNameInfo = information.Description;
+
+                if (Program.ParameterDB.ObjectParameters.TryGetValue(obj.ClassName, out ObjectParam entry))
+                {
+                    DB_objectNames = entry.ObjectNames.ToArray();
+                    DB_modelNames = entry.ModelNames.ToArray();
+                }
+                else
+                {
+                    DB_objectNames = Array.Empty<string>();
+                    DB_modelNames = Array.Empty<string>();
+                }
             }
 
             public void DoUI(IObjectUIControl control)
@@ -602,8 +606,8 @@ namespace Spotlight.EditorDrawables
 
                 if(showClassNameInfo)
                     control.SetTooltip(classNameInfo);
-                obj.ClassName = control.TextInput(obj.ClassName, "Class Name");
-                if(showClassNameAlias)
+                obj.ClassName = control.DropDownTextInput("Class Name", obj.ClassName, DB_classNames);
+                if (showClassNameAlias)
                     control.PlainText(classNameAlias);
                 control.SetTooltip(null);
 

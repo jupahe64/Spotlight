@@ -104,7 +104,11 @@ namespace Spotlight
             ZoneDocumentTabControl.Select(selectedTab);
 
             if(currentScene!=null)
+            {
                 SetAppStatus(true);
+
+                AssignSceneEvents(currentScene);
+            }
         }
 
         public LevelEditorForm()
