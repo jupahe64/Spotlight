@@ -10,7 +10,7 @@ It has a boatload of features allowing you to make your very own levels, toad ho
 
 ## Assistance and How to Use
 
-A full guide to Spotlight can be found on the [Spotlight Wiki](https://github.com/jupahe64/Spotlight/wiki)
+A full guide to Spotlight can be found on the [Spotlight Wiki](https://github.com/jupahe64/Spotlight/wiki).
 
 ## Compiling (Source Code)
 
@@ -19,7 +19,7 @@ The folder layout should look like this:<br/>
 <br/>
 ![image](https://user-images.githubusercontent.com/44330283/76013595-05647e00-5ecd-11ea-8c04-0752df56e593.png)
 <br/>
-These folders contain their respective projects.
+These folders must contain their respective project repositories.
 (make sure to get rid of the -master in the end when downloading both)<br/>
 After that it should be ready to go.
 
