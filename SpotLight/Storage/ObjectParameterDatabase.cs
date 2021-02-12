@@ -215,7 +215,7 @@ namespace Spotlight.Database
                 [nameof(ObjList.IslandStartList)] = new List<ObjectInfo>(),
                 [nameof(ObjList.OceanList)] = new List<ObjectInfo>(),
                 [nameof(ObjList.RaidonSpawnList)] = new List<ObjectInfo>(),
-                [nameof(ObjList.ZoneHolderList)] = new List<ObjectInfo>()
+                [nameof(ObjList.ZoneHolderList)] = new List<ObjectInfo>(),
 
 #if ODYSSEY
                 [nameof(ObjList.DemoObjList)] = new List<ObjectInfo>(),
