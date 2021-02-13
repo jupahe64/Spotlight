@@ -155,9 +155,13 @@ namespace Spotlight.ObjectRenderers
 
             public CachedModel(ResFile bfres, string textureArc)
             {
+<<<<<<< HEAD
                 bool loadTextures = !Properties.Settings.Default.DoNotLoadTextures;
 
                 if (loadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
+=======
+                if (LoadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")) && textureArc != "SingleModeBossSharedTextures" && textureArc != "SingleModeSharedTextures")
+>>>>>>> master
                 {
                     if(new FileInfo(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")).Length<50000000)
                     {
