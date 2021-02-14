@@ -12,9 +12,9 @@ It has a boatload of features allowing you to make your very own levels, toad ho
 
 A full guide to Spotlight can be found on the [Spotlight Wiki](https://github.com/jupahe64/Spotlight/wiki).
 
-## Compiling (Source Code)
+## Compiling from Source
 
-To compile this you need to locate it in a folder also containing the <a href="https://github.com/jupahe64/GL_EditorFramework">GL_EditorFramework</a><br/>
+To compile Spotlight you will need to download it to a folder also containing the <a href="https://github.com/jupahe64/GL_EditorFramework">GL_EditorFramework</a><br/> repository.
 The folder layout should look like this:<br/>
 <br/>
 ![image](https://user-images.githubusercontent.com/44330283/76013595-05647e00-5ecd-11ea-8c04-0752df56e593.png)
