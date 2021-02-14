@@ -157,10 +157,8 @@ namespace Spotlight.ObjectRenderers
             {
                 bool loadTextures = !Properties.Settings.Default.DoNotLoadTextures;
 
-                if (loadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
+                if (loadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")) && textureArc != "SingleModeBossSharedTextures" && textureArc != "SingleModeSharedTextures")
                 {
-                    if(new FileInfo(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")).Length<50000000)
-                    {
                         SARCExt.SarcData objArc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")));
 
                         if (!texArcCache.ContainsKey(textureArc))
@@ -172,7 +170,45 @@ namespace Spotlight.ObjectRenderers
                                 arc.Add(textureEntry.Key, UploadTexture(textureEntry.Value));
                             }
                         }
+                }
+                else if(loadTextures && textureArc != null)
+                {
+                    var filePath = Program.TryGetPathViaProject("ObjectData", textureArc);
+                    if(Directory.Exists(filePath))
+                    {
+                        if (!texArcCache.ContainsKey(textureArc))
+                        {
+                            Dictionary<string, int> arc = new Dictionary<string, int>();
+                            var filePaths = Directory.GetFiles(filePath);
+                            texArcCache.Add(textureArc, arc);
+                            foreach (string fileName in filePaths)
+                            {
+
+                                var image = new System.Drawing.Bitmap(fileName);
+                                int texID = GL.GenTexture();
+
+                                GL.BindTexture(TextureTarget.Texture2D, texID);
+                                System.Drawing.Imaging.BitmapData data = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height),
+                                    System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0,
+                                    OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+
+                                image.UnlockBits(data);
+                                image.Dispose();
+
+                                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+                                arc.Add(System.IO.Path.GetFileNameWithoutExtension(fileName), texID);
+
+                                //var imageForm = new System.Windows.Forms.Form();
+                                //imageForm.BackgroundImage = image;
+                                //imageForm.Show();
+                            }
+                        }
+                        
                     }
+                    
                 }
 
                 Model mdl = bfres.Models[0];
@@ -911,6 +947,7 @@ namespace Spotlight.ObjectRenderers
                         goto DATA_UPLOADED;
                     }
                 }
+                GC.Collect();
 
 #region channel reassign
 
