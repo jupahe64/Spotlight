@@ -249,12 +249,15 @@ namespace Spotlight.Level
             {
                 switch (entry.Key)
                 {
+                    case "comment":
                     case "Comment":
+                        info.Comment = entry.Parse();
+                        break;
+
                     case "IsLinkDest":
 #if ODYSSEY
                     case "SrcUnitLayerList":
                     case "PlacementFileName":
-                    case "comment":
 #endif
                         break; //ignore these
                     case "Id":
@@ -337,6 +340,7 @@ namespace Spotlight.Level
             public Dictionary<string, DictionaryEntry> LinkEntries { get; set; }
             public Dictionary<string, DictionaryEntry> PropertyEntries { get; set; }
 
+            public string Comment { get; set; }
             public string ObjectName { get; set; }
             public string Layer { get; set; }
             public string ClassName { get; set; }

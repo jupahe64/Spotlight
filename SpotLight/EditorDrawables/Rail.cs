@@ -95,6 +95,8 @@ namespace Spotlight.EditorDrawables
         [Undoable]
         public string ClassName { get; set; }
 
+        readonly string comment = null;
+
         public Rail(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
         {
             pathPoints = RailPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]);
@@ -104,6 +106,8 @@ namespace Spotlight.EditorDrawables
                 zone.SubmitRailID(ID);
 
             ClassName = info.ClassName;
+
+            comment = info.Comment;
 
             Properties = new Dictionary<string, dynamic>();
 
@@ -413,6 +417,9 @@ namespace Spotlight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
+                if (rail.comment != null)
+                    control.TextInput(rail.comment, "Comment");
+
                 rail.ClassName = control.DropDownTextInput("Class Name", rail.ClassName, DB_classNames, false);
 
                 rail.IsLadder = control.CheckBox("Is Ladder", rail.IsLadder);

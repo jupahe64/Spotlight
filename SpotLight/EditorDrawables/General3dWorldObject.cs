@@ -85,6 +85,8 @@ namespace Spotlight.EditorDrawables
         public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
         public Dictionary<string, dynamic> Properties { get; set; } = new Dictionary<string, dynamic>();
 
+        readonly string comment = null;
+
         private static readonly Dictionary<string, List<I3dWorldObject>> EMPTY_LINKS = new Dictionary<string, List<I3dWorldObject>>();
         /// <summary>
         /// Gets the Object Name
@@ -109,6 +111,8 @@ namespace Spotlight.EditorDrawables
             DisplayTranslation = info.DisplayTranslation;
             DisplayRotation = info.DisplayRotation;
             DisplayScale = info.DisplayScale;
+
+            comment = info.Comment;
 
             if (info.PropertyEntries.Count > 0)
             {
@@ -600,6 +604,9 @@ namespace Spotlight.EditorDrawables
                     obj.ID = control.TextInput(obj.ID, "Object ID");
                 else
                     control.TextInput(obj.ID, "Object ID");
+
+                if(obj.comment!=null)
+                    control.TextInput(obj.comment, "Comment");
 
                 obj.Layer = control.TextInput(obj.Layer, "Layer");
                 obj.ObjectName = control.DropDownTextInput("Object Name", obj.ObjectName, DB_objectNames);

@@ -60,8 +60,10 @@ namespace Spotlight.EditorDrawables
         [Undoable]
         public string ModelName { get; set; }
 
-        [PropertyCapture.Undoable]
+        [Undoable]
         public string Layer { get; set; } = "Common";
+
+        readonly string comment = null;
 
 
         public AreaObject(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
@@ -73,6 +75,8 @@ namespace Spotlight.EditorDrawables
 
             ModelName = info.ModelName;
             ClassName = info.ObjectName; //...yep
+
+            comment = info.Comment;
 
             Properties = new Dictionary<string, dynamic>();
 
@@ -373,6 +377,9 @@ namespace Spotlight.EditorDrawables
                     area.ID = control.TextInput(area.ID, "Object ID");
                 else
                     control.TextInput(area.ID, "Object ID");
+
+                if (area.comment != null)
+                    control.TextInput(area.comment, "Comment");
 
                 area.Layer = control.TextInput(area.Layer, "Layer");
 
