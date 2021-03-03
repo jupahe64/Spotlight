@@ -310,16 +310,7 @@ namespace Spotlight.Level
                             _data["DisplayTranslate"]["Y"] / 100f,
                             _data["DisplayTranslate"]["Z"] / 100f
                             );
-                        info.DisplayRotation = new Vector3(
-                            _data["DisplayRotate"]["X"],
-                            _data["DisplayRotate"]["Y"],
-                            _data["DisplayRotate"]["Z"]
-                            );
-                        info.DisplayScale = new Vector3(
-                            _data["DisplayScale"]["X"],
-                            _data["DisplayScale"]["Y"],
-                            _data["DisplayScale"]["Z"]
-                            );
+                        info.DisplayName = _data["DisplayName"];
                         info.ClassName = _data["ParameterConfigName"];
                         break;
                     default:
@@ -351,8 +342,7 @@ namespace Spotlight.Level
             public Vector3 Scale { get; set; }
 
             public Vector3 DisplayTranslation { get; set; }
-            public Vector3 DisplayRotation { get; set; }
-            public Vector3 DisplayScale { get; set; }
+            public string DisplayName { get; set; }
         }
 
         /// <summary>

@@ -621,7 +621,7 @@ namespace Spotlight.Database
                 Links.Add(LinkNames[i], new List<I3dWorldObject>());
 
 
-            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectName, ModelName, ClassName, new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), Links, Params, zone);
+            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectName, ModelName, ClassName, new OpenTK.Vector3(0f), "None", Links, Params, zone);
         }
 
         static string[] CategoryPrefixes = new string[]

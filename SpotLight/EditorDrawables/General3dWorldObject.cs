@@ -78,9 +78,7 @@ namespace Spotlight.EditorDrawables
         [PropertyCapture.Undoable]
         public Vector3 DisplayTranslation { get; set; }
         [PropertyCapture.Undoable]
-        public Vector3 DisplayRotation { get; set; }
-        [PropertyCapture.Undoable]
-        public Vector3 DisplayScale { get; set; }
+        public string DisplayName { get; set; }
 
         public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
         public Dictionary<string, dynamic> Properties { get; set; } = new Dictionary<string, dynamic>();
@@ -109,8 +107,7 @@ namespace Spotlight.EditorDrawables
             ClassName = info.ClassName;
             Layer = info.Layer;
             DisplayTranslation = info.DisplayTranslation;
-            DisplayRotation = info.DisplayRotation;
-            DisplayScale = info.DisplayScale;
+            DisplayName = info.DisplayName;
 
             comment = info.Comment;
 
@@ -133,7 +130,7 @@ namespace Spotlight.EditorDrawables
         public General3dWorldObject(
             Vector3 pos, Vector3 rot, Vector3 scale, 
             string iD, string objectName, string modelName, string className, 
-            Vector3 displayTranslation, Vector3 displayRotation, Vector3 displayScale, 
+            Vector3 displayTranslation, string displayName,
             Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
             : base(pos,rot,scale)
         {
@@ -142,8 +139,7 @@ namespace Spotlight.EditorDrawables
             ModelName = modelName;
             ClassName = className;
             DisplayTranslation = displayTranslation;
-            DisplayRotation = displayRotation;
-            DisplayScale = displayScale;
+            DisplayName = displayName;
             Links = links;
             Properties = properties;
 
@@ -271,7 +267,7 @@ namespace Spotlight.EditorDrawables
                 ObjectUtils.TransformedPosition(Position, zoneToZoneTransform),
                 ObjectUtils.TransformedRotation(Rotation, zoneToZoneTransform),
 
-                Scale, destZone?.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
+                Scale, destZone?.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayName,
 
                 ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
@@ -299,8 +295,6 @@ namespace Spotlight.EditorDrawables
             if (cachedModel != null)
             {
                 renderer.cachedModels.Add((cachedModel,
-                    Matrix4.CreateScale(DisplayScale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
                     Matrix4.CreateScale(Scale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(Rotation)) *
@@ -367,8 +361,6 @@ namespace Spotlight.EditorDrawables
                 return;
 
             control.UpdateModelMatrix(
-                    Matrix4.CreateScale(DisplayScale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
                     Matrix4.CreateScale((Selected ? editorScene.SelectionTransformAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
                     new Matrix4(Selected ? editorScene.SelectionTransformAction.NewRot(rotMtx) : rotMtx) *
@@ -644,15 +636,8 @@ namespace Spotlight.EditorDrawables
                 else
                     obj.DisplayTranslation = control.Vector3Input(obj.DisplayTranslation, "Display Position", 0.125f, 2);
 
-                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
-                    obj.DisplayRotation = control.Vector3Input(obj.DisplayRotation, "Display Rotation", 45, 18);
-                else
-                    obj.DisplayRotation = control.Vector3Input(obj.DisplayRotation, "Display Rotation", 5, 2);
-
-                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
-                    obj.DisplayScale = control.Vector3Input(obj.DisplayScale, "Display Scale", 1, 16);
-                else
-                    obj.DisplayScale = control.Vector3Input(obj.DisplayScale, "Display Scale", 0.125f, 2);
+                //TODO
+                obj.DisplayName = control.DropDownTextInput("Display Name", obj.DisplayName, Array.Empty<string>());
             }
 
             public void OnValueChangeStart()

@@ -14,9 +14,7 @@ namespace Spotlight.EditorDrawables
     {
         public static Dictionary<string, dynamic> CreateUnitConfig(General3dWorldObject obj) => new Dictionary<string, dynamic>
         {
-            ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
-            ["DisplayRotate"] = LevelIO.Vector3ToDict(obj.DisplayRotation),
-            ["DisplayScale"] = LevelIO.Vector3ToDict(obj.DisplayScale),
+            ["DisplayName"] = obj.DisplayName,
             ["DisplayTranslate"] = LevelIO.Vector3ToDict(obj.DisplayTranslation, 100f),
             ["GenerateCategory"] = "",
             ["ParameterConfigName"] = obj.ClassName,
@@ -25,10 +23,8 @@ namespace Spotlight.EditorDrawables
 
         public static Dictionary<string, dynamic> CreateUnitConfig(string className) => new Dictionary<string, dynamic>
         {
-            ["DisplayName"] = "ï¿½Rï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½zï¿½u)",
-            ["DisplayRotate"] = LevelIO.Vector3ToDict(Vector3.Zero),
-            ["DisplayScale"] = LevelIO.Vector3ToDict(Vector3.One),
-            ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero, 100f),
+            ["DisplayName"] = className,
+            ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero),
             ["GenerateCategory"] = "",
             ["ParameterConfigName"] = className,
             ["PlacementTargetFile"] = "Map"
