@@ -119,7 +119,7 @@ namespace BYAML
         public ByamlIterator(Stream stream, ByteOrder byteOrder = ByteOrder.LittleEndian, ushort version = 3, bool fastLoad = true)
             : base(stream, false, byteOrder, version, fastLoad)
         {
-            _reader = new BinaryDataReader(stream);
+            
         }
 
         ~ByamlIterator()
