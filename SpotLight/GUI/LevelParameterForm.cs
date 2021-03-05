@@ -12,6 +12,18 @@ namespace Spotlight
 {
     public partial class LevelParameterForm : Form
     {
+        struct StringPair
+        {
+            public StringPair(string key, string value)
+            {
+                Key = key;
+                Value = value;
+            }
+
+            public string Key { get; set; }
+            public string Value { get; set; }
+        }
+
         public LevelParameterForm(StageList stageList, string LevelName = "")
         {
             InitializeComponent();
@@ -55,26 +67,26 @@ namespace Spotlight
 
         ListViewItem[][] itemsByWorld = new ListViewItem[13][];
 
-        Dictionary<int, StageTypes> comboSource = new Dictionary<int, StageTypes>
-            {
-                { 15, (StageTypes)0 },
-                { 1, (StageTypes)1 },
-                { 13, (StageTypes)2 },
-                { 16, (StageTypes)3 },
-                { 0, (StageTypes)4 },
-                { 2, (StageTypes)5 },
-                { 12, (StageTypes)6 },
-                { 14, (StageTypes)7 },
-                { 8, (StageTypes)8 },
-                { 9, (StageTypes)9 },
-                { 10, (StageTypes)10 },
-                { 3, (StageTypes)11 },
-                { 4, (StageTypes)12 },
-                { 5, (StageTypes)13 },
-                { 6, (StageTypes)14 },
-                { 7, (StageTypes)15 },
-                { 11, (StageTypes)16 },
-                { 17, (StageTypes)17 },
+        StringPair[] comboSource = new StringPair[]
+        {
+                new StringPair( "カジノ部屋", "Casino" ),
+                new StringPair( "キノピオの家", "Toad House" ),
+                new StringPair( "キノピオ探検隊", "Captain Toad" ),
+                new StringPair( "クッパ城","Bowser Castle" ),
+                new StringPair( "クッパ城[砦]", "Bowser Castle - Fort" ),
+                new StringPair( "クッパ城[戦車]", "Bowser Castle - Tank" ),
+                new StringPair( "クッパ城[列車]", "Bowser Castle - Train" ),
+                new StringPair( "クッパ城[列車通常]", "Bowser Castle - Train[Normal]" ),
+                new StringPair( "ゲートキーパー", "Gatekeeper"),
+                new StringPair( "ゲートキーパー[GPあり]", "Gatekeeper with Goal Pole"),
+                new StringPair( "ゴールデンエクスプレス", "Golden Express" ),
+                new StringPair( "チャンピオンシップ", "Champions Road" ),
+                new StringPair( "ミステリーハウス", "Challenge House" ),
+                new StringPair( "隠しキノピオの家", "Hidden Toad House" ),
+                new StringPair( "隠し土管", "Hidden Pipe" ),
+                new StringPair( "通常", "Normal" ),
+                new StringPair( "妖精の家", "Fairy Stamp House" ),
+                new StringPair( "DRC専用", "GamePad Required" ),
             };
 
         public bool Loading = false, Changed = false;
@@ -82,63 +94,14 @@ namespace Spotlight
         public int currentWorld;
         public int currentLvlIndex;
 
-        string[] JapaneseStageTypes = new string[]
-        {
-            "カジノ部屋",
-            "キノピオの家",
-            "キノピオ探検隊",
-            "クッパ城",
-            "クッパ城[砦]",
-            "クッパ城[戦車]",
-            "クッパ城[列車]",
-            "クッパ城[列車通常]",
-            "ゲートキーパー",
-            "ゲートキーパー[GPあり]",
-            "ゴールデンエクスプレス",
-            "チャンピオンシップ",
-            "ミステリーハウス",
-            "隠しキノピオの家",
-            "隠し土管",
-            "通常",
-            "妖精の家",
-            "DRC専用"
-        };
-        public enum StageTypes
-        {
-            CasinoRoom = 4,
-            ToadHouse = 1,
-            CaptainToad = 5,
-            BowserCastle = 11,
-            BowserCastleFort = 12,
-            BowserCastleTrain = 13,
-            BowserCastleTank = 14,
-            BowserCastleTrainNormal = 15,
-            Gatekeeper = 8,
-            GatekeeperGoalPole = 9,
-            GoldenExpress = 10,
-            Championship = 16,
-            ChallengeHouse = 6,
-            ToadHouseHidden = 2,
-            HiddenPipe = 7,
-            Normal = 0,
-            FairyStampHouse = 3,
-            GamePadRequired = 17
-        }
-
         private void LoadLevelData(LevelParam LV, int worldID, int levelID)
         {
             currentWorld = worldID-1;
             currentLvlIndex = levelID;
 
             Loading = true;
-            for (int i = 0; i < JapaneseStageTypes.Length; i++)
-            { 
-                if (LV.StageType == JapaneseStageTypes[i])
-                {
-                    StageTypeComboBox.SelectedIndex = (int)comboSource[i];
-                    break;
-                }
-            }
+
+            StageTypeComboBox.SelectedValue = LV.StageType;
             StageNameTextBox.Text = LV.StageName;
             UpdateCourseLabel();
             WorldIDNumericUpDown.Value = worldID;
@@ -243,7 +206,7 @@ namespace Spotlight
             if (Loading)
                 return;
 
-            StageList.Worlds[currentWorld].Levels[currentLvlIndex].StageType = JapaneseStageTypes[Convert.ToInt32(((KeyValuePair<int, StageTypes>)StageTypeComboBox.Items[StageTypeComboBox.SelectedIndex]).Key)];
+            StageList.Worlds[currentWorld].Levels[currentLvlIndex].StageType = (string)StageTypeComboBox.SelectedValue;
             Changed = true;
         }
 

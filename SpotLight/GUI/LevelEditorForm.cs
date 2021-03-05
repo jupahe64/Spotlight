@@ -390,31 +390,43 @@ namespace Spotlight
                 return;
             General3dWorldObject obj = (currentScene.SelectedObjects.First() as General3dWorldObject);
             Rail rail = (currentScene.SelectedObjects.First() as Rail);
-            Debugger.Break();
-            return;
 
-            //SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
+            if(Debugger.IsAttached)
+                Debugger.Break();
+            else
+            {
+                if (MessageBox.Show("All selected objects will be saved into a gltf file [EXPERIMENTAL]\ncontinue?", "", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    return;
+            }
 
-            //SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
 
-            //foreach (General3dWorldObject _obj in currentScene.SelectedObjects)
-            //{
-            //    string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
 
-            //    if(BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
-            //    {
-            //        scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
-            //            System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
-            //            System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
-            //            System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
-            //            System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
-            //            System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
-            //            );
-            //    }
-            //}
+            SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
 
-            //var model = scene.ToGltf2();
-            //model.SaveGLTF(currentScene.ToString()+".gltf");
+            SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
+
+            foreach (General3dWorldObject _obj in currentScene.SelectedObjects.Where(x=>x is General3dWorldObject))
+            {
+                string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
+
+                if (BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
+                {
+                    scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
+                        System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
+                        System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
+                        System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
+                        System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
+                        System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
+                        );
+                }
+            }
+
+            var model = scene.ToGltf2();
+
+            string fileName = System.IO.Path.Combine(AppContext.BaseDirectory, currentScene.ToString() + ".gltf");
+
+            model.SaveGLTF(fileName);
+            MessageBox.Show("Model saved as " + fileName);
         }
 
         private void Scene_ObjectsMoved(object sender, EventArgs e)
