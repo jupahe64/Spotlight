@@ -624,6 +624,10 @@ namespace Spotlight.Level
             {
                 LevelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - SOUND_SUFFIX.Length);
             }
+            else if (fileNameWithoutPath.EndsWith(COMBINED_SUFFIX))
+            {
+                LevelName = fileNameWithoutPath.Remove(fileNameWithoutPath.Length - COMBINED_SUFFIX.Length);
+            }
 
             Directory = Path.GetDirectoryName(fileName);
 
