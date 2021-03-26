@@ -498,9 +498,9 @@ namespace Spotlight
                 SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
                 return;
             }
-            if (TryOpenZoneWithLoadingBar(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.MAP_SUFFIX}"), out var zone))
+            if (TryOpenZoneWithLoadingBar(new StageInfo(Program.ProjectStageDataPath, LPSF.levelname), out var zone))
                 OpenZone(zone);
-            else if (TryOpenZoneWithLoadingBar(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.COMBINED_SUFFIX}"), out zone))
+            else if (TryOpenZoneWithLoadingBar(new StageInfo(Program.BaseStageDataPath, LPSF.levelname), out zone))
                 OpenZone(zone);
         }
 
@@ -523,6 +523,7 @@ namespace Spotlight
             {
                 Scene_IsSavedChanged(null, null);
                 SpotlightToolStripStatusLabel.Text = StatusLevelSavedMessage;
+                UpdateZoneList();
             }
             else
                 SpotlightToolStripStatusLabel.Text = StatusSaveCancelledOrFailedMessage;
@@ -884,34 +885,56 @@ namespace Spotlight
 
         public bool TryOpenZoneWithLoadingBar(string fileName, out SM3DWorldZone zone)
         {
-            if (SM3DWorldZone.TryGetLoadedZone(fileName, out zone))
+            if (!SM3DWorldZone.TryGetStageInfo(fileName, out var loadingInfo))
             {
-                return true;
+                zone = null;
+                return false;
             }
-            else if (SM3DWorldZone.TryGetLoadingInfo(fileName, out var loadingInfo))
+
+            return TryOpenZoneWithLoadingBar(loadingInfo.Value, out zone);
+        }
+
+        public bool TryOpenZoneWithLoadingBar(StageInfo loadingInfo, out SM3DWorldZone zone)
+        {
             {
                 Thread LoadingThread = new Thread((n) =>
                 {
+                    Thread.Sleep(100);
+                    if (LoadLevelForm.DoClose)
+                    {
+                        LoadLevelForm.DoClose = false;
+                        return;
+                    }
+
                     LoadLevelForm LLF = new LoadLevelForm(n.ToString(), "LoadLevel");
                     LLF.ShowDialog();
                 });
-                LoadingThread.Start(loadingInfo?.levelName);
+                LoadingThread.Start(loadingInfo.StageName);
 
-                zone = new SM3DWorldZone(loadingInfo.Value);
+                if(loadingInfo.StageArcType==StageArcType.NotSpecified)
+                {
+                    if (!SM3DWorldZone.TryOpen(loadingInfo.Directory, loadingInfo.StageName, out zone))
+                    {
+                        LoadLevelForm.DoClose = true;
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!SM3DWorldZone.TryOpen(loadingInfo, out zone))
+                    {
+                        LoadLevelForm.DoClose = true;
+                        return false;
+                    }
+                }
 
-                if (LoadingThread.IsAlive)
-                    LoadLevelForm.DoClose = true;
+                LoadLevelForm.DoClose = true;
 
-                SpotlightToolStripStatusLabel.Text = string.Format(StatusOpenSuccessMessage, loadingInfo?.levelName);
+                SpotlightToolStripStatusLabel.Text = string.Format(StatusOpenSuccessMessage, loadingInfo.StageName);
 
                 SetAppStatus(true);
 
                 return true;
-            }
-            else
-            {
-                zone = null;
-                return false;
             }
         }
 
@@ -925,7 +948,7 @@ namespace Spotlight
 
             //indirectly calls ZoneDocumentTabControl_SelectedTabChanged
             //which already sets up a lot
-            ZoneDocumentTabControl.AddTab(new DocumentTabControl.DocumentTab(zone.LevelName, scene), true);
+            ZoneDocumentTabControl.AddTab(new DocumentTabControl.DocumentTab(zone.StageName, scene), true);
 
             Scene_IsSavedChanged(null, null);
 
@@ -1039,6 +1062,8 @@ namespace Spotlight
 
             currentScene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Document;
 
+            currentScene.MainZone.CheckZoneNameChanges();
+
             MainSceneListView.Scene = currentScene;
 
             #region setup UI
@@ -1108,7 +1133,7 @@ namespace Spotlight
                 string UnsavedZones = "";
 
                 foreach (var zone in unsavedZones)
-                    UnsavedZones += zone.LevelFileName+"\n";
+                    UnsavedZones += zone.StageInfo.StageName+"\n";
 
                 switch (MessageBox.Show(string.Format(UnsavedChangesText, UnsavedZones), UnsavedChangesHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
                 {
@@ -1143,7 +1168,7 @@ namespace Spotlight
                 ObjectUIControl.Refresh();
 
                 SetAppStatus(false);
-                string levelname = currentScene.EditZone.LevelName;
+                string levelname = currentScene.EditZone.StageName;
                 currentScene = null;
                 LevelGLControlModern.MainDrawable = null;
                 SpotlightToolStripStatusLabel.Text = string.Format(StatusLevelClosed, levelname);
@@ -1157,9 +1182,9 @@ namespace Spotlight
 
             MainSceneListView.CollapseAllNodes();
 
-            if (currentScene.EditZone.HasCategoryMap)
+            if (currentScene.EditZone.ObjLists.Any(x=>x.Key.StartsWith(SM3DWorldZone.MAP_PREFIX)))
                 MainSceneListView.ExpandNode(SM3DWorldZone.MAP_PREFIX);
-            else if (currentScene.EditZone.HasCategoryDesign)
+            else if (currentScene.EditZone.ObjLists.Any(x => x.Key.StartsWith(SM3DWorldZone.DESIGN_PREFIX)))
                 MainSceneListView.ExpandNode(SM3DWorldZone.DESIGN_PREFIX);
             else
                 MainSceneListView.ExpandNode(SM3DWorldZone.SOUND_PREFIX);

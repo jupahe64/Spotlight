@@ -31,112 +31,44 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Spotlight|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Spotlight|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Spotlight|x86' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Spotlight|x86' ">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>SpotlightIcon.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Moonlight|AnyCPU' ">
-    <OutputPath>bin\Debug OdysseySupport\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ODYSSEY</DefineConstants>
-    <DocumentationFile>
-    </DocumentationFile>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Moonlight|x86' ">
-    <OutputPath>bin\x86\Debug Odyssey\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Moonlight|AnyCPU' ">
-    <OutputPath>bin\Release OdysseySupport\</OutputPath>
-    <DefineConstants>ODYSSEY</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Moonlight|x86' ">
-    <OutputPath>bin\x86\Release Odyssey\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Spotlight.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>false</SignManifests>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <LangVersion>latest</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Spotlight|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
+    <OutputPath>bin\x64\Spotlight_DEBUG\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>latest</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Spotlight|x64' ">
-    <OutputPath>bin\x64\Release\</OutputPath>
+    <OutputPath>bin\x64\Spotlight_RELEASE\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Moonlight|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug Odyssey\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ODYSSEY</DefineConstants>
-    <DebugType>full</DebugType>
+    <OutputPath>bin\x64\Moonlight_DEBUG\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;ODYSSEY</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Moonlight|x64' ">
-    <OutputPath>bin\x64\Release Odyssey\</OutputPath>
     <DefineConstants>ODYSSEY</DefineConstants>
+    <OutputPath>bin\x64\Moonlight_RELEASE\</OutputPath>
+    <DefineConstants>TRACE;ODYSSEY</DefineConstants>
+    <Optimize>true</Optimize>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BfresLibrary">
@@ -255,6 +187,13 @@
     <Compile Include="GUI\SplashForm.designer.cs">
       <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\ZoneSaveOptionsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\ZoneSaveOptionsDialog.Designer.cs">
+      <DependentUpon>ZoneSaveOptionsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Level\StageInfo.cs" />
     <Compile Include="ObjectRenderers\GizmoRenderer.cs" />
     <Compile Include="ObjectRenderers\BfresModelRenderer.cs" />
     <Compile Include="ObjectRenderers\ExtraModelRenderer.cs" />
@@ -340,6 +279,9 @@
     <EmbeddedResource Include="GUI\SplashForm.resx">
       <DependentUpon>SplashForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ZoneSaveOptionsDialog.resx">
+      <DependentUpon>ZoneSaveOptionsDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -367,17 +309,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\GL_EditorFramework\Gl_EditorFramework\Gl_EditorFramework.csproj">
-      <Project>{d593a72d-554d-40fb-9967-503cb15a744f}</Project>
-      <Name>Gl_EditorFramework</Name>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\FileFormats3DW\FileFormats3DW.csproj">
-      <Project>{e13388ea-de3f-447a-80f8-03427e1e52af}</Project>
-      <Name>FileFormats3DW</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
@@ -414,6 +345,16 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="EditorDrawables\ObjectSpecificDrawables\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\GL_EditorFramework\Gl_EditorFramework\Gl_EditorFramework.csproj">
+      <Project>{d593a72d-554d-40fb-9967-503cb15a744f}</Project>
+      <Name>Gl_EditorFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FileFormats3DW\FileFormats3DW.csproj">
+      <Project>{e13388ea-de3f-447a-80f8-03427e1e52af}</Project>
+      <Name>FileFormats3DW</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

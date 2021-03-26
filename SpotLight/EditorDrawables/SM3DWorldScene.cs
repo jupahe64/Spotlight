@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using SZS;
 using WinInput = System.Windows.Input;
 using GL_EditorFramework;
+using Spotlight.GUI;
 
 namespace Spotlight.EditorDrawables
 {
@@ -293,7 +294,7 @@ namespace Spotlight.EditorDrawables
 
         public override string ToString()
         {
-            return MainZone.LevelName;
+            return MainZone.StageName;
         }
 
 
@@ -1255,19 +1256,18 @@ namespace Spotlight.EditorDrawables
             bool showPromt = false;
             string overwrites = "";
 
-            foreach (var zone in GetZones())
+            var zones = ZonePlacements.Select(x=>x.Zone).Where(y=>!y.IsSaved).Prepend(MainZone).ToArray();
+
+            foreach (var zone in zones)
             {
                 if (!string.IsNullOrEmpty(Program.ProjectPath) && zone.Directory == Program.BaseStageDataPath)
                     showPromt = true;
 
-                if (zone.HasCategoryMap && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.MAP_SUFFIX)))
-                    overwrites += zone.LevelName + SM3DWorldZone.MAP_SUFFIX + '\n';
-
-                if (zone.HasCategoryDesign && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.DESIGN_SUFFIX)))
-                    overwrites += zone.LevelName + SM3DWorldZone.DESIGN_SUFFIX + '\n';
-
-                if (zone.HasCategorySound && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.SOUND_SUFFIX)))
-                    overwrites += zone.LevelName + SM3DWorldZone.SOUND_SUFFIX + '\n';
+                foreach (var fileName in zone.GetSaveFileNames(zone.StageInfo))
+                {
+                    if (File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, fileName)))
+                        overwrites += fileName + '\n';
+                }
             }
             bool changeDirectory = false;
 
@@ -1291,12 +1291,14 @@ namespace Spotlight.EditorDrawables
                 changeDirectory = result == DialogResult.Yes;
             }
 
-            foreach (var zone in GetZones())
+            foreach (var zone in zones)
             {
-                if (changeDirectory)
-                    zone.Directory = Program.ProjectStageDataPath;
+                StageInfo newStageInfo = zone.StageInfo;
 
-                zone.Save();
+                if (changeDirectory)
+                    newStageInfo.Directory = Program.ProjectStageDataPath;
+
+                zone.Save(newStageInfo);
             }
 
             return IsSaved = IsSaved; //seems dumb but it's the only way to make sure the IsSavedChanged event is triggered
@@ -1318,48 +1320,67 @@ namespace Spotlight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
         public bool SaveAs()
         {
-            string currentDirectory = EditZone.Directory;
+            List<SM3DWorldZone> additionalZones = new List<SM3DWorldZone>();
 
-            HashSet<SM3DWorldZone> zonesToSave = new HashSet<SM3DWorldZone> { EditZone };
-
-            foreach (var zonePlacement in ZonePlacements)
+            foreach (var zonePlacement in MainZone.ZonePlacements)
             {
-                if (!zonesToSave.Contains(zonePlacement.Zone))
-                    zonesToSave.Add(zonePlacement.Zone);
+                if (!additionalZones.Contains(zonePlacement.Zone))
+                    additionalZones.Add(zonePlacement.Zone);
             }
 
-            foreach (SM3DWorldZone _zone in zonesToSave)
+            SaveFileDialog sfd = new SaveFileDialog()
             {
-                SaveFileDialog sfd = new SaveFileDialog()
-                {
-                    Filter =
-                    "Level Files (Map)|*Map1.szs|" +
-                    "Level Files (Design)|*Design1.szs|" +
-                    "Level Files (Sound)|*Sound1.szs|" +
-                    "All Level Files|*.szs",
-                    InitialDirectory = currentDirectory,
-                    FileName = _zone.LevelFileName
-                };
+                Filter =
+                    $"Split Level Files|*{SM3DWorldZone.MAP_SUFFIX}|" +
+                    $"Combined Level Files|*{SM3DWorldZone.COMBINED_SUFFIX}",
+                InitialDirectory = MainZone.Directory,
+                FileName = MainZone.StageInfo.StageName,
+                FilterIndex = (int)MainZone.StageInfo.StageArcType + 1
+            };
 
-                sfd.FileOk += (s, e) =>
+            ZoneSaveOptionsDialog optionsDialog = null;
+
+            StageInfo? stageInfo = null;
+
+            sfd.FileOk += (s, e) =>
+            {
+                if (SM3DWorldZone.TryGetStageInfo(sfd.FileName, out stageInfo))
                 {
-                    if (!_zone.IsValidSaveName(sfd.FileName))
+                    optionsDialog = new ZoneSaveOptionsDialog(stageInfo.Value, MainZone.ByteOrder, additionalZones);
+
+                    if (optionsDialog.ShowDialog() != DialogResult.OK)
                     {
-                        //Type type = typeof(FileDialog);
-                        //FieldInfo info = type.GetField("dialogHWnd", BindingFlags.NonPublic
-                        //                                           | BindingFlags.Instance);
-                        //IntPtr fileDialogHandle = (IntPtr)info.GetValue(sfd);
-
-                        //SetFileName(fileDialogHandle, zone.GetProperSaveName(sfd.FileName));
-
                         e.Cancel = true;
+                        return;
                     }
-                };
+                }
+                else
+                    e.Cancel = true;
+            };
 
-                if (sfd.ShowDialog() == DialogResult.OK)
+
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return false;
+
+            var _stageInfo = stageInfo.Value;
+
+            _stageInfo.StageName = optionsDialog.StageName;
+            _stageInfo.StageArcType = optionsDialog.StageArcType;
+
+            MainZone.Save(_stageInfo, optionsDialog.ByteOrder);
+
+            for (int i = 0; i < additionalZones.Count; i++)
+            {
+                if (!optionsDialog.AdditionalZoneEntries[i].ShouldSave)
+                    continue;
+
+                _stageInfo.StageName = optionsDialog.AdditionalZoneEntries[i].NewName;
+
+                additionalZones[i].Save(_stageInfo, optionsDialog.ByteOrder);
+                foreach (ZonePlacement placement in mainZone.ZonePlacements) 
                 {
-                    _zone.Save(sfd.FileName);
-                    currentDirectory = System.IO.Path.GetDirectoryName(sfd.FileName);
+                    if (placement.Zone == additionalZones[i])
+                        placement.ZoneLookupName = _stageInfo.StageName;
                 }
             }
 

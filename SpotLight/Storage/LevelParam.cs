@@ -295,7 +295,7 @@ namespace Spotlight
                 }
             }
 
-            File.WriteAllBytes(Filename, YAZ0.Compress(x.Item2));
+            File.WriteAllBytes(Filename, YAZ0.Compress(x));
             //File.WriteAllBytes("Broken.byml", Data.Files["StageList.byml"]);
         }
 
