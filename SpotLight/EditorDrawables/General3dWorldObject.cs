@@ -162,7 +162,7 @@ namespace Spotlight.EditorDrawables
         #region I3DWorldObject implementation
         public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest = false)
         {
-            objNode.AddDynamicValue("Comment", null);
+            objNode.AddDynamicValue("Comment", comment);
             objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
             objNode.AddDynamicValue("LayerConfigName", Layer);
