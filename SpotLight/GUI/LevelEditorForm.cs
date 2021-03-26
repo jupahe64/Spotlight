@@ -591,21 +591,22 @@ namespace Spotlight
 
         private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentScene.EditZoneIndex != 0)
-                return;
-
-            AddZoneForm azf = new AddZoneForm();
+            AddZoneForm azf = new AddZoneForm(currentScene.MainZone.Directory);
 
             if (azf.ShowDialog() == DialogResult.Cancel)
                 return;
 
-            if (azf.SelectedFileName == null)
+            if (azf.SelectedStageInfo.StageName == null)
                 return;
 
-            if (TryOpenZoneWithLoadingBar(System.IO.Path.Combine(Program.BaseStageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
+            if (TryOpenZoneWithLoadingBar(azf.SelectedStageInfo, out SM3DWorldZone zone))
             {
+                currentScene.EditZoneIndex = 0;
+
                 var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, "Common", zone);
                 currentScene.ZonePlacements.Add(zonePlacement);
+                currentScene.SelectedObjects.Clear();
+                zonePlacement.SelectDefault(LevelGLControlModern);
                 currentScene.AddToUndo(new RevertableSingleAddition(zonePlacement, currentScene.ZonePlacements));
                 ZoneDocumentTabControl_SelectedTabChanged(null, null);
             }
