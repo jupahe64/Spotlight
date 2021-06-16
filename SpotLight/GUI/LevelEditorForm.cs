@@ -1857,6 +1857,8 @@ Would you like to rebuild the database from your 3DW Files?";
                 return;
 
             currentScene.DrawLayer = LayerListView.SelectedItems[LayerListView.SelectedItems.Count-1].Text;
+
+            SpotlightToolStripStatusLabel.Text = $"Draw Layer changed to: {currentScene.DrawLayer}          NEW PLACED OBJECTS WILL NOW HAVE THIS LAYER!";
         }
 
         private void DrawLayerComboBox_TextChanged(object sender, EventArgs e)
@@ -1864,7 +1866,7 @@ Would you like to rebuild the database from your 3DW Files?";
             if (currentScene == null || LayerListView.SelectedItems.Count == 0)
                 return;
 
-            currentScene.DrawLayer = LayerListView.SelectedItems[LayerListView.SelectedItems.Count - 1].Text;
+            //TODO
         }
 
 #if ODYSSEY

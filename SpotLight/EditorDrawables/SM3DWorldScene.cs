@@ -252,6 +252,13 @@ namespace Spotlight.EditorDrawables
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
             {
+                if (!EditZone.availibleLayers.Contains(DrawLayer))
+                {
+                    MessageBox.Show($"The Layer you are trying to paint on ({DrawLayer}) doesn't exist in this Zone");
+
+                    return 0;
+                }
+
                 var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, Math.Min(100, control.PickingDepth)), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
 
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
