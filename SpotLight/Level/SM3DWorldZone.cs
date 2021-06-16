@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -89,6 +90,21 @@ namespace Spotlight.Level
         public readonly Stack<IRevertable> undoStack = new Stack<IRevertable>();
         public readonly Stack<RedoEntry> redoStack = new Stack<RedoEntry>();
 
+        public HashSet<string> enabledLayers = new HashSet<string>();
+
+#if ODYSSEY
+        private HashSet<string>[] enabledLayersPerScenario = new HashSet<string>[15];
+
+        public int CurrentScenario { get; private set; } = 0;
+
+        public void SetScenario(int scenario)
+        {
+            CurrentScenario = scenario;
+
+            enabledLayers = enabledLayersPerScenario[scenario];
+        }
+#endif
+
         public virtual bool IsSaved
         {
             get => isSaved;
@@ -126,7 +142,10 @@ namespace Spotlight.Level
                     continue;
 
                 foreach (I3dWorldObject obj in objList)
-                    obj.AddToZoneBatch(ZoneBatch);
+                {
+                    if(enabledLayers.Contains(obj.Layer))
+                        obj.AddToZoneBatch(ZoneBatch);
+                }
             }
             SceneObjectIterState.InLinks = true;
             foreach (I3dWorldObject obj in LinkedObjects)
@@ -174,6 +193,8 @@ namespace Spotlight.Level
         public ObjectList LinkedObjects = new ObjectList();
 
         public readonly List<ZonePlacement> ZonePlacements = new List<ZonePlacement>();
+
+        public List<string> availibleLayers = new List<string>();
 
         private ulong highestObjID = 0;
 
@@ -352,6 +373,11 @@ namespace Spotlight.Level
         #endregion
 
         #region loading
+        //these methods just cover getting the bymls that contain the object placements and all the extra files
+
+        //for actually parsing the byml and getting it's objects it uses the LevelReader class
+        //afterwards EvaluateLayers uses all read objects to evaluate which layers are used
+
         public static bool TryOpen(string directory, string stageName, out SM3DWorldZone zone)
         {
             if (TryOpen(new StageInfo(directory, stageName, StageArcType.Split), out zone))
@@ -463,7 +489,7 @@ namespace Spotlight.Level
             StageInfo = stageInfo;
             ByteOrder = byteOrder;
 
-            Dictionary<string, I3dWorldObject> linkedObjsByID = new Dictionary<string, I3dWorldObject>();
+            LevelReader levelReader = new LevelReader(this);
 
             foreach (var stageArchiveInfo in stageArchiveInfos)
             {
@@ -473,7 +499,7 @@ namespace Spotlight.Level
                 {
                     Dictionary<long, I3dWorldObject> objectsByReference = new Dictionary<long, I3dWorldObject>();
 
-                    LoadStageByml(new ByamlIterator(new MemoryStream(sarc.Files[bymlInfo.FileName])), bymlInfo.CategoryPrefix, linkedObjsByID, objectsByReference);
+                    levelReader.LoadStageByml(new ByamlIterator(new MemoryStream(sarc.Files[bymlInfo.FileName])), bymlInfo.CategoryPrefix);
 
                     sarc.Files.Remove(bymlInfo.FileName);
                 }
@@ -483,6 +509,9 @@ namespace Spotlight.Level
                     LoadExtraFile(fileEntry, stageArchiveInfo.ExtraFileIndex);
                 }
             }
+
+            EvaluateLayers(levelReader);
+
 
             lastSaveTime = DateTime.Now;
         }
@@ -513,115 +542,278 @@ namespace Spotlight.Level
                 ExtraFiles[extraFilesIndex].Add(fileEntry.Key, fileEntry.Value);
         }
 
-        private void LoadStageByml(ByamlIterator byamlIter, string prefix, Dictionary<string, I3dWorldObject> linkedObjsByID, Dictionary<long, I3dWorldObject> objectsByReference)
+        
+        private void EvaluateLayers(LevelReader levelReader)
         {
 #if ODYSSEY
-            HashSet<string> zoneIds = new HashSet<string>();
-            foreach (var scenario in byamlIter.IterRootArray())
-            foreach (DictionaryEntry entry in scenario.IterDictionary())
-#else
-            foreach (DictionaryEntry entry in byamlIter.IterRootDictionary())
-#endif
+            for (int i = 0; i < enabledLayersPerScenario.Length; i++)
             {
-                if (entry.Key == "FilePath" || entry.Key == "Objs")
-                    continue;
+                enabledLayersPerScenario[i] = new HashSet<string>();
+            }
 
-                if (entry.Key == "ZoneList")
+
+            var scenarioBitFieldsPerLayerWithCounts = new Dictionary<string, //layer
+                                                 Dictionary<ushort, int>>(); //scenarioBitField, count
+
+            var scenarioBitFieldsPerLayerWithCounts_linked = new Dictionary<string, //layer
+                                                        Dictionary<ushort, int>>(); //scenarioBitField, count
+
+            var scenarioBitFields = new HashSet<ushort>();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            void CountScenarioBits(in string layer, in ushort scenarioBits)
+            {
+                scenarioBitFieldsPerLayerWithCounts.Require(layer).AddOne(scenarioBits);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            void CountScenarioBitsInLinked(in string layer, in ushort scenarioBits)
+            {
+                scenarioBitFieldsPerLayerWithCounts_linked.Require(layer).AddOne(scenarioBits);
+            }
+
+
+
+            foreach (var (obj, scenarioBits, isLinked) in levelReader.GetObjectsWithScenarioBits())
+            {
+                if (isLinked)
                 {
-                    foreach (ArrayEntry obj in entry.IterArray())
-                    {
-#if ODYSSEY
-                        string zoneId = "";
-#endif
-                        Vector3 position = Vector3.Zero;
-                        Vector3 rotation = Vector3.Zero;
-                        Vector3 scale = Vector3.One;
-                        string layer = "Common";
-                        SM3DWorldZone zone = null;
-                        foreach (DictionaryEntry _entry in obj.IterDictionary())
-                        {
-                            if (_entry.Key == "UnitConfigName")
-                            {
-                                string stageName = _entry.Parse();
+                    CountScenarioBitsInLinked(obj.Layer, scenarioBits);
+                }
+                else
+                    CountScenarioBits(obj.Layer, scenarioBits);
 
-                                if (!TryOpen(Directory, stageName, out zone))
-                                    TryOpen(Program.BaseStageDataPath, stageName, out zone);
-                            }
-                            else if (_entry.Key == "Translate")
-                            {
-                                dynamic data = _entry.Parse();
-                                position = new Vector3(
-                                    data["X"] / 100f,
-                                    data["Y"] / 100f,
-                                    data["Z"] / 100f
-                                );
-                            }
-                            else if (_entry.Key == "Rotate")
-                            {
-                                dynamic data = _entry.Parse();
-                                rotation = new Vector3(
-                                    data["X"],
-                                    data["Y"],
-                                    data["Z"]
-                                );
-                            }
-                            else if (_entry.Key == "Scale")
-                            {
-                                dynamic data = _entry.Parse();
-                                scale = new Vector3(
-                                    data["X"],
-                                    data["Y"],
-                                    data["Z"]
-                                );
-                            }
-                            else if (_entry.Key == "LayerConfigName")
-                            {
-                                layer = _entry.Parse();
-                            }
-#if ODYSSEY
-                            else if (_entry.Key == "Id")
-                            {
-                                zoneId = _entry.Parse();
+                scenarioBitFields.Add(scenarioBits);
+            }
 
-                                if (zoneIds.Contains(zoneId))
-                                    goto SKIP_ZONE;
+            foreach (var (placement, scenarioBits) in levelReader.GetZonePlacementsWithScenarioBits())
+            {
+                CountScenarioBits(placement.Layer, scenarioBits);
 
-                                zoneIds.Add(zoneId);
-                            }
-#endif
-                        }
+                scenarioBitFields.Add(scenarioBits);
+            }
 
-                        if (zone != null)
-                        {
-                            ZonePlacements.Add(new ZonePlacement(position, rotation, layer, zone));
-                        }
-#if ODYSSEY
-                    SKIP_ZONE:;
-#endif
-                    }
+            var layersPerBitFieldWithCounts = new Dictionary<ushort, List<(string layer, int count)>>();
 
+            foreach (var (layer, bitFieldsWithCounts) in scenarioBitFieldsPerLayerWithCounts_linked
+                .Where(x=>!scenarioBitFieldsPerLayerWithCounts.ContainsKey(x.Key))
+                .Concat(scenarioBitFieldsPerLayerWithCounts))
+            {
+                if (bitFieldsWithCounts.Count == 0)
                     continue;
+
+                availibleLayers.Add(layer);
+
+                ushort maxBitfield = 0;
+                int maxCount = 0;
+
+                foreach (var (bitField, count) in bitFieldsWithCounts)
+                {
+                    if (count>maxCount)
+                    {
+                        maxBitfield = bitField;
+                        maxCount = count;
+                    }
                 }
 
-#if ODYSSEY
-                    if (!ObjLists.ContainsKey(prefix + entry.Key))
-#endif
-                ObjLists.Add(prefix + entry.Key, new ObjectList());
+                layersPerBitFieldWithCounts.Require(maxBitfield).Add((layer, maxCount));
+            }
 
-                foreach (ArrayEntry obj in entry.IterArray())
+            #region Calculate including layers per bitfield
+            //should perform well enough for all levels since there are
+            //not too many different scenarioBits
+            var includingLayersPerBitField = new Dictionary<ushort, HashSet<string>>();
+
+            foreach (var bitField in scenarioBitFields)
+            {
+                includingLayersPerBitField.Add(bitField, new HashSet<string>(bitField));
+            }
+
+            foreach (var (bitField, layersWithCounts) in layersPerBitFieldWithCounts)
+            {
+                foreach (var (keyBitField, includingLayers) in includingLayersPerBitField)
                 {
-                    I3dWorldObject _obj = LevelIO.ParseObject(obj, this, objectsByReference, out bool alreadyReferenced, Properties.Settings.Default.UniqueIDs ? linkedObjsByID : null);
-                    if (!alreadyReferenced)
-                    {
-#if ODYSSEY
-                            _obj.ScenarioBitField |= (ushort)(1 << scenario.Index);
-                            if (!ObjLists[prefix + entry.Key].Contains(_obj))
-#endif
-                        ObjLists[prefix + entry.Key].Add(_obj);
-                    }
+                    //figure out if the bitfield includes the keyBitField
 
+                    if ((bitField & keyBitField) == keyBitField)
+                        includingLayers.UnionWith(layersWithCounts.Select(x => x.layer));
                 }
             }
+
+            #endregion
+
+            var layersPerBitField_lookUp = new Dictionary<ushort, (string preferred, HashSet<string> accepted)>();
+
+            foreach (var (bitField, unsortedLayers) in layersPerBitFieldWithCounts)
+            {
+                string maxLayer = null;
+
+                HashSet<string> layerSet = new HashSet<string>();
+
+                int max = 0;
+
+                foreach (var (layer, count) in unsortedLayers)
+                {
+                    layerSet.Add(layer);
+
+                    if (count > max)
+                    {
+                        max = count;
+                        maxLayer = layer;
+                    }
+                }
+
+                layersPerBitField_lookUp.Add(bitField, (maxLayer, layerSet));
+            }
+
+            var emptySet = new HashSet<string>();
+
+
+
+            #region resolve conflicts
+
+
+            string HandleLayer(string layer, ushort scenarioBits)
+            {
+                (string preferred, HashSet<string> accepted) entry;
+
+                if (!layersPerBitField_lookUp.TryGetValue(scenarioBits, out entry))
+                {
+                    string newLayer = GenerateLayerName(scenarioBits);
+
+                    entry = (newLayer, emptySet);
+
+                    layersPerBitField_lookUp.Add(scenarioBits, entry);
+
+                    availibleLayers.Add(newLayer);
+
+
+                    foreach (var scenario in BitUtils.AllSetBits(scenarioBits))
+                    {
+                        enabledLayersPerScenario[scenario].Add(newLayer);
+                    }
+                }
+
+                if (!entry.accepted.Contains(layer))
+                {
+                    return entry.preferred;
+                }
+
+                return layer;
+            }
+
+            foreach (var (obj, scenarioBits, isLinked) in levelReader.GetObjectsWithScenarioBits())
+            {
+                if (isLinked && includingLayersPerBitField.TryGetValue(scenarioBits, out var layers) && layers.Contains(obj.Layer))
+                    //the objects exists in other scenarios it's just not linked there, that's why the scenarioBits are incorrect
+                    continue; //so we can ignore it
+
+                obj.Layer = HandleLayer(obj.Layer, scenarioBits);
+            }
+
+            foreach (var (placement, scenarioBits) in levelReader.GetZonePlacementsWithScenarioBits())
+            {
+                placement.Layer = HandleLayer(placement.Layer, scenarioBits);
+            }
+            #endregion
+#else
+            availibleLayers = levelReader.readLayers.ToList();
+#endif
+
+            List<string> commons = new List<string>();
+            List<string> scenarios = new List<string>();
+            List<string> others = new List<string>();
+
+            foreach (var layer in availibleLayers)
+            {
+                if (layer.StartsWith("Common"))
+                    commons.Add(layer);
+                else if (layer.StartsWith("Scenario"))
+                    scenarios.Add(layer);
+                else
+                    others.Add(layer);
+            }
+
+            commons.Sort();
+            scenarios.Sort();
+            others.Sort();
+
+            availibleLayers = commons;
+            availibleLayers.AddRange(scenarios);
+            availibleLayers.AddRange(others);
+
+#if ODYSSEY
+#region calculate enabled layers per scenario
+
+            foreach (var (bitField, (_,layers)) in layersPerBitField_lookUp)
+            {
+                foreach (var index in BitUtils.AllSetBits(bitField))
+                {
+                    enabledLayersPerScenario[index].UnionWith(layers);
+                }
+            }
+#endregion
+
+            enabledLayers = enabledLayersPerScenario[0];
+#else
+            enabledLayers = availibleLayers.ToHashSet();
+#endif
+        }
+
+        private static string GenerateLayerName(ushort scenarioBits)
+        {
+            StringBuilder sb = new StringBuilder("S");
+
+            {
+                var bits = scenarioBits;
+
+                bool prevBitWasSet = false;
+
+                int streekStart = -1;
+
+                for (int scenario = 0; scenario < 16; scenario++)
+                {
+                    if ((bits & 0x1) == 1) //scenario bit set at index
+                    {
+                        if (!prevBitWasSet)
+                            streekStart = scenario;
+
+                        prevBitWasSet = true;
+                    }
+                    else
+                    {
+                        if (prevBitWasSet)
+                        {
+                            var a = streekStart;
+                            var b = scenario - 1;
+
+                            if (a == b)
+                                sb.Append(a + 1);
+                            else if (a + 1 == b)
+                            {
+                                sb.Append(a + 1);
+                                sb.Append('_');
+                                sb.Append(b + 1);
+                            }
+                            else
+                            {
+                                sb.Append(a + 1);
+                                sb.Append('-');
+                                sb.Append(b + 1);
+                            }
+
+                            sb.Append('_');
+                        }
+
+                        prevBitWasSet = false;
+                    }
+
+                    bits >>= 1;
+                }
+            }
+
+            string newLayer = sb.ToString().Trim('_');
+            return newLayer;
         }
         #endregion
 
@@ -805,12 +997,39 @@ namespace Spotlight.Level
 
         private void WriteStageByml(MemoryStream stream, string prefix, bool saveZonePlacements)
         {
-            //apologies for the bad code, merging odyssey and 3d world saving code isn't an easy task
-
-
             ByamlNodeWriter writer = new ByamlNodeWriter(stream, false, ByteOrder, 1);
 
-            #region Create ZoneList
+#if ODYSSEY
+            ByamlNodeWriter.ArrayNode rootNode = writer.CreateArrayNode();
+
+            for (int scenario = 0; scenario < 15; scenario++)
+            {
+                ByamlNodeWriter.DictionaryNode scenarioNode = writer.CreateDictionaryNode();
+
+                SaveObjectLists(scenarioNode, writer, prefix, saveZonePlacements, enabledLayersPerScenario[scenario]);
+
+                rootNode.AddDictionaryNodeRef(scenarioNode, true);
+            }
+
+            writer.Write(rootNode, true);
+#else
+            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode();
+
+            SaveObjectLists(rootNode, writer, prefix, saveZonePlacements, availibleLayers.ToHashSet());
+
+
+            rootNode.AddDynamicValue("FilePath", "N/A");
+
+            writer.Write(rootNode, true);
+#endif
+        }
+
+
+        private void SaveObjectLists(ByamlNodeWriter.DictionaryNode listsNode, ByamlNodeWriter writer, string prefix, bool saveZonePlacements, HashSet<string> layers)
+        {
+            //apologies for the bad code, merging odyssey and 3d world saving code isn't an easy task
+
+#region Create ZoneList
             ByamlNodeWriter.ArrayNode zonesNode = writer.CreateArrayNode();
 
             if (saveZonePlacements)
@@ -819,6 +1038,12 @@ namespace Spotlight.Level
 
                 foreach (var zonePlacement in ZonePlacements)
                 {
+                    if (!layers.Contains(zonePlacement.Layer))
+                    {
+                        zoneID++;
+                        continue;
+                    }
+
                     ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode();
 
                     zonePlacement.Save(writer, objNode, zoneID++);
@@ -826,22 +1051,12 @@ namespace Spotlight.Level
                     zonesNode.AddDictionaryNodeRef(objNode, true);
                 }
             }
-            #endregion
+#endregion
 
             HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
 
 #if !ODYSSEY
-            ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode();
-
-            rootNode.AddDynamicValue("FilePath", "N/A");
-
             ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
-#else
-            ByamlNodeWriter.ArrayNode rootNode = writer.CreateArrayNode();
-
-            for (int scenario = 0; scenario < 16; scenario++)
-            {
-                ByamlNodeWriter.DictionaryNode scenarioNode = writer.CreateDictionaryNode();
 #endif
             foreach (var (listName, objList) in ObjLists)
             {
@@ -873,15 +1088,13 @@ namespace Spotlight.Level
 
                 foreach (I3dWorldObject obj in objList)
                 {
-#if ODYSSEY
-                    if ((obj.ScenarioBitField & (ushort)(1 << scenario)) == 0)
-                        continue; //the object doesn't appear in this scenario
-#endif
+                    if (!layers.Contains(obj.Layer))
+                        continue;
 
                     if (!alreadyWrittenObjs.Contains(obj))
                     {
                         ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
-                        obj.Save(alreadyWrittenObjs, writer, objNode, false);
+                        obj.Save(alreadyWrittenObjs, writer, objNode, layers, false);
                         WriteObjNode(objNode);
                     }
                     else
@@ -890,26 +1103,70 @@ namespace Spotlight.Level
                     }
                 }
 #if ODYSSEY
-                scenarioNode.AddArrayNodeRef(listName.Substring(prefix.Length), objListNode, true);
+                listsNode.AddArrayNodeRef(listName.Substring(prefix.Length), objListNode, true);
 #endif
             }
 
-#if ODYSSEY
-            if (saveZonePlacements)
-                scenarioNode.AddArrayNodeRef("ZoneList", zonesNode, true);
 
-            rootNode.AddDictionaryNodeRef(scenarioNode, true);
-            }
-#else
-            rootNode.AddArrayNodeRef("Objs", objsNode, true);
             if (saveZonePlacements)
-                rootNode.AddArrayNodeRef("ZoneList", zonesNode, true);
+                listsNode.AddArrayNodeRef("ZoneList", zonesNode, true);
+
+#if !ODYSSEY
+            listsNode.AddArrayNodeRef("Objs", objsNode, true);
 #endif
-
-
-            writer.Write(rootNode, true);
         }
-        #endregion
-    #endregion
+#endregion
+#endregion
+    }
+}
+
+
+
+
+
+
+
+
+public static class Extensions
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TValue Require<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key) where TValue : new()
+    {
+        if (self.TryGetValue(key, out TValue value))
+            return value;
+        else
+        {
+            TValue newVal = new TValue();
+
+            self[key] = newVal;
+
+            return newVal;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void AddOne<TKey>(this Dictionary<TKey, int> self, TKey key)
+    {
+        if (self.TryGetValue(key, out int value))
+            self[key] = value++;
+        else
+            self[key] = 1;
+    }
+}
+
+public static class BitUtils
+{
+    public static IEnumerable<int> AllSetBits(ushort bits)
+    {
+        int index = 0;
+
+        while (bits > 0)
+        {
+            if ((bits & 0x1) == 1) //scenario bit set at index
+                yield return index;
+
+            bits >>= 1;
+            index++;
+        }
     }
 }

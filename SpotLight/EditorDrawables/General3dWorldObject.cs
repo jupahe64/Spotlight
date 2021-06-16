@@ -27,6 +27,7 @@ namespace Spotlight.EditorDrawables
     /// <summary>
     /// General object for SM3DW
     /// </summary>
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class General3dWorldObject : TransformableObject, I3dWorldObject
     {
         public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
@@ -160,7 +161,7 @@ namespace Spotlight.EditorDrawables
         //}
 
         #region I3DWorldObject implementation
-        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest = false)
+        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest = false)
         {
             objNode.AddDynamicValue("Comment", comment);
             objNode.AddDynamicValue("Id", ID);
@@ -168,38 +169,7 @@ namespace Spotlight.EditorDrawables
             objNode.AddDynamicValue("LayerConfigName", Layer);
 
             alreadyWrittenObjs.Add(this);
-
-            if (Links != null)
-            {
-                DictionaryNode linksNode = writer.CreateDictionaryNode(Links);
-
-                foreach (var (linkName, link) in Links)
-                {
-                    if (link.Count == 0)
-                        continue;
-
-                    ArrayNode linkNode = writer.CreateArrayNode(link);
-
-                    foreach (I3dWorldObject obj in link)
-                    {
-                        if (!alreadyWrittenObjs.Contains(obj))
-                        {
-                            DictionaryNode linkedObjNode = writer.CreateDictionaryNode(obj);
-                            obj.Save(alreadyWrittenObjs, writer, linkedObjNode, true);
-                            linkNode.AddDictionaryNodeRef(linkedObjNode);
-                        }
-                        else
-                            linkNode.AddDictionaryRef(obj);
-                    }
-
-                    linksNode.AddArrayNodeRef(linkName, linkNode, true);
-                }
-                objNode.AddDictionaryNodeRef("Links", linksNode, true);
-            }
-            else
-            {
-                objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
-            }
+            ObjectUtils.SaveLinks(Links, alreadyWrittenObjs, writer, objNode, layers);
 
             objNode.AddDynamicValue("ModelName", string.IsNullOrEmpty(ModelName) ? null : ModelName);
             objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(Rotation), true);
@@ -210,11 +180,11 @@ namespace Spotlight.EditorDrawables
 
             objNode.AddDynamicValue("UnitConfigName", ObjectName);
 
-            if (Properties.Count!=0)
+            if (Properties.Count != 0)
             {
                 foreach (KeyValuePair<string, dynamic> property in Properties)
                 {
-                    if(property.Value is string && property.Value == "")
+                    if (property.Value is string && property.Value == "")
                         objNode.AddDynamicValue(property.Key, null, true);
                     else
                         objNode.AddDynamicValue(property.Key, property.Value, true);
@@ -272,10 +242,6 @@ namespace Spotlight.EditorDrawables
                 ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
                 destZone);
-
-#if ODYSSEY
-            duplicates[this].ScenarioBitField = ScenarioBitField;
-#endif
         }
 
         public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
@@ -303,11 +269,9 @@ namespace Spotlight.EditorDrawables
             }
         }
 
-#if ODYSSEY
-        public ushort ScenarioBitField { get; set; } = 0;
-#endif
-
         #endregion
+
+        
 
         /// <summary>
         /// Draws the model to the given GL_Control
@@ -330,6 +294,12 @@ namespace Spotlight.EditorDrawables
                     control.SkipPickingColors(1);
                     return;
                 }
+            }
+
+            if (!SceneDrawState.EnabledLayers.Contains(Layer))
+            {
+                control.SkipPickingColors(1);
+                return;
             }
 
             bool hovered = editorScene.Hovered == this;
@@ -447,6 +417,20 @@ namespace Spotlight.EditorDrawables
                 objectUIControl.AddObjectUIContainer(new LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
 
             return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is General3dWorldObject @object &&
+                   Position.Equals(@object.Position) &&
+                   Rotation.Equals(@object.Rotation) &&
+                   Scale.Equals(@object.Scale) &&
+                   ObjectName == @object.ObjectName &&
+                   ModelName == @object.ModelName &&
+                   ClassName == @object.ClassName &&
+                   Layer == @object.Layer &&
+                   DisplayTranslation.Equals(@object.DisplayTranslation) &&
+                   ObjectUtils.EqualProperties(Properties, @object.Properties);
         }
 
         protected class General3dWorldObjectBatch : IBatchRenderer
@@ -589,9 +573,6 @@ namespace Spotlight.EditorDrawables
 
             public void DoUI(IObjectUIControl control)
             {
-#if ODYSSEY
-                control.PlainText(Convert.ToString(obj.ScenarioBitField, 2));
-#endif
                 if (Spotlight.Properties.Settings.Default.AllowIDEdits)
                     obj.ID = control.TextInput(obj.ID, "Object ID");
                 else

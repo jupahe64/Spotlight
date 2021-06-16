@@ -1,6 +1,8 @@
 ﻿using BYAML;
 using GL_EditorFramework;
 using GL_EditorFramework.EditorDrawables;
+using GL_EditorFramework.GL_Core;
+using GL_EditorFramework.Interfaces;
 using OpenTK;
 using Spotlight.Level;
 using System;
@@ -14,10 +16,9 @@ using static GL_EditorFramework.EditorDrawables.EditorSceneBase.PropertyCapture;
 
 namespace Spotlight.EditorDrawables
 {
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class Rail : Path<RailPoint>, I3dWorldObject
     {
-        public Dictionary<string, dynamic> Properties { get; private set; } = null;
-
         public override string ToString()
         {
             return ClassName.ToString();
@@ -95,6 +96,11 @@ namespace Spotlight.EditorDrawables
         [Undoable]
         public string ClassName { get; set; }
 
+        public Dictionary<string, dynamic> Properties { get; private set; } = null;
+
+        [Undoable]
+        public string Layer { get; set; } = "Common";
+
         readonly string comment = null;
 
         public Rail(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
@@ -106,6 +112,8 @@ namespace Spotlight.EditorDrawables
                 zone.SubmitRailID(ID);
 
             ClassName = info.ClassName;
+
+            Layer = info.Layer;
 
             comment = info.Comment;
 
@@ -132,8 +140,10 @@ namespace Spotlight.EditorDrawables
 
             zone?.SubmitRailID(ID);
 
-            loadLinks = false; //We don't expect Rails to have Links
+            loadLinks = true;
         }
+
+
         /// <summary>
         /// Creates a new rail for 3DW
         /// </summary>
@@ -143,13 +153,15 @@ namespace Spotlight.EditorDrawables
         /// <param name="isLadder">Unknown</param>
         /// <param name="isReverseCoord">Reverses the order the rails are in</param>
         /// <param name="className"></param>
-        public Rail(List<RailPoint> railPoints, string iD, string className, bool isClosed, bool isLadder, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
+        public Rail(List<RailPoint> railPoints, string iD, string className, bool isClosed, bool isLadder, Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
         {
             ID = iD;
             Closed = isClosed;
             IsLadder = isLadder;
             Properties = properties;
             ClassName = className;
+
+            Links = links;
 
             pathPoints = railPoints;
 
@@ -171,9 +183,9 @@ namespace Spotlight.EditorDrawables
         /// </summary>
         public List<(string, I3dWorldObject)> LinkDestinations { get; } = new List<(string, I3dWorldObject)>();
 
-        public Dictionary<string, List<I3dWorldObject>> Links { get => null; set { } } //We don't expect Rails to have Links
+        public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
 
-        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest = false)
+        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest = false)
         {
             objNode.AddDynamicValue("Comment", null);
             objNode.AddDynamicValue("Id", ID);
@@ -181,11 +193,11 @@ namespace Spotlight.EditorDrawables
             objNode.AddDynamicValue("IsLadder", IsLadder);
 
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", "Common");
+            objNode.AddDynamicValue("LayerConfigName", Layer);
 
             alreadyWrittenObjs.Add(this);
-            
-            objNode.AddDictionaryNodeRef("Links", writer.CreateDictionaryNode(), true); //We don't expect Rails to have Links
+
+            ObjectUtils.SaveLinks(Links, alreadyWrittenObjs, writer, objNode, layers);
 
             objNode.AddDynamicValue("ModelName", null);
 
@@ -267,6 +279,20 @@ namespace Spotlight.EditorDrawables
             return PathPoints[0]?.GetLinkingPoint(editorScene) ?? Vector3.Zero;
         }
 
+        public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
+        {
+            if(SceneDrawState.EnabledLayers.Contains(Layer))
+                base.Draw(control, pass, editorScene);
+        }
+
+        public override int GetPickableSpan()
+        {
+            if (SceneDrawState.EnabledLayers.Contains(Layer))
+                return base.GetPickableSpan();
+            else
+                return 0;
+        }
+
         public void UpdateLinkDestinations_Clear()
         {
             LinkDestinations.Clear();
@@ -274,7 +300,16 @@ namespace Spotlight.EditorDrawables
 
         public void UpdateLinkDestinations_Populate()
         {
-            //We don't expect Rails to have Links
+            if (Links != null)
+            {
+                foreach (var (linkName, link) in Links)
+                {
+                    foreach (I3dWorldObject obj in link)
+                    {
+                        obj.AddLinkDestination(linkName, this);
+                    }
+                }
+            }
         }
 
         public void AddLinkDestination(string linkName, I3dWorldObject linkingObject)
@@ -313,17 +348,8 @@ namespace Spotlight.EditorDrawables
                 }
             }
 
-            //copy path properties
-            Dictionary<string, dynamic> newPathProperties = new Dictionary<string, dynamic>();
-
-            foreach (var property in Properties)
-                newPathProperties.Add(property.Key, property.Value);
-
-            duplicates[this] = new Rail(newPoints, destZone?.NextRailID(), ClassName, Closed, IsLadder, newPathProperties, destZone);
-
-#if ODYSSEY
-            duplicates[this].ScenarioBitField = ScenarioBitField;
-#endif
+            duplicates[this] = new Rail(newPoints, destZone?.NextRailID(), ClassName, Closed, IsLadder, 
+                ObjectUtils.DuplicateLinks(Links), ObjectUtils.DuplicateProperties(Properties), destZone);
         }
 
         public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
@@ -340,10 +366,6 @@ namespace Spotlight.EditorDrawables
         {
             //TODO figure out if this is needed or not
         }
-
-#if ODYSSEY
-        public ushort ScenarioBitField { get; set; } = 0;
-#endif
 
         #endregion
 
@@ -386,8 +408,49 @@ namespace Spotlight.EditorDrawables
                 objectUIControl.AddObjectUIContainer(pointPropertyContainer, "Point Properties");
             }
 
+            if (Links != null)
+                objectUIControl.AddObjectUIContainer(new General3dWorldObject.LinksUIContainer(this, scene), "Links");
+
             if (LinkDestinations.Count > 0)
                 objectUIControl.AddObjectUIContainer(new General3dWorldObject.LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
+
+            return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Rail rail &&
+                   EqualityComparer<List<RailPoint>>.Default.Equals(pathPoints, rail.pathPoints) &&
+                   Closed == rail.Closed &&
+                   ID == rail.ID &&
+                   IsLadder == rail.IsLadder &&
+                   ClassName == rail.ClassName &&
+                   Layer == rail.Layer &&
+                   ObjectUtils.EqualProperties(Properties, rail.Properties);
+        }
+
+        private static bool EqualRailPoints(List<RailPoint> pointsA, List<RailPoint> pointsB)
+        {
+            if (pointsA.Count != pointsB.Count)
+                return false;
+
+            for (int i = 0; i < pointsA.Count; i++)
+            {
+                var a = pointsA[i];
+                var b = pointsB[i];
+
+                if (a.Position != b.Position)
+                    return false;
+
+                if (a.ControlPoint1 != b.ControlPoint1)
+                    return false;
+
+                if (a.ControlPoint2 != b.ControlPoint2)
+                    return false;
+
+                if (!ObjectUtils.EqualProperties(a.Properties,b.Properties))
+                    return false;
+            }
 
             return true;
         }

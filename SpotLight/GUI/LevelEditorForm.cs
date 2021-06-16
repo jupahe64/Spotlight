@@ -24,7 +24,7 @@ using SARCExt;
 using BYAML;
 using Syroot.BinaryData;
 
-namespace Spotlight
+namespace Spotlight.GUI
 {
     public partial class LevelEditorForm : Form
     {
@@ -35,6 +35,18 @@ namespace Spotlight
         Keys KS_AddObject = KeyStroke("Shift+A");
         Keys KS_DeleteSelected = KeyStroke("Delete");
         #endregion
+
+#if ODYSSEY
+        ComboBox ScenarioComboBox = new ComboBox()
+        {
+            Name = "ScenarioComboBox",
+            Enabled = false,
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Dock = DockStyle.Top
+        };
+
+        //Button scenarioApplyButton = new Button();
+#endif
 
         protected override bool ProcessKeyPreview(ref Message m)
         {
@@ -134,6 +146,33 @@ namespace Spotlight
 
             MainSceneListView.ListExited += MainSceneListView_ListExited;
             MainSceneListView.SelectionChanged += SceneListView3dWorld1_SelectionChanged;
+
+            splitContainer2.Panel2.DoubleClick += SplitContainer2_Panel2_DoubleClick;
+
+#if ODYSSEY
+            ScenarioComboBox.Items.AddRange(new object[]
+            {
+                "Scenario 0/1",
+                "Scenario 2",
+                "Scenario 3",
+                "Scenario 4",
+                "Scenario 5",
+                "Scenario 6",
+                "Scenario 7",
+                "Scenario 8",
+                "Scenario 9",
+                "Scenario 10",
+                "Scenario 11",
+                "Scenario 12",
+                "Scenario 13",
+                "Scenario 14",
+                "Scenario 15",
+            });
+            
+            ScenarioComboBox.SelectedIndexChanged += ScenarioComboBox_SelectedIndexChanged;
+
+            LayersTabPage.Controls.Add(ScenarioComboBox);
+#endif
 
             Localize();
 
@@ -280,7 +319,6 @@ namespace Spotlight
             MainSceneListView.ItemClicked += MainSceneListView_ItemClicked;
         }
 
-
         private void MainSceneListView_ListExited(object sender, ListEventArgs e)
         {
             currentScene.CurrentList = e.List;
@@ -384,6 +422,39 @@ namespace Spotlight
             ObjectUIControl.Refresh();
         }
 
+        private void SplitContainer2_Panel2_DoubleClick(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("All selected objects will be saved into a gltf file [EXPERIMENTAL]\ncontinue?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
+
+                SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
+
+                foreach (General3dWorldObject _obj in currentScene.SelectedObjects.Where(x => x is General3dWorldObject))
+                {
+                    string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
+
+                    if (BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
+                    {
+                        scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
+                            System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
+                            System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
+                            System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
+                            System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
+                            System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
+                            );
+                    }
+                }
+
+                var model = scene.ToGltf2();
+
+                string fileName = System.IO.Path.Combine(AppContext.BaseDirectory, currentScene.ToString() + ".gltf");
+
+                model.SaveGLTF(fileName);
+                MessageBox.Show("Model saved as " + fileName);
+            }
+        }
+
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
             if (currentScene == null || currentScene.SelectedObjects.Count == 0)
@@ -395,38 +466,148 @@ namespace Spotlight
                 Debugger.Break();
             else
             {
-                if (MessageBox.Show("All selected objects will be saved into a gltf file [EXPERIMENTAL]\ncontinue?", "", MessageBoxButtons.YesNo) != DialogResult.Yes)
-                    return;
+                return;
             }
 
 
+            //                      --------ROTATING PLATFORM--------
 
-            SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
+            //float metersPerSecond = 3;
 
-            SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
+            //float anglePerSecond = 10;
 
-            foreach (General3dWorldObject _obj in currentScene.SelectedObjects.Where(x=>x is General3dWorldObject))
+            //Vector3[] postions = new Vector3[]
+            //{
+            //    new Vector3( 83.5f,29f,-246.5f),
+            //    new Vector3(103.5f,29f,-246.5f),
+            //    new Vector3(121.5f,44f,-246.5f),
+            //    new Vector3(146.5f,45f,-246.5f),
+            //    new Vector3(181.5f,53f,-246.5f),
+            //};
+
+
+            //currentScene.BeginUndoCollection();
+
+            //var prevSpeed = obj.Properties["Speed"];
+
+            //obj.Properties["Speed"] = metersPerSecond / 60f * 100f;
+
+            //currentScene.AddToUndo(new RevertableDictEntryChange("Speed", obj.Properties, prevSpeed));
+
+            //var prevSpeedBT = obj.Properties["SpeedByTime"];
+
+            //obj.Properties["SpeedByTime"] = -1;
+
+            //currentScene.AddToUndo(new RevertableDictEntryChange("SpeedByTime", obj.Properties, prevSpeedBT));
+
+
+            //float angleSign = Math.Sign(anglePerSecond);
+
+            //anglePerSecond *= angleSign;
+
+            //List<I3dWorldObject> objectsToAdd = new List<I3dWorldObject>();
+
+            //float current_angle = 0;
+
+            //I3dWorldObject lastKeyMove = obj;
+
+            //void AddKeyMove(float angle, Vector3 pos, float speedByTime = -1)
+            //{
+            //    var newKeyMove = new General3dWorldObject(pos, new Vector3(0, 0, angle * angleSign), Vector3.One, 
+            //        currentScene.EditZone.NextObjID(), obj.ObjectName, obj.ModelName, obj.ClassName, Vector3.Zero, obj.DisplayName, 
+            //        new Dictionary<string, List<I3dWorldObject>>(), ObjectUtils.DuplicateProperties(obj.Properties), currentScene.EditZone);
+
+            //    newKeyMove.Properties["SpeedByTime"] = speedByTime;
+
+            //    if(speedByTime>0)
+            //        newKeyMove.Properties["Speed"] = 0;
+
+            //    currentScene.TryAddConnection(lastKeyMove, newKeyMove, "KeyMoveNext");
+            //    newKeyMove.AddLinkDestination("KeyMoveNext", lastKeyMove);
+
+            //    currentScene.AddToUndo(new SM3DWorldScene.RevertableConnectionAddition(
+            //        lastKeyMove, newKeyMove, "KeyMoveNext"));
+
+            //    objectsToAdd.Add(newKeyMove);
+
+            //    lastKeyMove = newKeyMove;
+            //}
+
+            //float remainingDegrees = 0;
+
+            //for (int i = 1; i < postions.Length; i++)
+            //{
+            //    Vector3 a = postions[i-1];
+            //    Vector3 b = postions[i];
+
+            //    float d = Vector3.Distance(a, b);
+
+            //    float total_delta_angle = d / metersPerSecond * anglePerSecond;
+
+            //    for (float delta_angle = 90; delta_angle < total_delta_angle; delta_angle+=90)
+            //    {
+            //        Vector3 pos = Vector3.Lerp(a, b, delta_angle / total_delta_angle);
+
+            //        AddKeyMove(current_angle + delta_angle, pos);
+            //    }
+
+            //    float speedByTime = -1;
+
+            //    if (i == postions.Length-1)
+            //    {
+            //        remainingDegrees = 90 - ((current_angle + total_delta_angle) % 90);
+
+            //        if (remainingDegrees != 90)
+            //            speedByTime = remainingDegrees / anglePerSecond * 60;
+            //    }
+
+            //    AddKeyMove(current_angle + total_delta_angle, b, speedByTime);
+
+            //    current_angle += total_delta_angle;
+            //}
+
+            //if (remainingDegrees != 90)
+            //{
+            //    AddKeyMove(current_angle + remainingDegrees, postions[postions.Length-1]);
+            //}
+
+            //AdditionManager additionManager = new AdditionManager();
+
+            //additionManager.Add(currentScene.EditZone.LinkedObjects, objectsToAdd.ToArray());
+
+            //currentScene.ExecuteAddition(additionManager);
+
+            //currentScene.EndUndoCollection();
+
+
+
+            //                      --------ARRAY COPY--------
+
+            Vector3 offset = new Vector3(0,0,-20);
+
+            int num = 10;
+
+            List<I3dWorldObject> objectsToAdd = new List<I3dWorldObject>();
+
+            void AddCopy(Vector3 pos)
             {
-                string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
+                var copy = new General3dWorldObject(pos, obj.Rotation, Vector3.One,
+                    currentScene.EditZone.NextObjID(), obj.ObjectName, obj.ModelName, obj.ClassName, Vector3.Zero, obj.DisplayName,
+                    new Dictionary<string, List<I3dWorldObject>>(), ObjectUtils.DuplicateProperties(obj.Properties), currentScene.EditZone);
 
-                if (BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
-                {
-                    scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
-                        System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
-                        System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
-                        System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
-                        System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
-                        System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
-                        );
-                }
+                objectsToAdd.Add(copy);
             }
 
-            var model = scene.ToGltf2();
+            for (int i = 1; i < num; i++)
+            {
+                AddCopy(obj.Position + offset * i);
+            }
 
-            string fileName = System.IO.Path.Combine(AppContext.BaseDirectory, currentScene.ToString() + ".gltf");
+            AdditionManager additionManager = new AdditionManager();
 
-            model.SaveGLTF(fileName);
-            MessageBox.Show("Model saved as " + fileName);
+            additionManager.Add(currentScene.EditZone.ObjLists.First(x=>x.Value.Contains(obj)).Value, objectsToAdd.ToArray());
+
+            currentScene.ExecuteAddition(additionManager);
         }
 
         private void Scene_ObjectsMoved(object sender, EventArgs e)
@@ -1190,8 +1371,15 @@ namespace Spotlight
             else
                 MainSceneListView.ExpandNode(SM3DWorldZone.SOUND_PREFIX);
 
+#if ODYSSEY
+            ScenarioComboBox.SelectedIndex = currentScene.EditZone.CurrentScenario;
+#endif
+
+            UpdateLayerList();
 
             MainSceneListView.Refresh();
+
+
 
             UpdateMoveToSpecificButtons();
 
@@ -1199,6 +1387,22 @@ namespace Spotlight
 
             currentScene.SetupObjectUIControl(ObjectUIControl);
             LevelGLControlModern.Refresh();
+        }
+
+        private void UpdateLayerList()
+        {
+            LayerListView.BeginUpdate();
+            LayerListView.Items.Clear();
+
+            LayerListView.ItemCheck -= LayerList_ItemCheck;
+
+            foreach (var layer in currentScene.EditZone.availibleLayers)
+            {
+                LayerListView.Items.Add(layer).Checked = currentScene.EditZone.enabledLayers.Contains(layer);
+            }
+            LayerListView.EndUpdate();
+
+            LayerListView.ItemCheck += LayerList_ItemCheck;
         }
 
         private void SceneListView3dWorld1_SelectionChanged(object sender, EventArgs e)
@@ -1247,6 +1451,10 @@ namespace Spotlight
             SelectionToolStripMenuItem.Enabled = Trigger;
             ModeToolStripMenuItem.Enabled = Trigger;
             MainSceneListView.Enabled = Trigger;
+            LayerListView.Enabled = Trigger;
+#if ODYSSEY
+            ScenarioComboBox.Enabled = Trigger;
+#endif
         }
 
         private void LevelEditorForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -1303,7 +1511,7 @@ namespace Spotlight
             else return false;
         }
 
-        #region Translations
+#region Translations
         /// <summary>
         /// Sets up the text. if this is not called, I bet there will be some crashes
         /// </summary>
@@ -1312,8 +1520,8 @@ namespace Spotlight
             Text = Program.CurrentLanguage.GetTranslation("EditorTitle") ?? "Spotlight";
 
 
-            #region Controls
-            #region Toolstrip Items
+#region Controls
+#region Toolstrip Items
             this.Localize(
             FileToolStripMenuItem,
             OpenToolStripMenuItem,
@@ -1347,13 +1555,13 @@ namespace Spotlight
             AboutToolStripMenuItem,
             SpotlightWikiToolStripMenuItem,
             CheckForUpdatesToolStripMenuItem,
-            #endregion
+#endregion
 
             EditIndividualButton,
             CancelAddObjectButton
             );
             CurrentObjectLabel.Text = NothingSelected;
-            #endregion
+#endregion
         }
 
         [Program.Localized]
@@ -1475,7 +1683,7 @@ Would you like to rebuild the database from your 3DW Files?";
         [Program.Localized]
         string InvalidStageListFormatHeader = "Invalid Format";
 
-        #endregion
+#endregion
 
         private void QuickFavoriteControl_SelectedFavoriteChanged(object sender, EventArgs e)
         {
@@ -1560,5 +1768,79 @@ Would you like to rebuild the database from your 3DW Files?";
             Program.SetRestartForm(new LevelEditorForm(tabs, selected, QuickFavoriteControl.Favorites.ToArray()));
             Close();
         }
+
+        private void CreateViewGroupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            List<I3dWorldObject> selected3dWObjects = currentScene.SelectedObjects.Where(x => x is I3dWorldObject).Cast<I3dWorldObject>().ToList();
+
+            if (selected3dWObjects.Count == 0)
+                return;
+
+            var zone = currentScene.EditZone;
+
+            EditableObject.BoundingBox box = EditableObject.BoundingBox.Default;
+
+            foreach (var obj in selected3dWObjects)
+                obj.GetSelectionBox(ref box);
+
+            Vector3 center = box.GetCenter();
+
+            var groupView = Program.ParameterDB.ObjectParameters["GroupView"].ToGeneral3DWorldObject(zone.NextObjID(), zone, Vector3.Zero, "GroupView");
+
+
+            groupView.Properties["FadeInTime"] = -1;
+            groupView.Properties["FarDistance"] = -1;
+            groupView.Properties["NearDistance"] = -1;
+
+            groupView.GlobalPosition = center + new Vector3(0, 5, 0);
+
+            currentScene.BeginUndoCollection();
+
+            zone.LinkedObjects.Add(groupView);
+            currentScene.SelectedObjects.Clear();
+            groupView.SelectDefault(LevelGLControlModern);
+            currentScene.AddToUndo(new RevertableSingleAddition(groupView, zone.LinkedObjects));
+
+
+            foreach (var obj in selected3dWObjects)
+            {
+                if (currentScene.TryAddConnection(obj, groupView, "ViewGroup"))
+                {
+                    currentScene.AddToUndo(new SM3DWorldScene.RevertableConnectionAddition(obj, groupView, "ViewGroup"));
+                }
+            }
+
+            currentScene.EndUndoCollection();
+
+            currentScene.UpdateLinkDestinations();
+
+            Scene_SelectionChanged(null, null);
+
+            LevelGLControlModern.Refresh();
+        }
+
+        private void LayerList_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (e.NewValue == e.CurrentValue)
+                return; //not sure if that can even happen
+
+            string layer = LayerListView.Items[e.Index].Text;
+
+            if (e.NewValue==CheckState.Checked)
+                currentScene.EditZone.enabledLayers.Add(layer);
+            else if(e.NewValue == CheckState.Unchecked)
+                currentScene.EditZone.enabledLayers.Remove(layer);
+
+            LevelGLControlModern.Refresh();
+        }
+
+#if ODYSSEY
+        private void ScenarioComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            currentScene.SetScenario(ScenarioComboBox.SelectedIndex);
+            UpdateLayerList();
+            LevelGLControlModern.Refresh();
+        }
+#endif
     }
 }

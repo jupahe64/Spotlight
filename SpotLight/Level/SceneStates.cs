@@ -1,5 +1,6 @@
 ﻿using OpenTK;
 using Spotlight.EditorDrawables;
+using System.Collections.Generic;
 
 namespace Spotlight
 {
@@ -8,6 +9,8 @@ namespace Spotlight
         public static ZoneTransform ZoneTransform = ZoneTransform.Identity;
 
         public static Vector4? HighlightColorOverride = null;
+
+        public static HashSet<string> EnabledLayers = null;
     }
 
     public static class SceneObjectIterState

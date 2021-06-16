@@ -61,6 +61,12 @@ namespace Spotlight.EditorDrawables
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
+            if (!SceneDrawState.EnabledLayers.Contains(Layer))
+            {
+                control.SkipPickingColors(1);
+                return;
+            }
+
             Vector4 hightlightColor;
 
             if (Selected && editorScene.Hovered == this)

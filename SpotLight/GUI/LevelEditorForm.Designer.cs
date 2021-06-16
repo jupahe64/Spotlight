@@ -1,4 +1,4 @@
-﻿namespace Spotlight
+﻿namespace Spotlight.GUI
 {
     partial class LevelEditorForm
     {
@@ -36,11 +36,12 @@
             this.ZoneListBox = new System.Windows.Forms.ListBox();
             this.EditIndividualButton = new System.Windows.Forms.Button();
             this.ObjectsTabPage = new System.Windows.Forms.TabPage();
-            this.MainSceneListView = new Spotlight.GUI.SceneListView3dWorld();
+            this.LayersTabPage = new System.Windows.Forms.TabPage();
+            this.MainSceneListView = new SceneListView3dWorld();
             this.CurrentObjectLabel = new System.Windows.Forms.Label();
             this.ObjectUIControl = new GL_EditorFramework.ObjectUIControl();
             this.ZoneDocumentTabControl = new GL_EditorFramework.DocumentTabControl();
-            this.QuickFavoriteControl = new Spotlight.QuickFavoriteControl();
+            this.QuickFavoriteControl = new QuickFavoriteControl();
             this.LevelGLControlModern = new GL_EditorFramework.GL_Core.GL_ControlModern();
             this.SpotlightMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,6 +64,7 @@
             this.MoveToLinkedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToAppropriateListsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToSpecificListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CreateViewGroupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LevelParametersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SelectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -80,6 +82,7 @@
             this.SpotlightToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.CancelAddObjectButton = new System.Windows.Forms.Button();
+            this.LayerListView = new System.Windows.Forms.ListView();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -135,6 +138,7 @@
             // 
             // MainTabControl
             // 
+            this.MainTabControl.Controls.Add(this.LayersTabPage);
             this.MainTabControl.Controls.Add(this.ZonesTabPage);
             this.MainTabControl.Controls.Add(this.ObjectsTabPage);
             this.MainTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -189,6 +193,17 @@
             this.ObjectsTabPage.Text = "Objects";
             this.ObjectsTabPage.UseVisualStyleBackColor = true;
             // 
+            // LayersTabPage
+            // 
+            this.LayersTabPage.Controls.Add(this.LayerListView);
+            this.LayersTabPage.Location = new System.Drawing.Point(4, 22);
+            this.LayersTabPage.Name = "LayersTabPage";
+            this.LayersTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.LayersTabPage.Size = new System.Drawing.Size(252, 219);
+            this.LayersTabPage.TabIndex = 1;
+            this.LayersTabPage.Text = "Layers";
+            this.LayersTabPage.UseVisualStyleBackColor = true;
+            // 
             // MainSceneListView
             // 
             this.MainSceneListView.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -199,6 +214,18 @@
             this.MainSceneListView.Size = new System.Drawing.Size(246, 213);
             this.MainSceneListView.TabIndex = 1;
             this.MainSceneListView.ItemClicked += new GL_EditorFramework.ItemClickedEventHandler(this.MainSceneListView_ItemClicked);
+            // 
+            // LayerListView
+            // 
+            this.LayerListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LayerListView.Enabled = false;
+            this.LayerListView.Location = new System.Drawing.Point(3, 3);
+            this.LayerListView.Name = "LayerListView";
+            this.LayerListView.Size = new System.Drawing.Size(246, 213);
+            this.LayerListView.TabIndex = 1;
+            this.LayerListView.CheckBoxes = true;
+            this.LayerListView.View = System.Windows.Forms.View.List;
+            this.LayerListView.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.LayerList_ItemCheck);
             // 
             // CurrentObjectLabel
             // 
@@ -211,8 +238,8 @@
             // 
             // ObjectUIControl
             // 
-            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.ObjectUIControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ObjectUIControl.BackColor = System.Drawing.SystemColors.Control;
             this.ObjectUIControl.Location = new System.Drawing.Point(3, 16);
@@ -235,7 +262,7 @@
             // 
             // QuickFavoriteControl
             // 
-            this.QuickFavoriteControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.QuickFavoriteControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.QuickFavoriteControl.Location = new System.Drawing.Point(3, 449);
             this.QuickFavoriteControl.Name = "QuickFavoriteControl";
@@ -245,8 +272,8 @@
             // 
             // LevelGLControlModern
             // 
-            this.LevelGLControlModern.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.LevelGLControlModern.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LevelGLControlModern.BackColor = System.Drawing.Color.Black;
             this.LevelGLControlModern.CameraDistance = 10F;
@@ -325,7 +352,7 @@
             // 
             this.SaveAsToolStripMenuItem.Enabled = false;
             this.SaveAsToolStripMenuItem.Name = "SaveAsToolStripMenuItem";
-            this.SaveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            this.SaveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
             | System.Windows.Forms.Keys.S)));
             this.SaveAsToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
             this.SaveAsToolStripMenuItem.Text = "Save As";
@@ -334,7 +361,7 @@
             // OptionsToolStripMenuItem
             // 
             this.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem";
-            this.OptionsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            this.OptionsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
             | System.Windows.Forms.Keys.O)));
             this.OptionsToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
             this.OptionsToolStripMenuItem.Text = "Options";
@@ -359,6 +386,7 @@
             this.DuplicateToolStripMenuItem,
             this.DeleteToolStripMenuItem,
             this.MoveSelectionToToolStripMenuItem,
+            this.CreateViewGroupToolStripMenuItem,
             this.LevelParametersToolStripMenuItem});
             this.EditToolStripMenuItem.Name = "EditToolStripMenuItem";
             this.EditToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
@@ -465,6 +493,13 @@
             this.MoveToSpecificListToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.MoveToSpecificListToolStripMenuItem.Text = "Specific List";
             // 
+            // CreateViewGroupToolStripMenuItem
+            // 
+            this.CreateViewGroupToolStripMenuItem.Name = "LevelParametersToolStripMenuItem";
+            this.CreateViewGroupToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.CreateViewGroupToolStripMenuItem.Text = "Create View Group";
+            this.CreateViewGroupToolStripMenuItem.Click += new System.EventHandler(this.CreateViewGroupToolStripMenuItem_Click);
+            // 
             // LevelParametersToolStripMenuItem
             // 
             this.LevelParametersToolStripMenuItem.Name = "LevelParametersToolStripMenuItem";
@@ -538,7 +573,7 @@
             // EditObjectsToolStripMenuItem
             // 
             this.EditObjectsToolStripMenuItem.Name = "EditObjectsToolStripMenuItem";
-            this.EditObjectsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            this.EditObjectsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
             | System.Windows.Forms.Keys.O)));
             this.EditObjectsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.EditObjectsToolStripMenuItem.Text = "Edit Objects";
@@ -547,7 +582,7 @@
             // EditLinksToolStripMenuItem
             // 
             this.EditLinksToolStripMenuItem.Name = "EditLinksToolStripMenuItem";
-            this.EditLinksToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            this.EditLinksToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
             | System.Windows.Forms.Keys.L)));
             this.EditLinksToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.EditLinksToolStripMenuItem.Text = "Edit Links";
@@ -646,7 +681,6 @@
             this.SpotlightStatusStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -678,10 +712,11 @@
         private System.Windows.Forms.TabControl MainTabControl;
         private System.Windows.Forms.TabPage ZonesTabPage;
         private System.Windows.Forms.TabPage ObjectsTabPage;
+        private System.Windows.Forms.TabPage LayersTabPage;
         private System.Windows.Forms.Button EditIndividualButton;
         public GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         public GL_EditorFramework.ObjectUIControl ObjectUIControl;
-        public GUI.SceneListView3dWorld MainSceneListView;
+        public SceneListView3dWorld MainSceneListView;
         private GL_EditorFramework.DocumentTabControl ZoneDocumentTabControl;
         private System.Windows.Forms.ListBox ZoneListBox;
         private System.Windows.Forms.ToolStripMenuItem AddZoneToolStripMenuItem;
@@ -701,6 +736,8 @@
         private System.Windows.Forms.ToolStripMenuItem invertSelectionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MoveToSpecificListToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem restartToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem CreateViewGroupToolStripMenuItem;
+        private System.Windows.Forms.ListView LayerListView;
     }
 }
 

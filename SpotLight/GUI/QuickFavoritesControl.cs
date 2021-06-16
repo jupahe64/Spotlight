@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 using static Spotlight.EditorDrawables.SM3DWorldScene;
 
-namespace Spotlight
+namespace Spotlight.GUI
 {
     public class QuickFavoriteClosingEventArgs : EventArgs
     {

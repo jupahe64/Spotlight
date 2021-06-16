@@ -1,4 +1,5 @@
-﻿using GL_EditorFramework;
+﻿using BYAML;
+using GL_EditorFramework;
 using OpenTK;
 using Spotlight.Level;
 using System;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static BYAML.ByamlIterator;
+using static BYAML.ByamlNodeWriter;
 
 namespace Spotlight.EditorDrawables
 {
@@ -61,6 +63,29 @@ namespace Spotlight.EditorDrawables
             return newProperties;
         }
 
+        public static bool EqualProperties(Dictionary<string, dynamic> propertiesA, Dictionary<string, dynamic> propertiesB)
+        {
+            if (propertiesA.Count != propertiesB.Count)
+                return false;
+
+            foreach (var (key, valueA) in propertiesA)
+            {
+                if (!propertiesB.TryGetValue(key, out dynamic valueB))
+                    return false;
+
+                if ((valueA == null) != (valueB == null))
+                    return false;
+
+                if (valueA == null)
+                    continue;
+
+                if (!valueA.Equals(valueB))
+                    return false;
+            }
+
+            return true;
+        }
+
         public static void LinkDuplicates(I3dWorldObject self, SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowLinkCopyToOrignal)
         {
             if (self.Links != null)
@@ -111,6 +136,49 @@ namespace Spotlight.EditorDrawables
                         }
                     }
                 }
+            }
+        }
+
+
+        public static void SaveLinks(Dictionary<string, List<I3dWorldObject>> links, HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers)
+        {
+            if (links != null)
+            {
+                DictionaryNode linksNode = writer.CreateDictionaryNode(links);
+
+                foreach (var (linkName, link) in links)
+                {
+                    if (link.Count == 0)
+                        continue;
+
+                    ArrayNode linkNode = writer.CreateArrayNode(link);
+
+                    foreach (I3dWorldObject obj in link)
+                    {
+                        if (!layers.Contains(obj.Layer))
+                            continue;
+
+                        if (!alreadyWrittenObjs.Contains(obj))
+                        {
+                            DictionaryNode linkedObjNode = writer.CreateDictionaryNode(obj);
+                            obj.Save(alreadyWrittenObjs, writer, linkedObjNode, layers, true);
+                            linkNode.AddDictionaryNodeRef(linkedObjNode);
+                        }
+                        else
+                            linkNode.AddDictionaryRef(obj);
+                    }
+
+                    if (linkNode.Count != 0)
+                        linksNode.AddArrayNodeRef(linkName, linkNode, true);
+                }
+                if (linksNode.Count != 0)
+                    objNode.AddDictionaryNodeRef("Links", linksNode, true);
+                else
+                    objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
+            }
+            else
+            {
+                objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
             }
         }
 

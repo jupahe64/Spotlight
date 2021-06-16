@@ -37,89 +37,6 @@ namespace Spotlight.Level
                 "AreaSphere",
         };
 
-        /// <summary>
-        /// Parses a 3d World from an ArrayEntry
-        /// </summary>
-        /// <param name="objectEntry"></param>
-        /// <param name="zone"></param>
-        /// <param name="objectsByReference"></param>
-        /// <returns></returns>
-        public static I3dWorldObject ParseObject(ArrayEntry objectEntry, SM3DWorldZone zone, Dictionary<long, I3dWorldObject> objectsByReference, out bool alreadyInLinks, Dictionary<string, I3dWorldObject> linkedObjsByID, bool isLinked = false)
-        {
-            ObjectInfo info = GetObjectInfo(ref objectEntry, zone);
-
-            I3dWorldObject obj;
-            bool loadLinks;
-
-            if((info.ClassName == "Area") || info.ObjectName.Contains("Area") && AreaModelNames.Contains(info.ModelName))
-                obj = new AreaObject(in info, zone, out loadLinks);
-            else if (info.PropertyEntries.TryGetValue("RailPoints", out DictionaryEntry railPointEntry) && railPointEntry.NodeType == ByamlFile.ByamlNodeType.Array) //at this point we can be sure it's a rail
-                obj = new Rail(in info, zone, out loadLinks);
-            else
-                obj = new General3dWorldObject(in info, zone, out loadLinks);
-
-            if (isLinked && linkedObjsByID != null && !(obj is Rail))
-            {
-                if (!linkedObjsByID.ContainsKey(info.ID))
-                    linkedObjsByID.Add(info.ID, obj);
-                else
-                {
-                    alreadyInLinks = true;
-
-                    obj = linkedObjsByID[info.ID];
-
-                    if (!isLinked)
-                        alreadyInLinks = !zone.LinkedObjects.Remove(obj);
-
-                    //in case this object was already read in another file
-                    if (!objectsByReference.ContainsKey(objectEntry.Position))
-                        objectsByReference.Add(objectEntry.Position, obj);
-
-                    return obj;
-                }
-            }
-
-            alreadyInLinks = false;
-
-            if (!objectsByReference.ContainsKey(objectEntry.Position))
-                objectsByReference.Add(objectEntry.Position, obj);
-            else if (!isLinked)
-            {
-                obj = objectsByReference[objectEntry.Position];
-                zone.LinkedObjects.Remove(obj);
-                return obj;
-            }
-
-            if (loadLinks)
-            {
-                var links = new Dictionary<string, List<I3dWorldObject>>();
-                foreach (DictionaryEntry link in info.LinkEntries.Values)
-                {
-                    links.Add(link.Key, new List<I3dWorldObject>());
-                    foreach (ArrayEntry linked in link.IterArray())
-                    {
-                        if (objectsByReference.ContainsKey(linked.Position))
-                        {
-                            links[link.Key].Add(objectsByReference[linked.Position]);
-                            objectsByReference[linked.Position].AddLinkDestination(link.Key, obj);
-                        }
-                        else
-                        {
-                            I3dWorldObject _obj = ParseObject(linked, zone, objectsByReference, out bool linkedAlreadyReferenced, linkedObjsByID, true);
-                            _obj.AddLinkDestination(link.Key, obj);
-                            links[link.Key].Add(_obj);
-                            if (zone != null && !linkedAlreadyReferenced)
-                                zone.LinkedObjects.Add(_obj);
-                        }
-                    }
-                }
-                if (links.Count > 0)
-                    obj.Links = links;
-            }
-
-            return obj;
-        }
-
         public static void GetObjectInfosCombined(string fileName, 
             Dictionary<string, List<ObjectInfo>> MAPinfosByListName,
             Dictionary<string, List<ObjectInfo>> DESIGNinfosByListName,
@@ -214,7 +131,7 @@ namespace Spotlight.Level
             ArrayEntry objectEntry, Dictionary<long, ObjectInfo> objectInfosByReference, 
             Dictionary<string, List<ObjectInfo>> infosByListName, string objListName)
         {
-            ObjectInfo info = GetObjectInfo(ref objectEntry, null);
+            ObjectInfo info = GetObjectInfo(objectEntry);
 
             infosByListName[objListName].Add(info);
 
@@ -238,7 +155,7 @@ namespace Spotlight.Level
             return info;
         }
 
-        private static ObjectInfo GetObjectInfo(ref ArrayEntry objectEntry, SM3DWorldZone zone)
+        internal static ObjectInfo GetObjectInfo(in ArrayEntry objectEntry)
         {
             Dictionary<string, DictionaryEntry> properties = new Dictionary<string, DictionaryEntry>();
             Dictionary<string, DictionaryEntry> links = new Dictionary<string, DictionaryEntry>();

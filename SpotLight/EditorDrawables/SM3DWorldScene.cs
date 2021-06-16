@@ -563,7 +563,7 @@ namespace Spotlight.EditorDrawables
                     ZonePlacements.Add(mainZonePlacement);
                 }
 
-                SceneDrawState.ZoneTransform = EditZoneTransform;
+                SetZoneDrawState();
 
                 undoStack = EditZone.undoStack;
                 redoStack = EditZone.redoStack;
@@ -575,10 +575,32 @@ namespace Spotlight.EditorDrawables
 
         public override void Connect(GL_ControlBase control)
         {
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+            SetZoneDrawState();
 
             base.Connect(control);
         }
+
+        private void SetZoneDrawState()
+        {
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            SceneDrawState.EnabledLayers = EditZone.enabledLayers;
+        }
+
+#if ODYSSEY
+        public void SetScenario(int scenario)
+        {
+            foreach (var zone in GetZones())
+            {
+                zone.SetScenario(scenario);
+
+                if (zone!=EditZone)
+                    zone.UpdateRenderBatch();
+            }
+
+            SceneDrawState.EnabledLayers = EditZone.enabledLayers;
+        }
+#endif
 
         protected ZoneTransform EditZoneTransform { get; private set; }
 
@@ -587,7 +609,7 @@ namespace Spotlight.EditorDrawables
             private set
             {
                 mainZone = value;
-                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, null, value);
+                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, "Common", value);
             }
         }
 

@@ -24,10 +24,6 @@ namespace Spotlight.GUI
                     objectName,
                     modelName);
 
-#if ODYSSEY
-                obj.ScenarioBitField = ushort.MaxValue; //All scenarios
-#endif
-
                 if (objectParam.TryGetObjectList(zone, out ObjectList objList))
                 {
                     return new (I3dWorldObject, ObjectList)[] {
@@ -50,15 +46,15 @@ namespace Spotlight.GUI
             {
                 List<RailPoint> pathPoints = points.Select(p=>new RailPoint(p.Position+pos, p.ControlPoint1, p.ControlPoint2)).ToList();
 
+                Dictionary<string, List<I3dWorldObject>> links = new Dictionary<string, List<I3dWorldObject>>();
+
                 var properties = new Dictionary<string, dynamic>();
 
                 ObjectParameterDatabase.AddToProperties(railParam.Properties, properties);
+                ObjectParameterDatabase.AddToLinks(railParam.LinkNames, links);
 
-                Rail rail = new Rail(pathPoints, zone.NextObjID(), railParam.ClassName, closeRail, false, properties, zone);
+                Rail rail = new Rail(pathPoints, zone.NextObjID(), railParam.ClassName, closeRail, false, links, properties, zone);
 
-#if ODYSSEY
-                rail.ScenarioBitField = ushort.MaxValue; //All scenarios
-#endif
 
                 if (zone.ObjLists.ContainsKey("Map_Rails"))
                 {
@@ -92,9 +88,6 @@ namespace Spotlight.GUI
 
                 AreaObject obj = new AreaObject(pos, Vector3.Zero, Vector3.One, zone.NextObjID(), areaShape, areaParam.ClassName, -1, links, properties, zone);
 
-#if ODYSSEY
-                obj.ScenarioBitField = ushort.MaxValue; //All scenarios
-#endif
 
                 if (areaParam.TryGetObjectList(zone, out ObjectList objList))
                 {

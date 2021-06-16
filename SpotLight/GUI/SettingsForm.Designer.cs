@@ -1,4 +1,4 @@
-﻿namespace Spotlight
+﻿namespace Spotlight.GUI
 {
     partial class SettingsForm
     {
