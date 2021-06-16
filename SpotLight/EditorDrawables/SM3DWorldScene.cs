@@ -243,6 +243,11 @@ namespace Spotlight.EditorDrawables
 
         public void ResetObjectPlaceDelegate() => ObjectPlaceDelegate = null;
 
+        /// <summary>
+        /// The layer that will be used for every placed object
+        /// </summary>
+        public string DrawLayer { get; set; } = "Common";
+
         public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
@@ -257,6 +262,8 @@ namespace Spotlight.EditorDrawables
                 {
                     if (!objsByLists.ContainsKey(placements[i].objList))
                         objsByLists[placements[i].objList] = new List<I3dWorldObject>();
+
+                    placements[i].obj.Layer = DrawLayer;
 
                     objsByLists[placements[i].objList].Add(placements[i].obj);
 

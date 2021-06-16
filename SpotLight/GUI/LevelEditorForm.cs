@@ -784,7 +784,7 @@ namespace Spotlight.GUI
             {
                 currentScene.EditZoneIndex = 0;
 
-                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, "Common", zone);
+                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, currentScene.DrawLayer, zone);
                 currentScene.ZonePlacements.Add(zonePlacement);
                 currentScene.SelectedObjects.Clear();
                 zonePlacement.SelectDefault(LevelGLControlModern);
@@ -1391,18 +1391,35 @@ namespace Spotlight.GUI
 
         private void UpdateLayerList()
         {
+
+
             LayerListView.BeginUpdate();
             LayerListView.Items.Clear();
 
             LayerListView.ItemCheck -= LayerList_ItemCheck;
 
+            int drawLayerIndex = -1;
+
+            int i = 0;
+
             foreach (var layer in currentScene.EditZone.availibleLayers)
             {
+                if (layer == currentScene.DrawLayer)
+                    drawLayerIndex = i;
+
                 LayerListView.Items.Add(layer).Checked = currentScene.EditZone.enabledLayers.Contains(layer);
+                i++;
             }
             LayerListView.EndUpdate();
 
             LayerListView.ItemCheck += LayerList_ItemCheck;
+
+
+            if(drawLayerIndex!=-1)
+            {
+                LayerListView.SelectedIndices.Clear();
+                LayerListView.SelectedIndices.Add(drawLayerIndex);
+            }
         }
 
         private void SceneListView3dWorld1_SelectionChanged(object sender, EventArgs e)
@@ -1832,6 +1849,22 @@ Would you like to rebuild the database from your 3DW Files?";
                 currentScene.EditZone.enabledLayers.Remove(layer);
 
             LevelGLControlModern.Refresh();
+        }
+
+        private void LayerListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (currentScene == null || LayerListView.SelectedItems.Count == 0)
+                return;
+
+            currentScene.DrawLayer = LayerListView.SelectedItems[LayerListView.SelectedItems.Count-1].Text;
+        }
+
+        private void DrawLayerComboBox_TextChanged(object sender, EventArgs e)
+        {
+            if (currentScene == null || LayerListView.SelectedItems.Count == 0)
+                return;
+
+            currentScene.DrawLayer = LayerListView.SelectedItems[LayerListView.SelectedItems.Count - 1].Text;
         }
 
 #if ODYSSEY

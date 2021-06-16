@@ -83,6 +83,7 @@
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.CancelAddObjectButton = new System.Windows.Forms.Button();
             this.LayerListView = new System.Windows.Forms.ListView();
+            this.DrawLayerComboBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -195,7 +196,10 @@
             // 
             // LayersTabPage
             // 
-            this.LayersTabPage.Controls.Add(this.LayerListView);
+            this.LayersTabPage.Controls.AddRange(new System.Windows.Forms.Control[]{
+                this.LayerListView,
+                this.DrawLayerComboBox
+            });
             this.LayersTabPage.Location = new System.Drawing.Point(4, 22);
             this.LayersTabPage.Name = "LayersTabPage";
             this.LayersTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -226,6 +230,17 @@
             this.LayerListView.CheckBoxes = true;
             this.LayerListView.View = System.Windows.Forms.View.List;
             this.LayerListView.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.LayerList_ItemCheck);
+            this.LayerListView.SelectedIndexChanged += new System.EventHandler(LayerListView_SelectedIndexChanged);
+            // 
+            // DrawLayerComboBox
+            // 
+            this.DrawLayerComboBox.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.DrawLayerComboBox.Enabled = false;
+            this.DrawLayerComboBox.Location = new System.Drawing.Point(3, 3);
+            this.DrawLayerComboBox.Name = "DrawLayerComboBox";
+            this.DrawLayerComboBox.Size = new System.Drawing.Size(246, 213);
+            this.DrawLayerComboBox.TabIndex = 1;
+            this.DrawLayerComboBox.TextChanged += new System.EventHandler(DrawLayerComboBox_TextChanged);
             // 
             // CurrentObjectLabel
             // 
@@ -717,6 +732,7 @@
         public GL_EditorFramework.GL_Core.GL_ControlModern LevelGLControlModern;
         public GL_EditorFramework.ObjectUIControl ObjectUIControl;
         public SceneListView3dWorld MainSceneListView;
+        public System.Windows.Forms.ComboBox DrawLayerComboBox;
         private GL_EditorFramework.DocumentTabControl ZoneDocumentTabControl;
         private System.Windows.Forms.ListBox ZoneListBox;
         private System.Windows.Forms.ToolStripMenuItem AddZoneToolStripMenuItem;
