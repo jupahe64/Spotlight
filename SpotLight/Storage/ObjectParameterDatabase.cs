@@ -74,7 +74,7 @@ namespace Spotlight.Database
         /// <summary>
         /// The Latest version of this database
         /// </summary>
-        public static Version LatestVersion { get; } = new Version(1, 10);
+        public static Version LatestVersion { get; } = new Version(1, 11);
 
         /// <summary>
         /// Create an empty Object Parameters File
@@ -215,7 +215,7 @@ namespace Spotlight.Database
                 [nameof(ObjList.IslandStartList)] = new List<ObjectInfo>(),
                 [nameof(ObjList.OceanList)] = new List<ObjectInfo>(),
                 [nameof(ObjList.RaidonSpawnList)] = new List<ObjectInfo>(),
-                [nameof(ObjList.ZoneHolderList)] = new List<ObjectInfo>()
+                [nameof(ObjList.ZoneHolderList)] = new List<ObjectInfo>(),
 
 #if ODYSSEY
                 [nameof(ObjList.DemoObjList)] = new List<ObjectInfo>(),
@@ -411,6 +411,9 @@ namespace Spotlight.Database
                             continue;
                     }
                 }
+
+                foreach (var linkEntry in info.LinkEntries)
+                    RailParameters[info.ClassName].LinkNames.Add(linkEntry.Key);
             }
         }
 
@@ -621,7 +624,7 @@ namespace Spotlight.Database
                 Links.Add(LinkNames[i], new List<I3dWorldObject>());
 
 
-            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectName, ModelName, ClassName, new OpenTK.Vector3(0f), new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), Links, Params, zone);
+            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectName, ModelName, ClassName, new OpenTK.Vector3(0f), "None", Links, Params, zone);
         }
 
         static string[] CategoryPrefixes = new string[]
@@ -712,6 +715,7 @@ namespace Spotlight.Database
         public virtual string ClassName { get; set; }
         public virtual List<PropertyDef> Properties { get; set; }
         public virtual List<PropertyDef> PointProperties { get; set; }
+        public List<string> LinkNames { get; set; }
 
         public RailParam() => InitLists();
 
@@ -738,6 +742,15 @@ namespace Spotlight.Database
 
             for (int i = 0; i < PointParamNameCount; i++)
                 PointProperties.Add(new PropertyDef(FS.ReadString(), TypeDef.FromTypeID((byte)FS.ReadByte())));
+            while (FS.Position % 4 != 0)
+                FS.Position++;
+
+            FS.Read(Read, 0, 2);
+            int LinkNameCount = BitConverter.ToInt16(Read, 0);
+
+            for (int i = 0; i < LinkNameCount; i++)
+                LinkNames.Add(FS.ReadString());
+
             while (FS.Position % 4 != 0)
                 FS.Position++;
         }
@@ -773,6 +786,15 @@ namespace Spotlight.Database
             while (ByteList.Count % 4 != 0)
                 ByteList.Add(0x00);
 
+            ByteList.AddRange(BitConverter.GetBytes((ushort)LinkNames.Count));
+            for (int i = 0; i < LinkNames.Count; i++)
+            {
+                ByteList.AddRange(Encoding.GetEncoding(932).GetBytes(LinkNames[i]));
+                ByteList.Add(0x00);
+            }
+            while (ByteList.Count % 4 != 0)
+                ByteList.Add(0x00);
+
             FS.Write(ByteList.ToArray(), 0, ByteList.Count);
         }
 
@@ -780,6 +802,7 @@ namespace Spotlight.Database
         {
             Properties = new List<PropertyDef>();
             PointProperties = new List<PropertyDef>();
+            LinkNames = new List<string>();
         }
 
         public override string ToString() => $"Rail Type:{ClassName} | {Properties.Count} Properties | {PointProperties.Count} Point Properties";

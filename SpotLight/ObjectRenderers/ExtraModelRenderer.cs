@@ -118,9 +118,9 @@ namespace Spotlight.ObjectRenderers
             #region AreaCubeCenter
             indices = new List<int>();
 
-            r = 2.5f;
-            t = 2.5f;
-            b = -2.5f;
+
+            t = 5f;
+            b = -5f;
 
             data = new float[]
             {
@@ -171,7 +171,6 @@ namespace Spotlight.ObjectRenderers
 #if ODYSSEY
             #region AreaCubeTop
 
-            r = 5;
             t = -10;
             b = 0;
 

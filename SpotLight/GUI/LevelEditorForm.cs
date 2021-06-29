@@ -24,7 +24,7 @@ using SARCExt;
 using BYAML;
 using Syroot.BinaryData;
 
-namespace Spotlight
+namespace Spotlight.GUI
 {
     public partial class LevelEditorForm : Form
     {
@@ -35,6 +35,18 @@ namespace Spotlight
         Keys KS_AddObject = KeyStroke("Shift+A");
         Keys KS_DeleteSelected = KeyStroke("Delete");
         #endregion
+
+#if ODYSSEY
+        ComboBox ScenarioComboBox = new ComboBox()
+        {
+            Name = "ScenarioComboBox",
+            Enabled = false,
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Dock = DockStyle.Top
+        };
+
+        //Button scenarioApplyButton = new Button();
+#endif
 
         protected override bool ProcessKeyPreview(ref Message m)
         {
@@ -104,7 +116,11 @@ namespace Spotlight
             ZoneDocumentTabControl.Select(selectedTab);
 
             if(currentScene!=null)
+            {
                 SetAppStatus(true);
+
+                AssignSceneEvents(currentScene);
+            }
         }
 
         public LevelEditorForm()
@@ -130,6 +146,33 @@ namespace Spotlight
 
             MainSceneListView.ListExited += MainSceneListView_ListExited;
             MainSceneListView.SelectionChanged += SceneListView3dWorld1_SelectionChanged;
+
+            splitContainer2.Panel2.DoubleClick += SplitContainer2_Panel2_DoubleClick;
+
+#if ODYSSEY
+            ScenarioComboBox.Items.AddRange(new object[]
+            {
+                "Scenario 0/1",
+                "Scenario 2",
+                "Scenario 3",
+                "Scenario 4",
+                "Scenario 5",
+                "Scenario 6",
+                "Scenario 7",
+                "Scenario 8",
+                "Scenario 9",
+                "Scenario 10",
+                "Scenario 11",
+                "Scenario 12",
+                "Scenario 13",
+                "Scenario 14",
+                "Scenario 15",
+            });
+            
+            ScenarioComboBox.SelectedIndexChanged += ScenarioComboBox_SelectedIndexChanged;
+
+            LayersTabPage.Controls.Add(ScenarioComboBox);
+#endif
 
             Localize();
 
@@ -276,7 +319,6 @@ namespace Spotlight
             MainSceneListView.ItemClicked += MainSceneListView_ItemClicked;
         }
 
-
         private void MainSceneListView_ListExited(object sender, ListEventArgs e)
         {
             currentScene.CurrentList = e.List;
@@ -380,37 +422,192 @@ namespace Spotlight
             ObjectUIControl.Refresh();
         }
 
+        private void SplitContainer2_Panel2_DoubleClick(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("All selected objects will be saved into a gltf file [EXPERIMENTAL]\ncontinue?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
+
+                SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
+
+                foreach (General3dWorldObject _obj in currentScene.SelectedObjects.Where(x => x is General3dWorldObject))
+                {
+                    string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
+
+                    if (BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
+                    {
+                        scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
+                            System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
+                            System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
+                            System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
+                            System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
+                            System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
+                            );
+                    }
+                }
+
+                var model = scene.ToGltf2();
+
+                string fileName = System.IO.Path.Combine(AppContext.BaseDirectory, currentScene.ToString() + ".gltf");
+
+                model.SaveGLTF(fileName);
+                MessageBox.Show("Model saved as " + fileName);
+            }
+        }
+
         private void SplitContainer2_Panel2_Click(object sender, EventArgs e)
         {
             if (currentScene == null || currentScene.SelectedObjects.Count == 0)
                 return;
             General3dWorldObject obj = (currentScene.SelectedObjects.First() as General3dWorldObject);
             Rail rail = (currentScene.SelectedObjects.First() as Rail);
-            Debugger.Break();
-            return;
 
-            //SharpGLTF.Scenes.SceneBuilder scene = new SharpGLTF.Scenes.SceneBuilder(currentScene.ToString());
+            if(Debugger.IsAttached)
+                Debugger.Break();
+            else
+            {
+                return;
+            }
 
-            //SharpGLTF.Materials.MaterialBuilder material = new SharpGLTF.Materials.MaterialBuilder("Default");
 
-            //foreach (General3dWorldObject _obj in currentScene.SelectedObjects)
+            //                      --------ROTATING PLATFORM--------
+
+            //float metersPerSecond = 3;
+
+            //float anglePerSecond = 10;
+
+            //Vector3[] postions = new Vector3[]
             //{
-            //    string mdlName = string.IsNullOrEmpty(_obj.ModelName) ? _obj.ObjectName : _obj.ModelName;
+            //    new Vector3( 83.5f,29f,-246.5f),
+            //    new Vector3(103.5f,29f,-246.5f),
+            //    new Vector3(121.5f,44f,-246.5f),
+            //    new Vector3(146.5f,45f,-246.5f),
+            //    new Vector3(181.5f,53f,-246.5f),
+            //};
 
-            //    if(BfresModelRenderer.TryGetModel(mdlName, out BfresModelRenderer.CachedModel cachedModel))
-            //    {
-            //        scene.AddRigidMesh(cachedModel.VaosToMesh(LevelGLControlModern, material), mdlName,
-            //            System.Numerics.Matrix4x4.CreateScale(_obj.Scale.X, _obj.Scale.Y, _obj.Scale.Z) *
-            //            System.Numerics.Matrix4x4.CreateRotationX(_obj.Rotation.X / 180f * Framework.PI) *
-            //            System.Numerics.Matrix4x4.CreateRotationY(_obj.Rotation.Y / 180f * Framework.PI) *
-            //            System.Numerics.Matrix4x4.CreateRotationZ(_obj.Rotation.Z / 180f * Framework.PI) *
-            //            System.Numerics.Matrix4x4.CreateTranslation(_obj.Position.X, _obj.Position.Y, _obj.Position.Z)
-            //            );
-            //    }
+
+            //currentScene.BeginUndoCollection();
+
+            //var prevSpeed = obj.Properties["Speed"];
+
+            //obj.Properties["Speed"] = metersPerSecond / 60f * 100f;
+
+            //currentScene.AddToUndo(new RevertableDictEntryChange("Speed", obj.Properties, prevSpeed));
+
+            //var prevSpeedBT = obj.Properties["SpeedByTime"];
+
+            //obj.Properties["SpeedByTime"] = -1;
+
+            //currentScene.AddToUndo(new RevertableDictEntryChange("SpeedByTime", obj.Properties, prevSpeedBT));
+
+
+            //float angleSign = Math.Sign(anglePerSecond);
+
+            //anglePerSecond *= angleSign;
+
+            //List<I3dWorldObject> objectsToAdd = new List<I3dWorldObject>();
+
+            //float current_angle = 0;
+
+            //I3dWorldObject lastKeyMove = obj;
+
+            //void AddKeyMove(float angle, Vector3 pos, float speedByTime = -1)
+            //{
+            //    var newKeyMove = new General3dWorldObject(pos, new Vector3(0, 0, angle * angleSign), Vector3.One, 
+            //        currentScene.EditZone.NextObjID(), obj.ObjectName, obj.ModelName, obj.ClassName, Vector3.Zero, obj.DisplayName, 
+            //        new Dictionary<string, List<I3dWorldObject>>(), ObjectUtils.DuplicateProperties(obj.Properties), currentScene.EditZone);
+
+            //    newKeyMove.Properties["SpeedByTime"] = speedByTime;
+
+            //    if(speedByTime>0)
+            //        newKeyMove.Properties["Speed"] = 0;
+
+            //    currentScene.TryAddConnection(lastKeyMove, newKeyMove, "KeyMoveNext");
+            //    newKeyMove.AddLinkDestination("KeyMoveNext", lastKeyMove);
+
+            //    currentScene.AddToUndo(new SM3DWorldScene.RevertableConnectionAddition(
+            //        lastKeyMove, newKeyMove, "KeyMoveNext"));
+
+            //    objectsToAdd.Add(newKeyMove);
+
+            //    lastKeyMove = newKeyMove;
             //}
 
-            //var model = scene.ToGltf2();
-            //model.SaveGLTF(currentScene.ToString()+".gltf");
+            //float remainingDegrees = 0;
+
+            //for (int i = 1; i < postions.Length; i++)
+            //{
+            //    Vector3 a = postions[i-1];
+            //    Vector3 b = postions[i];
+
+            //    float d = Vector3.Distance(a, b);
+
+            //    float total_delta_angle = d / metersPerSecond * anglePerSecond;
+
+            //    for (float delta_angle = 90; delta_angle < total_delta_angle; delta_angle+=90)
+            //    {
+            //        Vector3 pos = Vector3.Lerp(a, b, delta_angle / total_delta_angle);
+
+            //        AddKeyMove(current_angle + delta_angle, pos);
+            //    }
+
+            //    float speedByTime = -1;
+
+            //    if (i == postions.Length-1)
+            //    {
+            //        remainingDegrees = 90 - ((current_angle + total_delta_angle) % 90);
+
+            //        if (remainingDegrees != 90)
+            //            speedByTime = remainingDegrees / anglePerSecond * 60;
+            //    }
+
+            //    AddKeyMove(current_angle + total_delta_angle, b, speedByTime);
+
+            //    current_angle += total_delta_angle;
+            //}
+
+            //if (remainingDegrees != 90)
+            //{
+            //    AddKeyMove(current_angle + remainingDegrees, postions[postions.Length-1]);
+            //}
+
+            //AdditionManager additionManager = new AdditionManager();
+
+            //additionManager.Add(currentScene.EditZone.LinkedObjects, objectsToAdd.ToArray());
+
+            //currentScene.ExecuteAddition(additionManager);
+
+            //currentScene.EndUndoCollection();
+
+
+
+            //                      --------ARRAY COPY--------
+
+            Vector3 offset = new Vector3(0,0,-20);
+
+            int num = 10;
+
+            List<I3dWorldObject> objectsToAdd = new List<I3dWorldObject>();
+
+            void AddCopy(Vector3 pos)
+            {
+                var copy = new General3dWorldObject(pos, obj.Rotation, Vector3.One,
+                    currentScene.EditZone.NextObjID(), obj.ObjectName, obj.ModelName, obj.ClassName, Vector3.Zero, obj.DisplayName,
+                    new Dictionary<string, List<I3dWorldObject>>(), ObjectUtils.DuplicateProperties(obj.Properties), currentScene.EditZone);
+
+                objectsToAdd.Add(copy);
+            }
+
+            for (int i = 1; i < num; i++)
+            {
+                AddCopy(obj.Position + offset * i);
+            }
+
+            AdditionManager additionManager = new AdditionManager();
+
+            additionManager.Add(currentScene.EditZone.ObjLists.First(x=>x.Value.Contains(obj)).Value, objectsToAdd.ToArray());
+
+            currentScene.ExecuteAddition(additionManager);
         }
 
         private void Scene_ObjectsMoved(object sender, EventArgs e)
@@ -482,9 +679,9 @@ namespace Spotlight
                 SpotlightToolStripStatusLabel.Text = StatusOpenCancelledMessage;
                 return;
             }
-            if (TryOpenZoneWithLoadingBar(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.MAP_SUFFIX}"), out var zone))
+            if (TryOpenZoneWithLoadingBar(new StageInfo(Program.ProjectStageDataPath, LPSF.levelname), out var zone))
                 OpenZone(zone);
-            else if (TryOpenZoneWithLoadingBar(Program.TryGetPathViaProject("StageData", $"{LPSF.levelname}{SM3DWorldZone.COMBINED_SUFFIX}"), out zone))
+            else if (TryOpenZoneWithLoadingBar(new StageInfo(Program.BaseStageDataPath, LPSF.levelname), out zone))
                 OpenZone(zone);
         }
 
@@ -507,6 +704,7 @@ namespace Spotlight
             {
                 Scene_IsSavedChanged(null, null);
                 SpotlightToolStripStatusLabel.Text = StatusLevelSavedMessage;
+                UpdateZoneList();
             }
             else
                 SpotlightToolStripStatusLabel.Text = StatusSaveCancelledOrFailedMessage;
@@ -574,21 +772,22 @@ namespace Spotlight
 
         private void AddZoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentScene.EditZoneIndex != 0)
-                return;
-
-            AddZoneForm azf = new AddZoneForm();
+            AddZoneForm azf = new AddZoneForm(currentScene.MainZone.Directory);
 
             if (azf.ShowDialog() == DialogResult.Cancel)
                 return;
 
-            if (azf.SelectedFileName == null)
+            if (azf.SelectedStageInfo.StageName == null)
                 return;
 
-            if (TryOpenZoneWithLoadingBar(System.IO.Path.Combine(Program.BaseStageDataPath,azf.SelectedFileName), out SM3DWorldZone zone))
+            if (TryOpenZoneWithLoadingBar(azf.SelectedStageInfo, out SM3DWorldZone zone))
             {
-                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, zone);
+                currentScene.EditZoneIndex = 0;
+
+                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, currentScene.DrawLayer, zone);
                 currentScene.ZonePlacements.Add(zonePlacement);
+                currentScene.SelectedObjects.Clear();
+                zonePlacement.SelectDefault(LevelGLControlModern);
                 currentScene.AddToUndo(new RevertableSingleAddition(zonePlacement, currentScene.ZonePlacements));
                 ZoneDocumentTabControl_SelectedTabChanged(null, null);
             }
@@ -868,34 +1067,56 @@ namespace Spotlight
 
         public bool TryOpenZoneWithLoadingBar(string fileName, out SM3DWorldZone zone)
         {
-            if (SM3DWorldZone.TryGetLoadedZone(fileName, out zone))
+            if (!SM3DWorldZone.TryGetStageInfo(fileName, out var loadingInfo))
             {
-                return true;
+                zone = null;
+                return false;
             }
-            else if (SM3DWorldZone.TryGetLoadingInfo(fileName, out var loadingInfo))
+
+            return TryOpenZoneWithLoadingBar(loadingInfo.Value, out zone);
+        }
+
+        public bool TryOpenZoneWithLoadingBar(StageInfo loadingInfo, out SM3DWorldZone zone)
+        {
             {
                 Thread LoadingThread = new Thread((n) =>
                 {
+                    Thread.Sleep(100);
+                    if (LoadLevelForm.DoClose)
+                    {
+                        LoadLevelForm.DoClose = false;
+                        return;
+                    }
+
                     LoadLevelForm LLF = new LoadLevelForm(n.ToString(), "LoadLevel");
                     LLF.ShowDialog();
                 });
-                LoadingThread.Start(loadingInfo?.levelName);
+                LoadingThread.Start(loadingInfo.StageName);
 
-                zone = new SM3DWorldZone(loadingInfo.Value);
+                if(loadingInfo.StageArcType==StageArcType.NotSpecified)
+                {
+                    if (!SM3DWorldZone.TryOpen(loadingInfo.Directory, loadingInfo.StageName, out zone))
+                    {
+                        LoadLevelForm.DoClose = true;
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!SM3DWorldZone.TryOpen(loadingInfo, out zone))
+                    {
+                        LoadLevelForm.DoClose = true;
+                        return false;
+                    }
+                }
 
-                if (LoadingThread.IsAlive)
-                    LoadLevelForm.DoClose = true;
+                LoadLevelForm.DoClose = true;
 
-                SpotlightToolStripStatusLabel.Text = string.Format(StatusOpenSuccessMessage, loadingInfo?.levelName);
+                SpotlightToolStripStatusLabel.Text = string.Format(StatusOpenSuccessMessage, loadingInfo.StageName);
 
                 SetAppStatus(true);
 
                 return true;
-            }
-            else
-            {
-                zone = null;
-                return false;
             }
         }
 
@@ -909,7 +1130,7 @@ namespace Spotlight
 
             //indirectly calls ZoneDocumentTabControl_SelectedTabChanged
             //which already sets up a lot
-            ZoneDocumentTabControl.AddTab(new DocumentTabControl.DocumentTab(zone.LevelName, scene), true);
+            ZoneDocumentTabControl.AddTab(new DocumentTabControl.DocumentTab(zone.StageName, scene), true);
 
             Scene_IsSavedChanged(null, null);
 
@@ -1023,6 +1244,8 @@ namespace Spotlight
 
             currentScene = (SM3DWorldScene)ZoneDocumentTabControl.SelectedTab.Document;
 
+            currentScene.MainZone.CheckZoneNameChanges();
+
             MainSceneListView.Scene = currentScene;
 
             #region setup UI
@@ -1092,7 +1315,7 @@ namespace Spotlight
                 string UnsavedZones = "";
 
                 foreach (var zone in unsavedZones)
-                    UnsavedZones += zone.LevelFileName+"\n";
+                    UnsavedZones += zone.StageInfo.StageName+"\n";
 
                 switch (MessageBox.Show(string.Format(UnsavedChangesText, UnsavedZones), UnsavedChangesHeader, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
                 {
@@ -1127,7 +1350,7 @@ namespace Spotlight
                 ObjectUIControl.Refresh();
 
                 SetAppStatus(false);
-                string levelname = currentScene.EditZone.LevelName;
+                string levelname = currentScene.EditZone.StageName;
                 currentScene = null;
                 LevelGLControlModern.MainDrawable = null;
                 SpotlightToolStripStatusLabel.Text = string.Format(StatusLevelClosed, levelname);
@@ -1141,15 +1364,22 @@ namespace Spotlight
 
             MainSceneListView.CollapseAllNodes();
 
-            if (currentScene.EditZone.HasCategoryMap)
+            if (currentScene.EditZone.ObjLists.Any(x=>x.Key.StartsWith(SM3DWorldZone.MAP_PREFIX)))
                 MainSceneListView.ExpandNode(SM3DWorldZone.MAP_PREFIX);
-            else if (currentScene.EditZone.HasCategoryDesign)
+            else if (currentScene.EditZone.ObjLists.Any(x => x.Key.StartsWith(SM3DWorldZone.DESIGN_PREFIX)))
                 MainSceneListView.ExpandNode(SM3DWorldZone.DESIGN_PREFIX);
             else
                 MainSceneListView.ExpandNode(SM3DWorldZone.SOUND_PREFIX);
 
+#if ODYSSEY
+            ScenarioComboBox.SelectedIndex = currentScene.EditZone.CurrentScenario;
+#endif
+
+            UpdateLayerList();
 
             MainSceneListView.Refresh();
+
+
 
             UpdateMoveToSpecificButtons();
 
@@ -1157,6 +1387,39 @@ namespace Spotlight
 
             currentScene.SetupObjectUIControl(ObjectUIControl);
             LevelGLControlModern.Refresh();
+        }
+
+        private void UpdateLayerList()
+        {
+
+
+            LayerListView.BeginUpdate();
+            LayerListView.Items.Clear();
+
+            LayerListView.ItemCheck -= LayerList_ItemCheck;
+
+            int drawLayerIndex = -1;
+
+            int i = 0;
+
+            foreach (var layer in currentScene.EditZone.availibleLayers)
+            {
+                if (layer == currentScene.DrawLayer)
+                    drawLayerIndex = i;
+
+                LayerListView.Items.Add(layer).Checked = currentScene.EditZone.enabledLayers.Contains(layer);
+                i++;
+            }
+            LayerListView.EndUpdate();
+
+            LayerListView.ItemCheck += LayerList_ItemCheck;
+
+
+            if(drawLayerIndex!=-1)
+            {
+                LayerListView.SelectedIndices.Clear();
+                LayerListView.SelectedIndices.Add(drawLayerIndex);
+            }
         }
 
         private void SceneListView3dWorld1_SelectionChanged(object sender, EventArgs e)
@@ -1205,6 +1468,10 @@ namespace Spotlight
             SelectionToolStripMenuItem.Enabled = Trigger;
             ModeToolStripMenuItem.Enabled = Trigger;
             MainSceneListView.Enabled = Trigger;
+            LayerListView.Enabled = Trigger;
+#if ODYSSEY
+            ScenarioComboBox.Enabled = Trigger;
+#endif
         }
 
         private void LevelEditorForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -1261,7 +1528,7 @@ namespace Spotlight
             else return false;
         }
 
-        #region Translations
+#region Translations
         /// <summary>
         /// Sets up the text. if this is not called, I bet there will be some crashes
         /// </summary>
@@ -1270,8 +1537,8 @@ namespace Spotlight
             Text = Program.CurrentLanguage.GetTranslation("EditorTitle") ?? "Spotlight";
 
 
-            #region Controls
-            #region Toolstrip Items
+#region Controls
+#region Toolstrip Items
             this.Localize(
             FileToolStripMenuItem,
             OpenToolStripMenuItem,
@@ -1305,13 +1572,13 @@ namespace Spotlight
             AboutToolStripMenuItem,
             SpotlightWikiToolStripMenuItem,
             CheckForUpdatesToolStripMenuItem,
-            #endregion
+#endregion
 
             EditIndividualButton,
             CancelAddObjectButton
             );
             CurrentObjectLabel.Text = NothingSelected;
-            #endregion
+#endregion
         }
 
         [Program.Localized]
@@ -1433,7 +1700,7 @@ Would you like to rebuild the database from your 3DW Files?";
         [Program.Localized]
         string InvalidStageListFormatHeader = "Invalid Format";
 
-        #endregion
+#endregion
 
         private void QuickFavoriteControl_SelectedFavoriteChanged(object sender, EventArgs e)
         {
@@ -1518,5 +1785,97 @@ Would you like to rebuild the database from your 3DW Files?";
             Program.SetRestartForm(new LevelEditorForm(tabs, selected, QuickFavoriteControl.Favorites.ToArray()));
             Close();
         }
+
+        private void CreateViewGroupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            List<I3dWorldObject> selected3dWObjects = currentScene.SelectedObjects.Where(x => x is I3dWorldObject).Cast<I3dWorldObject>().ToList();
+
+            if (selected3dWObjects.Count == 0)
+                return;
+
+            var zone = currentScene.EditZone;
+
+            EditableObject.BoundingBox box = EditableObject.BoundingBox.Default;
+
+            foreach (var obj in selected3dWObjects)
+                obj.GetSelectionBox(ref box);
+
+            Vector3 center = box.GetCenter();
+
+            var groupView = Program.ParameterDB.ObjectParameters["GroupView"].ToGeneral3DWorldObject(zone.NextObjID(), zone, Vector3.Zero, "GroupView");
+
+
+            groupView.Properties["FadeInTime"] = -1;
+            groupView.Properties["FarDistance"] = -1;
+            groupView.Properties["NearDistance"] = -1;
+
+            groupView.GlobalPosition = center + new Vector3(0, 5, 0);
+
+            currentScene.BeginUndoCollection();
+
+            zone.LinkedObjects.Add(groupView);
+            currentScene.SelectedObjects.Clear();
+            groupView.SelectDefault(LevelGLControlModern);
+            currentScene.AddToUndo(new RevertableSingleAddition(groupView, zone.LinkedObjects));
+
+
+            foreach (var obj in selected3dWObjects)
+            {
+                if (currentScene.TryAddConnection(obj, groupView, "ViewGroup"))
+                {
+                    currentScene.AddToUndo(new SM3DWorldScene.RevertableConnectionAddition(obj, groupView, "ViewGroup"));
+                }
+            }
+
+            currentScene.EndUndoCollection();
+
+            currentScene.UpdateLinkDestinations();
+
+            Scene_SelectionChanged(null, null);
+
+            LevelGLControlModern.Refresh();
+        }
+
+        private void LayerList_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (e.NewValue == e.CurrentValue)
+                return; //not sure if that can even happen
+
+            string layer = LayerListView.Items[e.Index].Text;
+
+            if (e.NewValue==CheckState.Checked)
+                currentScene.EditZone.enabledLayers.Add(layer);
+            else if(e.NewValue == CheckState.Unchecked)
+                currentScene.EditZone.enabledLayers.Remove(layer);
+
+            LevelGLControlModern.Refresh();
+        }
+
+        private void LayerListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (currentScene == null || LayerListView.SelectedItems.Count == 0)
+                return;
+
+            currentScene.DrawLayer = LayerListView.SelectedItems[LayerListView.SelectedItems.Count-1].Text;
+
+            SpotlightToolStripStatusLabel.Text = $"Draw Layer changed to: {currentScene.DrawLayer}          NEW PLACED OBJECTS WILL NOW HAVE THIS LAYER!";
+        }
+
+        private void DrawLayerComboBox_TextChanged(object sender, EventArgs e)
+        {
+            if (currentScene == null || LayerListView.SelectedItems.Count == 0)
+                return;
+
+            //TODO
+        }
+
+#if ODYSSEY
+        private void ScenarioComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            currentScene.SetScenario(ScenarioComboBox.SelectedIndex);
+            UpdateLayerList();
+            LevelGLControlModern.Refresh();
+        }
+#endif
     }
 }

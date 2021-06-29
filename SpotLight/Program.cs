@@ -137,6 +137,17 @@ namespace Spotlight
                     if (!string.IsNullOrEmpty(localized))
                         _item.Text = localized;
                 }
+                else if (item is ColumnHeader _header)
+                {
+                    string id = type.Name + "." + _header.Name;
+
+                    AddLocalizationLine(id, _header.Text);
+
+                    string localized = CurrentLanguage.GetTranslation(id);
+
+                    if (!string.IsNullOrEmpty(localized))
+                        _header.Text = localized;
+                }
             }
 
             foreach (var field in type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))

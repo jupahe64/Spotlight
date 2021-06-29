@@ -15,7 +15,7 @@ using GL_EditorFramework;
 using System.Threading.Tasks;
 using Spotlight.ObjectRenderers;
 
-namespace Spotlight
+namespace Spotlight.GUI
 {
     public partial class SettingsForm : Form
     {

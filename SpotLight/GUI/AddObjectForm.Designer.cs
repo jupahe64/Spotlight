@@ -121,6 +121,8 @@
             this.ObjDBListView.UseCompatibleStateImageBehavior = false;
             this.ObjDBListView.View = System.Windows.Forms.View.Details;
             this.ObjDBListView.VirtualMode = true;
+            this.ObjDBListView.FullRowSelect = true;
+            this.ObjDBListView.MultiSelect = false;
             this.ObjDBListView.SelectionChanged += new System.EventHandler(this.ObjDBListView_SelectionChanged);
             // 
             // ClassNameColumn

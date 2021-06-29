@@ -35,7 +35,7 @@ namespace BYAML
             _version = version;
             _supportPaths = supportPaths;
             _byteOrder = byteOrder;
-            _writer = new BinaryDataWriter(stream, Encoding.UTF8, true)
+            _writer = new BinaryDataWriter(stream, ByamlFile.GetEncoding(byteOrder), true)
             {
                 ByteOrder = _byteOrder
             };

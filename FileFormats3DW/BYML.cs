@@ -174,6 +174,11 @@ namespace BYAML
             }
         }
 
+        public static Encoding GetEncoding(ByteOrder byteOrder)
+        {
+            return byteOrder == ByteOrder.BigEndian ? Encoding.GetEncoding("shift_jis") : Encoding.UTF8;
+        }
+
         /// <summary>
         /// Serializes the given dynamic value which requires to be an array or dictionary of BYAML compatible values
         /// and stores it in the specified stream.

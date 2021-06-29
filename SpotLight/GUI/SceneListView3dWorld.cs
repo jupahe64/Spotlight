@@ -53,6 +53,16 @@ namespace Spotlight.GUI
 
             TreeView.SelectionChanged += (x, y) => SelectionChanged?.Invoke(x, y);
             TreeView.ItemClicked += (x, y) => ItemClicked?.Invoke(x, y);
+
+            DoubleBuffered = true;
+
+            SetStyle(
+        ControlStyles.AllPaintingInWmPaint |
+        ControlStyles.UserPaint |
+        ControlStyles.OptimizedDoubleBuffer,
+        true);
+
+
         }
 
         /// <summary>
@@ -675,6 +685,8 @@ namespace Spotlight.GUI
                             expandedNodes.Remove(item);
                         else
                             expandedNodes.Add(item);
+
+                        Invalidate();
                     }
                 }
                 else
@@ -685,6 +697,8 @@ namespace Spotlight.GUI
                             expandedNodes.Remove(item);
                         else
                             expandedNodes.Add(item);
+
+                        Invalidate();
                     }
                 }
 
@@ -742,6 +756,7 @@ namespace Spotlight.GUI
                 index++;
             }
 
+            var bak = expandedNodes;
 
             try
             {
@@ -761,6 +776,10 @@ namespace Spotlight.GUI
                     AutoScrollPosition = new Point(0, index * FontHeight - Height + FontHeight);
 
                 return true;
+            }
+            finally
+            {
+                expandedNodes = bak;
             }
         }
     }

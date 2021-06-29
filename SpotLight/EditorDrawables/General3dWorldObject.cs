@@ -27,6 +27,7 @@ namespace Spotlight.EditorDrawables
     /// <summary>
     /// General object for SM3DW
     /// </summary>
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class General3dWorldObject : TransformableObject, I3dWorldObject
     {
         public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
@@ -67,6 +68,9 @@ namespace Spotlight.EditorDrawables
         [PropertyCapture.Undoable]
         public string ClassName { get; set; }
 
+        [PropertyCapture.Undoable]
+        public string Layer { get; set; } = "Common";
+
         /// <summary>
         /// All places where this object is linked to
         /// </summary>
@@ -75,12 +79,12 @@ namespace Spotlight.EditorDrawables
         [PropertyCapture.Undoable]
         public Vector3 DisplayTranslation { get; set; }
         [PropertyCapture.Undoable]
-        public Vector3 DisplayRotation { get; set; }
-        [PropertyCapture.Undoable]
-        public Vector3 DisplayScale { get; set; }
+        public string DisplayName { get; set; }
 
         public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
         public Dictionary<string, dynamic> Properties { get; set; } = new Dictionary<string, dynamic>();
+
+        readonly string comment = null;
 
         private static readonly Dictionary<string, List<I3dWorldObject>> EMPTY_LINKS = new Dictionary<string, List<I3dWorldObject>>();
         /// <summary>
@@ -102,9 +106,11 @@ namespace Spotlight.EditorDrawables
             ObjectName = info.ObjectName;
             ModelName = info.ModelName ?? string.Empty;
             ClassName = info.ClassName;
+            Layer = info.Layer;
             DisplayTranslation = info.DisplayTranslation;
-            DisplayRotation = info.DisplayRotation;
-            DisplayScale = info.DisplayScale;
+            DisplayName = info.DisplayName;
+
+            comment = info.Comment;
 
             if (info.PropertyEntries.Count > 0)
             {
@@ -125,7 +131,7 @@ namespace Spotlight.EditorDrawables
         public General3dWorldObject(
             Vector3 pos, Vector3 rot, Vector3 scale, 
             string iD, string objectName, string modelName, string className, 
-            Vector3 displayTranslation, Vector3 displayRotation, Vector3 displayScale, 
+            Vector3 displayTranslation, string displayName,
             Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
             : base(pos,rot,scale)
         {
@@ -134,8 +140,7 @@ namespace Spotlight.EditorDrawables
             ModelName = modelName;
             ClassName = className;
             DisplayTranslation = displayTranslation;
-            DisplayRotation = displayRotation;
-            DisplayScale = displayScale;
+            DisplayName = displayName;
             Links = links;
             Properties = properties;
 
@@ -156,46 +161,15 @@ namespace Spotlight.EditorDrawables
         //}
 
         #region I3DWorldObject implementation
-        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest = false)
+        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest = false)
         {
-            objNode.AddDynamicValue("Comment", null);
+            objNode.AddDynamicValue("Comment", comment);
             objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", "Common");
+            objNode.AddDynamicValue("LayerConfigName", Layer);
 
             alreadyWrittenObjs.Add(this);
-
-            if (Links != null)
-            {
-                DictionaryNode linksNode = writer.CreateDictionaryNode(Links);
-
-                foreach (var (linkName, link) in Links)
-                {
-                    if (link.Count == 0)
-                        continue;
-
-                    ArrayNode linkNode = writer.CreateArrayNode(link);
-
-                    foreach (I3dWorldObject obj in link)
-                    {
-                        if (!alreadyWrittenObjs.Contains(obj))
-                        {
-                            DictionaryNode linkedObjNode = writer.CreateDictionaryNode(obj);
-                            obj.Save(alreadyWrittenObjs, writer, linkedObjNode, true);
-                            linkNode.AddDictionaryNodeRef(linkedObjNode);
-                        }
-                        else
-                            linkNode.AddDictionaryRef(obj);
-                    }
-
-                    linksNode.AddArrayNodeRef(linkName, linkNode, true);
-                }
-                objNode.AddDictionaryNodeRef("Links", linksNode, true);
-            }
-            else
-            {
-                objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
-            }
+            ObjectUtils.SaveLinks(Links, alreadyWrittenObjs, writer, objNode, layers);
 
             objNode.AddDynamicValue("ModelName", string.IsNullOrEmpty(ModelName) ? null : ModelName);
             objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(Rotation), true);
@@ -206,11 +180,11 @@ namespace Spotlight.EditorDrawables
 
             objNode.AddDynamicValue("UnitConfigName", ObjectName);
 
-            if (Properties.Count!=0)
+            if (Properties.Count != 0)
             {
                 foreach (KeyValuePair<string, dynamic> property in Properties)
                 {
-                    if(property.Value is string && property.Value == "")
+                    if (property.Value is string && property.Value == "")
                         objNode.AddDynamicValue(property.Key, null, true);
                     else
                         objNode.AddDynamicValue(property.Key, property.Value, true);
@@ -263,15 +237,11 @@ namespace Spotlight.EditorDrawables
                 ObjectUtils.TransformedPosition(Position, zoneToZoneTransform),
                 ObjectUtils.TransformedRotation(Rotation, zoneToZoneTransform),
 
-                Scale, destZone?.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayRotation, DisplayScale,
+                Scale, destZone?.NextObjID(), ObjectName, ModelName, ClassName, DisplayTranslation, DisplayName,
 
                 ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
                 destZone);
-
-#if ODYSSEY
-            duplicates[this].ScenarioBitField = ScenarioBitField;
-#endif
         }
 
         public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
@@ -291,8 +261,6 @@ namespace Spotlight.EditorDrawables
             if (cachedModel != null)
             {
                 renderer.cachedModels.Add((cachedModel,
-                    Matrix4.CreateScale(DisplayScale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
                     Matrix4.CreateScale(Scale) *
                     new Matrix4(Framework.Mat3FromEulerAnglesDeg(Rotation)) *
@@ -301,11 +269,9 @@ namespace Spotlight.EditorDrawables
             }
         }
 
-#if ODYSSEY
-        public ushort ScenarioBitField { get; set; } = 0;
-#endif
-
         #endregion
+
+        
 
         /// <summary>
         /// Draws the model to the given GL_Control
@@ -328,6 +294,12 @@ namespace Spotlight.EditorDrawables
                     control.SkipPickingColors(1);
                     return;
                 }
+            }
+
+            if (!SceneDrawState.EnabledLayers.Contains(Layer))
+            {
+                control.SkipPickingColors(1);
+                return;
             }
 
             bool hovered = editorScene.Hovered == this;
@@ -359,8 +331,6 @@ namespace Spotlight.EditorDrawables
                 return;
 
             control.UpdateModelMatrix(
-                    Matrix4.CreateScale(DisplayScale) *
-                    new Matrix4(Framework.Mat3FromEulerAnglesDeg(DisplayRotation)) *
                     Matrix4.CreateTranslation(DisplayTranslation) *
                     Matrix4.CreateScale((Selected ? editorScene.SelectionTransformAction.NewScale(GlobalScale, rotMtx) : GlobalScale)) *
                     new Matrix4(Selected ? editorScene.SelectionTransformAction.NewRot(rotMtx) : rotMtx) *
@@ -447,6 +417,20 @@ namespace Spotlight.EditorDrawables
                 objectUIControl.AddObjectUIContainer(new LinkDestinationsUIContainer(this, (SM3DWorldScene)scene), "Link Destinations");
 
             return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is General3dWorldObject @object &&
+                   Position.Equals(@object.Position) &&
+                   Rotation.Equals(@object.Rotation) &&
+                   Scale.Equals(@object.Scale) &&
+                   ObjectName == @object.ObjectName &&
+                   ModelName == @object.ModelName &&
+                   ClassName == @object.ClassName &&
+                   Layer == @object.Layer &&
+                   DisplayTranslation.Equals(@object.DisplayTranslation) &&
+                   ObjectUtils.EqualProperties(Properties, @object.Properties);
         }
 
         protected class General3dWorldObjectBatch : IBatchRenderer
@@ -548,6 +532,8 @@ namespace Spotlight.EditorDrawables
             string[] DB_objectNames;
             string[] DB_modelNames;
 
+            string[] DB_classNames;
+
             string classNameAlias;
             bool showClassNameAlias;
             string classNameInfo;
@@ -558,16 +544,7 @@ namespace Spotlight.EditorDrawables
                 this.obj = obj;
                 this.scene = scene;
 
-                if (Program.ParameterDB.ObjectParameters.TryGetValue(obj.ClassName, out ObjectParam entry))
-                {
-                    DB_objectNames = entry.ObjectNames.ToArray();
-                    DB_modelNames = entry.ModelNames.ToArray();
-                }
-                else
-                {
-                    DB_objectNames = Array.Empty<string>();
-                    DB_modelNames = Array.Empty<string>();
-                }
+                DB_classNames = Program.ParameterDB.ObjectParameters.Keys.ToArray();
 
                 UpdateClassNameInfo();
             }
@@ -581,24 +558,36 @@ namespace Spotlight.EditorDrawables
 
                 showClassNameInfo = information.Description != string.Empty;
                 classNameInfo = information.Description;
+
+                if (Program.ParameterDB.ObjectParameters.TryGetValue(obj.ClassName, out ObjectParam entry))
+                {
+                    DB_objectNames = entry.ObjectNames.ToArray();
+                    DB_modelNames = entry.ModelNames.ToArray();
+                }
+                else
+                {
+                    DB_objectNames = Array.Empty<string>();
+                    DB_modelNames = Array.Empty<string>();
+                }
             }
 
             public void DoUI(IObjectUIControl control)
             {
-#if ODYSSEY
-                control.PlainText(Convert.ToString(obj.ScenarioBitField, 2));
-#endif
                 if (Spotlight.Properties.Settings.Default.AllowIDEdits)
                     obj.ID = control.TextInput(obj.ID, "Object ID");
                 else
                     control.TextInput(obj.ID, "Object ID");
 
+                if(obj.comment!=null)
+                    control.TextInput(obj.comment, "Comment");
+
+                obj.Layer = control.TextInput(obj.Layer, "Layer");
                 obj.ObjectName = control.DropDownTextInput("Object Name", obj.ObjectName, DB_objectNames);
 
                 if(showClassNameInfo)
                     control.SetTooltip(classNameInfo);
-                obj.ClassName = control.TextInput(obj.ClassName, "Class Name");
-                if(showClassNameAlias)
+                obj.ClassName = control.DropDownTextInput("Class Name", obj.ClassName, DB_classNames);
+                if (showClassNameAlias)
                     control.PlainText(classNameAlias);
                 control.SetTooltip(null);
 
@@ -628,15 +617,8 @@ namespace Spotlight.EditorDrawables
                 else
                     obj.DisplayTranslation = control.Vector3Input(obj.DisplayTranslation, "Display Position", 0.125f, 2);
 
-                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
-                    obj.DisplayRotation = control.Vector3Input(obj.DisplayRotation, "Display Rotation", 45, 18);
-                else
-                    obj.DisplayRotation = control.Vector3Input(obj.DisplayRotation, "Display Rotation", 5, 2);
-
-                if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
-                    obj.DisplayScale = control.Vector3Input(obj.DisplayScale, "Display Scale", 1, 16);
-                else
-                    obj.DisplayScale = control.Vector3Input(obj.DisplayScale, "Display Scale", 0.125f, 2);
+                //TODO
+                obj.DisplayName = control.DropDownTextInput("Display Name", obj.DisplayName, Array.Empty<string>());
             }
 
             public void OnValueChangeStart()

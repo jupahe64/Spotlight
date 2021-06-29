@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using SZS;
 using WinInput = System.Windows.Input;
 using GL_EditorFramework;
+using Spotlight.GUI;
 
 namespace Spotlight.EditorDrawables
 {
@@ -242,10 +243,22 @@ namespace Spotlight.EditorDrawables
 
         public void ResetObjectPlaceDelegate() => ObjectPlaceDelegate = null;
 
+        /// <summary>
+        /// The layer that will be used for every placed object
+        /// </summary>
+        public string DrawLayer { get; set; } = "Common";
+
         public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
             {
+                if (!EditZone.availibleLayers.Contains(DrawLayer))
+                {
+                    MessageBox.Show($"The Layer you are trying to paint on ({DrawLayer}) doesn't exist in this Zone");
+
+                    return 0;
+                }
+
                 var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, Math.Min(100, control.PickingDepth)), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
 
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
@@ -256,6 +269,8 @@ namespace Spotlight.EditorDrawables
                 {
                     if (!objsByLists.ContainsKey(placements[i].objList))
                         objsByLists[placements[i].objList] = new List<I3dWorldObject>();
+
+                    placements[i].obj.Layer = DrawLayer;
 
                     objsByLists[placements[i].objList].Add(placements[i].obj);
 
@@ -293,7 +308,7 @@ namespace Spotlight.EditorDrawables
 
         public override string ToString()
         {
-            return MainZone.LevelName;
+            return MainZone.StageName;
         }
 
 
@@ -562,7 +577,7 @@ namespace Spotlight.EditorDrawables
                     ZonePlacements.Add(mainZonePlacement);
                 }
 
-                SceneDrawState.ZoneTransform = EditZoneTransform;
+                SetZoneDrawState();
 
                 undoStack = EditZone.undoStack;
                 redoStack = EditZone.redoStack;
@@ -574,10 +589,32 @@ namespace Spotlight.EditorDrawables
 
         public override void Connect(GL_ControlBase control)
         {
-            SceneDrawState.ZoneTransform = EditZoneTransform;
+            SetZoneDrawState();
 
             base.Connect(control);
         }
+
+        private void SetZoneDrawState()
+        {
+            SceneDrawState.ZoneTransform = EditZoneTransform;
+
+            SceneDrawState.EnabledLayers = EditZone.enabledLayers;
+        }
+
+#if ODYSSEY
+        public void SetScenario(int scenario)
+        {
+            foreach (var zone in GetZones())
+            {
+                zone.SetScenario(scenario);
+
+                if (zone!=EditZone)
+                    zone.UpdateRenderBatch();
+            }
+
+            SceneDrawState.EnabledLayers = EditZone.enabledLayers;
+        }
+#endif
 
         protected ZoneTransform EditZoneTransform { get; private set; }
 
@@ -586,7 +623,7 @@ namespace Spotlight.EditorDrawables
             private set
             {
                 mainZone = value;
-                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, value);
+                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, "Common", value);
             }
         }
 
@@ -757,7 +794,7 @@ namespace Spotlight.EditorDrawables
                     if (placement.IsSelectedAll())
                     {
                         placement.DeselectAll(control);
-                        newPlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Zone));
+                        newPlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Layer, placement.Zone));
                     }
                 }
                 //the rest will be handled at the end of the function
@@ -870,7 +907,7 @@ namespace Spotlight.EditorDrawables
                 {
                     if (placement.IsSelectedAll())
                     {
-                        copiedZonePlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Zone));
+                        copiedZonePlacements.Add(new ZonePlacement(placement.Position, placement.Rotation, placement.Layer, placement.Zone));
                     }
                 }
                 //the rest will be handled at the end of the function
@@ -1010,7 +1047,7 @@ namespace Spotlight.EditorDrawables
             {
                 foreach (var placement in copiedZonePlacements)
                 {
-                    var newPlacement = new ZonePlacement(placement.Position, placement.Rotation, placement.Zone);
+                    var newPlacement = new ZonePlacement(placement.Position, placement.Rotation, placement.Layer, placement.Zone);
 
                     newPlacement.SelectDefault(control);
                     ZonePlacements.Add(newPlacement);
@@ -1255,19 +1292,18 @@ namespace Spotlight.EditorDrawables
             bool showPromt = false;
             string overwrites = "";
 
-            foreach (var zone in GetZones())
+            var zones = ZonePlacements.Select(x=>x.Zone).Where(y=>!y.IsSaved).Prepend(MainZone).ToArray();
+
+            foreach (var zone in zones)
             {
                 if (!string.IsNullOrEmpty(Program.ProjectPath) && zone.Directory == Program.BaseStageDataPath)
                     showPromt = true;
 
-                if (zone.HasCategoryMap && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.MAP_SUFFIX)))
-                    overwrites += zone.LevelName + SM3DWorldZone.MAP_SUFFIX + '\n';
-
-                if (zone.HasCategoryDesign && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.DESIGN_SUFFIX)))
-                    overwrites += zone.LevelName + SM3DWorldZone.DESIGN_SUFFIX + '\n';
-
-                if (zone.HasCategorySound && File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, zone.LevelName + SM3DWorldZone.SOUND_SUFFIX)))
-                    overwrites += zone.LevelName + SM3DWorldZone.SOUND_SUFFIX + '\n';
+                foreach (var fileName in zone.GetSaveFileNames(zone.StageInfo))
+                {
+                    if (File.Exists(System.IO.Path.Combine(Program.ProjectStageDataPath, fileName)))
+                        overwrites += fileName + '\n';
+                }
             }
             bool changeDirectory = false;
 
@@ -1291,12 +1327,14 @@ namespace Spotlight.EditorDrawables
                 changeDirectory = result == DialogResult.Yes;
             }
 
-            foreach (var zone in GetZones())
+            foreach (var zone in zones)
             {
-                if (changeDirectory)
-                    zone.Directory = Program.ProjectStageDataPath;
+                StageInfo newStageInfo = zone.StageInfo;
 
-                zone.Save();
+                if (changeDirectory)
+                    newStageInfo.Directory = Program.ProjectStageDataPath;
+
+                zone.Save(newStageInfo);
             }
 
             return IsSaved = IsSaved; //seems dumb but it's the only way to make sure the IsSavedChanged event is triggered
@@ -1318,48 +1356,67 @@ namespace Spotlight.EditorDrawables
         /// <returns>true if the save succeeded, false if it failed or was cancelled</returns>
         public bool SaveAs()
         {
-            string currentDirectory = EditZone.Directory;
+            List<SM3DWorldZone> additionalZones = new List<SM3DWorldZone>();
 
-            HashSet<SM3DWorldZone> zonesToSave = new HashSet<SM3DWorldZone> { EditZone };
-
-            foreach (var zonePlacement in ZonePlacements)
+            foreach (var zonePlacement in MainZone.ZonePlacements)
             {
-                if (!zonesToSave.Contains(zonePlacement.Zone))
-                    zonesToSave.Add(zonePlacement.Zone);
+                if (!additionalZones.Contains(zonePlacement.Zone))
+                    additionalZones.Add(zonePlacement.Zone);
             }
 
-            foreach (SM3DWorldZone _zone in zonesToSave)
+            SaveFileDialog sfd = new SaveFileDialog()
             {
-                SaveFileDialog sfd = new SaveFileDialog()
-                {
-                    Filter =
-                    "Level Files (Map)|*Map1.szs|" +
-                    "Level Files (Design)|*Design1.szs|" +
-                    "Level Files (Sound)|*Sound1.szs|" +
-                    "All Level Files|*.szs",
-                    InitialDirectory = currentDirectory,
-                    FileName = _zone.LevelFileName
-                };
+                Filter =
+                    $"Split Level Files|*{SM3DWorldZone.MAP_SUFFIX}|" +
+                    $"Combined Level Files|*{SM3DWorldZone.COMBINED_SUFFIX}",
+                InitialDirectory = MainZone.Directory,
+                FileName = MainZone.StageInfo.StageName,
+                FilterIndex = (int)MainZone.StageInfo.StageArcType + 1
+            };
 
-                sfd.FileOk += (s, e) =>
+            ZoneSaveOptionsDialog optionsDialog = null;
+
+            StageInfo? stageInfo = null;
+
+            sfd.FileOk += (s, e) =>
+            {
+                if (SM3DWorldZone.TryGetStageInfo(sfd.FileName, out stageInfo))
                 {
-                    if (!_zone.IsValidSaveName(sfd.FileName))
+                    optionsDialog = new ZoneSaveOptionsDialog(stageInfo.Value, MainZone.ByteOrder, additionalZones);
+
+                    if (optionsDialog.ShowDialog() != DialogResult.OK)
                     {
-                        //Type type = typeof(FileDialog);
-                        //FieldInfo info = type.GetField("dialogHWnd", BindingFlags.NonPublic
-                        //                                           | BindingFlags.Instance);
-                        //IntPtr fileDialogHandle = (IntPtr)info.GetValue(sfd);
-
-                        //SetFileName(fileDialogHandle, zone.GetProperSaveName(sfd.FileName));
-
                         e.Cancel = true;
+                        return;
                     }
-                };
+                }
+                else
+                    e.Cancel = true;
+            };
 
-                if (sfd.ShowDialog() == DialogResult.OK)
+
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return false;
+
+            var _stageInfo = stageInfo.Value;
+
+            _stageInfo.StageName = optionsDialog.StageName;
+            _stageInfo.StageArcType = optionsDialog.StageArcType;
+
+            MainZone.Save(_stageInfo, optionsDialog.ByteOrder);
+
+            for (int i = 0; i < additionalZones.Count; i++)
+            {
+                if (!optionsDialog.AdditionalZoneEntries[i].ShouldSave)
+                    continue;
+
+                _stageInfo.StageName = optionsDialog.AdditionalZoneEntries[i].NewName;
+
+                additionalZones[i].Save(_stageInfo, optionsDialog.ByteOrder);
+                foreach (ZonePlacement placement in mainZone.ZonePlacements) 
                 {
-                    _zone.Save(sfd.FileName);
-                    currentDirectory = System.IO.Path.GetDirectoryName(sfd.FileName);
+                    if (placement.Zone == additionalZones[i])
+                        placement.ZoneLookupName = _stageInfo.StageName;
                 }
             }
 

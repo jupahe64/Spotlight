@@ -28,6 +28,11 @@ namespace BYAML
             object _valueRepresentation;
 
             /// <summary>
+            /// The number of entries in this DictionaryNode
+            /// </summary>
+            public int Count => _entries.Count;
+
+            /// <summary>
             /// Creates a new <see cref="DictionaryNode"/> which needs to be Submited by calling <see cref="Submit"/>
             /// </summary>
             /// <param name="byamlNodeWriter"></param>
@@ -162,6 +167,12 @@ namespace BYAML
             List<Entry> _entries;
             ByamlNodeWriter _byamlNodeWriter;
             object _valueRepresentation;
+
+
+            /// <summary>
+            /// The number of entries in this ArrayNode
+            /// </summary>
+            public int Count => _entries.Count;
 
             /// <summary>
             /// Creates a new <see cref="ArrayNode"/> which needs to be Submited by calling <see cref="Submit"/>

@@ -29,13 +29,13 @@ namespace Spotlight.EditorDrawables
         void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowLinkCopyToOrignal);
 
         Dictionary<string, List<I3dWorldObject>> Links { get; set; }
-        void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest);
+        void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest);
         Vector3 GetLinkingPoint(SM3DWorldScene editorScene);
 
         void AddToZoneBatch(ZoneRenderBatch zoneBatch);
 
-#if ODYSSEY
-        ushort ScenarioBitField { get; set; }
-#endif
+        string Layer { get; set; }
+
+        public string ID { get; }
     }
 }

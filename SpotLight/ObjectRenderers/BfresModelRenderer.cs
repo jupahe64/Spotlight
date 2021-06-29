@@ -157,14 +157,12 @@ namespace Spotlight.ObjectRenderers
             {
                 bool loadTextures = !Properties.Settings.Default.DoNotLoadTextures;
 
-                if (loadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")))
+                if (loadTextures && textureArc != null && File.Exists(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")) /*&& textureArc != "SingleModeBossSharedTextures" && textureArc != "SingleModeSharedTextures"*/)
                 {
-                    if(new FileInfo(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")).Length<50000000)
-                    {
-                        SARCExt.SarcData objArc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")));
-
                         if (!texArcCache.ContainsKey(textureArc))
                         {
+                            SARCExt.SarcData objArc = SARCExt.SARC.UnpackRamN(YAZ0.Decompress(Program.TryGetPathViaProject("ObjectData", textureArc + ".szs")));
+
                             Dictionary<string, int> arc = new Dictionary<string, int>();
                             texArcCache.Add(textureArc, arc);
                             foreach (KeyValuePair<string, TextureShared> textureEntry in new ResFile(new MemoryStream(objArc.Files[textureArc + ".bfres"])).Textures)
@@ -172,7 +170,45 @@ namespace Spotlight.ObjectRenderers
                                 arc.Add(textureEntry.Key, UploadTexture(textureEntry.Value));
                             }
                         }
+                }
+                else if(loadTextures && textureArc != null)
+                {
+                    var filePath = Program.TryGetPathViaProject("ObjectData", textureArc);
+                    if(Directory.Exists(filePath))
+                    {
+                        if (!texArcCache.ContainsKey(textureArc))
+                        {
+                            Dictionary<string, int> arc = new Dictionary<string, int>();
+                            var filePaths = Directory.GetFiles(filePath);
+                            texArcCache.Add(textureArc, arc);
+                            foreach (string fileName in filePaths)
+                            {
+
+                                var image = new System.Drawing.Bitmap(fileName);
+                                int texID = GL.GenTexture();
+
+                                GL.BindTexture(TextureTarget.Texture2D, texID);
+                                System.Drawing.Imaging.BitmapData data = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height),
+                                    System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0,
+                                    OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+
+                                image.UnlockBits(data);
+                                image.Dispose();
+
+                                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+                                arc.Add(System.IO.Path.GetFileNameWithoutExtension(fileName), texID);
+
+                                //var imageForm = new System.Windows.Forms.Form();
+                                //imageForm.BackgroundImage = image;
+                                //imageForm.Show();
+                            }
+                        }
+                        
                     }
+                    
                 }
 
                 Model mdl = bfres.Models[0];
@@ -835,8 +871,20 @@ namespace Spotlight.ObjectRenderers
                 case SurfaceFormat.BC5_SNORM:
                     pixelInternalFormat = PixelInternalFormat.CompressedSignedRgRgtc2;
                     break;
+                case SurfaceFormat.BC6_UFLOAT:
+                    pixelInternalFormat = PixelInternalFormat.CompressedRgbBptcUnsignedFloat;
+                    break;
+                case SurfaceFormat.BC6_FLOAT:
+                    pixelInternalFormat = PixelInternalFormat.CompressedRgbBptcSignedFloat;
+                    break;
+                case SurfaceFormat.BC7_UNORM:
+                    pixelInternalFormat = PixelInternalFormat.CompressedRgRgtc2;
+                    break;
+                case SurfaceFormat.BC7_SRGB:
+                    pixelInternalFormat = PixelInternalFormat.CompressedSrgbAlphaBptcUnorm;
+                    break;
                 case SurfaceFormat.R8_G8_B8_A8_UNORM:
-                    pixelInternalFormat = PixelInternalFormat.Rgba;
+                    pixelInternalFormat = PixelInternalFormat.CompressedRgbaBptcUnorm;
                     break;
                 case SurfaceFormat.R8_G8_B8_A8_SRGB:
                     pixelInternalFormat = PixelInternalFormat.Rgba;
@@ -844,6 +892,48 @@ namespace Spotlight.ObjectRenderers
                 default:
                     pixelInternalFormat = 0;
                     break;
+            }
+        }
+
+        private static All GetChannelSwap(GX2CompSel compSel)
+        {
+            switch (compSel)
+            {
+                case GX2CompSel.ChannelR:
+                    return All.Red;
+                case GX2CompSel.ChannelG:
+                    return All.Green;
+                case GX2CompSel.ChannelB:
+                    return All.Blue;
+                case GX2CompSel.ChannelA:
+                    return All.Alpha;
+                case GX2CompSel.Always0:
+                    return All.Zero;
+                case GX2CompSel.Always1:
+                    return All.One;
+                default:
+                    return All.Zero;
+            }
+        }
+
+        private static All GetChannelSwap(ChannelType type)
+        {
+            switch (type)
+            {
+                case ChannelType.Red:
+                    return All.Red;
+                case ChannelType.Green:
+                    return All.Green;
+                case ChannelType.Blue:
+                    return All.Blue;
+                case ChannelType.Alpha:
+                    return All.Alpha;
+                case ChannelType.Zero:
+                    return All.Zero;
+                case ChannelType.One:
+                    return All.One;
+                default:
+                    return All.Zero;
             }
         }
 
@@ -874,146 +964,80 @@ namespace Spotlight.ObjectRenderers
             if (deswizzled.Length == 0)
                 return -2;
 
-            if (textureShared is BfresLibrary.WiiU.Texture texture)
+            PixelInternalFormat internalFormat;
+
             {
-                int tex = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture2D, tex);
-
-
-                if (texture.Format == GX2SurfaceFormat.T_BC4_UNorm)
-                {
-                    deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)texture.Width, (int)texture.Height, false);
-                    //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)texture.Width, (int)texture.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM);
-                }
-                else if (texture.Format == GX2SurfaceFormat.T_BC4_SNorm)
-                {
-                    deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)texture.Width, (int)texture.Height, true);
-                    //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)texture.Width, (int)texture.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_SNORM);
-                }
-                else if (texture.Format == GX2SurfaceFormat.T_BC5_UNorm)
-                {
-                    //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, false, true);
-                    deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)texture.Width, (int)texture.Height, false);
-                }
-                else if (texture.Format == GX2SurfaceFormat.T_BC5_SNorm)
-                {
-                    //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, true, true);
-                    deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)texture.Width, (int)texture.Height, true);
-                }
+                if (textureShared is BfresLibrary.WiiU.Texture texture)
+                    GetPixelFormats(texture.Format, out internalFormat);
+                else if (textureShared is SwitchTexture textureNSW)
+                    GetPixelFormats(textureNSW.Format, out internalFormat);
                 else
-                {
-                    GetPixelFormats(texture.Format, out PixelInternalFormat internalFormat);
-
-                    if (internalFormat != PixelInternalFormat.Rgba)
-                    {
-                        GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat, (int)texture.Width, (int)texture.Height, 0, deswizzled.Length, deswizzled);
-
-                        goto DATA_UPLOADED;
-                    }
-                }
-
-#region channel reassign
-
-                byte[] sources = new byte[] { 0, 0, 0, 0, 0, 0xFF };
-
-                for (int i = 0; i < deswizzled.Length; i += 4)
-                {
-                    sources[0] = deswizzled[i];
-                    sources[1] = deswizzled[i + 1];
-                    sources[2] = deswizzled[i + 2];
-                    sources[3] = deswizzled[i + 3];
-
-                    deswizzled[i] = sources[(int)texture.CompSelR];
-                    deswizzled[i + 1] = sources[(int)texture.CompSelG];
-                    deswizzled[i + 2] = sources[(int)texture.CompSelB];
-                    deswizzled[i + 3] = sources[(int)texture.CompSelA];
-                    //deswizzled[i + 3] = 0xFF;
-                }
-#endregion
-
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, (int)texture.Width, (int)texture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, deswizzled);
-
-            DATA_UPLOADED:
-
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-
-                return tex;
+                    return -2;
             }
-            else if(textureShared is SwitchTexture textureNSW)
+
+
+            
+            int tex = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, tex);
+
+
+            //if (texture.Format == GX2SurfaceFormat.T_BC4_UNorm)
+            //{
+            //    deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)texture.Width, (int)texture.Height, false);
+            //    //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)texture.Width, (int)texture.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM);
+            //}
+            //else if (texture.Format == GX2SurfaceFormat.T_BC4_SNorm)
+            //{
+            //    deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)texture.Width, (int)texture.Height, true);
+            //    //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)texture.Width, (int)texture.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_SNORM);
+            //}
+            //else if (texture.Format == GX2SurfaceFormat.T_BC5_UNorm)
+            //{
+            //    //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, false, true);
+            //    deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)texture.Width, (int)texture.Height, false);
+            //}
+            //else if (texture.Format == GX2SurfaceFormat.T_BC5_SNorm)
+            //{
+            //    //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)texture.Width, (int)texture.Height, true, true);
+            //    deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)texture.Width, (int)texture.Height, true);
+            //}
+            //else
             {
-
-                int tex = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture2D, tex);
-
-
-                if (textureNSW.Format == SurfaceFormat.BC4_UNORM)
+                if (internalFormat != PixelInternalFormat.Rgba)
                 {
-                    deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, false);
-                    //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM);
+                    GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat, (int)textureShared.Width, (int)textureShared.Height, 0, deswizzled.Length, deswizzled);
+
+                    goto DATA_UPLOADED;
                 }
-                else if (textureNSW.Format == SurfaceFormat.BC4_SNORM)
-                {
-                    deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, true);
-                    //deswizzled = DDSCompressor.DecompressBlock(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, DDSCompressor.DDS_DXGI_FORMAT.DXGI_FORMAT_BC4_SNORM);
-                }
-                else if (textureNSW.Format == SurfaceFormat.BC5_UNORM)
-                {
-                    //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, false, true);
-                    deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, false);
-                }
-                else if (textureNSW.Format == SurfaceFormat.BC5_SNORM)
-                {
-                    //deswizzled = DDSCompressor.DecompressBC5(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, true, true);
-                    deswizzled = DDSCompressor.DecompressBC5_JPH(deswizzled, (int)textureNSW.Width, (int)textureNSW.Height, true);
-                }
-                else
-                {
-                    GetPixelFormats(textureNSW.Format, out PixelInternalFormat internalFormat);
-
-                    if (internalFormat != PixelInternalFormat.Rgba)
-                    {
-                        GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, (InternalFormat)internalFormat, (int)textureNSW.Width, (int)textureNSW.Height, 0, deswizzled.Length, deswizzled);
-
-                        goto DATA_UPLOADED;
-                    }
-
-                    if (internalFormat == 0)
-                        return -2;
-                }
-
-                //#region channel reassign
-
-                //byte[] sources = new byte[] { 0, 0, 0, 0, 0, 0xFF };
-
-                //for (int i = 0; i < deswizzled.Length; i += 4)
-                //{
-                //    sources[0] = deswizzled[i];
-                //    sources[1] = deswizzled[i + 1];
-                //    sources[2] = deswizzled[i + 2];
-                //    sources[3] = deswizzled[i + 3];
-
-                //    deswizzled[i] = sources[(int)textureNSW.CompSelR];
-                //    deswizzled[i + 1] = sources[(int)textureNSW.CompSelG];
-                //    deswizzled[i + 2] = sources[(int)textureNSW.CompSelB];
-                //    deswizzled[i + 3] = sources[(int)textureNSW.CompSelA];
-                //    //deswizzled[i + 3] = 0xFF;
-                //}
-                //#endregion
-
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, (int)textureNSW.Width, (int)textureNSW.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, deswizzled);
-
-            DATA_UPLOADED:
-
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-
-                return tex;
             }
-            else //for now switch textureNSWs won't be supported
-                return -2;
+            GC.Collect();
+
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, (int)textureShared.Width, (int)textureShared.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, deswizzled);
+
+        DATA_UPLOADED:
+
+            {
+                if (textureShared is BfresLibrary.WiiU.Texture texture)
+                {
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, (int)GetChannelSwap(texture.CompSelR));
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG, (int)GetChannelSwap(texture.CompSelG));
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, (int)GetChannelSwap(texture.CompSelB));
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, (int)GetChannelSwap(texture.CompSelA));
+                }
+                else if (textureShared is SwitchTexture textureNSW)
+                {
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, (int)GetChannelSwap(textureNSW.Texture.ChannelRed));
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG, (int)GetChannelSwap(textureNSW.Texture.ChannelGreen));
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, (int)GetChannelSwap(textureNSW.Texture.ChannelBlue));
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, (int)GetChannelSwap(textureNSW.Texture.ChannelAlpha));
+                }
+            }
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
+
+            return tex;
         }
     }
 }

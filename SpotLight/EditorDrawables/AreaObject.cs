@@ -24,6 +24,7 @@ using WinInput = System.Windows.Input;
 
 namespace Spotlight.EditorDrawables
 {
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class AreaObject : TransformableObject, I3dWorldObject
     {
         public Dictionary<string, dynamic> Properties { get; private set; } = null;
@@ -60,6 +61,11 @@ namespace Spotlight.EditorDrawables
         [Undoable]
         public string ModelName { get; set; }
 
+        [Undoable]
+        public string Layer { get; set; } = "Common";
+
+        readonly string comment = null;
+
 
         public AreaObject(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
             : base(info.Position, info.Rotation, info.Scale)
@@ -70,6 +76,10 @@ namespace Spotlight.EditorDrawables
 
             ModelName = info.ModelName;
             ClassName = info.ObjectName; //...yep
+
+            Layer = info.Layer;
+
+            comment = info.Comment;
 
             Properties = new Dictionary<string, dynamic>();
 
@@ -124,48 +134,18 @@ namespace Spotlight.EditorDrawables
 
         public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
 
-        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, bool isLinkDest = false)
+        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest = false)
         {
             objNode.AddDynamicValue("Comment", null);
             objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("Priority", Priority);
 
             objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", "Common");
+            objNode.AddDynamicValue("LayerConfigName", Layer);
 
             alreadyWrittenObjs.Add(this);
 
-            if (Links != null)
-            {
-                DictionaryNode linksNode = writer.CreateDictionaryNode(Links);
-
-                foreach (var (linkName, link) in Links)
-                {
-                    if (link.Count == 0)
-                        continue;
-
-                    ArrayNode linkNode = writer.CreateArrayNode(link);
-
-                    foreach (I3dWorldObject obj in link)
-                    {
-                        if (!alreadyWrittenObjs.Contains(obj))
-                        {
-                            DictionaryNode linkedObjNode = writer.CreateDictionaryNode(obj);
-                            obj.Save(alreadyWrittenObjs, writer, linkedObjNode, true);
-                            linkNode.AddDictionaryNodeRef(linkedObjNode);
-                        }
-                        else
-                            linkNode.AddDictionaryRef(obj);
-                    }
-
-                    linksNode.AddArrayNodeRef(linkName, linkNode, true);
-                }
-                objNode.AddDictionaryNodeRef("Links", linksNode, true);
-            }
-            else
-            {
-                objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
-            }
+            ObjectUtils.SaveLinks(Links, alreadyWrittenObjs, writer, objNode, layers);
 
             objNode.AddDynamicValue("ModelName", ModelName);
 
@@ -234,10 +214,6 @@ namespace Spotlight.EditorDrawables
                 ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
                 destZone);
-
-#if ODYSSEY
-            duplicates[this].ScenarioBitField = ScenarioBitField;
-#endif
         }
 
         public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
@@ -252,10 +228,6 @@ namespace Spotlight.EditorDrawables
         {
             //not needed
         }
-
-#if ODYSSEY
-        public ushort ScenarioBitField { get; set; } = 0;
-#endif
 
         #endregion
 
@@ -342,6 +314,20 @@ namespace Spotlight.EditorDrawables
             return true;
         }
 
+        public override bool Equals(object obj)
+        {
+            return obj is AreaObject @object &&
+                   Position.Equals(@object.Position) &&
+                   Rotation.Equals(@object.Rotation) &&
+                   Scale.Equals(@object.Scale) &&
+                   ID == @object.ID &&
+                   Priority == @object.Priority &&
+                   ClassName == @object.ClassName &&
+                   ModelName == @object.ModelName &&
+                   Layer == @object.Layer &&
+                   ObjectUtils.EqualProperties(Properties, @object.Properties);
+        }
+
         public class BasicPropertyUIContainer : IObjectUIContainer
         {
             PropertyCapture? capture = null;
@@ -350,6 +336,7 @@ namespace Spotlight.EditorDrawables
             EditorSceneBase scene;
 
             string[] shapeNames;
+            string[] DB_classNames;
 
             public BasicPropertyUIContainer(AreaObject area, EditorSceneBase scene)
             {
@@ -357,19 +344,23 @@ namespace Spotlight.EditorDrawables
                 this.scene = scene;
 
                 shapeNames = LevelIO.AreaModelNames.ToArray();
+                DB_classNames = Program.ParameterDB.AreaParameters.Keys.ToArray();
             }
 
             public void DoUI(IObjectUIControl control)
             {
-#if ODYSSEY
-                control.PlainText(Convert.ToString(area.ScenarioBitField, 2));
-#endif
                 if (Spotlight.Properties.Settings.Default.AllowIDEdits)
                     area.ID = control.TextInput(area.ID, "Object ID");
                 else
                     control.TextInput(area.ID, "Object ID");
 
-                area.ModelName = control.DropDownTextInput("Model Name", area.ModelName, shapeNames);
+                if (area.comment != null)
+                    control.TextInput(area.comment, "Comment");
+
+                area.Layer = control.TextInput(area.Layer, "Layer");
+
+                area.ClassName = control.DropDownTextInput("Class Name", area.ClassName, DB_classNames);
+                area.ModelName = control.DropDownTextInput("Shape Name", area.ModelName, shapeNames, false);
 
                 area.Priority = (int)control.NumberInput(area.Priority, "Priority");
 

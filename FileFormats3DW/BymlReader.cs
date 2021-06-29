@@ -36,7 +36,7 @@ namespace BYAML
                 _alreadyReadNodes = new Dictionary<uint, dynamic>();
             }
 
-            _reader = new BinaryDataReader(stream, Encoding.GetEncoding(932), true)
+            _reader = new BinaryDataReader(stream, ByamlFile.GetEncoding(byteOrder), true)
             {
                 ByteOrder = byteOrder
             };
@@ -49,7 +49,12 @@ namespace BYAML
             {
                 //switch endian and try again
                 _byteOrder = _byteOrder == ByteOrder.LittleEndian ? ByteOrder.BigEndian : ByteOrder.LittleEndian;
-                _reader.ByteOrder = _byteOrder;
+
+                _reader = new BinaryDataReader(_reader.BaseStream, ByamlFile.GetEncoding(_byteOrder), true)
+                {
+                    ByteOrder = _byteOrder
+                };
+
                 _reader.Position = 0;
                 if (_reader.ReadUInt16() != BYAML_MAGIC) throw new Exception("Header mismatch");
             }
@@ -334,7 +339,7 @@ namespace BYAML
             for (int i = 0; i < length; i++)
             {
                 _reader.Seek(nodeOffset + offsets[i], SeekOrigin.Begin);
-                stringArray.Add(_reader.ReadString(BinaryStringFormat.ZeroTerminated,_reader.Encoding));
+                stringArray.Add(_reader.ReadString(BinaryStringFormat.ZeroTerminated));
             }
             _reader.Seek(oldPosition, SeekOrigin.Begin);
 

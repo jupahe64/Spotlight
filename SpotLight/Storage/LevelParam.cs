@@ -198,6 +198,9 @@ namespace Spotlight
     public class StageList
     {
         public string Filename { get; set; }
+
+        public ByteOrder ByteOrder { get; set; }
+
         /// <summary>
         /// A List of all the worlds in SM3DW
         /// </summary>
@@ -225,16 +228,17 @@ namespace Spotlight
             for (int i = 0; i < worldList.Count; i++)
                 worlds.Add(new World(worldList[i]));
 
-            stageList = new StageList(filename, worlds);
+            stageList = new StageList(filename, worlds, byml.byteOrder);
 
             return true;
         }
 
-        private StageList(string filename, List<World> worlds)
+        private StageList(string filename, List<World> worlds, ByteOrder byteOrder)
         {
 
             Worlds = worlds;
             Filename = filename;
+            ByteOrder = byteOrder;
         }
 
         public int GetNextUniqueCourseID()
@@ -248,26 +252,28 @@ namespace Spotlight
                 }
             }
 
-            return max;
+            return max + 1;
         }
 
         public void Save()
         {
-            byte[] tmp = ToByaml();
+            //byte[] tmp = ToByaml();
             //File.WriteAllBytes("Test.byml", tmp);
-            //BymlFileData Output = new BymlFileData() { Version = 1, SupportPaths = false, byteOrder = Syroot.BinaryData.Endian.Big };
+            BymlFileData Output = new BymlFileData() { Version = 1, SupportPaths = false, byteOrder = ByteOrder };
 
-            //Dictionary<string, dynamic> FinalRoot = new Dictionary<string, dynamic>();
-            //List<dynamic> worlds = new List<dynamic>();
+            Dictionary<string, dynamic> FinalRoot = new Dictionary<string, dynamic>();
+            List<dynamic> worlds = new List<dynamic>();
 
-            //for (int i = 0; i < Worlds.Count; i++)
-            //    worlds.Add(Worlds[i].ToByaml());
+            for (int i = 0; i < Worlds.Count; i++)
+                worlds.Add(Worlds[i].ToByaml());
 
-            //FinalRoot.Add("WorldList",worlds);
-            //Output.RootNode = FinalRoot;
-            SarcData Data = new SarcData() { byteOrder = ByteOrder.BigEndian, Files = new Dictionary<string, byte[]>() };
-            
-            Data.Files.Add("StageList.byml", tmp);
+            FinalRoot.Add("WorldList", worlds);
+            Output.RootNode = FinalRoot;
+
+
+
+            SarcData Data = new SarcData() { byteOrder = ByteOrder, Files = new Dictionary<string, byte[]>() };
+            Data.Files.Add("StageList.byml", ByamlFile.SaveN(Output));
             Tuple<int, byte[]> x = SARC.PackN(Data);
 
 
@@ -289,7 +295,7 @@ namespace Spotlight
                 }
             }
 
-            File.WriteAllBytes(Filename, YAZ0.Compress(x.Item2));
+            File.WriteAllBytes(Filename, YAZ0.Compress(x));
             //File.WriteAllBytes("Broken.byml", Data.Files["StageList.byml"]);
         }
 
