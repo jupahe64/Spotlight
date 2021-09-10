@@ -317,6 +317,10 @@ namespace Spotlight.GUI
             }
 
             MainSceneListView.ItemClicked += MainSceneListView_ItemClicked;
+            FormClosing += (x, y) =>
+            {
+                Program.Client.SetPresence(Program.Default_Presence);
+            };
         }
 
         private void MainSceneListView_ListExited(object sender, ListEventArgs e)
@@ -1146,6 +1150,9 @@ namespace Spotlight.GUI
             #endregion
 
             MainTabControl.SelectedTab = ObjectsTabPage;
+
+            Program.Client.UpdateState("Editing a Level.");
+            Program.Client.UpdateDetails($"Editing {zone.StageName}");
         }
 
         private void AssignSceneEvents(SM3DWorldScene scene)

@@ -10,17 +10,39 @@ using System.Windows.Forms;
 using Spotlight.GUI;
 using OpenTK;
 using System.Drawing;
+using DiscordRPC;
+using DiscordRPC.Logging;
 
 namespace Spotlight
 {
     static class Program
     {
+        internal static DiscordRpcClient Client;
+
+        internal static RichPresence Default_Presence => new RichPresence
+        {
+            Assets = new Assets
+            {
+                LargeImageKey = "spotlighticon",
+                LargeImageText = "A Super Mario 3D World Level Editor using the GL_EditorFramework"
+            },
+            State = "Idle",
+            Timestamps = Timestamps.Now,
+            Details = "Currently doing nothing."
+        };
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
         {
+            Client = new DiscordRpcClient("875108365385220146")
+            {
+                Logger = new ConsoleLogger(LogLevel.Error)
+            };
+            Client.Initialize();
+            Client.SetPresence(Default_Presence);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
