@@ -7,13 +7,13 @@ namespace SZS
 {
     public unsafe class YAZ0
     {
-        [DllImport("yaz0.dll")]
+        [DllImport("nativelib/yaz0.dll", CallingConvention = CallingConvention.Cdecl)]
         static unsafe extern byte* decompress(byte* src, uint src_len, uint* dest_len);
 
-        [DllImport("yaz0.dll")]
+        [DllImport("nativelib/yaz0.dll", CallingConvention = CallingConvention.Cdecl)]
         static unsafe extern byte* compress(byte* src, uint src_len, uint* dest_len, byte opt_compr);
 
-        [DllImport("yaz0.dll")]
+        [DllImport("nativelib/yaz0.dll", CallingConvention = CallingConvention.Cdecl)]
         static unsafe extern void freePtr(void* ptr);
 
         public static unsafe byte[] Decompress(string fileName) =>

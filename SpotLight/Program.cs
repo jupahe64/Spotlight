@@ -12,6 +12,7 @@ using OpenTK;
 using System.Drawing;
 using DiscordRPC;
 using DiscordRPC.Logging;
+using System.Runtime.InteropServices;
 
 namespace Spotlight
 {
@@ -37,6 +38,20 @@ namespace Spotlight
         [STAThread]
         static void Main()
         {
+            string platform;
+
+            if (IntPtr.Size * 8 == 64)
+                platform = "x64";
+            else
+                platform = "x86";
+
+            var nativelib = Path.Combine(AppContext.BaseDirectory, "nativelib");
+
+            foreach (var dll in Directory.EnumerateFiles(Path.Combine(nativelib,platform)))
+            {
+                File.Copy(dll, Path.Combine(nativelib, Path.GetFileName(dll)), true);
+            }
+
             Client = new DiscordRpcClient("875108365385220146")
             {
                 Logger = new ConsoleLogger(LogLevel.Error)
