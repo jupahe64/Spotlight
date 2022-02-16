@@ -341,6 +341,9 @@ namespace Spotlight.ObjectRenderers
 #if ODYSSEY
                     if(mdl.Materials[shape.MaterialIndex].ShaderAssign.ShaderOptions.TryGetValue("vtxcolor_type", out ResString resString))
                         use_vtx_col = resString.String != "-1";
+#else
+                    if (mdl.Materials[shape.MaterialIndex].ShaderAssign.ShaderOptions.TryGetValue("VtxColorType", out ResString resString))
+                        use_vtx_col = resString.String == "0";
 #endif
                     Matrix4[] transforms = GetTransforms(mdl.Skeleton.Bones.Values.ToArray());
 
