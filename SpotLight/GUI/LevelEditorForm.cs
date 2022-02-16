@@ -323,6 +323,35 @@ namespace Spotlight.GUI
             };
         }
 
+        private void LevelGLControlModern_DragEnter(object sender, DragEventArgs e)
+        {
+            bool dataPresent = e.Data.GetDataPresent(DataFormats.FileDrop);
+            if (dataPresent)
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
+        private void LevelGLControlModern_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] array = (string[])e.Data.GetData(DataFormats.FileDrop);
+            HashSet<StageInfo> hashSet = new HashSet<StageInfo>();
+            foreach (string fileName in array)
+            {
+                if (SM3DWorldZone.TryGetStageInfo(fileName, out StageInfo? stageInfo))
+                {
+                    hashSet.Add(stageInfo.Value);
+                }
+            }
+            foreach (StageInfo loadingInfo in hashSet)
+            {
+                if (TryOpenZoneWithLoadingBar(loadingInfo, out SM3DWorldZone zone))
+                {
+                    this.OpenZone(zone);
+                }
+            }
+        }
+
         private void MainSceneListView_ListExited(object sender, ListEventArgs e)
         {
             currentScene.CurrentList = e.List;
