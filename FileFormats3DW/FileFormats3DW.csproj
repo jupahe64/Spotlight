@@ -28,6 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="nativelib\x64\yaz0.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="nativelib\x86\yaz0.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="yaz0.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
