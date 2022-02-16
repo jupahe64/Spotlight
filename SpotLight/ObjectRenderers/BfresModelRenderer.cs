@@ -47,30 +47,39 @@ namespace Spotlight.ObjectRenderers
             #region Shader Generation
             BfresShaderProgram = new ShaderProgram(
                     new FragmentShader(
-                        @"#version 330
+                  @"#version 330
                     uniform sampler2D tex;
                     uniform vec4 highlight_color;
                     in vec2 fragUV;
                     in vec4 fragColor;
+                    in vec3 fragNrm;
+                    uniform vec3 light_color = vec3(1.0,1.0,1.0);
+
                     void main(){
                         float hc_a   = highlight_color.w;
                         vec4 color = fragColor * texture(tex,fragUV);
-                        gl_FragColor = vec4(color.rgb * (1-hc_a) + highlight_color.rgb * hc_a, color.a);
-                        //gl_FragColor = vec4(color.a, color.a, color.a, 1);
-                    }"),
-                    new VertexShader(
-                        @"#version 330
+                        float light = 0.5;
+                        light += clamp(dot(fragNrm, vec3(0,1,0)), 0.0, 1.0);
+
+                        light = pow(light, 0.5);
+
+                        gl_FragColor = vec4(mix(color.rgb * light, highlight_color.rgb, hc_a), color.a);
+                    }"), new VertexShader(
+                  @"#version 330
                     layout(location = 0) in vec4 position;
                     layout(location = 1) in vec2 uv;
                     layout(location = 2) in vec4 color;
+                    layout(location = 3) in vec3 nrm;
                     uniform mat4 mtxMdl;
                     uniform mat4 mtxCam;
                     out vec2 fragUV;
                     out vec4 fragColor;
+                    out vec3 fragNrm;
 
                     void main(){
                         fragUV = uv;
                         fragColor = color;
+                        fragNrm = normalize(mat3(mtxMdl) * nrm);
                         gl_Position = mtxCam*mtxMdl*position;
                     }"));
             #endregion
@@ -401,7 +410,7 @@ namespace Spotlight.ObjectRenderers
 
                     indexBufferLengths[shapeIndex] = indices.Length;
 
-                    float[] bufferData = new float[6 * vec4Positions.Length];
+                    float[] bufferData = new float[9 * vec4Positions.Length];
 
                     int _i = 0;
                     for (int i = 0; i < vec4Positions.Length; i++)
@@ -501,7 +510,14 @@ namespace Spotlight.ObjectRenderers
                         }
                         else
                             bufferData[_i + 5] = white;
-                        _i += 6;
+
+                        if (vec4Normals.Length > 0)
+                        {
+                            bufferData[_i + 6] = nrm.X;
+                            bufferData[_i + 7] = nrm.Y;
+                            bufferData[_i + 8] = nrm.Z;
+                        }
+                        _i += 9;
                     }
                     int[] buffers = new int[2];
                     GL.GenBuffers(2, buffers);
@@ -513,12 +529,13 @@ namespace Spotlight.ObjectRenderers
                     GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
                     GL.BindBuffer(BufferTarget.ArrayBuffer, vaoBuffer);
-                    GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * 6 * vec4Positions.Length, bufferData, BufferUsageHint.StaticDraw);
+                    GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * bufferData.Length, bufferData, BufferUsageHint.StaticDraw);
 
                     vaos[shapeIndex] = new VertexArrayObject(vaoBuffer, indexBuffer);
-                    vaos[shapeIndex].AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 6, 0);
-                    vaos[shapeIndex].AddAttribute(1, 2, VertexAttribPointerType.Float, false, sizeof(float) * 6, sizeof(float) * 3);
-                    vaos[shapeIndex].AddAttribute(2, 4, VertexAttribPointerType.UnsignedByte, true, sizeof(float) * 6, sizeof(float) * 5);
+                    vaos[shapeIndex].AddAttribute(0, 3, VertexAttribPointerType.Float, false, sizeof(float) * 9, 0);
+                    vaos[shapeIndex].AddAttribute(1, 2, VertexAttribPointerType.Float, false, sizeof(float) * 9, sizeof(float) * 3);
+                    vaos[shapeIndex].AddAttribute(2, 4, VertexAttribPointerType.UnsignedByte, true, sizeof(float) * 9, sizeof(float) * 5);
+                    vaos[shapeIndex].AddAttribute(3, 3, VertexAttribPointerType.Float, false, sizeof(float) * 9, sizeof(float) * 6);
 
                     vaos[shapeIndex].Submit();
 
@@ -980,7 +997,7 @@ namespace Spotlight.ObjectRenderers
             int tex = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, tex);
 
-
+            
             //if (texture.Format == GX2SurfaceFormat.T_BC4_UNorm)
             //{
             //    deswizzled = DDSCompressor.DecompressBC4_JPH(deswizzled, (int)texture.Width, (int)texture.Height, false);
