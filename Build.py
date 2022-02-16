@@ -36,11 +36,11 @@ for file in files:
 for command in commands:
     subprocess.call(command, shell=True)
 
-os.chdir("SpotLight\\bin\\x64\\Moonlight_RELEASE")
+os.chdir("SpotLight\\bin\\Moonlight_RELEASE")
 
 subprocess.call(f'7z a "{home_dir}\\Moonlight.zip" *.* -r')
 
-os.chdir(f"{Path(os.getcwd()).parent.parent.absolute()}\\x86\\Spotlight_RELEASE")
+os.chdir(f"{Path(os.getcwd()).parent.parent.absolute()}\\Spotlight_RELEASE")
 
 subprocess.call(f'7z a "{home_dir}\\Spotlight.zip" *.* -r')
 
