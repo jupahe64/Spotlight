@@ -21,7 +21,7 @@ namespace BYAML
 
         public DictionaryNode CreateDictionaryNode(object valueRepresentation = null) => new DictionaryNode(this, valueRepresentation);
 
-        public struct DictionaryNode
+        public class DictionaryNode
         {
             List<(string, Entry)> _entries;
             ByamlNodeWriter _byamlNodeWriter;
@@ -162,7 +162,7 @@ namespace BYAML
 
         public ArrayNode CreateArrayNode(object valueRepresentation = null) => new ArrayNode(this, valueRepresentation);
 
-        public struct ArrayNode
+        public class ArrayNode
         {
             List<Entry> _entries;
             ByamlNodeWriter _byamlNodeWriter;
