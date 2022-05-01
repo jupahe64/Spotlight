@@ -34,6 +34,14 @@ namespace BYAML
                 return _iterator.ReadNodeValue(_iterator._reader, NodeType);
             }
 
+            public override string ToString()
+            {
+                if (NodeType != ByamlNodeType.Dictionary && NodeType != ByamlNodeType.Array && NodeType != ByamlNodeType.Unknown)
+                    return $"{Key},{Parse()}";
+                else
+                    return $"{Key},..";
+            }
+
             public IEnumerable<DictionaryEntry> IterDictionary()
             {
                 _iterator._reader.Position = Position;
@@ -83,6 +91,14 @@ namespace BYAML
             {
                 _iterator._reader.Position = Position;
                 return _iterator.ReadNodeValue(_iterator._reader, NodeType);
+            }
+
+            public override string ToString()
+            {
+                if (NodeType != ByamlNodeType.Dictionary && NodeType != ByamlNodeType.Array && NodeType != ByamlNodeType.Unknown)
+                    return $"{Index},{Parse()}";
+                else
+                    return $"{Index},..";
             }
 
             public IEnumerable<DictionaryEntry> IterDictionary()
