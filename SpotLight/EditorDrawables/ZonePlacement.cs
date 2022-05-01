@@ -43,9 +43,9 @@ namespace Spotlight.EditorDrawables
         public Vector3 Rotation { get; set; } = Vector3.Zero;
 
         [PropertyCapture.Undoable]
-        public string Layer { get; set; }
+        public Layer Layer { get; set; }
 
-        public ZonePlacement(Vector3 pos, Vector3 rot, string layer, SM3DWorldZone zone)
+        public ZonePlacement(Vector3 pos, Vector3 rot, Layer layer, SM3DWorldZone zone)
             : base(pos)
         {
             Rotation = rot;
@@ -56,12 +56,16 @@ namespace Spotlight.EditorDrawables
 
             ZoneLookupName = zone.StageName;
 
+#if ODYSSEY
+            Zone.UpdateRenderBatch(0);
+#else
             Zone.UpdateRenderBatch();
+#endif
         }
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
-            if (!SceneDrawState.EnabledLayers.Contains(Layer))
+            if (Layer!=null && !SceneDrawState.EnabledLayers.Contains(Layer))
             {
                 control.SkipPickingColors(1);
                 return;
@@ -115,12 +119,12 @@ namespace Spotlight.EditorDrawables
                 return 1;
         }
 
-        public void Save(ByamlNodeWriter writer, DictionaryNode objNode, int zoneID)
+        public void Save(DictionaryNode objNode, int zoneID)
         {
             objNode.AddDynamicValue("Comment", null);
             objNode.AddDynamicValue("Id", "zone" + zoneID);
             objNode.AddDynamicValue("IsLinkDest", false);
-            objNode.AddDynamicValue("LayerConfigName", Layer);
+            objNode.AddDynamicValue("LayerConfigName", Layer.Name);
 
             {
                 objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
@@ -198,17 +202,21 @@ namespace Spotlight.EditorDrawables
         {
             PropertyCapture? capture = null;
 
+            SM3DWorldZone zone;
+
             ZonePlacement placement;
             EditorSceneBase scene;
             public PropertyProvider(ZonePlacement placement, EditorSceneBase scene)
             {
                 this.placement = placement;
                 this.scene = scene;
+
+                zone = ((SM3DWorldScene)scene).EditZone;
             }
 
             public void DoUI(IObjectUIControl control)
             {
-                placement.Layer = control.TextInput(placement.Layer, "Layer");
+                placement.Layer = zone.GetOrCreateLayer(control.TextInput(placement.Layer.Name, "Layer"));
 
                 if (WinInput.Keyboard.IsKeyDown(WinInput.Key.LeftShift))
                     placement.Position = control.Vector3Input(placement.Position, "Position", 1, 16);

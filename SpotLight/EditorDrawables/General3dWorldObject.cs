@@ -21,13 +21,13 @@ using static BYAML.ByamlNodeWriter;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 using WinInput = System.Windows.Input;
 using Spotlight.ObjectRenderers;
+using System.Diagnostics;
 
 namespace Spotlight.EditorDrawables
 {
     /// <summary>
     /// General object for SM3DW
     /// </summary>
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class General3dWorldObject : TransformableObject, I3dWorldObject
     {
         public new static Vector4 selectColor = new Vector4(EditableObject.selectColor.Xyz, 0.5f);
@@ -69,7 +69,7 @@ namespace Spotlight.EditorDrawables
         public string ClassName { get; set; }
 
         [PropertyCapture.Undoable]
-        public string Layer { get; set; } = "Common";
+        public Layer Layer { get; set; }
 
         /// <summary>
         /// All places where this object is linked to
@@ -78,6 +78,10 @@ namespace Spotlight.EditorDrawables
 
         [PropertyCapture.Undoable]
         public Vector3 DisplayTranslation { get; set; }
+        [PropertyCapture.Undoable]
+        public Vector3 DisplayScale { get; set; }
+        [PropertyCapture.Undoable]
+        public Vector3 DisplayRotation { get; set; }
         [PropertyCapture.Undoable]
         public string DisplayName { get; set; }
 
@@ -106,8 +110,10 @@ namespace Spotlight.EditorDrawables
             ObjectName = info.ObjectName;
             ModelName = info.ModelName ?? string.Empty;
             ClassName = info.ClassName;
-            Layer = info.Layer;
+            Layer = zone.GetOrCreateLayer(info.LayerName);
             DisplayTranslation = info.DisplayTranslation;
+            DisplayRotation = info.DisplayRotation;
+            DisplayScale = info.DisplayScale;
             DisplayName = info.DisplayName;
 
             comment = info.Comment;
@@ -132,7 +138,7 @@ namespace Spotlight.EditorDrawables
             Vector3 pos, Vector3 rot, Vector3 scale, 
             string iD, string objectName, string modelName, string className, 
             Vector3 displayTranslation, string displayName,
-            Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
+            Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone, Layer layer)
             : base(pos,rot,scale)
         {
             ID = iD;
@@ -143,6 +149,7 @@ namespace Spotlight.EditorDrawables
             DisplayName = displayName;
             Links = links;
             Properties = properties;
+            Layer = layer;
 
             DoModelLoad();
 
@@ -161,15 +168,18 @@ namespace Spotlight.EditorDrawables
         //}
 
         #region I3DWorldObject implementation
-        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest = false)
+        public void Save(LevelObjectsWriter writer, DictionaryNode objNode)
         {
+#if ODYSSEY
+            objNode.AddDynamicValue("comment", comment);
+#else
             objNode.AddDynamicValue("Comment", comment);
+#endif
             objNode.AddDynamicValue("Id", ID);
-            objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", Layer);
+            objNode.AddDynamicValue("IsLinkDest", LinkDestinations.Count > 0);
+            objNode.AddDynamicValue("LayerConfigName", Layer.Name);
 
-            alreadyWrittenObjs.Add(this);
-            ObjectUtils.SaveLinks(Links, alreadyWrittenObjs, writer, objNode, layers);
+            writer.SaveLinks(Links, objNode);
 
             objNode.AddDynamicValue("ModelName", string.IsNullOrEmpty(ModelName) ? null : ModelName);
             objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(Rotation), true);
@@ -190,6 +200,20 @@ namespace Spotlight.EditorDrawables
                         objNode.AddDynamicValue(property.Key, property.Value, true);
                 }
             }
+        }
+
+        public bool Equals(I3dWorldObject obj)
+        {
+            return obj is General3dWorldObject @object &&
+                   Position.Equals(@object.Position) &&
+                   Rotation.Equals(@object.Rotation) &&
+                   Scale.Equals(@object.Scale) &&
+                   ObjectName == @object.ObjectName &&
+                   ModelName == @object.ModelName &&
+                   ClassName == @object.ClassName &&
+                   Layer == @object.Layer &&
+                   DisplayTranslation.Equals(@object.DisplayTranslation) &&
+                   ObjectUtils.EqualProperties(Properties, @object.Properties);
         }
 
         public void DeleteSelected3DWorldObject(List<I3dWorldObject> objectsToDelete)
@@ -241,7 +265,7 @@ namespace Spotlight.EditorDrawables
 
                 ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
-                destZone);
+                destZone, Layer);
         }
 
         public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
@@ -269,7 +293,7 @@ namespace Spotlight.EditorDrawables
             }
         }
 
-        #endregion
+#endregion
 
         
 
@@ -294,12 +318,12 @@ namespace Spotlight.EditorDrawables
                     control.SkipPickingColors(1);
                     return;
                 }
-            }
 
-            if (!SceneDrawState.EnabledLayers.Contains(Layer))
-            {
-                control.SkipPickingColors(1);
-                return;
+                if (!SceneDrawState.EnabledLayers.Contains(Layer))
+                {
+                    control.SkipPickingColors(1);
+                    return;
+                }
             }
 
             bool hovered = editorScene.Hovered == this;
@@ -419,20 +443,6 @@ namespace Spotlight.EditorDrawables
             return true;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is General3dWorldObject @object &&
-                   Position.Equals(@object.Position) &&
-                   Rotation.Equals(@object.Rotation) &&
-                   Scale.Equals(@object.Scale) &&
-                   ObjectName == @object.ObjectName &&
-                   ModelName == @object.ModelName &&
-                   ClassName == @object.ClassName &&
-                   Layer == @object.Layer &&
-                   DisplayTranslation.Equals(@object.DisplayTranslation) &&
-                   ObjectUtils.EqualProperties(Properties, @object.Properties);
-        }
-
         protected class General3dWorldObjectBatch : IBatchRenderer
         {
             public Dictionary<Vector4, List<Matrix4>> colorCubes = new Dictionary<Vector4, List<Matrix4>>();
@@ -538,6 +548,7 @@ namespace Spotlight.EditorDrawables
             bool showClassNameAlias;
             string classNameInfo;
             bool showClassNameInfo;
+            private LayerUIField layerUIField;
 
             public BasicPropertyUIContainer(General3dWorldObject obj, EditorSceneBase scene)
             {
@@ -547,6 +558,8 @@ namespace Spotlight.EditorDrawables
                 DB_classNames = Program.ParameterDB.ObjectParameters.Keys.ToArray();
 
                 UpdateClassNameInfo();
+
+                layerUIField = new LayerUIField((SM3DWorldScene)scene, obj);
             }
 
             void UpdateClassNameInfo()
@@ -581,7 +594,7 @@ namespace Spotlight.EditorDrawables
                 if(obj.comment!=null)
                     control.TextInput(obj.comment, "Comment");
 
-                obj.Layer = control.TextInput(obj.Layer, "Layer");
+                layerUIField.DoUI(control);
                 obj.ObjectName = control.DropDownTextInput("Object Name", obj.ObjectName, DB_objectNames);
 
                 if(showClassNameInfo)
@@ -639,6 +652,8 @@ namespace Spotlight.EditorDrawables
                 obj.DoModelLoad();
 
                 UpdateClassNameInfo();
+
+                layerUIField.OnValueSet();
 
                 scene.Refresh();
             }
@@ -703,7 +718,6 @@ namespace Spotlight.EditorDrawables
 
                 if (control.Button("Edit"))
                 {
-                    ObjectParameterForm.TypeDef.Localize();
                     List<(ObjectParameterForm.TypeDef typeDef, string name)> parameterInfos = new List<(ObjectParameterForm.TypeDef typeDef, string name)>();
 
                     List<KeyValuePair<string, dynamic>> otherParameters = new List<KeyValuePair<string, dynamic>>();
@@ -918,6 +932,58 @@ namespace Spotlight.EditorDrawables
             public void UpdateProperties()
             {
 
+            }
+        }
+
+        public class LayerUIField
+        {
+            private readonly SM3DWorldScene scene;
+            private readonly I3dWorldObject obj;
+
+            string[] layerNames;
+            readonly List<Layer> layerList = new List<Layer>();
+
+            public LayerUIField(SM3DWorldScene scene, I3dWorldObject obj)
+            {
+                layerList = scene.EditZone.availibleLayers;
+
+                layerNames = layerList.Select(x=>x.Name).ToArray();
+                this.scene = scene;
+                this.obj = obj;
+            }
+
+            public void DoUI(IObjectUIControl control)
+            {
+                bool layerNamesInvalid = false;
+
+                if (layerList.Count != layerNames.Length)
+                    layerNamesInvalid = true;
+                else
+                {
+                    for (int i = 0; i < layerNames.Length; i++)
+                    {
+                        if (layerNames[i] != layerList[i].Name)
+                        {
+                            layerNamesInvalid = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (layerNamesInvalid)
+                    layerNames = layerList.Select(x=>x.Name).ToArray();
+
+
+                obj.Layer = scene.EditZone.GetOrCreateLayer(control.DropDownTextInput("Layer", obj.Layer.Name, layerNames, false));
+            }
+
+            public void OnValueSet()
+            {
+                if (!layerList.Contains(obj.Layer))
+                {
+                    layerList.Add(obj.Layer);
+                    scene.SignalLayersChanged();
+                }
             }
         }
     }

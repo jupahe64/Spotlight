@@ -7,6 +7,7 @@ using Spotlight.EditorDrawables;
 using Syroot.BinaryData;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using SZS;
 using static BYAML.ByamlIterator;
+using static BYAML.ByamlNodeWriter;
 using static GL_EditorFramework.EditorDrawables.EditorSceneBase;
 
 namespace Spotlight.Level
@@ -22,6 +24,21 @@ namespace Spotlight.Level
     public class ObjectList : List<I3dWorldObject>
     {
 
+    }
+
+    public class Layer
+    {
+        public Layer(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     public class ZoneRenderBatch
@@ -50,9 +67,75 @@ namespace Spotlight.Level
     {
         public override string ToString() => StageName;
 
+        public Layer CommonLayer { get; private set; }
+
+        public Layer GetOrCreateLayer(string layerName)
+        {
+            if(!_layers.TryGetValue(layerName, out Layer layer))
+            {
+                layer = new Layer(layerName);
+
+                _layers.Add(layerName, layer);
+            }
+
+            return layer;
+        }
+
+        public void RenameLayer(Layer layer, string newName)
+        {
+            _layers.Remove(layer.Name);
+
+            layer.Name = newName;
+
+            _layers.Add(newName, layer);
+        }
+
+        private Dictionary<string, Layer> _layers = new Dictionary<string, Layer>();
 
 
-    #region Constants
+        public HashSet<Layer> visibleLayersCache = new HashSet<Layer>();
+
+        public HashSet<Layer> GetVisibleLayers(ISet<Layer> enabledLayers)
+        {
+#if ODYSSEY
+            var activeLayers = activeLayersPerScenario[CurrentScenario];
+#else
+            var activeLayers = availibleLayers;
+#endif
+
+            bool dirty = false;
+
+            foreach (Layer layer in availibleLayers)
+            {
+                bool expected = activeLayers.Contains(layer) && enabledLayers.Contains(layer);
+
+                bool actual = visibleLayersCache.Contains(layer);
+
+
+                if (expected!=actual)
+                {
+                    dirty = true;
+                    break;
+                }
+            }
+
+
+
+            if(dirty)
+            {
+                visibleLayersCache = new HashSet<Layer>();
+
+                foreach (var layer in activeLayers)
+                {
+                    if (enabledLayers.Contains(layer))
+                        visibleLayersCache.Add(layer);
+                }
+            }
+
+            return visibleLayersCache;
+        }
+
+#region Constants
         public const string COMBINED_SUFFIX = ".szs"; //Used in the Captain Toad Treasure Tracker Update and Bowsers Fury
 
 #if ODYSSEY
@@ -77,11 +160,11 @@ namespace Spotlight.Level
         public const string DESIGN_PREFIX = "Design_";
         public const string SOUND_PREFIX = "Sound_";
         private const string BYML_SUFFIX = ".byml";
-    #endregion
+#endregion
 
 
 
-    #region Document State
+#region Document State
         private DateTime lastSaveTime;
         bool isSaved = true;
 
@@ -90,18 +173,14 @@ namespace Spotlight.Level
         public readonly Stack<IRevertable> undoStack = new Stack<IRevertable>();
         public readonly Stack<RedoEntry> redoStack = new Stack<RedoEntry>();
 
-        public HashSet<string> enabledLayers = new HashSet<string>();
-
 #if ODYSSEY
-        private HashSet<string>[] enabledLayersPerScenario = new HashSet<string>[15];
+        public HashSet<Layer>[] activeLayersPerScenario = new HashSet<Layer>[15];
 
         public int CurrentScenario { get; private set; } = 0;
 
         public void SetScenario(int scenario)
         {
             CurrentScenario = scenario;
-
-            enabledLayers = enabledLayersPerScenario[scenario];
         }
 #endif
 
@@ -124,15 +203,21 @@ namespace Spotlight.Level
                 }
             }
         }
-    #endregion
+#endregion
 
 
 
-    #region ZoneRenderBatch
+#region ZoneRenderBatch
         public readonly ZoneRenderBatch ZoneBatch = new ZoneRenderBatch();
 
-        public void UpdateRenderBatch()
+#if ODYSSEY
+        public void UpdateRenderBatch(int scenario)
         {
+            SetScenario(scenario);
+#else
+            public void UpdateRenderBatch()
+        {
+#endif
             ZoneBatch.Clear();
 
             SceneObjectIterState.InLinks = false;
@@ -143,7 +228,9 @@ namespace Spotlight.Level
 
                 foreach (I3dWorldObject obj in objList)
                 {
-                    if(enabledLayers.Contains(obj.Layer))
+                    #if ODYSSEY
+                    if(activeLayersPerScenario[scenario].Contains(obj.Layer))
+                    #endif
                         obj.AddToZoneBatch(ZoneBatch);
                 }
             }
@@ -151,11 +238,11 @@ namespace Spotlight.Level
             foreach (I3dWorldObject obj in LinkedObjects)
                 obj.AddToZoneBatch(ZoneBatch);
         }
-    #endregion
+#endregion
 
 
 
-    #region public getters
+#region public getters
         /// <summary>
         /// Name of this Zone/Stage/Island
         /// </summary>
@@ -164,11 +251,11 @@ namespace Spotlight.Level
         /// The Directory this Zone/Stage/Island is stored in
         /// </summary>
         public string Directory => StageInfo.Directory;
-    #endregion
+#endregion
 
 
 
-    #region Stage info
+#region Stage info
         public StageInfo StageInfo { get; private set; }
         public ByteOrder ByteOrder { get; private set; }
 
@@ -183,18 +270,18 @@ namespace Spotlight.Level
         };
 
         private StageArchiveInfo[] stageArchiveInfos;
-    #endregion
+#endregion
 
 
 
-    #region Objects
+#region Objects
         public Dictionary<string, ObjectList> ObjLists = new Dictionary<string, ObjectList>();
 
         public ObjectList LinkedObjects = new ObjectList();
 
         public readonly List<ZonePlacement> ZonePlacements = new List<ZonePlacement>();
 
-        public List<string> availibleLayers = new List<string>();
+        public List<Layer> availibleLayers = new List<Layer>();
 
         private ulong highestObjID = 0;
 
@@ -221,11 +308,11 @@ namespace Spotlight.Level
         public string NextObjID() => "obj" + (++highestObjID);
 
         public string NextRailID() => "rail" + (++highestRailID);
-        #endregion
+#endregion
 
 
 
-    #region check outside changes and resolve
+#region check outside changes and resolve
         public void CheckZoneNameChanges()
         {
             foreach (var placement in ZonePlacements)
@@ -291,12 +378,12 @@ namespace Spotlight.Level
 
             lastSaveTime = DateTime.Now;
         }
-    #endregion
+#endregion
 
 
 
-    #region saving/loading
-        #region common
+#region saving/loading
+#region common
         class StageArchiveInfo
         {
             public StageArchiveInfo(string fileName, int extraFileIndex, StageBymlInfo[] bymlInfos)
@@ -370,9 +457,9 @@ namespace Spotlight.Level
         {
             loadedZones.Remove(StageInfo);
         }
-        #endregion
+#endregion
 
-        #region loading
+#region loading
         //these methods just cover getting the bymls that contain the object placements and all the extra files
 
         //for actually parsing the byml and getting it's objects it uses the LevelReader class
@@ -413,7 +500,7 @@ namespace Spotlight.Level
             Dictionary<string, SarcData> loadedArchives = new Dictionary<string, SarcData>();
             List<StageArchiveInfo> loadInfos = new List<StageArchiveInfo>();
 
-            #region local helper functions
+#region local helper functions
             StageBymlInfo[] GenerateFileInfos(SarcData sarc, params string[] categoryNames)
             {
                 List<StageBymlInfo> infos = new List<StageBymlInfo>();
@@ -447,7 +534,7 @@ namespace Spotlight.Level
 
                 loadInfos.Add(new StageArchiveInfo(arcName, extraFilesIndex, GenerateFileInfos(sarc, categoryName)));
             }
-            #endregion
+#endregion
 
 
             switch (stageInfo.StageArcType)
@@ -474,12 +561,18 @@ namespace Spotlight.Level
                     break;
             }
 
+            if (!hasStageByml)
+            {
+                zone = null;
+
+                return false;
+            }
+
             zone = new SM3DWorldZone(loadInfos.ToArray(), stageInfo, byteOrder, loadedArchives);
 
-            if (hasStageByml)
-                loadedZones.Add(stageInfo, zone);
+            loadedZones.Add(stageInfo, zone);
 
-            return hasStageByml;
+            return true;
         }
 
         private SM3DWorldZone(StageArchiveInfo[] stageArchiveInfos, StageInfo stageInfo, ByteOrder byteOrder, Dictionary<string, SarcData> loadedArchives)
@@ -542,34 +635,87 @@ namespace Spotlight.Level
                 ExtraFiles[extraFilesIndex].Add(fileEntry.Key, fileEntry.Value);
         }
 
+        private class ScenarioCombination
+        {
+            public ushort bitField;
+
+            public readonly HashSet<Layer> layers = new HashSet<Layer>();
+
+            public readonly HashSet<Layer> supersetLayers = new HashSet<Layer>();
+        }
+
         
         private void EvaluateLayers(LevelReader levelReader)
         {
 #if ODYSSEY
-            for (int i = 0; i < enabledLayersPerScenario.Length; i++)
+
+
+            //Welcome to madness,
+            //the goal of this code is to reverse the process of nindendos "level compilation":
+
+            //In Odyssey all levels are basically 15 levels packed in one (one for each scenario)
+            //which makes it very difficult to understand and especially design levels with multiple scenarios
+            //but thankfully nintendo still left the Layer names in which, as we know from galaxy, are what tells the game which objects appear in which scenario
+            //2 problems there:
+            //  1. Unlike galaxy there is no file telling us which layers are active for which scenario
+            //     (ScenarioInfo.byml exists in some stages but I feel like they gave up on it pretty fast)
+            //     so we have to somehow create it ourselves
+            //  
+            //  2. Custom levels exist and they don't follow this layer system at all (I mean how would they, this system was never really established)
+            //    yet we still need to be able to load and save them otherwise people would be very unhappy
+            //    so we have to somehow transform them into this system
+
+            //so what we want is basically a loopup table where for each scenario you can see which layers are active for that scenario
+
+            //which means for every layer we need to find out what scenarios it appears in AND
+            //make sure that every object that has that layer ACTUALLY appears in all of those and ONLY those scenarios
+
+            //three steps are needed:
+            //  1. Collect all objects in the level (with all scenarios they appear in) and merge duplicates which are the same object but in different scenarios
+            //     this part has already been done by the level reader so thank you very much
+            //
+            //  2. Figure out which scenario combination is used by the most objects on the same layer (ideally all objects on the same layer appear on the same scenarios)
+            //     That combination is now the official combination for that layer, other layers are allowed to have the same combination
+            //     but every object on that layer needs to have that exact combination
+            //     which brings us to
+            //
+            //  3. Resolve all conflicts: every object that has a scenario combination that doesn't match it's layer (or no layer at all)
+            //     has to be moved to a different layer that HAS this scenario combination
+            //     if no such layer exist create a new one
+
+
+            //got that? ok just 2 more things
+
+            //linked objects only appear on the scenarios where they appear in links 
+
+
+
+
+
+            for (int i = 0; i < activeLayersPerScenario.Length; i++)
             {
-                enabledLayersPerScenario[i] = new HashSet<string>();
+                activeLayersPerScenario[i] = new HashSet<Layer>();
             }
 
 
-            var scenarioBitFieldsPerLayerWithCounts = new Dictionary<string, //layer
+            var scenarioBitFieldsPerLayerWithCounts = new Dictionary<Layer, //layer
                                                  Dictionary<ushort, int>>(); //scenarioBitField, count
 
-            var scenarioBitFieldsPerLayerWithCounts_linked = new Dictionary<string, //layer
+            var scenarioBitFieldsPerLayerWithCounts_linked = new Dictionary<Layer, //layer
                                                         Dictionary<ushort, int>>(); //scenarioBitField, count
 
             var scenarioBitFields = new HashSet<ushort>();
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            void CountScenarioBits(in string layer, in ushort scenarioBits)
+            void CountScenarioBits(in Layer layer, in ushort scenarioBits)
             {
-                scenarioBitFieldsPerLayerWithCounts.Require(layer).AddOne(scenarioBits);
+                scenarioBitFieldsPerLayerWithCounts.GetOrCreate(layer).InitOrAddOne(scenarioBits);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            void CountScenarioBitsInLinked(in string layer, in ushort scenarioBits)
+            void CountScenarioBitsInLinked(in Layer layer, in ushort scenarioBits)
             {
-                scenarioBitFieldsPerLayerWithCounts_linked.Require(layer).AddOne(scenarioBits);
+                scenarioBitFieldsPerLayerWithCounts_linked.GetOrCreate(layer).InitOrAddOne(scenarioBits);
             }
 
 
@@ -593,43 +739,47 @@ namespace Spotlight.Level
                 scenarioBitFields.Add(scenarioBits);
             }
 
-            var layersPerBitFieldWithCounts = new Dictionary<ushort, List<(string layer, int count)>>();
+            var layersPerBitFieldWithObjectCounts = new Dictionary<ushort, List<(Layer layer, int count)>>();
+
+
+            //only count the linked objects if they have a layer that's exclusive to linked objects
 
             foreach (var (layer, bitFieldsWithCounts) in scenarioBitFieldsPerLayerWithCounts_linked
-                .Where(x=>!scenarioBitFieldsPerLayerWithCounts.ContainsKey(x.Key))
+                //.Where(x=>!scenarioBitFieldsPerLayerWithCounts.ContainsKey(x.Key))
                 .Concat(scenarioBitFieldsPerLayerWithCounts))
             {
                 if (bitFieldsWithCounts.Count == 0)
                     continue;
 
-                availibleLayers.Add(layer);
+                if(!availibleLayers.Contains(layer))
+                    availibleLayers.Add(layer);
 
-                ushort maxBitfield = 0;
-                int maxCount = 0;
+                ushort dominantBitfield = 0;
+                int dominantObjectCount = 0;
 
                 foreach (var (bitField, count) in bitFieldsWithCounts)
                 {
-                    if (count>maxCount)
+                    if (count>dominantObjectCount)
                     {
-                        maxBitfield = bitField;
-                        maxCount = count;
+                        dominantBitfield = bitField;
+                        dominantObjectCount = count;
                     }
                 }
 
-                layersPerBitFieldWithCounts.Require(maxBitfield).Add((layer, maxCount));
+                layersPerBitFieldWithObjectCounts.GetOrCreate(dominantBitfield).Add((layer, dominantObjectCount));
             }
 
-            #region Calculate including layers per bitfield
+#region Calculate including layers per bitfield
             //should perform well enough for all levels since there are
             //not too many different scenarioBits
-            var includingLayersPerBitField = new Dictionary<ushort, HashSet<string>>();
+            var includingLayersPerBitField = new Dictionary<ushort, HashSet<Layer>>();
 
             foreach (var bitField in scenarioBitFields)
             {
-                includingLayersPerBitField.Add(bitField, new HashSet<string>(bitField));
+                includingLayersPerBitField.Add(bitField, new HashSet<Layer>(bitField));
             }
 
-            foreach (var (bitField, layersWithCounts) in layersPerBitFieldWithCounts)
+            foreach (var (bitField, layersWithCounts) in layersPerBitFieldWithObjectCounts)
             {
                 foreach (var (keyBitField, includingLayers) in includingLayersPerBitField)
                 {
@@ -640,15 +790,15 @@ namespace Spotlight.Level
                 }
             }
 
-            #endregion
+#endregion
 
-            var layersPerBitField_lookUp = new Dictionary<ushort, (string preferred, HashSet<string> accepted)>();
+            var layersPerBitField_lookUp = new Dictionary<ushort, (Layer preferred, HashSet<Layer> accepted)>();
 
-            foreach (var (bitField, unsortedLayers) in layersPerBitFieldWithCounts)
+            foreach (var (bitField, unsortedLayers) in layersPerBitFieldWithObjectCounts)
             {
-                string maxLayer = null;
+                Layer maxLayer = null;
 
-                HashSet<string> layerSet = new HashSet<string>();
+                HashSet<Layer> layerSet = new HashSet<Layer>();
 
                 int max = 0;
 
@@ -666,20 +816,25 @@ namespace Spotlight.Level
                 layersPerBitField_lookUp.Add(bitField, (maxLayer, layerSet));
             }
 
-            var emptySet = new HashSet<string>();
+            var emptySet = new HashSet<Layer>();
 
 
 
-            #region resolve conflicts
+#region resolve conflicts 
+            //an objects layer has to tell clearly what scenarios the object appears on (critical for saving),
+            //but multiple layers can have the same active scenarios, no problem/conflict there
 
 
-            string HandleLayer(string layer, ushort scenarioBits)
+            Layer HandleLayer(Layer layer, ushort scenarioBits)
             {
-                (string preferred, HashSet<string> accepted) entry;
+                bool scenarioBitsHaveLayer = layersPerBitField_lookUp.TryGetValue(scenarioBits, out (Layer preferred, HashSet<Layer> accepted) entry);
 
-                if (!layersPerBitField_lookUp.TryGetValue(scenarioBits, out entry))
+                //no layer exists yet that has this scenario configuration
+                if (!scenarioBitsHaveLayer)
                 {
-                    string newLayer = GenerateLayerName(scenarioBits);
+                    //TODO handle in a better way
+
+                    Layer newLayer = GetOrCreateLayer(GenerateLayerName(scenarioBits));
 
                     entry = (newLayer, emptySet);
 
@@ -690,22 +845,29 @@ namespace Spotlight.Level
 
                     foreach (var scenario in BitUtils.AllSetBits(scenarioBits))
                     {
-                        enabledLayersPerScenario[scenario].Add(newLayer);
+                        activeLayersPerScenario[scenario].Add(newLayer);
                     }
+
+                    return newLayer;
                 }
 
+
+                //layer and scenario bits don't match up
                 if (!entry.accepted.Contains(layer))
                 {
+                    //move to the most likely layer
                     return entry.preferred;
                 }
 
+                //
                 return layer;
             }
 
             foreach (var (obj, scenarioBits, isLinked) in levelReader.GetObjectsWithScenarioBits())
             {
                 if (isLinked && includingLayersPerBitField.TryGetValue(scenarioBits, out var layers) && layers.Contains(obj.Layer))
-                    //the objects exists in other scenarios it's just not linked there, that's why the scenarioBits are incorrect
+                    //the object "exists" in other scenarios it's just not linked there and therefore didn't get saved on those,
+                    //that's why the scenarioBits are incorrect
                     continue; //so we can ignore it
 
                 obj.Layer = HandleLayer(obj.Layer, scenarioBits);
@@ -715,32 +877,38 @@ namespace Spotlight.Level
             {
                 placement.Layer = HandleLayer(placement.Layer, scenarioBits);
             }
-            #endregion
+#endregion
+
+
+
+
 #else
             availibleLayers = levelReader.readLayers.ToList();
 #endif
 
-            List<string> commons = new List<string>();
-            List<string> scenarios = new List<string>();
-            List<string> others = new List<string>();
+            List<Layer> commons = new List<Layer>();
+            List<Layer> scenarios = new List<Layer>();
+            List<Layer> others = new List<Layer>();
 
             foreach (var layer in availibleLayers)
             {
-                if (layer.StartsWith("Common"))
+                if (layer.Name.StartsWith("Common"))
                     commons.Add(layer);
-                else if (layer.StartsWith("Scenario"))
+                else if (layer.Name.StartsWith("Scenario"))
                     scenarios.Add(layer);
                 else
                     others.Add(layer);
             }
 
-            commons.Sort();
-            scenarios.Sort();
-            others.Sort();
+            commons.Sort((x,y) => string.CompareOrdinal( x.Name, y.Name));
+            scenarios.Sort((x, y) => string.CompareOrdinal(x.Name, y.Name));
+            others.Sort((x, y) => string.CompareOrdinal(x.Name, y.Name));
 
             availibleLayers = commons;
             availibleLayers.AddRange(scenarios);
             availibleLayers.AddRange(others);
+
+            CommonLayer = commons[0];
 
 #if ODYSSEY
 #region calculate enabled layers per scenario
@@ -749,14 +917,11 @@ namespace Spotlight.Level
             {
                 foreach (var index in BitUtils.AllSetBits(bitField))
                 {
-                    enabledLayersPerScenario[index].UnionWith(layers);
+                    activeLayersPerScenario[index].UnionWith(layers);
                 }
             }
 #endregion
 
-            enabledLayers = enabledLayersPerScenario[0];
-#else
-            enabledLayers = availibleLayers.ToHashSet();
 #endif
         }
 
@@ -815,9 +980,9 @@ namespace Spotlight.Level
             string newLayer = sb.ToString().Trim('_');
             return newLayer;
         }
-        #endregion
+#endregion
 
-        #region saving
+#region saving
         /// <summary>
         /// Saves this <see cref="SM3DWorldZone"/> to the FileSystem
         /// </summary>
@@ -999,14 +1164,29 @@ namespace Spotlight.Level
         {
             ByamlNodeWriter writer = new ByamlNodeWriter(stream, false, ByteOrder, 1);
 
+            Dictionary<I3dWorldObject, DictionaryNode> alreadyWrittenObjs = new Dictionary<I3dWorldObject, DictionaryNode>();
+
 #if ODYSSEY
             ByamlNodeWriter.ArrayNode rootNode = writer.CreateArrayNode();
 
             for (int scenario = 0; scenario < 15; scenario++)
             {
+                if (alreadyWrittenObjs.Count > 0)
+                {
+                    var keysToRemove = alreadyWrittenObjs.Keys.Where(x => x.Links != null).ToArray();
+
+                    foreach (var key in keysToRemove)
+                        alreadyWrittenObjs.Remove(key);
+                }
+
+                LevelObjectsWriter objectsWriter = new LevelObjectsWriter(activeLayersPerScenario[scenario], writer, LinkedObjects, alreadyWrittenObjs);
+                
+
+                Console.WriteLine("saving objects in scenario "+scenario);
+
                 ByamlNodeWriter.DictionaryNode scenarioNode = writer.CreateDictionaryNode();
 
-                SaveObjectLists(scenarioNode, writer, prefix, saveZonePlacements, enabledLayersPerScenario[scenario]);
+                SaveObjectLists(scenarioNode, objectsWriter, prefix, saveZonePlacements);
 
                 rootNode.AddDictionaryNodeRef(scenarioNode, true);
             }
@@ -1015,8 +1195,13 @@ namespace Spotlight.Level
 #else
             ByamlNodeWriter.DictionaryNode rootNode = writer.CreateDictionaryNode();
 
-            SaveObjectLists(rootNode, writer, prefix, saveZonePlacements, availibleLayers.ToHashSet());
+            ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
 
+            LevelObjectsWriter objectsWriter = new LevelObjectsWriter(availibleLayers.ToHashSet(), writer, LinkedObjects, objsNode: objsNode);
+
+            SaveObjectLists(rootNode, objectsWriter, prefix, saveZonePlacements);
+
+            rootNode.AddArrayNodeRef("Objs", objsNode, true);
 
             rootNode.AddDynamicValue("FilePath", "N/A");
 
@@ -1025,7 +1210,7 @@ namespace Spotlight.Level
         }
 
 
-        private void SaveObjectLists(ByamlNodeWriter.DictionaryNode listsNode, ByamlNodeWriter writer, string prefix, bool saveZonePlacements, HashSet<string> layers)
+        private void SaveObjectLists(ByamlNodeWriter.DictionaryNode listsNode, LevelObjectsWriter writer, string prefix, bool saveZonePlacements)
         {
             //apologies for the bad code, merging odyssey and 3d world saving code isn't an easy task
 
@@ -1038,7 +1223,7 @@ namespace Spotlight.Level
 
                 foreach (var zonePlacement in ZonePlacements)
                 {
-                    if (!layers.Contains(zonePlacement.Layer))
+                    if (!writer.Layers.Contains(zonePlacement.Layer))
                     {
                         zoneID++;
                         continue;
@@ -1046,18 +1231,14 @@ namespace Spotlight.Level
 
                     ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode();
 
-                    zonePlacement.Save(writer, objNode, zoneID++);
+                    zonePlacement.Save(objNode, zoneID++);
 
                     zonesNode.AddDictionaryNodeRef(objNode, true);
                 }
             }
-#endregion
+            #endregion
 
-            HashSet<I3dWorldObject> alreadyWrittenObjs = new HashSet<I3dWorldObject>();
-
-#if !ODYSSEY
-            ByamlNodeWriter.ArrayNode objsNode = writer.CreateArrayNode();
-#endif
+            
             foreach (var (listName, objList) in ObjLists)
             {
 #if ODYSSEY
@@ -1068,40 +1249,7 @@ namespace Spotlight.Level
                 if (!listName.StartsWith(prefix)) //ObjList is not part of the Category
                     continue;
 
-                ByamlNodeWriter.ArrayNode objListNode = writer.CreateArrayNode();
-
-                void WriteObjNode(ByamlNodeWriter.DictionaryNode node)
-                {
-                    objListNode.AddDictionaryNodeRef(node);
-#if !ODYSSEY
-                    objsNode.AddDictionaryNodeRef(node);
-#endif
-                }
-
-                void WriteObjRef(I3dWorldObject obj)
-                {
-                    objListNode.AddDictionaryRef(obj);
-#if !ODYSSEY
-                    objsNode.AddDictionaryRef(obj);
-#endif
-                }
-
-                foreach (I3dWorldObject obj in objList)
-                {
-                    if (!layers.Contains(obj.Layer))
-                        continue;
-
-                    if (!alreadyWrittenObjs.Contains(obj))
-                    {
-                        ByamlNodeWriter.DictionaryNode objNode = writer.CreateDictionaryNode(obj);
-                        obj.Save(alreadyWrittenObjs, writer, objNode, layers, false);
-                        WriteObjNode(objNode);
-                    }
-                    else
-                    {
-                        WriteObjRef(obj);
-                    }
-                }
+                ByamlNodeWriter.ArrayNode objListNode = writer.SaveObjectList(objList);
 #if ODYSSEY
                 listsNode.AddArrayNodeRef(listName.Substring(prefix.Length), objListNode, true);
 #endif
@@ -1110,10 +1258,6 @@ namespace Spotlight.Level
 
             if (saveZonePlacements)
                 listsNode.AddArrayNodeRef("ZoneList", zonesNode, true);
-
-#if !ODYSSEY
-            listsNode.AddArrayNodeRef("Objs", objsNode, true);
-#endif
         }
 #endregion
 #endregion
@@ -1130,7 +1274,7 @@ namespace Spotlight.Level
 public static class Extensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TValue Require<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key) where TValue : new()
+    public static TValue GetOrCreate<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key) where TValue : new()
     {
         if (self.TryGetValue(key, out TValue value))
             return value;
@@ -1145,7 +1289,7 @@ public static class Extensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void AddOne<TKey>(this Dictionary<TKey, int> self, TKey key)
+    public static void InitOrAddOne<TKey>(this Dictionary<TKey, int> self, TKey key)
     {
         if (self.TryGetValue(key, out int value))
             self[key] = value++;

@@ -4,6 +4,7 @@ using OpenTK;
 using Spotlight.Level;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ namespace Spotlight.EditorDrawables
         public static Dictionary<string, dynamic> CreateUnitConfig(General3dWorldObject obj) => new Dictionary<string, dynamic>
         {
             ["DisplayName"] = obj.DisplayName,
+            ["DisplayRotate"] = LevelIO.Vector3ToDict(obj.DisplayRotation),
+            ["DisplayScale"] = LevelIO.Vector3ToDict(obj.DisplayScale),
             ["DisplayTranslate"] = LevelIO.Vector3ToDict(obj.DisplayTranslation, 100f),
             ["GenerateCategory"] = "",
             ["ParameterConfigName"] = obj.ClassName,
@@ -26,6 +29,8 @@ namespace Spotlight.EditorDrawables
         public static Dictionary<string, dynamic> CreateUnitConfig(string className) => new Dictionary<string, dynamic>
         {
             ["DisplayName"] = className,
+            ["DisplayRotate"] = LevelIO.Vector3ToDict(Vector3.Zero),
+            ["DisplayScale"] = LevelIO.Vector3ToDict(Vector3.One),
             ["DisplayTranslate"] = LevelIO.Vector3ToDict(Vector3.Zero),
             ["GenerateCategory"] = "",
             ["ParameterConfigName"] = className,
@@ -136,49 +141,6 @@ namespace Spotlight.EditorDrawables
                         }
                     }
                 }
-            }
-        }
-
-
-        public static void SaveLinks(Dictionary<string, List<I3dWorldObject>> links, HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers)
-        {
-            if (links != null)
-            {
-                DictionaryNode linksNode = writer.CreateDictionaryNode(links);
-
-                foreach (var (linkName, link) in links)
-                {
-                    if (link.Count == 0)
-                        continue;
-
-                    ArrayNode linkNode = writer.CreateArrayNode(link);
-
-                    foreach (I3dWorldObject obj in link)
-                    {
-                        if (!layers.Contains(obj.Layer))
-                            continue;
-
-                        if (!alreadyWrittenObjs.Contains(obj))
-                        {
-                            DictionaryNode linkedObjNode = writer.CreateDictionaryNode(obj);
-                            obj.Save(alreadyWrittenObjs, writer, linkedObjNode, layers, true);
-                            linkNode.AddDictionaryNodeRef(linkedObjNode);
-                        }
-                        else
-                            linkNode.AddDictionaryRef(obj);
-                    }
-
-                    if (linkNode.Count != 0)
-                        linksNode.AddArrayNodeRef(linkName, linkNode, true);
-                }
-                if (linksNode.Count != 0)
-                    objNode.AddDictionaryNodeRef("Links", linksNode, true);
-                else
-                    objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
-            }
-            else
-            {
-                objNode.AddDynamicValue("Links", new Dictionary<string, dynamic>(), true);
             }
         }
 

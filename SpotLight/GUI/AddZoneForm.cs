@@ -19,6 +19,8 @@ namespace Spotlight
         private BrightIdeasSoftware.OLVColumn StageNameColumn;
         private Label label1;
         private TextBox SearchTextBox;
+        private Panel panel1;
+        private Panel panel2;
         private CheckBox FilterZonesCheckbox;
 
         private void InitializeComponent()
@@ -32,38 +34,45 @@ namespace Spotlight
             this.DirectoryColumn = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.label1 = new System.Windows.Forms.Label();
             this.SearchTextBox = new System.Windows.Forms.TextBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.panel2 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.ZoneListView)).BeginInit();
+            this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // OKButton
             // 
-            this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.OKButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.OKButton.Location = new System.Drawing.Point(204, 387);
+            this.OKButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.OKButton.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.OKButton.Location = new System.Drawing.Point(216, 3);
             this.OKButton.Name = "OKButton";
-            this.OKButton.Size = new System.Drawing.Size(75, 23);
+            this.OKButton.Size = new System.Drawing.Size(75, 29);
             this.OKButton.TabIndex = 1;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
             // 
             // CancelSelectionButton
             // 
-            this.CancelSelectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.CancelSelectionButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CancelSelectionButton.Location = new System.Drawing.Point(285, 387);
+            this.CancelSelectionButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.CancelSelectionButton.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CancelSelectionButton.Location = new System.Drawing.Point(291, 3);
             this.CancelSelectionButton.Name = "CancelSelectionButton";
-            this.CancelSelectionButton.Size = new System.Drawing.Size(75, 23);
+            this.CancelSelectionButton.Size = new System.Drawing.Size(75, 29);
             this.CancelSelectionButton.TabIndex = 2;
             this.CancelSelectionButton.Text = "Cancel";
             this.CancelSelectionButton.UseVisualStyleBackColor = true;
             // 
             // FilterZonesCheckbox
             // 
-            this.FilterZonesCheckbox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.FilterZonesCheckbox.AutoSize = true;
-            this.FilterZonesCheckbox.Location = new System.Drawing.Point(12, 387);
+            this.FilterZonesCheckbox.Dock = System.Windows.Forms.DockStyle.Left;
+            this.FilterZonesCheckbox.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FilterZonesCheckbox.Location = new System.Drawing.Point(0, 3);
             this.FilterZonesCheckbox.Name = "FilterZonesCheckbox";
-            this.FilterZonesCheckbox.Size = new System.Drawing.Size(81, 17);
+            this.FilterZonesCheckbox.Size = new System.Drawing.Size(97, 29);
             this.FilterZonesCheckbox.TabIndex = 3;
             this.FilterZonesCheckbox.Text = "Filter Zones";
             this.FilterZonesCheckbox.UseVisualStyleBackColor = true;
@@ -73,22 +82,21 @@ namespace Spotlight
             // 
             this.ZoneListView.AllColumns.Add(this.StageNameColumn);
             this.ZoneListView.AllColumns.Add(this.DirectoryColumn);
-            this.ZoneListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ZoneListView.CellEditUseWholeCell = false;
             this.ZoneListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.StageNameColumn,
             this.DirectoryColumn});
             this.ZoneListView.Cursor = System.Windows.Forms.Cursors.Default;
+            this.ZoneListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ZoneListView.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ZoneListView.FullRowSelect = true;
             this.ZoneListView.HideSelection = false;
-            this.ZoneListView.Location = new System.Drawing.Point(12, 32);
+            this.ZoneListView.Location = new System.Drawing.Point(3, 37);
             this.ZoneListView.MultiSelect = false;
             this.ZoneListView.Name = "ZoneListView";
             this.ZoneListView.SelectAllOnControlA = false;
             this.ZoneListView.ShowGroups = false;
-            this.ZoneListView.Size = new System.Drawing.Size(348, 349);
+            this.ZoneListView.Size = new System.Drawing.Size(366, 347);
             this.ZoneListView.TabIndex = 4;
             this.ZoneListView.UseCompatibleStateImageBehavior = false;
             this.ZoneListView.View = System.Windows.Forms.View.Details;
@@ -113,36 +121,61 @@ namespace Spotlight
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(41, 13);
+            this.label1.Size = new System.Drawing.Size(47, 17);
             this.label1.TabIndex = 5;
             this.label1.Text = "Search";
             // 
             // SearchTextBox
             // 
-            this.SearchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SearchTextBox.Location = new System.Drawing.Point(59, 6);
+            this.SearchTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SearchTextBox.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SearchTextBox.Location = new System.Drawing.Point(47, 0);
             this.SearchTextBox.Name = "SearchTextBox";
-            this.SearchTextBox.Size = new System.Drawing.Size(301, 20);
+            this.SearchTextBox.Size = new System.Drawing.Size(319, 25);
             this.SearchTextBox.TabIndex = 6;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.SearchTextBox);
+            this.panel1.Controls.Add(this.label1);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Location = new System.Drawing.Point(3, 3);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(366, 34);
+            this.panel1.TabIndex = 7;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.OKButton);
+            this.panel2.Controls.Add(this.CancelSelectionButton);
+            this.panel2.Controls.Add(this.FilterZonesCheckbox);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(3, 384);
+            this.panel2.Name = "panel2";
+            this.panel2.Padding = new System.Windows.Forms.Padding(0, 3, 0, 3);
+            this.panel2.Size = new System.Drawing.Size(366, 35);
+            this.panel2.TabIndex = 8;
             // 
             // AddZoneForm
             // 
             this.ClientSize = new System.Drawing.Size(372, 422);
-            this.Controls.Add(this.SearchTextBox);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.ZoneListView);
-            this.Controls.Add(this.FilterZonesCheckbox);
-            this.Controls.Add(this.CancelSelectionButton);
-            this.Controls.Add(this.OKButton);
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "AddZoneForm";
+            this.Padding = new System.Windows.Forms.Padding(3);
             this.Text = "Spotlight - Add Zone";
             ((System.ComponentModel.ISupportInitialize)(this.ZoneListView)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
         #endregion

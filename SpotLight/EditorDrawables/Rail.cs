@@ -16,7 +16,6 @@ using static GL_EditorFramework.EditorDrawables.EditorSceneBase.PropertyCapture;
 
 namespace Spotlight.EditorDrawables
 {
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class Rail : Path<RailPoint>, I3dWorldObject
     {
         public override string ToString()
@@ -24,9 +23,11 @@ namespace Spotlight.EditorDrawables
             return ClassName.ToString();
         }
 
-        protected static List<RailPoint> RailPointsFromRailPointsEntry(ByamlIterator.DictionaryEntry railPointsEntry)
+        protected static List<RailPoint> RailPointsFromRailPointsEntry(ByamlIterator.DictionaryEntry railPointsEntry, in LevelIO.ObjectInfo railInfo)
         {
             List<RailPoint> pathPoints = new List<RailPoint>();
+
+            int pointIndex = 0;
 
             foreach (ByamlIterator.ArrayEntry pointEntry in railPointsEntry.IterArray())
             {
@@ -42,7 +43,6 @@ namespace Spotlight.EditorDrawables
                         entry.Key == "Id" ||
                         entry.Key == "IsLinkDest" ||
                         entry.Key == "LayerConfigName" ||
-                        entry.Key == "Links" ||
                         entry.Key == "ModelName" ||
                         entry.Key == "Rotate" ||
                         entry.Key == "Scale" ||
@@ -51,6 +51,16 @@ namespace Spotlight.EditorDrawables
 
                         )
                         continue;
+
+                    if (entry.Key == "Links")
+                    {
+                        foreach (ByamlIterator.DictionaryEntry linkEntry in entry.IterDictionary())
+                        {
+                            railInfo.LinkEntries.Add(linkEntry.Key + "_FromPoint" + pointIndex, linkEntry);
+                        }
+
+                        continue;
+                    }
 
                     dynamic _data = entry.Parse();
                     if (entry.Key == "Translate")
@@ -80,6 +90,8 @@ namespace Spotlight.EditorDrawables
                 }
 
                 pathPoints.Add(new RailPoint(pos, cp1 - pos, cp2 - pos, properties));
+
+                pointIndex++;
             }
 
             return pathPoints;
@@ -88,7 +100,7 @@ namespace Spotlight.EditorDrawables
         /// <summary>
         /// Id of this object
         /// </summary>
-        public string ID { get; }
+        public string ID { get; set; }
 
         [Undoable]
         public bool IsLadder { get; set; }
@@ -99,13 +111,13 @@ namespace Spotlight.EditorDrawables
         public Dictionary<string, dynamic> Properties { get; private set; } = null;
 
         [Undoable]
-        public string Layer { get; set; } = "Common";
+        public Layer Layer { get; set; }
 
         readonly string comment = null;
 
         public Rail(in LevelIO.ObjectInfo info, SM3DWorldZone zone, out bool loadLinks)
         {
-            pathPoints = RailPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"]);
+            pathPoints = RailPointsFromRailPointsEntry(info.PropertyEntries["RailPoints"], in info);
 
             ID = info.ID;
             if (zone != null)
@@ -113,7 +125,7 @@ namespace Spotlight.EditorDrawables
 
             ClassName = info.ClassName;
 
-            Layer = info.Layer;
+            Layer = zone.GetOrCreateLayer(info.LayerName);
 
             comment = info.Comment;
 
@@ -153,7 +165,7 @@ namespace Spotlight.EditorDrawables
         /// <param name="isLadder">Unknown</param>
         /// <param name="isReverseCoord">Reverses the order the rails are in</param>
         /// <param name="className"></param>
-        public Rail(List<RailPoint> railPoints, string iD, string className, bool isClosed, bool isLadder, Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
+        public Rail(List<RailPoint> railPoints, string iD, string className, bool isClosed, bool isLadder, Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone, Layer layer)
         {
             ID = iD;
             Closed = isClosed;
@@ -164,6 +176,8 @@ namespace Spotlight.EditorDrawables
             Links = links;
 
             pathPoints = railPoints;
+
+            Layer = layer;
 
             foreach (var point in pathPoints)
                 SetupPoint(point);
@@ -185,31 +199,39 @@ namespace Spotlight.EditorDrawables
 
         public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
 
-        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest = false)
+        public void Save(LevelObjectsWriter writer, DictionaryNode objNode)
         {
-            objNode.AddDynamicValue("Comment", null);
+#if ODYSSEY
+            objNode.AddDynamicValue("comment", comment);
+#else
+            objNode.AddDynamicValue("Comment", comment);
+#endif
             objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("IsClosed", Closed);
             objNode.AddDynamicValue("IsLadder", IsLadder);
 
-            objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", Layer);
+            objNode.AddDynamicValue("IsLinkDest", LinkDestinations.Count > 0);
+            objNode.AddDynamicValue("LayerConfigName", Layer.Name);
 
-            alreadyWrittenObjs.Add(this);
-
-            ObjectUtils.SaveLinks(Links, alreadyWrittenObjs, writer, objNode, layers);
+            writer.SaveLinks(Links?.Where(x=>!x.Key.Contains("_FromPoint")), objNode);
 
             objNode.AddDynamicValue("ModelName", null);
 
             #region Save RailPoints
             ArrayNode railPointsNode = writer.CreateArrayNode();
 
-            int i = 0;
+            var pointClassName = "Point" + ClassName.Substring("Rail".Length);
+
+            int pointIndex = 0;
             foreach (RailPoint point in PathPoints)
             {
                 DictionaryNode pointNode = writer.CreateDictionaryNode();
 
-                pointNode.AddDynamicValue("Comment", null);
+//#if ODYSSEY
+//                objNode.AddDynamicValue("comment", comment);
+//#else
+//                objNode.AddDynamicValue("Comment", comment);
+//#endif
 
                 pointNode.AddDynamicValue("ControlPoints", new List<dynamic>()
                 {
@@ -217,11 +239,17 @@ namespace Spotlight.EditorDrawables
                     LevelIO.Vector3ToDict(point.ControlPoint2 + point.Position, 100f)
                 });
 
-                pointNode.AddDynamicValue("Id", $"{ID}/{i}");
-                pointNode.AddDynamicValue("IsLinkDest", isLinkDest);
-                pointNode.AddDynamicValue("LayerConfigName", "Common");
+                pointNode.AddDynamicValue("Id", $"{ID}/{pointIndex}");
+                pointNode.AddDynamicValue("IsLinkDest", false);
+                pointNode.AddDynamicValue("LayerConfigName", Layer.Name);
 
-                pointNode.AddDictionaryNodeRef("Links", writer.CreateDictionaryNode(), true); //We don't expect Points to have Links either
+                string pointLinkSuffix = "_FromPoint" + pointIndex;
+
+                writer.SaveLinks(
+                    Links?.Where(x => x.Key.EndsWith(pointLinkSuffix)).Select(x=>new KeyValuePair<string, List<I3dWorldObject>>(
+                        x.Key.Substring(0,x.Key.Length-pointLinkSuffix.Length), x.Value
+                        )), 
+                    pointNode);
 
                 pointNode.AddDynamicValue("ModelName", null);
 
@@ -229,9 +257,9 @@ namespace Spotlight.EditorDrawables
                 pointNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
                 pointNode.AddDynamicValue("Translate", LevelIO.Vector3ToDict(point.Position, 100f), true);
                 
-                pointNode.AddDynamicValue("UnitConfig", ObjectUtils.CreateUnitConfig("Point"), true);
+                pointNode.AddDynamicValue("UnitConfig", ObjectUtils.CreateUnitConfig(pointClassName), true);
                 
-                pointNode.AddDynamicValue("UnitConfigName", "Point");
+                pointNode.AddDynamicValue("UnitConfigName", pointClassName);
 
                 if (point.Properties.Count != 0)
                 {
@@ -246,13 +274,13 @@ namespace Spotlight.EditorDrawables
 
                 railPointsNode.AddDictionaryNodeRef(pointNode, true);
 
-                i++;
+                pointIndex++;
             }
 
             objNode.AddArrayNodeRef("RailPoints", railPointsNode);
             #endregion
 
-            objNode.AddDynamicValue("RailType", "Bezier");
+            objNode.AddDynamicValue("RailType", pathPoints.Exists(x=>x.ControlPoint1!=Vector3.Zero || x.ControlPoint2 != Vector3.Zero) ? "Bezier" : "Linear");
 
             objNode.AddDynamicValue("Rotate", LevelIO.Vector3ToDict(Vector3.Zero), true);
             objNode.AddDynamicValue("Scale", LevelIO.Vector3ToDict(Vector3.One), true);
@@ -274,6 +302,44 @@ namespace Spotlight.EditorDrawables
             }
         }
 
+        public bool Equals(I3dWorldObject obj)
+        {
+            return obj is Rail rail &&
+                   EqualRailPoints(pathPoints, rail.pathPoints) &&
+                   Closed == rail.Closed &&
+                   ID == rail.ID &&
+                   IsLadder == rail.IsLadder &&
+                   ClassName == rail.ClassName &&
+                   Layer == rail.Layer &&
+                   ObjectUtils.EqualProperties(Properties, rail.Properties);
+        }
+
+        private static bool EqualRailPoints(List<RailPoint> pointsA, List<RailPoint> pointsB)
+        {
+            if (pointsA.Count != pointsB.Count)
+                return false;
+
+            for (int i = 0; i < pointsA.Count; i++)
+            {
+                var a = pointsA[i];
+                var b = pointsB[i];
+
+                if (a.Position != b.Position)
+                    return false;
+
+                if (a.ControlPoint1 != b.ControlPoint1)
+                    return false;
+
+                if (a.ControlPoint2 != b.ControlPoint2)
+                    return false;
+
+                if (!ObjectUtils.EqualProperties(a.Properties, b.Properties))
+                    return false;
+            }
+
+            return true;
+        }
+
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
         {
             return PathPoints[0]?.GetLinkingPoint(editorScene) ?? Vector3.Zero;
@@ -281,8 +347,13 @@ namespace Spotlight.EditorDrawables
 
         public override void Draw(GL_ControlModern control, Pass pass, EditorSceneBase editorScene)
         {
-            if(SceneDrawState.EnabledLayers.Contains(Layer))
-                base.Draw(control, pass, editorScene);
+            if (!IsSelected() && !SceneDrawState.EnabledLayers.Contains(Layer))
+            {
+                control.SkipPickingColors(1);
+                return;
+            }
+
+            base.Draw(control, pass, editorScene);
         }
 
         public override int GetPickableSpan()
@@ -349,7 +420,7 @@ namespace Spotlight.EditorDrawables
             }
 
             duplicates[this] = new Rail(newPoints, destZone?.NextRailID(), ClassName, Closed, IsLadder, 
-                ObjectUtils.DuplicateLinks(Links), ObjectUtils.DuplicateProperties(Properties), destZone);
+                ObjectUtils.DuplicateLinks(Links), ObjectUtils.DuplicateProperties(Properties), destZone, Layer);
         }
 
         public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
@@ -417,44 +488,6 @@ namespace Spotlight.EditorDrawables
             return true;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is Rail rail &&
-                   EqualityComparer<List<RailPoint>>.Default.Equals(pathPoints, rail.pathPoints) &&
-                   Closed == rail.Closed &&
-                   ID == rail.ID &&
-                   IsLadder == rail.IsLadder &&
-                   ClassName == rail.ClassName &&
-                   Layer == rail.Layer &&
-                   ObjectUtils.EqualProperties(Properties, rail.Properties);
-        }
-
-        private static bool EqualRailPoints(List<RailPoint> pointsA, List<RailPoint> pointsB)
-        {
-            if (pointsA.Count != pointsB.Count)
-                return false;
-
-            for (int i = 0; i < pointsA.Count; i++)
-            {
-                var a = pointsA[i];
-                var b = pointsB[i];
-
-                if (a.Position != b.Position)
-                    return false;
-
-                if (a.ControlPoint1 != b.ControlPoint1)
-                    return false;
-
-                if (a.ControlPoint2 != b.ControlPoint2)
-                    return false;
-
-                if (!ObjectUtils.EqualProperties(a.Properties,b.Properties))
-                    return false;
-            }
-
-            return true;
-        }
-
         public class RailUIContainer : IObjectUIContainer
         {
             PropertyCapture? pathCapture = null;
@@ -462,7 +495,7 @@ namespace Spotlight.EditorDrawables
             Rail rail;
             readonly EditorSceneBase scene;
             string[] DB_classNames;
-
+            private General3dWorldObject.LayerUIField layerUIField;
             General3dWorldObject.ExtraPropertiesUIContainer pathPointPropertyContainer;
             General3dWorldObject.ExtraPropertiesUIContainer pathPropertyContainer;
 
@@ -476,10 +509,17 @@ namespace Spotlight.EditorDrawables
                 this.pathPropertyContainer = pathPropertyContainer;
 
                 DB_classNames = Program.ParameterDB.RailParameters.Keys.ToArray();
+
+                layerUIField = new General3dWorldObject.LayerUIField((SM3DWorldScene) scene, rail);
             }
 
             public void DoUI(IObjectUIControl control)
             {
+                if (Spotlight.Properties.Settings.Default.AllowIDEdits)
+                    rail.ID = control.TextInput(rail.ID, "Rail ID");
+                else
+                    control.TextInput(rail.ID, "Rail ID");
+
                 if (rail.comment != null)
                     control.TextInput(rail.comment, "Comment");
 
@@ -488,6 +528,8 @@ namespace Spotlight.EditorDrawables
                 rail.IsLadder = control.CheckBox("Is Ladder", rail.IsLadder);
 
                 rail.Closed = control.CheckBox("Closed", rail.Closed);
+
+                layerUIField.DoUI(control);
 
                 if (scene.CurrentList != rail.pathPoints && control.Button("Edit Pathpoints"))
                     scene.EnterList(rail.pathPoints);
@@ -508,6 +550,8 @@ namespace Spotlight.EditorDrawables
                 pathCapture?.HandleUndo(scene);
 
                 pathCapture = null;
+
+                layerUIField.OnValueSet();
 
                 scene.Refresh();
             }

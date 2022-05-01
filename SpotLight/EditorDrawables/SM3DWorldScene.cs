@@ -219,6 +219,7 @@ namespace Spotlight.EditorDrawables
         }
 
         public event EventHandler ZonePlacementsChanged;
+        public event EventHandler LayersChanged;
 
         public event EventHandler ObjectPlaced;
 
@@ -243,22 +244,15 @@ namespace Spotlight.EditorDrawables
 
         public void ResetObjectPlaceDelegate() => ObjectPlaceDelegate = null;
 
-        /// <summary>
-        /// The layer that will be used for every placed object
-        /// </summary>
-        public string DrawLayer { get; set; } = "Common";
+        public void SignalLayersChanged()
+        {
+            LayersChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         public override uint MouseClick(MouseEventArgs e, GL_ControlBase control)
         {
             if (ObjectPlaceDelegate != null && e.Button == MouseButtons.Left)
             {
-                if (!EditZone.availibleLayers.Contains(DrawLayer))
-                {
-                    MessageBox.Show($"The Layer you are trying to paint on ({DrawLayer}) doesn't exist in this Zone");
-
-                    return 0;
-                }
-
                 var placements = ObjectPlaceDelegate.Invoke((new Vector4(-control.CoordFor(e.X, e.Y, Math.Min(100, control.PickingDepth)), 1) * EditZoneTransform.PositionTransform.Inverted()).Xyz, EditZone);
 
                 Dictionary<ObjectList, List<I3dWorldObject>> objsByLists = new Dictionary<ObjectList, List<I3dWorldObject>>();
@@ -270,7 +264,7 @@ namespace Spotlight.EditorDrawables
                     if (!objsByLists.ContainsKey(placements[i].objList))
                         objsByLists[placements[i].objList] = new List<I3dWorldObject>();
 
-                    placements[i].obj.Layer = DrawLayer;
+                    placements[i].obj.Layer = EditZone.CommonLayer;
 
                     objsByLists[placements[i].objList].Add(placements[i].obj);
 
@@ -425,10 +419,16 @@ namespace Spotlight.EditorDrawables
 
             public override void Draw(GL_ControlModern control, Pass pass)
             {
+                var bak = SceneDrawState.EnabledLayers;
+
+                SceneDrawState.EnabledLayers = scene.mainZone.GetVisibleLayers(SuperSet<Layer>.Instance);
+
                 if (scene.editZoneIndex != 0) //zonePlacements can't be edited
                     foreach (var zonePlacement in scene.ZonePlacements)
                         if(zonePlacement.Visible)
                             zonePlacement.Draw(control, pass, scene);
+                
+                SceneDrawState.EnabledLayers = bak;
             }
 
             public override int GetPickableSpan()
@@ -488,7 +488,11 @@ namespace Spotlight.EditorDrawables
                 if (editZoneIndex == value)
                     return;
 
+#if ODYSSEY
+                EditZone?.UpdateRenderBatch(EditZone.CurrentScenario);
+#else
                 EditZone?.UpdateRenderBatch();
+#endif
 
                 if (value == 0)
                 {
@@ -598,7 +602,7 @@ namespace Spotlight.EditorDrawables
         {
             SceneDrawState.ZoneTransform = EditZoneTransform;
 
-            SceneDrawState.EnabledLayers = EditZone.enabledLayers;
+            SceneDrawState.EnabledLayers = EditZone.GetVisibleLayers(SuperSet<Layer>.Instance);
         }
 
 #if ODYSSEY
@@ -609,10 +613,10 @@ namespace Spotlight.EditorDrawables
                 zone.SetScenario(scenario);
 
                 if (zone!=EditZone)
-                    zone.UpdateRenderBatch();
+                    zone.UpdateRenderBatch(scenario);
             }
 
-            SceneDrawState.EnabledLayers = EditZone.enabledLayers;
+            SceneDrawState.EnabledLayers = EditZone.GetVisibleLayers(SuperSet<Layer>.Instance);
         }
 #endif
 
@@ -623,7 +627,7 @@ namespace Spotlight.EditorDrawables
             private set
             {
                 mainZone = value;
-                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, "Common", value);
+                mainZonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, null, value);
             }
         }
 

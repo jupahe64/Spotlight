@@ -9,6 +9,7 @@ using static BYAML.ByamlIterator;
 using static Spotlight.Level.LevelIO;
 using GL_EditorFramework;
 using OpenTK;
+using System.Diagnostics;
 
 namespace Spotlight.Level
 {
@@ -20,7 +21,7 @@ namespace Spotlight.Level
 
         Dictionary<string, (ushort scenarioBits, ZonePlacement placement)[]> zonePlacementsInfosByID = new Dictionary<string, (ushort scenarioBits, ZonePlacement placement)[]>();
 
-        public HashSet<string> readLayers = new HashSet<string>();
+        public HashSet<Layer> readLayers = new HashSet<Layer>();
 
         ushort scenarioBit = 1;
 
@@ -75,13 +76,16 @@ namespace Spotlight.Level
 
                 objsInfosByIDs.TryGetValue(obj.ID, out sameIDObjs);
 
-                UpdateLinkScenarioBits(objectEntry); //"Mofumofu", "DemoBattleEndPosition", 233028
+                UpdateLinkScenarioBits(objectEntry);
             }
             else
             {
                 ObjectInfo info = GetObjectInfo(objectEntry);
 
-                readLayers.Add(info.Layer);
+                if(info.ID == "obj15621")
+                    Debugger.Break();
+
+                readLayers.Add(zone.GetOrCreateLayer(info.LayerName));
 
                 objsInfosByIDs.TryGetValue(info.ID, out sameIDObjs);
 
@@ -96,7 +100,6 @@ namespace Spotlight.Level
                     obj = new General3dWorldObject(in info, zone, out loadLinks);
 
                 #endregion
-
 
                 if (sameIDObjs == null)
                 {
@@ -115,13 +118,20 @@ namespace Spotlight.Level
 
                     for (int i = 0; i < sameIDObjs.Length; i++)
                     {
+                        //Equals(I3dWorldObject) is part of the I3dWorldObject interface and will do a proper comparision
+
                         if (obj.Equals(sameIDObjs[i].obj))
                         {
+                            if (!isLinked)
+                                sameIDObjs[i].list = listName;
+
                             obj = sameIDObjs[i].obj;
                             successfullyUnified = true;
                             break;
                         }
                     }
+
+                    
 
                     #endregion
 
@@ -191,6 +201,9 @@ namespace Spotlight.Level
                 {
                     if (sameIDObjs[i].obj == obj)
                     {
+                        //if(obj.ID == "obj6051")
+                        //    Debugger.Break();
+
                         #region Update Scenario
                         sameIDObjs[i].scenarioBits |= scenarioBit;
                         #endregion
@@ -220,8 +233,6 @@ namespace Spotlight.Level
         /// <param name="obj"></param>
         private void UpdateLinkScenarioBits(ArrayEntry objectEntry, Stack<long> travelStack = null)
         {
-            //return; //For now
-
             if (travelStack == null)
                 travelStack = new Stack<long>();
 
@@ -263,6 +274,13 @@ namespace Spotlight.Level
                         }
                     }
                 }
+                else if (entry.Key == "RailPoints")
+                {
+                    foreach (var point in entry.IterArray())
+                    {
+                        UpdateLinkScenarioBits(point, travelStack);
+                    }
+                }
             }
 
             travelStack.Pop();
@@ -291,7 +309,7 @@ namespace Spotlight.Level
                     if(sameZoneIDPlacements[i].placement.Zone==refZone && 
                         sameZoneIDPlacements[i].placement.Position == info.Position &&
                         sameZoneIDPlacements[i].placement.Rotation == info.Rotation &&
-                        sameZoneIDPlacements[i].placement.Layer == info.Layer)
+                        sameZoneIDPlacements[i].placement.Layer == zone.GetOrCreateLayer(info.LayerName))
                     {
 
                         sameZoneIDPlacements[i].scenarioBits |= scenarioBit;
@@ -308,7 +326,7 @@ namespace Spotlight.Level
                 if (refZone != null)
                 {
                     
-                    zonePlacement = new ZonePlacement(info.Position, info.Rotation, info.Layer, refZone);
+                    zonePlacement = new ZonePlacement(info.Position, info.Rotation, zone.GetOrCreateLayer(info.LayerName), refZone);
 
 
                     if (sameZoneIDPlacements == null)
@@ -375,8 +393,9 @@ namespace Spotlight.Level
 
                         foreach (ArrayEntry objEntry in entry.IterArray())
                         {
-                            I3dWorldObject obj = ParseObject(objEntry, out bool alreadyAdded);
-                            if (!alreadyAdded)
+                            I3dWorldObject obj = ParseObject(objEntry, out bool alreadyRead);
+
+                            if(!list.Contains(obj))
                                 list.Add(obj);
                         }
                     }
@@ -410,12 +429,14 @@ namespace Spotlight.Level
                     foreach (ArrayEntry objEntry in entry.IterArray())
                     {
                         I3dWorldObject obj = ParseObject(objEntry, out bool alreadyAdded);
-                        if (!alreadyAdded)
-                            list.Add(obj);
+                        list.Add(obj);
                     }
                 }
             }
 #endif
+            HashSet<I3dWorldObject> regularListObjs = zone.ObjLists.SelectMany(x => x.Value).ToHashSet();
+
+            zone.LinkedObjects.RemoveAll(x => regularListObjs.Contains(x));
         }
     }
 }

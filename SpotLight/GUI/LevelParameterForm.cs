@@ -27,6 +27,12 @@ namespace Spotlight
         public LevelParameterForm(StageList stageList, string LevelName = "")
         {
             InitializeComponent();
+
+            HelpToolTip.SetToolTip(this.StageTypeComboBox, "The Type of stage that this is.\r\nThe Options are Self-Explanitory");
+            HelpToolTip.SetToolTip(this.StageTypeLabel, "The Type of stage that this is.\r\nThe Options are Self-Explanitory");
+            HelpToolTip.SetToolTip(this.StageNameTextBox, $"The name of the Stage.\r\nUsually the name of the archive without \"{Level.SM3DWorldZone.MAP_SUFFIX} or {Level.SM3DWorldZone.COMBINED_SUFFIX}\"");
+            HelpToolTip.SetToolTip(this.StageNameLabel, $"The name of the Stage.\r\nUsually the name of the archive without \"{Level.SM3DWorldZone.MAP_SUFFIX} or {Level.SM3DWorldZone.COMBINED_SUFFIX}\"");
+
             CenterToParent();
             Loading = true;
 

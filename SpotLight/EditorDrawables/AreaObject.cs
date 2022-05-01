@@ -24,7 +24,6 @@ using WinInput = System.Windows.Input;
 
 namespace Spotlight.EditorDrawables
 {
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class AreaObject : TransformableObject, I3dWorldObject
     {
         public Dictionary<string, dynamic> Properties { get; private set; } = null;
@@ -62,7 +61,7 @@ namespace Spotlight.EditorDrawables
         public string ModelName { get; set; }
 
         [Undoable]
-        public string Layer { get; set; } = "Common";
+        public Layer Layer { get; set; }
 
         readonly string comment = null;
 
@@ -72,12 +71,12 @@ namespace Spotlight.EditorDrawables
         {
             ID = info.ID;
             if (zone != null)
-                zone.SubmitRailID(ID);
+                zone.SubmitID(ID);
 
             ModelName = info.ModelName;
             ClassName = info.ObjectName; //...yep
 
-            Layer = info.Layer;
+            Layer = zone.GetOrCreateLayer(info.LayerName);
 
             comment = info.Comment;
 
@@ -96,23 +95,16 @@ namespace Spotlight.EditorDrawables
                 }
             }
 
-            zone?.SubmitRailID(ID);
+            zone?.SubmitID(ID);
 
             loadLinks = true;
         }
-        /// <summary>
-        /// Creates a new rail for 3DW
-        /// </summary>
-        /// <param name="pathPoints">List of Path Points to use in this rail</param>
-        /// <param name="iD">ID Of the rail</param>
-        /// <param name="isClosed">Is the path closed?</param>
-        /// <param name="Priority">Unknown</param>
-        /// <param name="isReverseCoord">Reverses the order the rails are in</param>
-        /// <param name="className"></param>
+        
+
         public AreaObject(
             Vector3 pos, Vector3 rot, Vector3 scale,
             string iD, string modelName, string className, int priority,
-            Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone)
+            Dictionary<string, List<I3dWorldObject>> links, Dictionary<string, dynamic> properties, SM3DWorldZone zone, Layer layer)
             : base(pos, rot, scale)
         {
             ID = iD;
@@ -134,18 +126,20 @@ namespace Spotlight.EditorDrawables
 
         public Dictionary<string, List<I3dWorldObject>> Links { get; set; } = null;
 
-        public void Save(HashSet<I3dWorldObject> alreadyWrittenObjs, ByamlNodeWriter writer, DictionaryNode objNode, HashSet<string> layers, bool isLinkDest = false)
+        public void Save(LevelObjectsWriter writer, DictionaryNode objNode)
         {
-            objNode.AddDynamicValue("Comment", null);
+#if ODYSSEY
+            objNode.AddDynamicValue("comment", comment);
+#else
+            objNode.AddDynamicValue("Comment", comment);
+#endif
             objNode.AddDynamicValue("Id", ID);
             objNode.AddDynamicValue("Priority", Priority);
 
-            objNode.AddDynamicValue("IsLinkDest", isLinkDest);
-            objNode.AddDynamicValue("LayerConfigName", Layer);
+            objNode.AddDynamicValue("IsLinkDest", LinkDestinations.Count>0);
+            objNode.AddDynamicValue("LayerConfigName", Layer.Name);
 
-            alreadyWrittenObjs.Add(this);
-
-            ObjectUtils.SaveLinks(Links, alreadyWrittenObjs, writer, objNode, layers);
+            writer.SaveLinks(Links, objNode);
 
             objNode.AddDynamicValue("ModelName", ModelName);
 
@@ -168,6 +162,20 @@ namespace Spotlight.EditorDrawables
                         objNode.AddDynamicValue(property.Key, property.Value, true);
                 }
             }
+        }
+
+        public bool Equals(I3dWorldObject obj)
+        {
+            return obj is AreaObject @object &&
+                   Position.Equals(@object.Position) &&
+                   Rotation.Equals(@object.Rotation) &&
+                   Scale.Equals(@object.Scale) &&
+                   ID == @object.ID &&
+                   Priority == @object.Priority &&
+                   ClassName == @object.ClassName &&
+                   ModelName == @object.ModelName &&
+                   Layer == @object.Layer &&
+                   ObjectUtils.EqualProperties(Properties, @object.Properties);
         }
 
         public virtual Vector3 GetLinkingPoint(SM3DWorldScene editorScene)
@@ -213,7 +221,7 @@ namespace Spotlight.EditorDrawables
 
                 ObjectUtils.DuplicateLinks(Links),
                 ObjectUtils.DuplicateProperties(Properties),
-                destZone);
+                destZone, Layer);
         }
 
         public void LinkDuplicates(SM3DWorldScene.DuplicationInfo duplicationInfo, bool allowKeepLinksOfDuplicate)
@@ -236,6 +244,12 @@ namespace Spotlight.EditorDrawables
             if (!Selected)
             {
                 if (!Spotlight.Properties.Settings.Default.DrawAreas)
+                {
+                    control.SkipPickingColors(1);
+                    return;
+                }
+
+                if (!SceneDrawState.EnabledLayers.Contains(Layer))
                 {
                     control.SkipPickingColors(1);
                     return;
@@ -314,20 +328,6 @@ namespace Spotlight.EditorDrawables
             return true;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is AreaObject @object &&
-                   Position.Equals(@object.Position) &&
-                   Rotation.Equals(@object.Rotation) &&
-                   Scale.Equals(@object.Scale) &&
-                   ID == @object.ID &&
-                   Priority == @object.Priority &&
-                   ClassName == @object.ClassName &&
-                   ModelName == @object.ModelName &&
-                   Layer == @object.Layer &&
-                   ObjectUtils.EqualProperties(Properties, @object.Properties);
-        }
-
         public class BasicPropertyUIContainer : IObjectUIContainer
         {
             PropertyCapture? capture = null;
@@ -337,6 +337,7 @@ namespace Spotlight.EditorDrawables
 
             string[] shapeNames;
             string[] DB_classNames;
+            private LayerUIField layerUIField;
 
             public BasicPropertyUIContainer(AreaObject area, EditorSceneBase scene)
             {
@@ -345,6 +346,8 @@ namespace Spotlight.EditorDrawables
 
                 shapeNames = LevelIO.AreaModelNames.ToArray();
                 DB_classNames = Program.ParameterDB.AreaParameters.Keys.ToArray();
+
+                layerUIField = new LayerUIField((SM3DWorldScene)scene, area);
             }
 
             public void DoUI(IObjectUIControl control)
@@ -357,7 +360,7 @@ namespace Spotlight.EditorDrawables
                 if (area.comment != null)
                     control.TextInput(area.comment, "Comment");
 
-                area.Layer = control.TextInput(area.Layer, "Layer");
+                layerUIField.DoUI(control);
 
                 area.ClassName = control.DropDownTextInput("Class Name", area.ClassName, DB_classNames);
                 area.ModelName = control.DropDownTextInput("Shape Name", area.ModelName, shapeNames, false);
@@ -398,6 +401,8 @@ namespace Spotlight.EditorDrawables
                 capture = null;
 
                 scene.Refresh();
+
+                layerUIField.OnValueSet();
             }
 
             public void UpdateProperties()

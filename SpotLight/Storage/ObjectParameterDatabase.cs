@@ -11,6 +11,7 @@ using static BYAML.ByamlIterator;
 using static Spotlight.Level.LevelIO;
 using static Spotlight.ObjectParameterForm;
 using GL_EditorFramework;
+using System.Diagnostics;
 
 /* File Format .sopd
  * ----------------------------------------------
@@ -55,6 +56,17 @@ namespace Spotlight.Database
     /// </summary>
     public class ObjectParameterDatabase
     {
+        private static Dictionary<string, string> japaneseListNames = new Dictionary<string, string>()
+        {
+            ["エリア"] = "AreaList",
+            ["チェックポイントフラグ"] = "CheckPointList",
+            ["ゴール"] = "GloalList",
+            ["その他"] = "ObjectList",//others
+            ["プレイヤー"] = "PlayerList",
+            ["デモ"] = "DemoObjectList",
+            ["空"] = "SkyList"
+        };
+
         /// <summary>
         /// The version of this Object Parameter Database
         /// </summary>
@@ -257,6 +269,8 @@ namespace Spotlight.Database
                 SOUNDinfosByListName);
             }
 
+            HashSet<string> objListNames = new HashSet<string>();
+
 
             void GetParameters(Dictionary<string, List<ObjectInfo>> infosByListName, Category category)
             {
@@ -271,6 +285,8 @@ namespace Spotlight.Database
                     for (int j = 0; j < infos.Count; j++)
                     {
                         ObjectInfo info = infos[j];
+
+                        objListNames.Add(info.ObjListName);
 
                         if (info.ID.StartsWith("rail"))
                         {
@@ -299,6 +315,18 @@ namespace Spotlight.Database
         private void CollectObjectParameter(ref ObjectInfo info, ObjList objList, Category category)
         {
             ObjectParam param;
+
+            //if(info.DisplayRotation!=OpenTK.Vector3.Zero)
+            //    Debugger.Break();
+
+            //if (info.DisplayScale != OpenTK.Vector3.One //&& 
+            //    //info.DisplayScale != new OpenTK.Vector3(2) &&
+            //    //info.DisplayScale != new OpenTK.Vector3(10) &&
+            //    //info.DisplayScale != new OpenTK.Vector3(3) &&
+            //    //info.DisplayScale != new OpenTK.Vector3(0.1f) &&
+            //    //info.DisplayScale != new OpenTK.Vector3(1.5f)
+            //    )
+            //    Debugger.Break();
 
             if (ObjectParameters.TryGetValue(info.ClassName, out param))
             {
@@ -624,7 +652,7 @@ namespace Spotlight.Database
                 Links.Add(LinkNames[i], new List<I3dWorldObject>());
 
 
-            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectName, ModelName, ClassName, new OpenTK.Vector3(0f), "None", Links, Params, zone);
+            return new General3dWorldObject(Position, new OpenTK.Vector3(0f), new OpenTK.Vector3(1f), ID, ObjectName, ModelName, ClassName, new OpenTK.Vector3(0f), "None", Links, Params, zone, zone.CommonLayer);
         }
 
         static string[] CategoryPrefixes = new string[]

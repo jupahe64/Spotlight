@@ -53,7 +53,7 @@ namespace Spotlight.GUI
                 ObjectParameterDatabase.AddToProperties(railParam.Properties, properties);
                 ObjectParameterDatabase.AddToLinks(railParam.LinkNames, links);
 
-                Rail rail = new Rail(pathPoints, zone.NextObjID(), railParam.ClassName, closeRail, false, links, properties, zone);
+                Rail rail = new Rail(pathPoints, zone.NextObjID(), railParam.ClassName, closeRail, false, links, properties, zone, zone.CommonLayer);
 
 
                 if (zone.ObjLists.ContainsKey("Map_Rails"))
@@ -86,7 +86,7 @@ namespace Spotlight.GUI
                 if (links.Count == 0)
                     links = null;
 
-                AreaObject obj = new AreaObject(pos, Vector3.Zero, Vector3.One, zone.NextObjID(), areaShape, areaParam.ClassName, -1, links, properties, zone);
+                AreaObject obj = new AreaObject(pos, Vector3.Zero, Vector3.One, zone.NextObjID(), areaShape, areaParam.ClassName, -1, links, properties, zone, zone.CommonLayer);
 
 
                 if (areaParam.TryGetObjectList(zone, out ObjectList objList))

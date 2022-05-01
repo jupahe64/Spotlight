@@ -147,9 +147,12 @@ namespace Spotlight.GUI
             MainSceneListView.ListExited += MainSceneListView_ListExited;
             MainSceneListView.SelectionChanged += SceneListView3dWorld1_SelectionChanged;
 
+
             splitContainer2.Panel2.DoubleClick += SplitContainer2_Panel2_DoubleClick;
 
 #if ODYSSEY
+            LayerListControl.ScenarioConfigChanged += LayerListControl_ScenarioConfigChanged;
+
             ScenarioComboBox.Items.AddRange(new object[]
             {
                 "Scenario 0/1",
@@ -321,6 +324,11 @@ namespace Spotlight.GUI
             {
                 Program.Client.SetPresence(Program.Default_Presence);
             };
+        }
+
+        private void LayerListControl_ScenarioConfigChanged(object sender, EventArgs e)
+        {
+            LevelGLControlModern.Refresh();
         }
 
         private void LevelGLControlModern_DragEnter(object sender, DragEventArgs e)
@@ -626,7 +634,7 @@ namespace Spotlight.GUI
             {
                 var copy = new General3dWorldObject(pos, obj.Rotation, Vector3.One,
                     currentScene.EditZone.NextObjID(), obj.ObjectName, obj.ModelName, obj.ClassName, Vector3.Zero, obj.DisplayName,
-                    new Dictionary<string, List<I3dWorldObject>>(), ObjectUtils.DuplicateProperties(obj.Properties), currentScene.EditZone);
+                    new Dictionary<string, List<I3dWorldObject>>(), ObjectUtils.DuplicateProperties(obj.Properties), currentScene.EditZone, currentScene.EditZone.CommonLayer);
 
                 objectsToAdd.Add(copy);
             }
@@ -654,6 +662,7 @@ namespace Spotlight.GUI
         {
             OpenFileDialog ofd = new OpenFileDialog() { Filter =
                 $"{FileLevelOpenFilter.Split('|')[0]}|*Stage{SM3DWorldZone.MAP_SUFFIX};*Stage{SM3DWorldZone.COMBINED_SUFFIX};*Island{SM3DWorldZone.COMBINED_SUFFIX}|" +
+                $"{FileLevelOpenFilter.Split('|')[0]}|*HomeStage{SM3DWorldZone.MAP_SUFFIX}|" +
                 $"{FileLevelOpenFilter.Split('|')[0]}|*{SM3DWorldZone.MAP_SUFFIX}|" +
                 $"{FileLevelOpenFilter.Split('|')[1]}|*{SM3DWorldZone.DESIGN_SUFFIX}|" +
                 $"{FileLevelOpenFilter.Split('|')[2]}|*{SM3DWorldZone.SOUND_SUFFIX}|" +
@@ -817,7 +826,7 @@ namespace Spotlight.GUI
             {
                 currentScene.EditZoneIndex = 0;
 
-                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, currentScene.DrawLayer, zone);
+                var zonePlacement = new ZonePlacement(Vector3.Zero, Vector3.Zero, currentScene.EditZone.CommonLayer, zone);
                 currentScene.ZonePlacements.Add(zonePlacement);
                 currentScene.SelectedObjects.Clear();
                 zonePlacement.SelectDefault(LevelGLControlModern);
@@ -1194,6 +1203,7 @@ namespace Spotlight.GUI
             scene.Reverted += Scene_Reverted;
             scene.IsSavedChanged += Scene_IsSavedChanged;
             scene.ObjectPlaced += Scene_ObjectPlaced;
+            scene.LayersChanged += (_,_) => UpdateLayerList();
         }
 
         private void Scene_IsSavedChanged(object sender, EventArgs e)
@@ -1413,6 +1423,8 @@ namespace Spotlight.GUI
 
             UpdateLayerList();
 
+            LayerListControl.SetZone(currentScene.EditZone);
+
             MainSceneListView.Refresh();
 
 
@@ -1427,35 +1439,36 @@ namespace Spotlight.GUI
 
         private void UpdateLayerList()
         {
+            LayerListControl.Refresh();
+
+
+            List<ToolStripItem> items = new List<ToolStripItem>();
+
+            using (Graphics cg = CreateGraphics())
+            {
+                foreach (var layer in currentScene.EditZone.availibleLayers)
+                {
+                    var btn = new ToolStripButton(layer.Name, null, ChangeLayerMenuItem_Click);
+
+                    btn.Width = (int)Math.Ceiling(cg.MeasureString(layer.Name, btn.Font).Width);
+
+                    items.Add(btn);
+                }
+            }
+
+            ChangeLayerToolStripMenuItem.DropDownItems.Clear();
+            ChangeLayerToolStripMenuItem.DropDownItems.AddRange(items.ToArray());
+
 
 
             LayerListView.BeginUpdate();
             LayerListView.Items.Clear();
 
-            LayerListView.ItemCheck -= LayerList_ItemCheck;
-
-            int drawLayerIndex = -1;
-
-            int i = 0;
-
             foreach (var layer in currentScene.EditZone.availibleLayers)
             {
-                if (layer == currentScene.DrawLayer)
-                    drawLayerIndex = i;
-
-                LayerListView.Items.Add(layer).Checked = currentScene.EditZone.enabledLayers.Contains(layer);
-                i++;
+                LayerListView.Items.Add(layer.Name);
             }
             LayerListView.EndUpdate();
-
-            LayerListView.ItemCheck += LayerList_ItemCheck;
-
-
-            if(drawLayerIndex!=-1)
-            {
-                LayerListView.SelectedIndices.Clear();
-                LayerListView.SelectedIndices.Add(drawLayerIndex);
-            }
         }
 
         private void SceneListView3dWorld1_SelectionChanged(object sender, EventArgs e)
@@ -1760,6 +1773,7 @@ Would you like to rebuild the database from your 3DW Files?";
 
             LevelGLControlModern_Load(null, null);
         }
+            
 
         private void LevelGLControlModern_Load(object sender, EventArgs e)
         {
@@ -1803,6 +1817,40 @@ Would you like to rebuild the database from your 3DW Files?";
             if(MessageBox.Show("Are you sure you want to move all selected objects to "+listName+"?", "Confirm", MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
             {
                 MoveToTargetList(currentScene.EditZone.ObjLists[listName]);
+                //TODO set status text
+            }
+        }
+
+        private void ChangeLayerMenuItem_Click(object sender, EventArgs e)
+        {
+            Layer layer = currentScene.EditZone.GetOrCreateLayer(((ToolStripButton)sender).Text);
+
+            //TODO Localize
+            if (MessageBox.Show("Are you sure you want to change the layer of all selected objects to " + layer + "?", "Confirm", MessageBoxButtons.YesNoCancel) == DialogResult.Yes)
+            {
+                List<RevertableMassPropertyChange<I3dWorldObject, Layer>.Info> infos = new();
+
+
+                AdditionManager additionManager = new AdditionManager();
+                DeletionManager deletionManager = new DeletionManager();
+
+
+                foreach (I3dWorldObject obj in currentScene.SelectedObjects.Where(x=> x is I3dWorldObject))
+                {
+                    if (obj.Layer == layer)
+                        continue;
+
+                    infos.Add(new RevertableMassPropertyChange<I3dWorldObject, Layer>.Info(obj, obj.Layer));
+                    obj.Layer = layer;
+                }
+
+                currentScene.AddToUndo(new RevertableMassPropertyChange<I3dWorldObject, Layer>(
+                    (ValueGetter<I3dWorldObject, Layer>)
+                        typeof(I3dWorldObject).GetProperty("Layer").GetGetMethod().CreateDelegate(typeof(ValueGetter<I3dWorldObject, Layer>)),
+                    (ValueSetter<I3dWorldObject, Layer>)
+                        typeof(I3dWorldObject).GetProperty("Layer").GetSetMethod().CreateDelegate(typeof(ValueSetter<I3dWorldObject, Layer>)),
+                    infos.ToArray()));
+
                 //TODO set status text
             }
         }
@@ -1872,46 +1920,33 @@ Would you like to rebuild the database from your 3DW Files?";
             LevelGLControlModern.Refresh();
         }
 
-        private void LayerList_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
-            if (e.NewValue == e.CurrentValue)
-                return; //not sure if that can even happen
-
-            string layer = LayerListView.Items[e.Index].Text;
-
-            if (e.NewValue==CheckState.Checked)
-                currentScene.EditZone.enabledLayers.Add(layer);
-            else if(e.NewValue == CheckState.Unchecked)
-                currentScene.EditZone.enabledLayers.Remove(layer);
-
-            LevelGLControlModern.Refresh();
-        }
-
-        private void LayerListView_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (currentScene == null || LayerListView.SelectedItems.Count == 0)
-                return;
-
-            currentScene.DrawLayer = LayerListView.SelectedItems[LayerListView.SelectedItems.Count-1].Text;
-
-            SpotlightToolStripStatusLabel.Text = $"Draw Layer changed to: {currentScene.DrawLayer}          NEW PLACED OBJECTS WILL NOW HAVE THIS LAYER!";
-        }
-
-        private void DrawLayerComboBox_TextChanged(object sender, EventArgs e)
-        {
-            if (currentScene == null || LayerListView.SelectedItems.Count == 0)
-                return;
-
-            //TODO
-        }
-
 #if ODYSSEY
         private void ScenarioComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             currentScene.SetScenario(ScenarioComboBox.SelectedIndex);
+            LayerListControl.SetScenario(ScenarioComboBox.SelectedIndex);
             UpdateLayerList();
             LevelGLControlModern.Refresh();
         }
 #endif
+        private void CompareToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //obj3745
+
+            foreach (var file in Directory.GetFiles(@"C:\Users\jupah\Documents\Switch-Hacking\OdysseyHacking\SpotlightTest\ScenarioSavingTest"))
+            {
+                if (!file.Contains("CapWorld"))
+                    continue;
+
+                LevelComparer.Compare(
+                    System.IO.Path.Combine(
+                        @"C:\Users\jupah\Documents\Switch-Hacking\OdysseyHacking\SuperMarioOdyssey\StageData",
+                        System.IO.Path.GetFileName(file)
+                    ),
+
+                    file);
+            }
+        }
+
     }
 }

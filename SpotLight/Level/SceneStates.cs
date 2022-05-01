@@ -1,5 +1,6 @@
 ﻿using OpenTK;
 using Spotlight.EditorDrawables;
+using Spotlight.Level;
 using System.Collections.Generic;
 
 namespace Spotlight
@@ -10,7 +11,7 @@ namespace Spotlight
 
         public static Vector4? HighlightColorOverride = null;
 
-        public static HashSet<string> EnabledLayers = null;
+        public static HashSet<Layer> EnabledLayers = null;
     }
 
     public static class SceneObjectIterState
