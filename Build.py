@@ -31,7 +31,7 @@ files = glob("*.sln")
 
 for file in files:
     commands.append(f'msbuild "{path.abspath(file)}" -p:Configuration="Release Spotlight"')
-    commands.append(f'msbuild "{path.abspath(file)}" -p:Configuration="Release Moonlight" -p:Platform=x64')
+    commands.append(f'msbuild "{path.abspath(file)}" -p:Configuration="Release Moonlight"')
 
 for command in commands:
     subprocess.call(command, shell=True)
@@ -40,7 +40,7 @@ os.chdir("SpotLight\\bin\\Moonlight_RELEASE")
 
 subprocess.call(f'7z a "{home_dir}\\Moonlight.zip" *.* -r')
 
-os.chdir(f"{Path(os.getcwd()).parent.parent.absolute()}\\Spotlight_RELEASE")
+os.chdir("..\\Spotlight_RELEASE")
 
 subprocess.call(f'7z a "{home_dir}\\Spotlight.zip" *.* -r')
 

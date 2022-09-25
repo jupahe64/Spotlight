@@ -21,13 +21,13 @@ jobs:
       uses: actions/upload-artifact@v2.2.4
       with:
         name: Moonlight
-        path: "${{ github.workspace }}/SpotLight/bin/x64/Moonlight_RELEASE"
+        path: "${{ github.workspace }}/SpotLight/bin/Moonlight_RELEASE"
     - name: Upload Spotlight
       if: github.ref != 'refs/heads/master'
       uses: actions/upload-artifact@v2.2.4
       with:
         name: Spotlight
-        path: "${{ github.workspace }}/SpotLight/bin/x86/Spotlight_RELEASE"
+        path: "${{ github.workspace }}/SpotLight/bin/Spotlight_RELEASE"
     - name: Make a release
       if: github.ref == 'refs/heads/master'
       uses: "marvinpinto/action-automatic-releases@latest"
